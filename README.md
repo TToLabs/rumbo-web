@@ -1,7 +1,7 @@
 # Rumbo — descargas y respaldo web
 
 Este repo es **público y de solo lectura por diseño**: es un espejo generado
-a mano desde `mercadateapp/rumbo` (privado), que es la única fuente de
+a mano desde `TToLabs/rumbo` (privado), que es la única fuente de
 verdad del código. Acá NUNCA se edita directo — todo cambio se hace en el
 repo privado y se vuelve a copiar acá cuando se quiere publicar una
 actualización.
