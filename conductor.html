@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rumbo — Descargas</title>
-<meta name="theme-color" content="#16333F">
-<link rel="icon" type="image/svg+xml" href="www/img/icon-rumbo.svg">
+<title>Rumbo Conductor — Descargas</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0E2229">
+<link rel="icon" type="image/svg+xml" href="www/img/icon-rumbo-conductor.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,10 +16,8 @@
     --border: #DCE6E9; --border-strong: #C4D3D9;
     --text: #101A20; --text-2: #55666D; --text-3: #859097;
     --primary: #16333F; --primary-hover: #0E232C; --primary-ink: #FFFFFF;
-    --primary-soft: #E4EBED; --primary-soft-ink: #16333F;
-    --accent: #0B7A4B; --accent-soft: #E6F4ED;
+    --surface-2: #F4F8F9;
     --shadow-sm: 0 1px 2px rgba(16,26,32,0.05);
-    --shadow-md: 0 1px 2px rgba(16,26,32,0.04), 0 6px 16px rgba(16,26,32,0.07);
     --r-card: 16px; --r-btn: 12px;
   }
   * { box-sizing: border-box; }
@@ -34,11 +33,10 @@
   header img { width: 56px; height: 56px; }
   header .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
   header .brand-sub { font-size: 13.5px; color: var(--text-3); }
-  .beta { display: inline-block; margin: 4px 0 24px; padding: 5px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 600; }
 
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
-    padding: 22px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+    padding: 22px; margin: 20px 0 16px; box-shadow: var(--shadow-sm);
   }
   .card h2 { margin: 0 0 4px; font-size: 19px; font-weight: 700; }
   .card p.desc { margin: 0 0 18px; color: var(--text-2); font-size: 15px; line-height: 1.45; }
@@ -57,14 +55,7 @@
     margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--surface-2);
     font-size: 13.5px; color: var(--text-2); line-height: 1.5;
   }
-
-  .qr-fila { display: flex; align-items: center; gap: 16px; margin-top: 4px; }
-  .qr-fila img { width: 96px; height: 96px; border-radius: 8px; border: 1px solid var(--border); }
-  .qr-fila p { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.4; }
-
   .respaldo { font-size: 13.5px; color: var(--text-3); text-align: center; margin-top: 8px; line-height: 1.5; }
-  .respaldo a { color: var(--text-2); }
-
   footer { text-align: center; color: var(--text-3); font-size: 12.5px; margin-top: 28px; line-height: 1.6; }
 </style>
 </head>
@@ -72,23 +63,22 @@
 <div class="app">
 
   <header>
-    <img src="www/img/icon-rumbo.svg" alt="">
+    <img src="www/img/icon-rumbo-conductor.svg" alt="">
     <div>
-      <div class="brand-name">Rumbo</div>
-      <div class="brand-sub">Traslados privados</div>
+      <div class="brand-name">Rumbo Conductor</div>
+      <div class="brand-sub">Panel del conductor</div>
     </div>
   </header>
-  <span class="beta">Beta — en prueba con conductores seleccionados</span>
 
   <section class="card">
-    <h2>Pide tu viaje</h2>
-    <p class="desc">Cotiza y pide tu viaje. Si tu conductor te compartió un link o un QR propio, usa siempre ese — así queda registrado como tu contacto.</p>
+    <h2>Descargá tu panel</h2>
+    <p class="desc">Recibí y confirmá pedidos de tu propia clientela. Necesitás la cuenta que te creó el administrador de la red.</p>
     <div class="botones">
-      <a class="btn btn-primario" href="www/index.html">Usar la web ahora</a>
-      <a class="btn btn-secundario" id="linkApkPasajero" href="#">Descargar app Android (.apk)</a>
+      <a class="btn btn-primario" href="www/admin.html">Usar la web ahora</a>
+      <a class="btn btn-secundario" id="linkApkConductor" href="#">Descargar app Android (.apk)</a>
     </div>
     <div class="nota-instalar">
-      Al abrir el .apk, Android va a pedirte activar <strong>"Instalar apps de fuentes desconocidas"</strong> la primera vez — es normal en esta etapa beta, antes de estar en Google Play.
+      Android va a pedirte activar <strong>"Instalar apps de fuentes desconocidas"</strong> la primera vez — es normal en esta etapa beta, antes de estar en Google Play.
     </div>
   </section>
 
@@ -98,15 +88,12 @@
   </p>
 
   <footer>
-    Este sitio es un espejo público de descarga. El código fuente completo
-    vive en un repositorio privado — ver <a href="https://github.com/mercadateapp/rumbo-web#readme">README</a>.
+    Este link es solo para conductores de la red — no lo compartas con pasajeros.
   </footer>
 </div>
 <script>
-  // Los .apk se publican como "Release" con el mismo tag "latest": el
-  // link no cambia entre versiones, solo el archivo detrás.
   var BASE_RELEASE = "https://github.com/mercadateapp/rumbo-web/releases/download/latest/";
-  document.getElementById("linkApkPasajero").href = BASE_RELEASE + "rumbo-pasajero.apk";
+  document.getElementById("linkApkConductor").href = BASE_RELEASE + "rumbo-conductor.apk";
 </script>
 </body>
 </html>
