@@ -369,6 +369,23 @@
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <section class="card" id="cardMiQr">
+      <div class="card-head"><span class="card-title">Mi QR para pasajeros</span></div>
+      <p class="ayuda" style="margin:0 0 14px;">
+        Quien escanee este QR o abra tu link queda registrado como tu cliente.
+      </p>
+      <div style="text-align:center;">
+        <img id="miQrImg" alt="Código QR de tu link" style="width:220px;height:220px;border:1px solid var(--border);border-radius:12px;background:#fff;">
+        <p class="msg" id="miQrLink" style="word-break:break-all;font-size:13px;margin:10px 0 14px;"></p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-chico" id="btnCompartirQr" type="button">Compartir</button>
+        <button class="btn btn-chico" id="btnCopiarQr" type="button">Copiar link</button>
+      </div>
+      <button class="btn btn-chico" id="btnImprimirQr" type="button" style="width:100%;margin-top:8px;">Imprimir / guardar QR</button>
+      <p class="msg" id="miQrMsg" style="margin:10px 2px 0;"></p>
+    </section>
+
     <section class="card">
       <div class="card-head">
         <span class="card-title">Costos del vehículo</span>
@@ -569,7 +586,7 @@
   /* Key PÚBLICA de Maps JavaScript ("Rumbo — Maps JS (público)"). Es la
      misma que usa index.html: viaja al navegador a propósito, y está
      restringida en Cloud Console a Maps JavaScript API + los referentes
-     mercadateapp.github.io y localhost. NUNCA poner acá la de Routes. */
+     ttolabs.github.io y localhost. NUNCA poner acá la de Routes. */
   var GOOGLE_MAPS_JS_KEY = "AIzaSyBvkEjQdOsFN7CM2EpRXoY5iuh-OgA6js4";
   var googleMapsListo = false;
   var mapasPorPedido = {};   // pedido_id -> { mapa, marcador }
@@ -658,6 +675,7 @@
     cargarViajesEnCurso();
     cargarGoogleMaps();
     pintarVehiculo(sesion.conductor);
+    pintarMiQr(sesion.conductor);
     pedirPermisoNotificaciones();
     if (sondeoTimer) clearInterval(sondeoTimer);
     sondeoTimer = setInterval(function () {
@@ -672,6 +690,48 @@
       });
     }, SONDEO_MS);
   }
+
+  /* Mi QR: link propio del conductor (?c=<id>) hacia la landing pública,
+     que arrastra el código hasta la web del pasajero. Así cada conductor
+     reparte SU QR sin depender de que alguien se lo genere a mano. */
+  var LANDING_PASAJERO = "https://ttolabs.github.io/rumbo-web/";
+  var miLinkPasajero = "";
+
+  function pintarMiQr(c) {
+    miLinkPasajero = LANDING_PASAJERO + "?c=" + encodeURIComponent(c.conductor_id);
+    document.getElementById("miQrLink").textContent = miLinkPasajero;
+    document.getElementById("miQrImg").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=16&data=" + encodeURIComponent(miLinkPasajero);
+  }
+
+  document.getElementById("btnCopiarQr").addEventListener("click", function () {
+    var msg = document.getElementById("miQrMsg");
+    (navigator.clipboard ? navigator.clipboard.writeText(miLinkPasajero) : Promise.reject())
+      .then(function () { msg.textContent = "Link copiado."; msg.className = "msg ok"; })
+      .catch(function () { msg.textContent = "No se pudo copiar; mantené presionado el link para copiarlo."; msg.className = "msg error"; });
+  });
+
+  document.getElementById("btnCompartirQr").addEventListener("click", function () {
+    var texto = "Pide tu traslado conmigo en Rumbo: " + miLinkPasajero;
+    if (navigator.share) {
+      navigator.share({ title: "Rumbo — Traslados privados", text: texto, url: miLinkPasajero }).catch(function () {});
+    } else {
+      window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
+    }
+  });
+
+  document.getElementById("btnImprimirQr").addEventListener("click", function () {
+    var nombre = (obtenerSesion() || { conductor: {} }).conductor.nombre || "";
+    var w = window.open("", "_blank");
+    if (!w) { window.open(document.getElementById("miQrImg").src, "_blank"); return; }
+    w.document.write(
+      '<html><head><title>QR Rumbo</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
+      '<h1 style="margin:0 0 6px;">Rumbo</h1><p style="margin:0 0 24px;color:#555;">Traslados privados' +
+      (nombre ? " con " + nombre.replace(/[<>&]/g, "") : "") + '</p>' +
+      '<img src="' + document.getElementById("miQrImg").src + '" style="width:320px;height:320px;" onload="setTimeout(function(){window.print()},300)">' +
+      '<p style="margin-top:20px;font-size:14px;color:#333;">Escanea para cotizar y pedir tu viaje</p></body></html>');
+    w.document.close();
+  });
 
   function pintarVehiculo(c) {
     document.getElementById("vehPatente").value = c.vehiculo_patente || "";
