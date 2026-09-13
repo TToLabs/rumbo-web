@@ -577,7 +577,17 @@
 (function () {
   // Poner acá la URL /exec de tu Apps Script (misma que en admin.html).
   var API_URL = "https://script.google.com/macros/s/AKfycbwMr2YGxsGkz2RarJ1kCbAgmQMp10VHXvKjKwXJjEE01Py7tggqN3DK4XibnXpAjEMb/exec";
-  var GOOGLE_MAPS_JS_KEY = "AIzaSyC7NX_SyIAL9OWUfq6gPpI9f6cYupxrClU";
+
+  /* ESTA KEY ES PÚBLICA A PROPÓSITO — viaja al navegador del pasajero, que
+     es la única forma de dibujar un mapa. La protección NO es esconderla,
+     es restringirla en Google Cloud Console ("Rumbo — Maps JS (público)"):
+       · Restricción de API   → SOLO "Maps JavaScript API"
+       · Restricción de app   → Sitios web → https://mercadateapp.github.io/*
+                                             localhost/*
+     Verificado el 13-sep-2026: con esta key, una llamada a Routes API
+     devuelve API_KEY_HTTP_REFERRER_BLOCKED. NUNCA poner acá la key de
+     Routes (la de backend/Codigo.gs): esa debe quedar solo en el servidor. */
+  var GOOGLE_MAPS_JS_KEY = "AIzaSyBvkEjQdOsFN7CM2EpRXoY5iuh-OgA6js4";
 
   var tarifas = null;
   var idaYVuelta = false;
