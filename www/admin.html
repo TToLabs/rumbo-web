@@ -37,7 +37,8 @@
     color: var(--text); font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
     font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased;
     min-height: 100vh; display: flex; justify-content: center;
-    padding: 0 16px calc(40px + env(safe-area-inset-bottom));
+    /* Reserva el alto de la barra fija de abajo (.nav-inferior). */
+    padding: 0 16px calc(96px + env(safe-area-inset-bottom));
   }
   .app { width: 100%; max-width: 448px; }
   .sr-only {
@@ -180,6 +181,38 @@
   }
   .veh-foto-preview:not([src]), .veh-foto-preview[src=""] { visibility: hidden; }
 
+  /* ---------- Barra de navegación inferior ---------- */
+  .nav-inferior {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 12px rgba(16,26,32,0.06);
+  }
+  .nav-item {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 12px; font-weight: 500; color: var(--text-3);
+    padding: 8px 4px; border-radius: 10px;
+  }
+  .nav-item .ico { width: 22px; height: 22px; }
+  .nav-item.activo { color: var(--primary); font-weight: 600; }
+  .nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .nav-badge {
+    position: absolute; top: 6px; right: 50%; margin-right: -16px;
+    width: 9px; height: 9px; border-radius: 50%; background: var(--danger); display: none;
+  }
+  .nav-badge.activa { display: block; }
+
+  /* ---------- Mapa con la ubicación del pasajero ---------- */
+  .mapa-pasajero {
+    display: none; height: 180px; border-radius: var(--r-input);
+    border: 1px solid var(--border); margin: 12px 0 4px; overflow: hidden;
+  }
+  .mapa-pasajero.activo { display: block; }
+  .nota-mapa { font-size: 13.5px; color: var(--text-3); margin: 10px 0 0; }
+  .nota-mapa.oculto { display: none; }
+
   /* ---------- Chat (mismo diseño que el lado del pasajero) ---------- */
   .chat-mensajes {
     max-height: 220px; overflow-y: auto; display: flex; flex-direction: column;
@@ -310,30 +343,18 @@
     </label>
   </div>
 
-  <div class="tabs" role="tablist">
-    <button class="tab" id="tabPedidos" type="button" role="tab" aria-selected="true" aria-controls="panelPedidos">
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-lista"/></svg>
-      Pedidos
-      <span class="burbuja" id="burbujaPedidos">0</span>
-    </button>
-    <button class="tab" id="tabTarifas" type="button" role="tab" aria-selected="false" aria-controls="panelTarifas">
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-precio"/></svg>
-      Tarifas
-    </button>
-    <button class="tab" id="tabDisponibilidad" type="button" role="tab" aria-selected="false" aria-controls="panelDisponibilidad">
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
-      Disponibilidad
-    </button>
-  </div>
 
-  <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
+  <div id="panelEnCurso" role="tabpanel" aria-labelledby="tabEnCurso" style="display:none;">
     <section class="card" id="grupoEnCurso" style="display:none;">
       <div class="card-head">
         <span class="card-title">Viaje en curso</span>
       </div>
       <div id="listaEnCurso"></div>
     </section>
+    <p class="vacio" id="sinViajesEnCurso">No tienes viajes en curso.</p>
+  </div>
 
+  <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
     <section class="card" id="grupoPedidos">
       <div class="card-head">
         <span class="card-title">Pedidos pendientes</span>
@@ -347,7 +368,7 @@
     </section>
   </div>
 
-  <div id="panelTarifas" role="tabpanel" aria-labelledby="tabTarifas" style="display:none;">
+  <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
     <section class="card">
       <div class="card-head">
         <span class="card-title">Costos del vehículo</span>
@@ -502,11 +523,10 @@
       <button class="btn btn-chico" id="btnCambiarClave" type="button">Cambiar clave</button>
       <p class="msg" id="claveMsg" style="margin:10px 2px 0;"></p>
     </section>
-  </div>
 
-  <div id="panelDisponibilidad" role="tabpanel" aria-labelledby="tabDisponibilidad" style="display:none;">
     <section class="card">
       <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
         <span class="card-title">Cuándo NO estás disponible</span>
       </div>
       <p class="ayuda" style="margin:0 0 14px;">
@@ -519,16 +539,49 @@
         + Agregar bloqueo
       </button>
     </section>
-    <button class="btn btn-primario" id="btnGuardarDisponibilidad" type="button">Guardar cambios</button>
+    <button class="btn btn-primario" id="btnGuardarDisponibilidad" type="button">Guardar disponibilidad</button>
     <p class="msg" id="disponibilidadMsg" style="margin:12px 2px 0;"></p>
   </div>
 </div>
+
+<nav class="nav-inferior" role="tablist" aria-label="Secciones" id="navConductor" style="display:none;">
+  <button class="nav-item activo" id="tabPedidos" type="button" role="tab" aria-selected="true" aria-controls="panelPedidos">
+    <span class="nav-badge" id="burbujaPedidos"></span>
+    <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>
+    Pedidos
+  </button>
+  <button class="nav-item" id="tabEnCurso" type="button" role="tab" aria-selected="false" aria-controls="panelEnCurso">
+    <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
+    En curso
+  </button>
+  <button class="nav-item" id="tabAjustes" type="button" role="tab" aria-selected="false" aria-controls="panelAjustes">
+    <svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>
+    Ajustes
+  </button>
+</nav>
 
 <script>
 (function () {
   // Poner acá la URL /exec de tu Apps Script (ver INSTRUCCIONES.md).
   var API_URL = "https://script.google.com/macros/s/AKfycbwMr2YGxsGkz2RarJ1kCbAgmQMp10VHXvKjKwXJjEE01Py7tggqN3DK4XibnXpAjEMb/exec";
   var SESION_KEY = "rumbo_conductor_sesion";
+
+  /* Key PÚBLICA de Maps JavaScript ("Rumbo — Maps JS (público)"). Es la
+     misma que usa index.html: viaja al navegador a propósito, y está
+     restringida en Cloud Console a Maps JavaScript API + los referentes
+     mercadateapp.github.io y localhost. NUNCA poner acá la de Routes. */
+  var GOOGLE_MAPS_JS_KEY = "AIzaSyBvkEjQdOsFN7CM2EpRXoY5iuh-OgA6js4";
+  var googleMapsListo = false;
+  var mapasPorPedido = {};   // pedido_id -> { mapa, marcador }
+
+  function cargarGoogleMaps() {
+    if (document.getElementById("gmapsScript")) return;
+    var script = document.createElement("script");
+    script.id = "gmapsScript";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&callback=alGoogleMapsListo";
+    document.head.appendChild(script);
+  }
+  window.alGoogleMapsListo = function () { googleMapsListo = true; };
 
   function obtenerSesion() {
     try { return JSON.parse(localStorage.getItem(SESION_KEY) || "null"); } catch (e) { return null; }
@@ -565,19 +618,27 @@
   function mostrarPantalla(cual) {
     document.getElementById("pantallaLogin").style.display = cual === "login" ? "block" : "none";
     document.getElementById("pantallaApp").style.display = cual === "app" ? "block" : "none";
+    // La barra de secciones no tiene sentido en la pantalla de login.
+    document.getElementById("navConductor").style.display = cual === "app" ? "grid" : "none";
   }
 
   /* ---------------------------------------------------------------
      Pestañas y sección plegable: solo cambian qué se ve.
      --------------------------------------------------------------- */
-  var PESTANAS = ["pedidos", "tarifas", "disponibilidad"];
+  // Cada sección es una pantalla completa, con la barra fija abajo.
+  // "Mi auto" y disponibilidad viven dentro de Ajustes, que es donde el
+  // conductor entra pocas veces — lo del día a día son Pedidos y En curso.
+  var PESTANAS = ["pedidos", "enCurso", "ajustes"];
   function mostrarPestana(cual) {
     PESTANAS.forEach(function (p) {
       var esEsta = p === cual;
       document.getElementById("panel" + capitalizar(p)).style.display = esEsta ? "block" : "none";
-      document.getElementById("tab" + capitalizar(p)).setAttribute("aria-selected", esEsta ? "true" : "false");
+      var tab = document.getElementById("tab" + capitalizar(p));
+      tab.setAttribute("aria-selected", esEsta ? "true" : "false");
+      tab.classList.toggle("activo", esEsta);
     });
-    if (cual === "disponibilidad" && !disponibilidadCargada) cargarDisponibilidad();
+    if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   PESTANAS.forEach(function (p) {
@@ -595,6 +656,7 @@
     cargarTarifas();
     cargarPedidos();
     cargarViajesEnCurso();
+    cargarGoogleMaps();
     pintarVehiculo(sesion.conductor);
     pedirPermisoNotificaciones();
     if (sondeoTimer) clearInterval(sondeoTimer);
@@ -995,12 +1057,11 @@
     }
   }
 
+  // La burbuja ahora es un punto en la barra de abajo (sin número): con la
+  // pestaña de Pedidos a un toque, el conteo exacto se ve al entrar.
   function actualizarBurbuja(cantidad) {
-    var burbuja = document.getElementById("burbujaPedidos");
-    var grupo = document.getElementById("grupoPedidos");
-    burbuja.textContent = cantidad;
-    burbuja.classList.toggle("activa", cantidad > 0);
-    grupo.classList.toggle("hay-pendientes", cantidad > 0);
+    document.getElementById("burbujaPedidos").classList.toggle("activa", cantidad > 0);
+    document.getElementById("grupoPedidos").classList.toggle("hay-pendientes", cantidad > 0);
   }
 
   /* ---------------------------------------------------------------
@@ -1015,8 +1076,16 @@
       var grupo = document.getElementById("grupoEnCurso");
       var lista = document.getElementById("listaEnCurso");
       if (!res.ok) return;
-      if (!res.pedidos.length) { grupo.style.display = "none"; lista.innerHTML = ""; return; }
+      var vacio = document.getElementById("sinViajesEnCurso");
+      if (!res.pedidos.length) {
+        grupo.style.display = "none";
+        vacio.style.display = "block";
+        lista.innerHTML = "";
+        lista.dataset.ids = "";
+        return;
+      }
       grupo.style.display = "block";
+      vacio.style.display = "none";
       // Solo se redibuja si cambió el conjunto de viajes, para no borrar
       // los mensajes ya pintados ni lo que el conductor está tipeando.
       var idsActuales = res.pedidos.map(function (p) { return p.pedido_id; }).join(",");
@@ -1025,7 +1094,11 @@
         lista.innerHTML = "";
         res.pedidos.forEach(function (p) { lista.appendChild(tarjetaEnCurso(p)); });
         res.pedidos.forEach(function (p) { cargarMensajesConductor(p.pedido_id); });
+        // Los mapas viejos dejan de existir cuando cambia la lista (viaje
+        // finalizado), si no quedarían referencias a nodos ya borrados.
+        mapasPorPedido = {};
       }
+      res.pedidos.forEach(function (p) { actualizarUbicacionPasajero(p.pedido_id); });
     });
   }
 
@@ -1051,6 +1124,11 @@
         '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
           'href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(p.origen) + '&travelmode=driving">Ir con Maps</a>' +
       '</div>' +
+      // Mapa con la posición del pasajero, para ir a buscarlo. Solo se
+      // dibuja si el pasajero aceptó compartir ubicación; si no, queda
+      // el aviso y el conductor lo ubica por la dirección de siempre.
+      '<div class="mapa-pasajero" data-mapa="' + escapar(p.pedido_id) + '"></div>' +
+      '<p class="nota-mapa" data-mapa-aviso="' + escapar(p.pedido_id) + '">Esperando la ubicación del pasajero...</p>' +
       '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
       '<div class="chat-entrada">' +
         '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
@@ -1058,6 +1136,34 @@
       '</div>' +
       '<button class="btn btn-ok" style="width:100%;margin-top:12px;" data-finalizar="' + escapar(p.pedido_id) + '">Finalizar viaje</button>';
     return div;
+  }
+
+  /* Ubicación del pasajero en el mapa: se consulta mientras el viaje está
+     en curso. Si el pasajero no dio permiso, el backend devuelve null y se
+     deja el aviso en vez de un mapa vacío que no dice nada. */
+  function actualizarUbicacionPasajero(pedidoId) {
+    api({ accion: "ubicacion_pasajero", pedido_id: pedidoId }).then(function (res) {
+      if (!res.ok || !res.ubicacion) return;
+      var cont = document.querySelector('[data-mapa="' + pedidoId + '"]');
+      var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
+      if (!cont || !googleMapsListo) return;
+      var pos = { lat: Number(res.ubicacion.lat), lng: Number(res.ubicacion.lng) };
+      if (isNaN(pos.lat) || isNaN(pos.lng)) return;
+
+      cont.classList.add("activo");
+      if (aviso) aviso.classList.add("oculto");
+
+      var m = mapasPorPedido[pedidoId];
+      if (!m) {
+        var mapa = new google.maps.Map(cont, {
+          zoom: 15, center: pos, disableDefaultUI: true, zoomControl: true
+        });
+        m = { mapa: mapa, marcador: new google.maps.Marker({ map: mapa, title: "Pasajero" }) };
+        mapasPorPedido[pedidoId] = m;
+      }
+      m.marcador.setPosition(pos);
+      m.mapa.setCenter(pos);
+    });
   }
 
   function cargarMensajesConductor(pedidoId) {

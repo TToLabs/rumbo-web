@@ -69,7 +69,9 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: 0 16px calc(40px + env(safe-area-inset-bottom));
+    /* El padding de abajo reserva el alto de la barra fija (.nav-inferior),
+       si no el último botón de cada pantalla queda tapado por ella. */
+    padding: 0 16px calc(96px + env(safe-area-inset-bottom));
   }
   .app { width: 100%; max-width: 448px; }
   .num { font-variant-numeric: tabular-nums; }
@@ -331,6 +333,33 @@
   .chat-entrada input:focus { outline: none; border-color: var(--primary); }
   .chat-entrada .btn { padding: 12px 18px; font-size: 15px; }
 
+  /* ---------- Barra de navegación inferior ---------- */
+  /* Fija abajo: cada sección es una pantalla completa, en vez de un solo
+     scroll largo. El padding-bottom del body reserva su alto para que el
+     último elemento de cada pantalla no quede tapado. */
+  .nav-inferior {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 12px rgba(16,26,32,0.06);
+  }
+  .nav-item {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 12px; font-weight: 500; color: var(--text-3);
+    padding: 8px 4px; border-radius: 10px;
+  }
+  .nav-item .ico { width: 22px; height: 22px; }
+  .nav-item.activo { color: var(--primary); font-weight: 600; }
+  .nav-item:disabled { opacity: 0.4; cursor: default; }
+  .nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .nav-badge {
+    position: absolute; top: 6px; right: 50%; margin-right: -16px;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: none;
+  }
+  .nav-badge.activo { display: block; }
+
   .check-fila { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-2); line-height: 1.4; cursor: pointer; }
   .check-fila input { margin-top: 2px; width: 18px; height: 18px; flex: none; accent-color: var(--primary); }
   .link-inline { border: none; background: none; padding: 0; color: var(--primary); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
@@ -384,17 +413,6 @@
   </header>
 
   <div class="card conductor-banner" id="conductorBanner" style="display:none;"></div>
-
-  <div class="tabs" role="tablist">
-    <button class="tab" id="tabCotizar" type="button" role="tab" aria-selected="true" aria-controls="vistaCotizar">
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
-      Nuevo viaje
-    </button>
-    <button class="tab" id="tabSeguimiento" type="button" role="tab" aria-selected="false" aria-controls="vistaEstado" disabled>
-      <span class="tab-badge" id="badgeSeguimiento"></span>
-      Seguimiento
-    </button>
-  </div>
 
   <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
 
@@ -490,41 +508,6 @@
       </p>
     </section>
 
-    <!-- Cuenta del pasajero: se pide UNA sola vez. Después queda la
-         sesión guardada y solo se muestra la línea compacta de "sos vos". -->
-    <section class="card" id="cardCuenta">
-      <div class="card-head">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
-        <span class="card-title">Crea tu cuenta</span>
-      </div>
-      <p class="nota" style="margin:0 0 14px;">Una sola vez. Así tu conductor te reconoce en cada viaje.</p>
-      <div class="campo" style="margin-bottom:12px;">
-        <label class="campo-label" for="nombreCliente">Nombre y apellido</label>
-        <input type="text" id="nombreCliente" placeholder="Tu nombre" autocomplete="name">
-      </div>
-      <div class="campo" style="margin-bottom:12px;">
-        <label class="campo-label" for="telefonoCliente">WhatsApp</label>
-        <input type="text" id="telefonoCliente" placeholder="56912345678" inputmode="numeric" autocomplete="tel">
-      </div>
-      <div class="campo" style="margin-bottom:16px;">
-        <label class="campo-label" for="correoCliente">Correo</label>
-        <input type="email" id="correoCliente" placeholder="tucorreo@ejemplo.cl" autocomplete="email">
-      </div>
-      <label class="check-fila" style="margin-bottom:16px;">
-        <input type="checkbox" id="chkPolitica">
-        <span>Entiendo cómo Rumbo usa mis datos para coordinar mis viajes. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
-      </label>
-      <button class="btn btn-medio" id="btnCrearCuenta" type="button" style="width:100%;">Crear mi cuenta</button>
-      <p class="nota" id="cuentaMsg" style="margin:10px 2px 0;"></p>
-    </section>
-
-    <section class="card" id="cardSesion" style="display:none;">
-      <div class="check-fila" style="align-items:center;">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
-        <span id="sesionTexto"></span>
-      </div>
-    </section>
-
     <button class="btn btn-primario" id="btnPedir" type="button" disabled>
       Solicitar viaje
       <svg class="ico ico-sm" aria-hidden="true"><use href="#i-flecha"/></svg>
@@ -570,8 +553,77 @@
     <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
   </div>
 
+  <div id="vistaCuenta" role="tabpanel" aria-labelledby="tabCuenta" style="display:none;">
+    <!-- Cuenta del pasajero: se pide UNA sola vez. Después queda la
+         sesión guardada y solo se muestra la línea compacta de "sos vos". -->
+    <section class="card" id="cardCuenta">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
+        <span class="card-title">Crea tu cuenta</span>
+      </div>
+      <p class="nota" style="margin:0 0 14px;">Una sola vez. Así tu conductor te reconoce en cada viaje.</p>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="nombreCliente">Nombre y apellido</label>
+        <input type="text" id="nombreCliente" placeholder="Tu nombre" autocomplete="name">
+      </div>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="telefonoCliente">WhatsApp</label>
+        <input type="text" id="telefonoCliente" placeholder="56912345678" inputmode="numeric" autocomplete="tel">
+      </div>
+      <div class="campo" style="margin-bottom:16px;">
+        <label class="campo-label" for="correoCliente">Correo</label>
+        <input type="email" id="correoCliente" placeholder="tucorreo@ejemplo.cl" autocomplete="email">
+      </div>
+      <label class="check-fila" style="margin-bottom:16px;">
+        <input type="checkbox" id="chkPolitica">
+        <span>Entiendo cómo Rumbo usa mis datos para coordinar mis viajes. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
+      </label>
+      <button class="btn btn-medio" id="btnCrearCuenta" type="button" style="width:100%;">Crear mi cuenta</button>
+      <p class="nota" id="cuentaMsg" style="margin:10px 2px 0;"></p>
+    </section>
+
+    <section class="card" id="cardSesion" style="display:none;">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
+        <span class="card-title">Tu cuenta</span>
+      </div>
+      <p class="nota" id="sesionTexto" style="margin:0;"></p>
+    </section>
+
+    <div class="confianza">
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
+        Precio cerrado antes de salir, sin cargos sorpresa
+      </div>
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
+        Conductor identificado y seguimiento en vivo del trayecto
+      </div>
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+        Cobertura dentro y fuera de Santiago
+      </div>
+    </div>
+  </div>
+
   <p class="pie">Los tiempos y distancias se calculan con datos de tráfico reales al momento de cotizar.</p>
 </div>
+
+<nav class="nav-inferior" role="tablist" aria-label="Secciones">
+  <button class="nav-item activo" id="tabCotizar" type="button" role="tab" aria-selected="true" aria-controls="vistaCotizar">
+    <svg class="ico" aria-hidden="true"><use href="#i-ruta"/></svg>
+    Viaje
+  </button>
+  <button class="nav-item" id="tabSeguimiento" type="button" role="tab" aria-selected="false" aria-controls="vistaEstado" disabled>
+    <span class="nav-badge" id="badgeSeguimiento"></span>
+    <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+    Seguimiento
+  </button>
+  <button class="nav-item" id="tabCuenta" type="button" role="tab" aria-selected="false" aria-controls="vistaCuenta">
+    <svg class="ico" aria-hidden="true"><use href="#i-persona"/></svg>
+    Mi cuenta
+  </button>
+</nav>
 
 <script>
 (function () {
@@ -602,16 +654,30 @@
      Navegación entre pantallas (pestañas). Solo cambia qué se ve;
      no toca nada del cálculo ni del pedido.
      --------------------------------------------------------------- */
+  // Cada sección es una pantalla completa (barra fija abajo), no un tramo
+  // del mismo scroll: el id de la vista y el del botón van emparejados acá.
+  var SECCIONES = {
+    cotizar: { vista: "vistaCotizar", tab: "tabCotizar" },
+    seguimiento: { vista: "vistaEstado", tab: "tabSeguimiento" },
+    cuenta: { vista: "vistaCuenta", tab: "tabCuenta" }
+  };
+
   function mostrarPestana(cual) {
-    var esCotizar = cual === "cotizar";
-    document.getElementById("vistaCotizar").style.display = esCotizar ? "block" : "none";
-    document.getElementById("vistaEstado").style.display = esCotizar ? "none" : "block";
-    document.getElementById("tabCotizar").setAttribute("aria-selected", esCotizar ? "true" : "false");
-    document.getElementById("tabSeguimiento").setAttribute("aria-selected", esCotizar ? "false" : "true");
+    Object.keys(SECCIONES).forEach(function (nombre) {
+      var s = SECCIONES[nombre];
+      var esEsta = nombre === cual;
+      document.getElementById(s.vista).style.display = esEsta ? "block" : "none";
+      var tab = document.getElementById(s.tab);
+      tab.setAttribute("aria-selected", esEsta ? "true" : "false");
+      tab.classList.toggle("activo", esEsta);
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  document.getElementById("tabCotizar").addEventListener("click", function () { mostrarPestana("cotizar"); });
-  document.getElementById("tabSeguimiento").addEventListener("click", function () { mostrarPestana("seguimiento"); });
+
+  Object.keys(SECCIONES).forEach(function (nombre) {
+    document.getElementById(SECCIONES[nombre].tab)
+      .addEventListener("click", function () { mostrarPestana(nombre); });
+  });
 
   /* ---------------------------------------------------------------
      Menú desplegable de la barra superior.
@@ -800,6 +866,9 @@
       guardarSesionPasajero(res);
       msg.textContent = "";
       pintarSesionPasajero();
+      // Con la cuenta lista, lo natural es volver a lo que estaba haciendo:
+      // pedir el viaje. Si ya tenía la ruta calculada, el botón ya está activo.
+      mostrarPestana("cotizar");
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
       msg.className = "nota error";
@@ -1069,9 +1138,9 @@
     var pedirTexto = document.getElementById("pedirTexto");
     var sesion = obtenerSesionPasajero();
     if (!sesion || !sesion.token) {
-      pedirTexto.textContent = "Crea tu cuenta más arriba para poder solicitar el viaje.";
+      pedirTexto.textContent = "Necesitas una cuenta para solicitar el viaje — te llevo ahí.";
       pedirTexto.className = "nota error";
-      document.getElementById("cardCuenta").scrollIntoView({ behavior: "smooth", block: "center" });
+      mostrarPestana("cuenta");
       return;
     }
     if (!rutaActual) return;
@@ -1127,6 +1196,7 @@
           document.getElementById("estadoBox").textContent = "Viaje confirmado";
           mostrarMapaConductor();
           abrirChat();
+          compartirMiUbicacion();
           clearInterval(pollTimer);
         } else if (res.estado === "SIN_CONDUCTOR") {
           // No se le muestra cada rechazo individual mientras se deriva
@@ -1207,6 +1277,40 @@
     if (ev.key === "Enter") { ev.preventDefault(); enviarMensajeChat(); }
   });
 
+  /* ---------------------------------------------------------------
+     Compartir mi ubicación con el conductor mientras dura el viaje,
+     para que me encuentre (el otro lado del seguimiento). Arranca solo
+     al confirmarse el viaje y se corta al terminar — nunca queda
+     compartiendo posición fuera de un viaje activo.
+     --------------------------------------------------------------- */
+  var watchIdPasajero = null;
+  var ultimoEnvioUbic = 0;
+  var UBIC_MIN_MS = 15000; // no más de un envío cada 15s, para no gastar cuota
+
+  function compartirMiUbicacion() {
+    if (!navigator.geolocation || watchIdPasajero !== null) return;
+    watchIdPasajero = navigator.geolocation.watchPosition(function (pos) {
+      var ahora = Date.now();
+      if (ahora - ultimoEnvioUbic < UBIC_MIN_MS) return;
+      ultimoEnvioUbic = ahora;
+      var sesion = obtenerSesionPasajero();
+      if (!sesion || !pedidoActualId) return;
+      apiPost({
+        accion: "actualizar_ubicacion_pasajero", pasajero_token: sesion.token,
+        pedido_id: pedidoActualId, lat: pos.coords.latitude, lng: pos.coords.longitude
+      });
+    }, function () {
+      // Si no da permiso, el viaje sigue funcionando igual: el conductor
+      // simplemente no lo ve en el mapa y lo ubica por la dirección.
+    }, { enableHighAccuracy: true });
+  }
+
+  function dejarDeCompartirUbicacion() {
+    if (watchIdPasajero === null) return;
+    navigator.geolocation.clearWatch(watchIdPasajero);
+    watchIdPasajero = null;
+  }
+
   var mapaTimer = null;
 
   function mostrarMapaConductor() {
@@ -1240,6 +1344,7 @@
     if (pollTimer) clearInterval(pollTimer);
     if (mapaTimer) clearInterval(mapaTimer);
     if (chatTimer) clearInterval(chatTimer);
+    dejarDeCompartirUbicacion();
     pedidoActualId = null;
     rutaActual = null;
     ultimoMensajeEn = "";
