@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rumbo — Traslados privados</title>
+<meta name="description" content="Cotiza y solicita traslados privados dentro y fuera de Santiago. Precio calculado con la ruta real, sin sorpresas.">
+<meta name="apple-mobile-web-app-title" content="Rumbo">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#16333F">
+<link rel="icon" type="image/svg+xml" href="img/icon-rumbo.svg">
+<link rel="apple-touch-icon" href="img/icon-rumbo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================================
+     SISTEMA VISUAL
+     ---------------------------------------------------------------------
+     Un solo color de marca (near-black para acciones, como Uber/Cabify) y
+     el verde reservado SOLO para estados positivos. Nada de degradados ni
+     de varios acentos compitiendo: eso es lo que hace ver amateur una app.
+     Ritmo de espaciado en múltiplos de 4/8. Iconos: un solo set SVG con
+     el mismo grosor de trazo (nunca emoji como icono funcional).
+     ===================================================================== */
+  :root {
+    --bg: #F2F4F5;
+    --bg-grad-1: #F2F4F5;
+    --bg-grad-2: #F2F4F5;
+    --surface: #FFFFFF;
+    --surface-2: #F4F8F9;
+    --border: #DCE6E9;
+    --border-strong: #C4D3D9;
+    --text: #101A20;
+    --text-2: #55666D;
+    --text-3: #859097;
+    --primary: #16333F;
+    --primary-hover: #0E232C;
+    --primary-ink: #FFFFFF;
+    --primary-soft: #E4EBED;
+    --primary-soft-hover: #D6E1E4;
+    --primary-soft-ink: #16333F;
+    --primary-mid: #2C4E5C;
+    --primary-mid-hover: #223E4A;
+    --accent: #0B7A4B;
+    --accent-soft: #E6F4ED;
+    --danger: #B3392B;
+    --danger-soft: #FBEDEB;
+    --shadow-sm: 0 1px 2px rgba(16,26,32,0.05);
+    --shadow-md: 0 1px 2px rgba(16,26,32,0.04), 0 6px 16px rgba(16,26,32,0.07);
+    --r-card: 14px;
+    --r-input: 10px;
+    --r-btn: 12px;
+  }
+  /* Por ahora la app es de tema único (claro): fondo blanco/gris perlado
+     con tarjetas blancas flotando con sombra — sin alternar según el
+     modo oscuro del sistema, para evitar que el fondo se vuelva petróleo
+     otra vez en un dispositivo con modo oscuro activado. */
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2)); background-attachment: fixed; }
+  body {
+    color: var(--text);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 0 16px calc(40px + env(safe-area-inset-bottom));
+  }
+  .app { width: 100%; max-width: 448px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  svg.ico { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  svg.ico-sm { width: 16px; height: 16px; }
+
+  /* ---------- Barra superior ---------- */
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: calc(16px + env(safe-area-inset-top)) 0 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-mark {
+    width: 72px; height: 72px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .brand-mark img { width: 100%; height: 100%; display: block; }
+  .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+  .brand-sub { font-size: 13.5px; color: var(--text-3); line-height: 1.3; }
+  .topbar-spacer { flex: 1; }
+
+  /* ---------- Menú desplegable ---------- */
+  .menu-wrap { position: relative; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .icon-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .icon-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .menu {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 30;
+    min-width: 230px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow-md); padding: 6px; display: none;
+  }
+  .menu.abierto { display: block; }
+  .menu-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    background: none; border: none; text-align: left; cursor: pointer;
+    padding: 10px; border-radius: 8px; font: inherit; font-size: 16px; color: var(--text);
+  }
+  .menu-item:hover { background: var(--surface-2); }
+
+  /* ---------- Pestañas ---------- */
+  .tabs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 4px; border-radius: 12px; margin-bottom: 20px;
+  }
+  .tab {
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 15px; font-weight: 500; color: var(--text-2);
+    padding: 9px 8px; border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; gap: 7px;
+  }
+  .tab[aria-selected="true"] {
+    background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+  .tab:disabled { opacity: 0.45; cursor: default; }
+  .tab-badge {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: none;
+  }
+  .tab-badge.activo { display: block; }
+
+  /* ---------- Tarjetas ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-card); padding: 20px; margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    color: var(--text-2);
+  }
+  .card-title { font-size: 15px; font-weight: 600; letter-spacing: 0.01em; color: var(--text); }
+
+  /* ---------- Precio ---------- */
+  .precio-card { padding: 22px 20px 18px; }
+  .precio-label { font-size: 15px; color: var(--text-2); margin-bottom: 4px; }
+  .precio-valor {
+    font-size: 40px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .precio-detalle { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: grid; gap: 10px; }
+  .detalle-fila { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
+  .detalle-fila dt { color: var(--text-2); margin: 0; }
+  .detalle-fila dd { margin: 0; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .precio-nota {
+    margin: 16px 0 0; font-size: 14px; line-height: 1.45; color: var(--text-3);
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .precio-nota svg { margin-top: 1px; }
+
+  /* ---------- Ruta (origen → destino conectados) ---------- */
+  .ruta { display: grid; grid-template-columns: 20px 1fr; gap: 0 12px; align-items: center; }
+  .ruta-marca { display: flex; flex-direction: column; align-items: center; justify-self: center; }
+  .punto-origen { width: 10px; height: 10px; border-radius: 50%; border: 2.5px solid var(--text); }
+  .punto-destino { width: 10px; height: 10px; border-radius: 2px; background: var(--text); }
+  .ruta-linea { width: 2px; height: 100%; min-height: 22px; background: var(--border-strong); border-radius: 2px; }
+  .ruta-linea-celda { display: flex; justify-content: center; padding: 4px 0; }
+  .punto-parada { width: 8px; height: 8px; border-radius: 2px; background: var(--text-3); transform: rotate(45deg); }
+  #paradasContenedor { display: contents; }
+  .parada-fila {
+    display: grid; grid-template-columns: 20px 1fr; gap: 0 12px; align-items: center; margin: 10px 0;
+    grid-column: 1 / -1;
+  }
+  .parada-fila .ruta-marca { display: flex; align-items: center; justify-content: center; }
+  .parada-quitar-celda { display: flex; }
+  .parada-input-wrap { position: relative; }
+  .parada-input-wrap input { padding-right: 40px; }
+  .btn-quitar-parada {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; border: none; background: none; cursor: pointer;
+    color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 8px;
+  }
+  .btn-quitar-parada:hover { background: var(--surface-2); color: var(--text-2); }
+
+  .btn-agregar-parada {
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 15px; font-weight: 600; color: var(--primary); padding: 6px 2px;
+  }
+  .btn-agregar-parada:hover { text-decoration: underline; }
+
+  .check-espera {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    font-size: 15px; font-weight: 500; color: var(--text-2);
+  }
+  .check-espera input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+  /* ---------- Campos ---------- */
+  .campo { display: flex; flex-direction: column; gap: 6px; }
+  .campo-label { font-size: 14px; font-weight: 500; color: var(--text-2); }
+  .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  input[type="text"], input[type="date"], input[type="time"], input[type="number"] {
+    width: 100%; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-input);
+    padding: 12px 14px; font: inherit; font-size: 17px; font-weight: 400;
+    transition: border-color 0.12s ease;
+  }
+  input::placeholder { color: var(--text-3); }
+  input:hover { border-color: var(--border-strong); }
+  input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+  input[type="date"], input[type="time"], input[type="number"] { font-variant-numeric: tabular-nums; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator,
+    :root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+  }
+
+  /* ---------- Segmentado (ida y vuelta / solo ida) ---------- */
+  .segmentado {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 4px; border-radius: var(--r-input);
+  }
+  .seg-btn {
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 15px; font-weight: 500; color: var(--text-2);
+    padding: 9px 8px; border-radius: 8px;
+  }
+  .seg-btn.active {
+    background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600; box-shadow: var(--shadow-sm);
+  }
+
+  /* ---------- Botones ---------- */
+  .btn {
+    width: 100%; border: none; border-radius: var(--r-btn); cursor: pointer;
+    font: inherit; font-size: 17px; font-weight: 600; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background-color 0.12s ease, opacity 0.12s ease;
+  }
+  .btn-primario { background: var(--primary); color: var(--primary-ink); }
+  .btn-primario:hover:not(:disabled) { background: var(--primary-hover); }
+  .btn-secundario {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-secundario:hover:not(:disabled) { background: var(--surface-2); }
+  .btn-suave { background: var(--primary-soft); color: var(--primary-soft-ink); }
+  .btn-suave:hover:not(:disabled) { background: var(--primary-soft-hover); }
+  .btn-medio { background: var(--primary-mid); color: var(--primary-ink); box-shadow: var(--shadow-md); }
+  .btn-medio:hover:not(:disabled) { background: var(--primary-mid-hover); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  .nota { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--text-2); }
+  .nota:empty { display: none; }
+  .nota.error { color: var(--danger); }
+
+  /* ---------- Confianza ---------- */
+  .confianza { display: grid; gap: 10px; margin: 20px 2px 0; }
+  .confianza-item { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text-2); }
+  .confianza-item svg { color: var(--accent); }
+
+  /* ---------- Estado del pedido ---------- */
+  .estado-box {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px; border-radius: var(--r-card); margin-bottom: 12px;
+    font-size: 17px; font-weight: 600; border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .estado-box::before {
+    content: ""; width: 36px; height: 36px; border-radius: 50%; flex: none;
+    background: var(--surface-2) center / 20px 20px no-repeat;
+  }
+  .estado-box.pendiente::before {
+    background-color: var(--surface-2);
+    animation: latido 1.8s ease-in-out infinite;
+  }
+  .estado-box.confirmado { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+  .estado-box.confirmado::before { background-color: var(--accent-soft); }
+  .estado-box.rechazado { border-color: color-mix(in srgb, var(--danger) 35%, var(--border)); }
+  .estado-box.rechazado::before { background-color: var(--danger-soft); }
+  @keyframes latido {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--text-3) 45%, transparent); }
+    70% { box-shadow: 0 0 0 10px transparent; }
+  }
+  .estado-icono { position: absolute; }
+
+  #mapaConductor {
+    width: 100%; height: 240px; border-radius: var(--r-card);
+    border: 1px solid var(--border); margin-bottom: 12px; display: none;
+    background: var(--surface-2);
+  }
+
+  .pie { text-align: center; color: var(--text-3); font-size: 13.5px; margin-top: 24px; line-height: 1.5; }
+
+  .check-fila { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-2); line-height: 1.4; cursor: pointer; }
+  .check-fila input { margin-top: 2px; width: 18px; height: 18px; flex: none; accent-color: var(--primary); }
+  .link-inline { border: none; background: none; padding: 0; color: var(--primary); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- Set de iconos: un solo trazo, un solo estilo. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-auto" viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm18 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/><path d="M3 17v-4.5L5 7h14l2 5.5V17"/><path d="M6 12h12"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-ruta" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 8.5v5a4 4 0 0 0 4 4h5.5"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-persona" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.2-2.9 8.1-7 9.5-4.1-1.4-7-5.3-7-9.5V6l7-3Z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-etiqueta" viewBox="0 0 24 24"><path d="M20.5 13.5L13 21a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 2.6 12.6L3 4l8.6-.4a2 2 0 0 1 1.5.6l7.4 7.4a2 2 0 0 1 0 2.8Z"/><path d="M7.5 7.5h.01"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><img src="img/logo-rumbo.svg" width="72" height="72" alt="" aria-hidden="true"></span>
+      <span>
+        <span class="brand-name">Rumbo</span><br>
+        <span class="brand-sub">Traslados privados</span>
+      </span>
+    </div>
+    <span class="topbar-spacer"></span>
+    <div class="menu-wrap">
+      <button class="icon-btn" id="btnMenu" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menú">
+        <svg class="ico" aria-hidden="true"><use href="#i-mas"/></svg>
+      </button>
+      <div class="menu" id="menu" role="menu">
+        <button class="menu-item" type="button" role="menuitem" id="menuComoSeCalcula">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
+          ¿Cómo se calcula el precio?
+        </button>
+        <button class="menu-item" type="button" role="menuitem" id="menuCobertura">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+          Cobertura y condiciones
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <p class="nota" id="conductorBanner" style="display:none;margin:0 2px 14px;"></p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tabCotizar" type="button" role="tab" aria-selected="true" aria-controls="vistaCotizar">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
+      Nuevo viaje
+    </button>
+    <button class="tab" id="tabSeguimiento" type="button" role="tab" aria-selected="false" aria-controls="vistaEstado" disabled>
+      <span class="tab-badge" id="badgeSeguimiento"></span>
+      Seguimiento
+    </button>
+  </div>
+
+  <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
+
+    <section class="card">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
+        <span class="card-title">Cuándo</span>
+      </div>
+      <div class="fila" style="margin-bottom:16px;">
+        <div class="campo">
+          <label class="campo-label" for="fechaSalida">Día</label>
+          <input type="date" id="fechaSalida">
+        </div>
+        <div class="campo">
+          <label class="campo-label" for="horaSalida">Hora</label>
+          <input type="time" id="horaSalida">
+        </div>
+      </div>
+
+      <div class="campo">
+        <span class="campo-label">Tipo de viaje</span>
+        <div class="segmentado" role="group" aria-label="Tipo de viaje">
+          <button class="seg-btn" id="tipoIdaVuelta" type="button" data-vuelta="1">Ida y vuelta</button>
+          <button class="seg-btn active" id="tipoSoloIda" type="button" data-vuelta="0">Solo ida</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
+        <span class="card-title">Tu ruta</span>
+      </div>
+      <div class="ruta">
+        <span class="ruta-marca"><span class="punto-origen"></span></span>
+        <div>
+          <label class="sr-only" for="origen">Dirección de origen</label>
+          <input type="text" id="origen" placeholder="¿Desde dónde sales?" autocomplete="off">
+        </div>
+        <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
+        <span></span>
+        <div id="paradasContenedor"></div>
+        <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
+        <span></span>
+        <span class="ruta-marca"><span class="punto-destino"></span></span>
+        <div>
+          <label class="sr-only" for="destino">Dirección de destino</label>
+          <input type="text" id="destino" placeholder="¿A dónde vas?" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
+        <label class="check-espera">
+          <input type="checkbox" id="chkEspera">
+          <span>¿Debe esperar?</span>
+        </label>
+        <div class="fila" id="camposEsperaHM" style="display:none; margin-top:10px;">
+          <div class="campo">
+            <label class="campo-label" for="esperaHoras">Horas</label>
+            <input type="number" id="esperaHoras" inputmode="numeric" min="0" step="1" value="0">
+          </div>
+          <div class="campo">
+            <label class="campo-label" for="esperaMinutos">Minutos</label>
+            <input type="number" id="esperaMinutos" inputmode="numeric" min="0" max="59" step="5" value="0">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
+        Agregar parada
+      </button>
+    </section>
+
+    <button class="btn btn-medio" id="buscarAuto" type="button" style="margin-bottom:12px;">
+      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-buscar"/></svg>
+      Calcular precio
+    </button>
+    <p class="nota" id="buscarAutoTexto" style="margin:0 2px 12px;"></p>
+
+    <section class="card precio-card" id="tarjetaPrecio" aria-live="polite" style="display:none;">
+      <p class="precio-label">Precio estimado</p>
+      <p class="precio-valor" id="total">—</p>
+      <dl class="precio-detalle">
+        <div class="detalle-fila"><dt id="lblKm">Distancia</dt><dd id="outKm">—</dd></div>
+        <div class="detalle-fila"><dt id="lblMin">Tiempo</dt><dd id="outMin">—</dd></div>
+        <div class="detalle-fila"><dt id="lblPeaje">Peajes</dt><dd id="outPeaje">—</dd></div>
+        <div class="detalle-fila"><dt>Tarifa aplicada</dt><dd id="outTipoTarifa">—</dd></div>
+      </dl>
+      <p class="precio-nota">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
+        <span>El conductor confirma el valor final antes de salir.</span>
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
+        <span class="card-title">Tus datos de contacto</span>
+      </div>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="nombreCliente">Nombre</label>
+        <input type="text" id="nombreCliente" placeholder="Tu nombre" autocomplete="name">
+      </div>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="telefonoCliente">WhatsApp</label>
+        <input type="text" id="telefonoCliente" placeholder="56912345678" inputmode="numeric" autocomplete="tel">
+      </div>
+      <div class="campo">
+        <label class="campo-label" for="correoCliente">Correo (opcional)</label>
+        <input type="email" id="correoCliente" placeholder="tucorreo@ejemplo.cl" autocomplete="email">
+      </div>
+    </section>
+
+    <section class="card">
+      <label class="check-fila">
+        <input type="checkbox" id="chkPolitica">
+        <span>Entiendo que Rumbo usa mis datos solo para coordinar y confirmar este viaje. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
+      </label>
+      <label class="check-fila" style="margin-top:10px;">
+        <input type="checkbox" id="chkGuardarDatos">
+        <span>Quiero que este conductor guarde mis datos para pedir mi próximo viaje más rápido</span>
+      </label>
+    </section>
+
+    <button class="btn btn-primario" id="btnPedir" type="button" disabled>
+      Solicitar viaje
+      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-flecha"/></svg>
+    </button>
+    <p class="nota" id="pedirTexto" style="margin:10px 2px 0;"></p>
+
+    <div class="confianza">
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
+        Precio cerrado antes de salir, sin cargos sorpresa
+      </div>
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
+        Conductor identificado y seguimiento en vivo del trayecto
+      </div>
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+        Cobertura dentro y fuera de Santiago
+      </div>
+    </div>
+  </div>
+
+  <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
+    <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
+    <p class="nota" id="estadoDetalle" style="margin:0 2px 16px;"></p>
+    <div id="mapaConductor"></div>
+    <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
+  </div>
+
+  <p class="pie">Los tiempos y distancias se calculan con datos de tráfico reales al momento de cotizar.</p>
+</div>
+
+<script>
+(function () {
+  // Poner acá la URL /exec de tu Apps Script (misma que en admin.html).
+  var API_URL = "https://script.google.com/macros/s/AKfycbwMr2YGxsGkz2RarJ1kCbAgmQMp10VHXvKjKwXJjEE01Py7tggqN3DK4XibnXpAjEMb/exec";
+  var GOOGLE_MAPS_JS_KEY = "AIzaSyC7NX_SyIAL9OWUfq6gPpI9f6cYupxrClU";
+
+  var tarifas = null;
+  var idaYVuelta = false;
+  var rutaActual = null; // { km, minutos, peaje }
+  var pedidoActualId = null;
+  var pollTimer = null;
+  var mapa = null, marker = null;
+  var googleMapsListo = false;
+  var mostrarMapaPendiente = false;
+
+  /* ---------------------------------------------------------------
+     Navegación entre pantallas (pestañas). Solo cambia qué se ve;
+     no toca nada del cálculo ni del pedido.
+     --------------------------------------------------------------- */
+  function mostrarPestana(cual) {
+    var esCotizar = cual === "cotizar";
+    document.getElementById("vistaCotizar").style.display = esCotizar ? "block" : "none";
+    document.getElementById("vistaEstado").style.display = esCotizar ? "none" : "block";
+    document.getElementById("tabCotizar").setAttribute("aria-selected", esCotizar ? "true" : "false");
+    document.getElementById("tabSeguimiento").setAttribute("aria-selected", esCotizar ? "false" : "true");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  document.getElementById("tabCotizar").addEventListener("click", function () { mostrarPestana("cotizar"); });
+  document.getElementById("tabSeguimiento").addEventListener("click", function () { mostrarPestana("seguimiento"); });
+
+  /* ---------------------------------------------------------------
+     Menú desplegable de la barra superior.
+     --------------------------------------------------------------- */
+  var menu = document.getElementById("menu");
+  var btnMenu = document.getElementById("btnMenu");
+  function cerrarMenu() {
+    menu.classList.remove("abierto");
+    btnMenu.setAttribute("aria-expanded", "false");
+  }
+  btnMenu.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    var abierto = menu.classList.toggle("abierto");
+    btnMenu.setAttribute("aria-expanded", abierto ? "true" : "false");
+  });
+  document.addEventListener("click", cerrarMenu);
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") cerrarMenu(); });
+  document.getElementById("menuComoSeCalcula").addEventListener("click", function () {
+    cerrarMenu();
+    alert("El precio considera:\n\n"
+      + "• La distancia real de la ruta.\n"
+      + "• El tiempo del trayecto, más el tiempo de ir a buscarte y las horas de espera si pides ida y vuelta.\n"
+      + "• Los peajes de la ruta estimada.\n\n"
+      + "Fuera de Santiago se considera también el regreso del vehículo, aunque sea sin pasajero.");
+  });
+  document.getElementById("menuCobertura").addEventListener("click", function () {
+    cerrarMenu();
+    alert("Se realizan traslados dentro de Santiago y a regiones.\n\n"
+      + "En viajes fuera de Santiago siempre se considera el trayecto de regreso del vehículo. "
+      + "La tarifa por hora cambia según el día y el horario del viaje.");
+  });
+
+  // Se carga una sola vez, al abrir la página, con la librería "places"
+  // para el autocompletado de direcciones (evita errores de tipeo y
+  // asegura que la dirección venga con comuna, como trae Google Maps).
+  function cargarGoogleMaps() {
+    var script = document.createElement("script");
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=places&callback=alGoogleMapsListo";
+    document.head.appendChild(script);
+  }
+
+  window.alGoogleMapsListo = function () {
+    googleMapsListo = true;
+    configurarAutocomplete();
+    if (mostrarMapaPendiente) crearMapaConductor();
+  };
+
+  function configurarAutocompleteInput(input) {
+    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address"] };
+    var auto = new google.maps.places.Autocomplete(input, opciones);
+    auto.addListener("place_changed", function () {
+      var lugar = auto.getPlace();
+      if (lugar && lugar.formatted_address) input.value = lugar.formatted_address;
+    });
+  }
+
+  function configurarAutocomplete() {
+    ["origen", "destino"].forEach(function (id) {
+      configurarAutocompleteInput(document.getElementById(id));
+    });
+    document.querySelectorAll("#paradasContenedor input").forEach(configurarAutocompleteInput);
+  }
+
+  // Si el número no es válido se muestra "—", nunca "$0": un precio roto
+  // disfrazado de cero es peor que un precio ausente.
+  function fmt(n) {
+    if (typeof n !== "number" || !isFinite(n)) return "—";
+    return "$" + Math.round(n).toLocaleString("es-CL");
+  }
+
+  function api(params) {
+    var url = API_URL + "?" + Object.keys(params).map(function (k) {
+      return k + "=" + encodeURIComponent(params[k]);
+    }).join("&");
+    return fetch(url).then(function (r) { return r.json(); });
+  }
+
+  function apiPost(body) {
+    return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+  }
+
+  // Versión del texto que se le muestra al pasajero al marcar el
+  // checkbox — si el texto cambia, subir este número: así, ante un
+  // reclamo, se puede probar QUÉ decía el texto que aceptó (Ley 21.719).
+  var VERSION_POLITICA = "2026-09-1";
+
+  // El QR/link de cada conductor trae ?c=<conductor_id>. Se guarda en
+  // localStorage para que, si el pasajero cierra y vuelve a abrir sin el
+  // link (ej. la app instalada), siga atado al mismo conductor — la app
+  // es privada, cada uno arma su propia clientela, no hay "conductor
+  // disponible más cercano".
+  var CONDUCTOR_KEY = "rumbo_conductor_id";
+  var PERFIL_KEY = "rumbo_mi_perfil";
+
+  function obtenerConductorId() {
+    var params = new URLSearchParams(window.location.search);
+    var deLaUrl = params.get("c");
+    if (deLaUrl) { localStorage.setItem(CONDUCTOR_KEY, deLaUrl); return deLaUrl; }
+    return localStorage.getItem(CONDUCTOR_KEY);
+  }
+
+  function mostrarBannerConductor() {
+    var conductorId = obtenerConductorId();
+    var banner = document.getElementById("conductorBanner");
+    if (!conductorId) return;
+    api({ accion: "conductor_publico", conductor_id: conductorId }).then(function (res) {
+      if (!res.ok) return; // link viejo o conductor dado de baja: sigue funcionando sin mostrar nombre
+      banner.textContent = "Vas a viajar con " + res.conductor.nombre;
+      banner.style.display = "block";
+    });
+  }
+
+  function cargarPerfilGuardado() {
+    try {
+      var perfil = JSON.parse(localStorage.getItem(PERFIL_KEY) || "null");
+      if (!perfil) return;
+      document.getElementById("nombreCliente").value = perfil.nombre || "";
+      document.getElementById("telefonoCliente").value = perfil.telefono || "";
+      document.getElementById("correoCliente").value = perfil.email || "";
+      document.getElementById("chkPolitica").checked = true;
+    } catch (e) {}
+  }
+
+  document.getElementById("verPolitica").addEventListener("click", function () {
+    alert(
+      "Política de datos de Rumbo\n\n" +
+      "Quién trata tus datos: el conductor con el que viajas, a través de esta app.\n" +
+      "Qué se guarda: nombre, teléfono, correo (si lo escribes), origen, destino, fecha/hora y precio del viaje.\n" +
+      "Para qué: coordinar y confirmar este viaje, y contactarte por WhatsApp si hace falta.\n" +
+      "Con quién se comparte: con nadie fuera del conductor, salvo Google (aloja la planilla de pedidos).\n" +
+      "Cuánto se guarda: mientras tengas viajes activos con este conductor; puedes pedir que se borre.\n" +
+      "Tus derechos: acceder, corregir o borrar tus datos escribiéndole al conductor por WhatsApp.\n\n" +
+      "Versión " + VERSION_POLITICA
+    );
+  });
+
+  function cargarTarifas() {
+    return api({ accion: "tarifas" }).then(function (res) {
+      if (res.ok) tarifas = res.tarifas;
+    });
+  }
+
+  // Feriados fijos de Chile (fecha fija; no incluye feriados móviles como Viernes/Sábado Santo)
+  var FERIADOS_FIJOS = [
+    [1, 1], [5, 1], [5, 21], [6, 20], [6, 29], [7, 16], [8, 15],
+    [9, 18], [9, 19], [10, 12], [10, 31], [11, 1], [12, 8], [12, 25]
+  ];
+
+  // Un rango normal (07:00-09:00) no cruza medianoche. Uno que sí cruza
+  // (17:00-06:30, fin < inicio en texto) hay que tratarlo al revés:
+  // adentro si es después de inicio O antes de fin.
+  function horaEnRango(horaStr, inicio, fin) {
+    if (!inicio || !fin) return false;
+    if (inicio <= fin) return horaStr >= inicio && horaStr <= fin;
+    return horaStr >= inicio || horaStr <= fin;
+  }
+
+  function esFinDeSemanaOFeriado(fecha) {
+    var m = fecha.getMonth() + 1, d = fecha.getDate(), dia = fecha.getDay();
+    var dias = (tarifas && tarifas.diasPuntaTodoElDia) || [0, 5, 6];
+    var esDiaElegido = dias.indexOf(dia) !== -1;
+    var esFeriado = FERIADOS_FIJOS.some(function (f) { return f[0] === m && f[1] === d; });
+    return esDiaElegido || esFeriado;
+  }
+
+  // Cada fecha se evalúa con SU PROPIO día de la semana, nunca hereda del
+  // día anterior — así un lunes de madrugada usa la regla de lunes.
+  // Viernes/sábado/domingo/feriado: punta todo el día salvo un rango
+  // valle. Lunes a jueves: punta solo mañana o noche.
+  function calcularPunta(fecha, horaStr) {
+    if (!tarifas) return false;
+    if (esFinDeSemanaOFeriado(fecha)) {
+      if (!horaStr) return true;
+      var enValle = horaEnRango(horaStr, tarifas.finDeSemanaValleInicio, tarifas.finDeSemanaValleFin);
+      return !enValle;
+    }
+    if (!horaStr) return false;
+    return horaEnRango(horaStr, tarifas.horaPuntaMananaInicio, tarifas.horaPuntaMananaFin)
+      || horaEnRango(horaStr, tarifas.horaPuntaTardeInicio, tarifas.horaPuntaTardeFin);
+  }
+
+  function fechaLocal(str) {
+    var partes = str.split("-");
+    return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+  }
+
+  function calcularTarifaHoraria() {
+    var fechaStr = document.getElementById("fechaSalida").value;
+    var horaStr = document.getElementById("horaSalida").value;
+    var fecha = fechaStr ? fechaLocal(fechaStr) : new Date();
+    var punta = calcularPunta(fecha, horaStr);
+    return { punta: punta, valorHora: punta ? tarifas.valorHoraPunta : tarifas.valorHoraValle };
+  }
+
+  function calcularTotal() {
+    if (!rutaActual || !tarifas) return;
+    // Lo decide el servidor (por comuna), no un umbral de km acá — así el
+    // pasajero ve la misma clasificación que después va a cobrar el
+    // servidor al confirmar el pedido.
+    var fueraDeSantiago = rutaActual.fueraDeSantiago;
+    // Doble si el pasajero pidió ida y vuelta, o si el auto siempre tiene
+    // que hacer el otro tramo vacío (fuera de Santiago, o un viaje al
+    // aeropuerto aunque quede dentro de Gran Santiago por comuna).
+    var FACTOR = (rutaActual.cobraRegresoSiempre || idaYVuelta) ? 2 : 1;
+
+    var kmTotal = rutaActual.km * FACTOR;
+    var consumo = fueraDeSantiago ? tarifas.consumoRuta : tarifas.consumoCiudad;
+    var litros = consumo > 0 ? kmTotal / consumo : 0;
+    var fuel = litros * tarifas.precioComb;
+
+    // Si el backend todavía no tiene el campo (versión vieja publicada),
+    // se usa el valor por defecto en vez de arrastrar un NaN que termine
+    // mostrándose como "$0" al pasajero.
+    var busquedaMin = typeof tarifas.busquedaMin === "number" ? tarifas.busquedaMin : 30;
+    var minutosViaje = rutaActual.minutos * FACTOR + busquedaMin;
+    var espera = idaYVuelta ? obtenerHorasEspera() : 0;
+    var horas = (minutosViaje / 60) + espera;
+    var tarifaH = calcularTarifaHoraria();
+    var time = horas * tarifaH.valorHora;
+
+    var peaje = rutaActual.peaje * FACTOR;
+    var total = fuel + time + peaje;
+
+    document.getElementById("outTipoTarifa").textContent = (fueraDeSantiago ? "Fuera de Santiago" : "En ciudad") + " · " + (tarifaH.punta ? "Punta" : "Valle");
+    document.getElementById("total").textContent = fmt(total);
+
+    // Un solo ítem por dato: distancia y tiempo muestran el valor POR
+    // TRAMO (ida y vuelta son simétricas, mismo km/min en cada sentido),
+    // con la aclaración al lado de si es solo ida o ida y vuelta. Los
+    // peajes, en cambio, muestran el TOTAL sumado (ida+vuelta), no el
+    // valor por tramo — es lo que realmente se cobra.
+    var sufijo = idaYVuelta ? " (ida y vuelta, por tramo)" : "";
+    document.getElementById("lblKm").textContent = "Distancia" + sufijo;
+    document.getElementById("lblMin").textContent = "Tiempo" + sufijo;
+    document.getElementById("outKm").textContent = rutaActual.km.toFixed(1) + " km";
+    document.getElementById("outMin").textContent = rutaActual.minutos + " min";
+
+    document.getElementById("lblPeaje").textContent = "Peajes" + (idaYVuelta ? " (ida y vuelta, total)" : "");
+    document.getElementById("outPeaje").textContent = peaje ? fmt(peaje) : "—";
+
+    return { fueraDeSantiago: fueraDeSantiago, km: rutaActual.km, minutos: rutaActual.minutos,
+      litros: litros, fuel: fuel, horas: horas, valorHora: tarifaH.valorHora, time: time,
+      peaje: peaje, total: total };
+  }
+
+  function obtenerHorasEspera() {
+    if (!document.getElementById("chkEspera").checked) return 0;
+    var h = parseFloat(document.getElementById("esperaHoras").value) || 0;
+    var m = parseFloat(document.getElementById("esperaMinutos").value) || 0;
+    return h + (m / 60);
+  }
+  document.getElementById("chkEspera").addEventListener("change", function (ev) {
+    document.getElementById("camposEsperaHM").style.display = ev.target.checked ? "grid" : "none";
+    calcularTotal();
+  });
+  document.getElementById("esperaHoras").addEventListener("input", calcularTotal);
+  document.getElementById("esperaMinutos").addEventListener("input", calcularTotal);
+
+  function setTipoRegreso(vuelta) {
+    idaYVuelta = vuelta;
+    document.getElementById("tipoIdaVuelta").classList.toggle("active", vuelta);
+    document.getElementById("tipoSoloIda").classList.toggle("active", !vuelta);
+    document.getElementById("filaEspera").style.display = vuelta ? "grid" : "none";
+    if (!vuelta) {
+      // "Solo ida" no tiene espera antes de un regreso que no existe:
+      // se limpia el casillero para que no quede una marca vieja
+      // esperando a que se vuelva a activar "Ida y vuelta".
+      document.getElementById("chkEspera").checked = false;
+      document.getElementById("camposEsperaHM").style.display = "none";
+      document.getElementById("esperaHoras").value = "0";
+      document.getElementById("esperaMinutos").value = "0";
+    }
+    actualizarBotonAgregarParada();
+    calcularTotal();
+  }
+  document.getElementById("tipoIdaVuelta").addEventListener("click", function () { setTipoRegreso(true); });
+  document.getElementById("tipoSoloIda").addEventListener("click", function () { setTipoRegreso(false); });
+
+  /* ---------------------------------------------------------------
+     Paradas intermedias (opcional, hasta 2): un "+" agrega un campo
+     de dirección entre el origen y el destino.
+     --------------------------------------------------------------- */
+  var MAX_PARADAS = 4;
+  var contadorParadas = 0;
+
+  function obtenerParadas() {
+    var valores = [];
+    document.querySelectorAll("#paradasContenedor input").forEach(function (input) {
+      var v = input.value.trim();
+      if (v) valores.push(v);
+    });
+    return valores;
+  }
+
+  function agregarFilaParada() {
+    var contenedor = document.getElementById("paradasContenedor");
+    if (contenedor.querySelectorAll(".parada-fila").length >= MAX_PARADAS) return;
+    contadorParadas++;
+    var id = "parada" + contadorParadas;
+    var fila = document.createElement("div");
+    fila.className = "parada-fila";
+    fila.innerHTML =
+      '<span class="ruta-marca"><span class="punto-parada"></span></span>' +
+      '<div class="parada-input-wrap">' +
+        '<label class="sr-only" for="' + id + '">Parada intermedia</label>' +
+        '<input type="text" id="' + id + '" placeholder="Parada intermedia" autocomplete="off">' +
+        '<button type="button" class="btn-quitar-parada" aria-label="Quitar parada">' +
+          '<svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>' +
+        '</button>' +
+      '</div>';
+    contenedor.appendChild(fila);
+    fila.querySelector(".btn-quitar-parada").addEventListener("click", function () {
+      fila.remove();
+      actualizarBotonAgregarParada();
+    });
+    if (googleMapsListo) configurarAutocompleteInput(fila.querySelector("input"));
+    actualizarBotonAgregarParada();
+  }
+
+  function actualizarBotonAgregarParada() {
+    var cantidad = document.querySelectorAll("#paradasContenedor .parada-fila").length;
+    var regresoVisible = idaYVuelta ? 1 : 0;
+    document.getElementById("btnAgregarParada").style.display = (cantidad + regresoVisible) >= MAX_PARADAS ? "none" : "flex";
+  }
+
+  document.getElementById("btnAgregarParada").addEventListener("click", agregarFilaParada);
+
+  document.getElementById("buscarAuto").addEventListener("click", function () {
+    var origen = document.getElementById("origen").value.trim();
+    var destino = document.getElementById("destino").value.trim();
+    var textoEl = document.getElementById("buscarAutoTexto");
+    if (!origen || !destino) {
+      textoEl.textContent = "Completa el origen y el destino para calcular el precio.";
+      textoEl.className = "nota error";
+      (origen ? document.getElementById("destino") : document.getElementById("origen")).focus();
+      return;
+    }
+    var fecha = document.getElementById("fechaSalida").value;
+    var hora = document.getElementById("horaSalida").value;
+    var departureTime = "";
+    if (fecha && hora) {
+      var local = new Date(fecha + "T" + hora + ":00");
+      if (!isNaN(local.getTime()) && local.getTime() > Date.now()) departureTime = local.toISOString();
+    }
+
+    var btn = document.getElementById("buscarAuto");
+    btn.disabled = true;
+    var htmlOriginal = btn.innerHTML;
+    btn.textContent = "Calculando...";
+    textoEl.textContent = "";
+    textoEl.className = "nota";
+
+    var paradas = obtenerParadas();
+
+    api({
+      accion: "calcular_ruta", origen: origen, destino: destino, departureTime: departureTime,
+      hora: hora, paradas: paradas.join("|")
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || "sin datos");
+      rutaActual = {
+        km: res.km, minutos: res.minutos, peaje: res.peaje, fueraDeSantiago: res.fueraDeSantiago,
+        cobraRegresoSiempre: res.cobraRegresoSiempre
+      };
+      textoEl.textContent = "";
+      textoEl.className = "nota";
+      calcularTotal();
+      var tarjeta = document.getElementById("tarjetaPrecio");
+      tarjeta.style.display = "block";
+      tarjeta.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("btnPedir").disabled = false;
+    }).catch(function (err) {
+      textoEl.textContent = "No se pudo calcular la ruta (" + err.message + "). Revisa las direcciones.";
+      textoEl.className = "nota error";
+      // No dejar a la vista un precio de un cálculo anterior que ya no aplica.
+      document.getElementById("tarjetaPrecio").style.display = "none";
+      document.getElementById("btnPedir").disabled = true;
+    }).finally(function () {
+      btn.disabled = false;
+      btn.innerHTML = htmlOriginal;
+    });
+  });
+
+  document.getElementById("btnPedir").addEventListener("click", function () {
+    var nombre = document.getElementById("nombreCliente").value.trim();
+    var telefono = document.getElementById("telefonoCliente").value.trim();
+    var correo = document.getElementById("correoCliente").value.trim();
+    var pedirTexto = document.getElementById("pedirTexto");
+    if (!nombre || !telefono) {
+      pedirTexto.textContent = "Completa tu nombre y WhatsApp para solicitar el viaje.";
+      pedirTexto.className = "nota error";
+      return;
+    }
+    if (!document.getElementById("chkPolitica").checked) {
+      pedirTexto.textContent = "Marca que entiendes el uso de tus datos para poder continuar.";
+      pedirTexto.className = "nota error";
+      return;
+    }
+    if (!rutaActual) return;
+
+    var guardarDatos = document.getElementById("chkGuardarDatos").checked;
+    localStorage.setItem(PERFIL_KEY, JSON.stringify({ nombre: nombre, telefono: telefono, email: correo }));
+
+    var btn = document.getElementById("btnPedir");
+    btn.disabled = true;
+    pedirTexto.textContent = "Enviando solicitud...";
+    pedirTexto.className = "nota";
+
+    // El total que se ve acá arriba es una vista previa. El servidor
+    // vuelve a calcular todo desde cero con la ruta y las tarifas
+    // guardadas — el número que manda de vuelta es el que realmente
+    // queda registrado, no este.
+    apiPost({
+      accion: "crear_pedido",
+      nombre: nombre, telefono: telefono, email: correo,
+      conductor_id: obtenerConductorId() || "",
+      guardar_mis_datos: guardarDatos ? "SI" : "NO",
+      version_politica: VERSION_POLITICA,
+      origen: document.getElementById("origen").value.trim(),
+      destino: document.getElementById("destino").value.trim(),
+      paradas: obtenerParadas().join("|"),
+      fecha: document.getElementById("fechaSalida").value,
+      hora: document.getElementById("horaSalida").value,
+      ida_vuelta: idaYVuelta ? "SI" : "NO",
+      horas_espera: idaYVuelta ? obtenerHorasEspera() : 0
+    }).then(function (res) {
+      if (!res.ok) throw new Error(res.error || "error desconocido");
+      pedidoActualId = res.pedido_id;
+      mostrarVistaEstado(res.total);
+      iniciarPolling();
+    }).catch(function (err) {
+      pedirTexto.textContent = "No se pudo enviar la solicitud (" + err.message + "). Intenta de nuevo.";
+      pedirTexto.className = "nota error";
+      btn.disabled = false;
+    });
+  });
+
+  function mostrarVistaEstado(totalConfirmado) {
+    document.getElementById("tabSeguimiento").disabled = false;
+    document.getElementById("badgeSeguimiento").classList.add("activo");
+    mostrarPestana("seguimiento");
+    document.getElementById("estadoBox").className = "estado-box pendiente";
+    document.getElementById("estadoBox").textContent = "Esperando confirmación del conductor";
+    document.getElementById("estadoDetalle").textContent = "Total " + fmt(totalConfirmado) + " · Código " + pedidoActualId;
+  }
+
+  function iniciarPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(function () {
+      api({ accion: "estado_pedido", pedido_id: pedidoActualId }).then(function (res) {
+        if (!res.ok) return;
+        if (res.estado === "CONFIRMADO") {
+          document.getElementById("estadoBox").className = "estado-box confirmado";
+          document.getElementById("estadoBox").textContent = "Viaje confirmado";
+          mostrarMapaConductor();
+          clearInterval(pollTimer);
+        } else if (res.estado === "SIN_CONDUCTOR") {
+          // No se le muestra cada rechazo individual mientras se deriva
+          // entre conductores — solo el resultado final, para no generar
+          // ansiedad con algo que de todos modos no puede controlar.
+          document.getElementById("estadoBox").className = "estado-box rechazado";
+          document.getElementById("estadoBox").textContent = "Ningún conductor pudo tomar este viaje por ahora";
+          clearInterval(pollTimer);
+        }
+      });
+    }, 8000);
+  }
+
+  var mapaTimer = null;
+
+  function mostrarMapaConductor() {
+    document.getElementById("mapaConductor").style.display = "block";
+    if (!googleMapsListo) { mostrarMapaPendiente = true; return; }
+    if (mapa) { actualizarUbicacionEnMapa(); return; }
+    crearMapaConductor();
+  }
+
+  function crearMapaConductor() {
+    mapa = new google.maps.Map(document.getElementById("mapaConductor"), {
+      zoom: 13, center: { lat: -33.45, lng: -70.66 },
+      disableDefaultUI: true, zoomControl: true
+    });
+    marker = new google.maps.Marker({ map: mapa, title: "Conductor" });
+    actualizarUbicacionEnMapa();
+    mapaTimer = setInterval(actualizarUbicacionEnMapa, 10000);
+  }
+
+  function actualizarUbicacionEnMapa() {
+    if (!mapa) return;
+    api({ accion: "ubicacion_pedido", pedido_id: pedidoActualId }).then(function (res) {
+      if (!res.ok || !res.ubicacion) return;
+      var pos = { lat: res.ubicacion.lat, lng: res.ubicacion.lng };
+      marker.setPosition(pos);
+      mapa.setCenter(pos);
+    });
+  }
+
+  document.getElementById("btnNuevoPedido").addEventListener("click", function () {
+    if (pollTimer) clearInterval(pollTimer);
+    if (mapaTimer) clearInterval(mapaTimer);
+    pedidoActualId = null;
+    rutaActual = null;
+    document.getElementById("btnPedir").disabled = true;
+    document.getElementById("pedirTexto").textContent = "";
+    document.getElementById("tarjetaPrecio").style.display = "none";
+    document.getElementById("buscarAutoTexto").textContent = "";
+    document.getElementById("mapaConductor").style.display = "none";
+    document.getElementById("badgeSeguimiento").classList.remove("activo");
+    document.getElementById("tabSeguimiento").disabled = true;
+    mostrarPestana("cotizar");
+  });
+
+  actualizarBotonAgregarParada();
+  cargarTarifas();
+  cargarGoogleMaps();
+  mostrarBannerConductor();
+  cargarPerfilGuardado();
+})();
+</script>
+</body>
+</html>
