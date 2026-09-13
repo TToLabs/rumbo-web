@@ -107,6 +107,17 @@
   // link no cambia entre versiones, solo el archivo detrás.
   var BASE_RELEASE = "https://github.com/TToLabs/rumbo-web/releases/download/latest/";
   document.getElementById("linkApkPasajero").href = BASE_RELEASE + "rumbo-pasajero.apk";
+
+  // Si el conductor comparte esta landing con su codigo (?c=<id>), hay que
+  // arrastrarlo hasta la web del pasajero: si se pierde acá, el pasajero
+  // entra sin conductor asignado y el pedido puede caer en otro de la red,
+  // que es justo lo contrario de "cada conductor conserva su clientela".
+  var params = new URLSearchParams(window.location.search);
+  var conductor = params.get("c");
+  if (conductor) {
+    var linkWeb = document.querySelector('a[href="www/index.html"]');
+    if (linkWeb) linkWeb.href = "www/index.html?c=" + encodeURIComponent(conductor);
+  }
 </script>
 </body>
 </html>
