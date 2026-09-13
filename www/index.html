@@ -302,6 +302,35 @@
 
   .pie { text-align: center; color: var(--text-3); font-size: 13.5px; margin-top: 24px; line-height: 1.5; }
 
+  .conductor-banner { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+  .conductor-banner img {
+    width: 56px; height: 56px; border-radius: 10px; object-fit: cover;
+    background: var(--surface-2); border: 1px solid var(--border); flex: none;
+  }
+  .conductor-banner .nombre { font-weight: 700; font-size: 16px; }
+  .conductor-banner .vehiculo { color: var(--text-2); font-size: 14px; margin-top: 2px; }
+
+  /* ---------- Chat ---------- */
+  .chat-mensajes {
+    max-height: 260px; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 8px; margin-bottom: 12px; padding-right: 2px;
+  }
+  .chat-vacio { color: var(--text-3); font-size: 14px; text-align: center; padding: 18px 0; }
+  .chat-burbuja {
+    max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 15px; line-height: 1.4;
+    word-break: break-word;
+  }
+  .chat-burbuja.mia { align-self: flex-end; background: var(--primary); color: var(--primary-ink); border-bottom-right-radius: 4px; }
+  .chat-burbuja.suya { align-self: flex-start; background: var(--surface-2); color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-hora { display: block; font-size: 11.5px; opacity: 0.7; margin-top: 3px; }
+  .chat-entrada { display: flex; gap: 8px; }
+  .chat-entrada input {
+    flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: var(--r-input);
+    padding: 12px 14px; font: inherit; font-size: 15px; background: var(--surface); color: var(--text);
+  }
+  .chat-entrada input:focus { outline: none; border-color: var(--primary); }
+  .chat-entrada .btn { padding: 12px 18px; font-size: 15px; }
+
   .check-fila { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-2); line-height: 1.4; cursor: pointer; }
   .check-fila input { margin-top: 2px; width: 18px; height: 18px; flex: none; accent-color: var(--primary); }
   .link-inline { border: none; background: none; padding: 0; color: var(--primary); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
@@ -354,7 +383,7 @@
     </div>
   </header>
 
-  <p class="nota" id="conductorBanner" style="display:none;margin:0 2px 14px;"></p>
+  <div class="card conductor-banner" id="conductorBanner" style="display:none;"></div>
 
   <div class="tabs" role="tablist">
     <button class="tab" id="tabCotizar" type="button" role="tab" aria-selected="true" aria-controls="vistaCotizar">
@@ -461,34 +490,39 @@
       </p>
     </section>
 
-    <section class="card">
+    <!-- Cuenta del pasajero: se pide UNA sola vez. Después queda la
+         sesión guardada y solo se muestra la línea compacta de "sos vos". -->
+    <section class="card" id="cardCuenta">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
-        <span class="card-title">Tus datos de contacto</span>
+        <span class="card-title">Crea tu cuenta</span>
       </div>
+      <p class="nota" style="margin:0 0 14px;">Una sola vez. Así tu conductor te reconoce en cada viaje.</p>
       <div class="campo" style="margin-bottom:12px;">
-        <label class="campo-label" for="nombreCliente">Nombre</label>
+        <label class="campo-label" for="nombreCliente">Nombre y apellido</label>
         <input type="text" id="nombreCliente" placeholder="Tu nombre" autocomplete="name">
       </div>
       <div class="campo" style="margin-bottom:12px;">
         <label class="campo-label" for="telefonoCliente">WhatsApp</label>
         <input type="text" id="telefonoCliente" placeholder="56912345678" inputmode="numeric" autocomplete="tel">
       </div>
-      <div class="campo">
-        <label class="campo-label" for="correoCliente">Correo (opcional)</label>
+      <div class="campo" style="margin-bottom:16px;">
+        <label class="campo-label" for="correoCliente">Correo</label>
         <input type="email" id="correoCliente" placeholder="tucorreo@ejemplo.cl" autocomplete="email">
       </div>
+      <label class="check-fila" style="margin-bottom:16px;">
+        <input type="checkbox" id="chkPolitica">
+        <span>Entiendo cómo Rumbo usa mis datos para coordinar mis viajes. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
+      </label>
+      <button class="btn btn-medio" id="btnCrearCuenta" type="button" style="width:100%;">Crear mi cuenta</button>
+      <p class="nota" id="cuentaMsg" style="margin:10px 2px 0;"></p>
     </section>
 
-    <section class="card">
-      <label class="check-fila">
-        <input type="checkbox" id="chkPolitica">
-        <span>Entiendo que Rumbo usa mis datos solo para coordinar y confirmar este viaje. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
-      </label>
-      <label class="check-fila" style="margin-top:10px;">
-        <input type="checkbox" id="chkGuardarDatos">
-        <span>Quiero que este conductor guarde mis datos para pedir mi próximo viaje más rápido</span>
-      </label>
+    <section class="card" id="cardSesion" style="display:none;">
+      <div class="check-fila" style="align-items:center;">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
+        <span id="sesionTexto"></span>
+      </div>
     </section>
 
     <button class="btn btn-primario" id="btnPedir" type="button" disabled>
@@ -517,6 +551,22 @@
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <p class="nota" id="estadoDetalle" style="margin:0 2px 16px;"></p>
     <div id="mapaConductor"></div>
+
+    <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
+         en Uber/DiDi — antes de eso no hay conductor asignado con quien
+         hablar. -->
+    <section class="card" id="cardChat" style="display:none;">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
+        <span class="card-title">Chat con tu conductor</span>
+      </div>
+      <div class="chat-mensajes" id="chatMensajes"></div>
+      <div class="chat-entrada">
+        <input type="text" id="chatTexto" placeholder="Escribe un mensaje..." maxlength="500">
+        <button class="btn btn-medio" id="btnEnviarChat" type="button">Enviar</button>
+      </div>
+    </section>
+
     <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
   </div>
 
@@ -659,21 +709,92 @@
     if (!conductorId) return;
     api({ accion: "conductor_publico", conductor_id: conductorId }).then(function (res) {
       if (!res.ok) return; // link viejo o conductor dado de baja: sigue funcionando sin mostrar nombre
-      banner.textContent = "Vas a viajar con " + res.conductor.nombre;
-      banner.style.display = "block";
+      var c = res.conductor;
+      banner.innerHTML = ""; // nunca con string+innerHTML: se arma con DOM para no exponerse a datos con HTML adentro
+
+      if (c.vehiculo_foto_url) {
+        var img = document.createElement("img");
+        img.src = c.vehiculo_foto_url;
+        img.alt = "";
+        banner.appendChild(img);
+      }
+
+      var textos = document.createElement("div");
+      var nombre = document.createElement("div");
+      nombre.className = "nombre";
+      nombre.textContent = "Vas a viajar con " + c.nombre;
+      textos.appendChild(nombre);
+
+      var datosVehiculo = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" · ");
+      if (c.vehiculo_patente) datosVehiculo += (datosVehiculo ? " — " : "") + c.vehiculo_patente;
+      if (datosVehiculo) {
+        var vehiculo = document.createElement("div");
+        vehiculo.className = "vehiculo";
+        vehiculo.textContent = datosVehiculo;
+        textos.appendChild(vehiculo);
+      }
+      banner.appendChild(textos);
+      banner.style.display = "flex";
     });
   }
 
-  function cargarPerfilGuardado() {
-    try {
-      var perfil = JSON.parse(localStorage.getItem(PERFIL_KEY) || "null");
-      if (!perfil) return;
-      document.getElementById("nombreCliente").value = perfil.nombre || "";
-      document.getElementById("telefonoCliente").value = perfil.telefono || "";
-      document.getElementById("correoCliente").value = perfil.email || "";
-      document.getElementById("chkPolitica").checked = true;
-    } catch (e) {}
+  /* ---------------------------------------------------------------
+     Sesión del pasajero: se crea una sola vez y no vence. Reemplaza al
+     viejo "escribe tu nombre y teléfono en cada viaje" + el checkbox de
+     "quiero que guarden mis datos" (la app los guardaba igual, así que
+     preguntarlo era decorativo — ahora es una cuenta y se dice claro).
+     --------------------------------------------------------------- */
+  function obtenerSesionPasajero() {
+    try { return JSON.parse(localStorage.getItem(PERFIL_KEY) || "null"); } catch (e) { return null; }
   }
+  function guardarSesionPasajero(s) { localStorage.setItem(PERFIL_KEY, JSON.stringify(s)); }
+
+  function pintarSesionPasajero() {
+    var sesion = obtenerSesionPasajero();
+    var hayCuenta = !!(sesion && sesion.token);
+    document.getElementById("cardCuenta").style.display = hayCuenta ? "none" : "block";
+    document.getElementById("cardSesion").style.display = hayCuenta ? "block" : "none";
+    if (hayCuenta) {
+      document.getElementById("sesionTexto").textContent =
+        sesion.pasajero.nombre + " · " + sesion.pasajero.telefono;
+    }
+    actualizarBotonPedir();
+  }
+
+  // "Solicitar viaje" necesita las dos cosas: ruta calculada Y cuenta.
+  function actualizarBotonPedir() {
+    var sesion = obtenerSesionPasajero();
+    document.getElementById("btnPedir").disabled = !(rutaActual && sesion && sesion.token);
+  }
+
+  document.getElementById("btnCrearCuenta").addEventListener("click", function () {
+    var nombre = document.getElementById("nombreCliente").value.trim();
+    var telefono = document.getElementById("telefonoCliente").value.trim();
+    var correo = document.getElementById("correoCliente").value.trim();
+    var msg = document.getElementById("cuentaMsg");
+    if (!nombre || !telefono) {
+      msg.textContent = "Completa tu nombre y WhatsApp.";
+      msg.className = "nota error"; return;
+    }
+    if (!document.getElementById("chkPolitica").checked) {
+      msg.textContent = "Marca que entiendes el uso de tus datos para continuar.";
+      msg.className = "nota error"; return;
+    }
+    msg.textContent = "Creando tu cuenta..."; msg.className = "nota";
+    apiPost({
+      accion: "iniciar_sesion_pasajero",
+      nombre: nombre, telefono: telefono, email: correo,
+      acepta_politica: true, version_politica: VERSION_POLITICA
+    }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "nota error"; return; }
+      guardarSesionPasajero(res);
+      msg.textContent = "";
+      pintarSesionPasajero();
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message;
+      msg.className = "nota error";
+    });
+  });
 
   document.getElementById("verPolitica").addEventListener("click", function () {
     alert(
@@ -921,7 +1042,7 @@
       var tarjeta = document.getElementById("tarjetaPrecio");
       tarjeta.style.display = "block";
       tarjeta.scrollIntoView({ behavior: "smooth", block: "center" });
-      document.getElementById("btnPedir").disabled = false;
+      actualizarBotonPedir();
     }).catch(function (err) {
       textoEl.textContent = "No se pudo calcular la ruta (" + err.message + "). Revisa las direcciones.";
       textoEl.className = "nota error";
@@ -935,24 +1056,15 @@
   });
 
   document.getElementById("btnPedir").addEventListener("click", function () {
-    var nombre = document.getElementById("nombreCliente").value.trim();
-    var telefono = document.getElementById("telefonoCliente").value.trim();
-    var correo = document.getElementById("correoCliente").value.trim();
     var pedirTexto = document.getElementById("pedirTexto");
-    if (!nombre || !telefono) {
-      pedirTexto.textContent = "Completa tu nombre y WhatsApp para solicitar el viaje.";
+    var sesion = obtenerSesionPasajero();
+    if (!sesion || !sesion.token) {
+      pedirTexto.textContent = "Crea tu cuenta más arriba para poder solicitar el viaje.";
       pedirTexto.className = "nota error";
-      return;
-    }
-    if (!document.getElementById("chkPolitica").checked) {
-      pedirTexto.textContent = "Marca que entiendes el uso de tus datos para poder continuar.";
-      pedirTexto.className = "nota error";
+      document.getElementById("cardCuenta").scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     if (!rutaActual) return;
-
-    var guardarDatos = document.getElementById("chkGuardarDatos").checked;
-    localStorage.setItem(PERFIL_KEY, JSON.stringify({ nombre: nombre, telefono: telefono, email: correo }));
 
     var btn = document.getElementById("btnPedir");
     btn.disabled = true;
@@ -965,10 +1077,8 @@
     // queda registrado, no este.
     apiPost({
       accion: "crear_pedido",
-      nombre: nombre, telefono: telefono, email: correo,
+      pasajero_token: sesion.token,
       conductor_id: obtenerConductorId() || "",
-      guardar_mis_datos: guardarDatos ? "SI" : "NO",
-      version_politica: VERSION_POLITICA,
       origen: document.getElementById("origen").value.trim(),
       destino: document.getElementById("destino").value.trim(),
       paradas: obtenerParadas().join("|"),
@@ -1006,6 +1116,7 @@
           document.getElementById("estadoBox").className = "estado-box confirmado";
           document.getElementById("estadoBox").textContent = "Viaje confirmado";
           mostrarMapaConductor();
+          abrirChat();
           clearInterval(pollTimer);
         } else if (res.estado === "SIN_CONDUCTOR") {
           // No se le muestra cada rechazo individual mientras se deriva
@@ -1018,6 +1129,73 @@
       });
     }, 8000);
   }
+
+  /* ---------------------------------------------------------------
+     Chat con el conductor (solo con viaje confirmado). Sondeo
+     incremental: se pide solo lo posterior al último mensaje que ya
+     tenemos, no todo el historial cada 5 segundos.
+     --------------------------------------------------------------- */
+  var chatTimer = null;
+  var ultimoMensajeEn = "";
+
+  function abrirChat() {
+    document.getElementById("cardChat").style.display = "block";
+    cargarMensajes();
+    if (chatTimer) clearInterval(chatTimer);
+    chatTimer = setInterval(cargarMensajes, 5000);
+  }
+
+  function cargarMensajes() {
+    var sesion = obtenerSesionPasajero();
+    if (!sesion || !pedidoActualId) return;
+    api({
+      accion: "mensajes_pasajero", pasajero_token: sesion.token,
+      pedido_id: pedidoActualId, desde: ultimoMensajeEn
+    }).then(function (res) {
+      if (!res.ok || !res.mensajes.length) return;
+      res.mensajes.forEach(function (m) {
+        pintarMensaje(m, m.autor === "pasajero");
+        ultimoMensajeEn = m.creado_en;
+      });
+    });
+  }
+
+  function pintarMensaje(m, esMio) {
+    var cont = document.getElementById("chatMensajes");
+    var vacio = cont.querySelector(".chat-vacio");
+    if (vacio) vacio.remove();
+    var burbuja = document.createElement("div");
+    burbuja.className = "chat-burbuja " + (esMio ? "mia" : "suya");
+    burbuja.textContent = m.texto;
+    var hora = document.createElement("span");
+    hora.className = "chat-hora";
+    var d = new Date(m.creado_en);
+    hora.textContent = isNaN(d.getTime()) ? "" : d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+    burbuja.appendChild(hora);
+    cont.appendChild(burbuja);
+    cont.scrollTop = cont.scrollHeight;
+  }
+
+  function enviarMensajeChat() {
+    var input = document.getElementById("chatTexto");
+    var texto = input.value.trim();
+    var sesion = obtenerSesionPasajero();
+    if (!texto || !sesion || !pedidoActualId) return;
+    input.value = "";
+    apiPost({
+      accion: "enviar_mensaje_pasajero", pasajero_token: sesion.token,
+      pedido_id: pedidoActualId, texto: texto
+    }).then(function (res) {
+      if (!res.ok) { input.value = texto; alert("No se pudo enviar: " + res.error); return; }
+      pintarMensaje(res.mensaje, true);
+      ultimoMensajeEn = res.mensaje.creado_en;
+    }).catch(function () { input.value = texto; });
+  }
+
+  document.getElementById("btnEnviarChat").addEventListener("click", enviarMensajeChat);
+  document.getElementById("chatTexto").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); enviarMensajeChat(); }
+  });
 
   var mapaTimer = null;
 
@@ -1051,13 +1229,17 @@
   document.getElementById("btnNuevoPedido").addEventListener("click", function () {
     if (pollTimer) clearInterval(pollTimer);
     if (mapaTimer) clearInterval(mapaTimer);
+    if (chatTimer) clearInterval(chatTimer);
     pedidoActualId = null;
     rutaActual = null;
+    ultimoMensajeEn = "";
     document.getElementById("btnPedir").disabled = true;
     document.getElementById("pedirTexto").textContent = "";
     document.getElementById("tarjetaPrecio").style.display = "none";
     document.getElementById("buscarAutoTexto").textContent = "";
     document.getElementById("mapaConductor").style.display = "none";
+    document.getElementById("cardChat").style.display = "none";
+    document.getElementById("chatMensajes").innerHTML = "";
     document.getElementById("badgeSeguimiento").classList.remove("activo");
     document.getElementById("tabSeguimiento").disabled = true;
     mostrarPestana("cotizar");
@@ -1067,7 +1249,7 @@
   cargarTarifas();
   cargarGoogleMaps();
   mostrarBannerConductor();
-  cargarPerfilGuardado();
+  pintarSesionPasajero();
 })();
 </script>
 </body>
