@@ -737,7 +737,19 @@
     link.href = URL_APK;
     link.textContent = esAdmin ? "Descargar app Rumbo Admin (Android)" : "Descargar app Rumbo Conductor (Android)";
   })();
-  var SESION_KEY = "rumbo_conductor_sesion";
+  // Una clave por panel: conductor.html y admin.html comparten el mismo
+  // dominio en la web, y con una sola clave entrar a uno borraba la sesión
+  // del otro. La primera vez se hereda la sesión guardada con la clave vieja
+  // si corresponde a este panel, para no pedir login al actualizar.
+  var SESION_KEY = "rumbo_sesion_" + (MODO === "admin" ? "admin" : "conductor");
+  try {
+    var viejaSesion = localStorage.getItem("rumbo_conductor_sesion");
+    if (viejaSesion && !localStorage.getItem(SESION_KEY)) {
+      var vs = JSON.parse(viejaSesion);
+      var esSoloAdmin = !!(vs && vs.conductor && vs.conductor.solo_admin);
+      if ((MODO === "admin") === esSoloAdmin) localStorage.setItem(SESION_KEY, viejaSesion);
+    }
+  } catch (e) {}
 
   /* Key PÚBLICA de Maps JavaScript ("Rumbo — Maps JS (público)"). Es la
      misma que usa index.html: viaja al navegador a propósito, y está
