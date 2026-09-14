@@ -209,6 +209,13 @@
   .acordeon .estado-conductor { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
   .acordeon .estado-titulo { display: none; }
 
+  .tabla-historial { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12.5px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
+  .tabla-historial td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .tabla-historial td.monto { text-align: right; white-space: nowrap; font-weight: 600; }
+  .tabla-historial th:nth-last-child(2) { text-align: right; }
+  .tabla-historial .pendiente { color: var(--text-3); font-size: 12.5px; }
+
   /* ---------- Barra de navegación inferior ---------- */
   .nav-inferior {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
@@ -422,6 +429,26 @@
       <div class="acordeon-cuerpo">
         <p class="ayuda" style="margin:0 0 12px;"><strong>Aprobar</strong>: puede ingresar y trabajar con su clientela. <strong>En la red</strong>: además recibe viajes que otros conductores no pudieron tomar.</p>
         <div id="listaConductores"><p class="vacio">Cargando...</p></div>
+      </div>
+    </details>
+
+    <details class="acordeon" id="acordeonHistorial">
+      <summary>Historial de pagos</summary>
+      <div class="acordeon-cuerpo">
+        <div class="fila" style="margin-bottom:12px;">
+          <div class="campo"><label class="campo-label" for="histMes">Mes</label><input type="month" id="histMes"></div>
+          <div class="campo" id="histFiltroConductor" style="display:none;">
+            <label class="campo-label" for="histConductor">Conductor</label>
+            <select id="histConductor"><option value="">Todos</option></select>
+          </div>
+        </div>
+        <div id="histResumen" class="msg" style="margin:0 0 10px;"></div>
+        <div style="overflow-x:auto;">
+          <table class="tabla-historial">
+            <thead><tr><th>Fecha</th><th id="histColConductor" style="display:none;">Conductor</th><th>Monto</th><th>Pago</th></tr></thead>
+            <tbody id="histFilas"></tbody>
+          </table>
+        </div>
       </div>
     </details>
 
@@ -890,12 +917,71 @@
       document.getElementById("tabPedidos").style.display = "none";
       document.getElementById("tabEnCurso").style.display = "none";
       [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
-        if (d.id !== "acordeonConductores" && d.querySelector("summary").textContent !== "Tarifas y costos" &&
+        if (d.id !== "acordeonConductores" && d.id !== "acordeonHistorial" && d.querySelector("summary").textContent !== "Tarifas y costos" &&
             d.querySelector("summary").textContent !== "Tu cuenta y clave") d.style.display = "none";
       });
       document.getElementById("navConductor").style.gridTemplateColumns = "1fr";
     }
   }
+
+  /* ---------------------------------------------------------------
+     Historial de pagos por mes (solo monto, estado y forma de pago).
+     --------------------------------------------------------------- */
+  (function () {
+    var hoy = new Date();
+    document.getElementById("histMes").value = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0");
+  })();
+
+  function cargarHistorial() {
+    var ses = obtenerSesion();
+    var esAdmin = !!(ses && ses.conductor.es_admin);
+    var mes = document.getElementById("histMes").value;
+    var filas = document.getElementById("histFilas");
+    var resumen = document.getElementById("histResumen");
+    document.getElementById("histColConductor").style.display = esAdmin ? "" : "none";
+    if (!mes) return;
+    resumen.textContent = "Cargando...";
+    var params = { accion: "historial_pagos", mes: mes };
+    if (esAdmin) params.conductor_id = document.getElementById("histConductor").value;
+    api(params).then(function (res) {
+      if (!res.ok) { resumen.textContent = res.error; filas.innerHTML = ""; return; }
+      resumen.innerHTML = res.viajes.length
+        ? res.viajes.length + " viaje" + (res.viajes.length === 1 ? "" : "s") + " · Total " + fmt(res.total) +
+          " · Cobrado " + fmt(res.cobrado) + (res.pendiente ? " · Pendiente " + fmt(res.pendiente) : "")
+        : "Sin viajes finalizados en este mes.";
+      filas.innerHTML = res.viajes.map(function (v) {
+        var d = new Date(v.fecha);
+        var fecha = isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit" }) + " " +
+          d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+        return "<tr><td>" + escapar(fecha) + "</td>" +
+          (esAdmin ? "<td>" + escapar(v.conductor || "") + "</td>" : "") +
+          '<td class="monto">' + fmt(v.monto) + "</td>" +
+          "<td>" + escapar(v.forma) + (v.pagado ? "" : '<br><span class="pendiente">sin cobrar</span>') + "</td></tr>";
+      }).join("");
+    });
+  }
+
+  document.getElementById("histMes").addEventListener("change", cargarHistorial);
+  document.getElementById("histConductor").addEventListener("change", cargarHistorial);
+  document.getElementById("acordeonHistorial").addEventListener("toggle", function () {
+    if (!this.open) return;
+    var ses = obtenerSesion();
+    if (ses && ses.conductor.es_admin) {
+      document.getElementById("histFiltroConductor").style.display = "";
+      var sel = document.getElementById("histConductor");
+      if (sel.options.length <= 1) {
+        apiPost({ accion: "listar_conductores" }).then(function (res) {
+          if (!res.ok) return;
+          res.conductores.filter(function (c) { return !c.solo_admin; }).forEach(function (c) {
+            var o = document.createElement("option");
+            o.value = c.conductor_id; o.textContent = c.nombre;
+            sel.appendChild(o);
+          });
+        });
+      }
+    }
+    cargarHistorial();
+  });
 
   function cargarEstadoMp() {
     var estado = document.getElementById("mpEstado");
