@@ -516,17 +516,35 @@
     </section>
     </div></details>
 
-    <details class="acordeon"><summary>Tarifas y costos</summary><div class="acordeon-cuerpo">
+    <details class="acordeon" id="acordeonTarifas"><summary>Tarifas y costos</summary><div class="acordeon-cuerpo">
+    <div class="solo-red" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
+      <div>
+        <div style="font-weight:600;">Cobro uniforme</div>
+        <p class="ayuda" style="margin:2px 0 0;font-size:13px;">Activado: todos cotizan con estos valores. Desactivado: cada conductor usa los de su vehículo.</p>
+      </div>
+      <label class="switch"><input type="checkbox" id="cobroUniforme"><span class="sr-only">Cobro uniforme</span><span class="switch-pista"></span></label>
+    </div>
+    <p class="pedido-aviso solo-conductor" id="notaUniforme" style="display:none;margin:0 0 14px;">El administrador activó el cobro uniforme: los valores los fija la red y no se pueden editar por ahora.</p>
     <section class="card">
       <div class="card-head">
         <span class="card-title">Costos del vehículo</span>
       </div>
       <div class="fila">
         <div class="campo">
-          <label class="campo-label" for="precioComb">Precio diésel ($/L)</label>
+          <label class="campo-label" for="precioComb">Precio de tu combustible ($/L)</label>
           <input type="number" id="precioComb" step="1">
         </div>
-        <div class="campo">
+        <div class="campo solo-conductor">
+          <label class="campo-label" for="tipoCombustible">Combustible</label>
+          <select id="tipoCombustible">
+            <option value="">Elegir</option>
+            <option value="GASOLINA_93">Gasolina 93</option>
+            <option value="GASOLINA_95">Gasolina 95</option>
+            <option value="GASOLINA_97">Gasolina 97</option>
+            <option value="DIESEL">Diésel</option>
+          </select>
+        </div>
+        <div class="campo solo-red">
           <label class="campo-label" for="kmLimiteSantiago">Límite Santiago, km (solo respaldo)</label>
           <input type="number" id="kmLimiteSantiago" step="1">
         </div>
@@ -541,7 +559,7 @@
           <input type="number" id="consumoRuta" step="0.1">
         </div>
       </div>
-      <div class="fila full" style="margin-bottom:0;">
+      <div class="fila full solo-red" style="margin-bottom:0;">
         <div class="campo">
           <label class="campo-label" for="busquedaMin">Minutos para ir a buscar al pasajero</label>
           <input type="number" id="busquedaMin" step="5">
@@ -564,8 +582,8 @@
         </div>
       </div>
 
-      <p class="ayuda">Días con tarifa punta todo el día. Los feriados se detectan solos.</p>
-      <div class="dias-toggle" id="diasPuntaTodoElDia">
+      <p class="ayuda solo-red">Días con tarifa punta todo el día. Los feriados se detectan solos.</p>
+      <div class="dias-toggle solo-red" id="diasPuntaTodoElDia">
         <button class="tarifa-dia" type="button" data-dia="1">Lun</button>
         <button class="tarifa-dia" type="button" data-dia="2">Mar</button>
         <button class="tarifa-dia" type="button" data-dia="3">Mié</button>
@@ -575,7 +593,7 @@
         <button class="tarifa-dia" type="button" data-dia="0">Dom</button>
       </div>
 
-      <div class="plegable">
+      <div class="plegable solo-red">
         <button class="plegable-btn" id="btnHorarios" type="button" aria-expanded="false" aria-controls="cuerpoHorarios">
           Franjas horarias
           <svg class="ico ico-sm chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
@@ -988,12 +1006,15 @@
   function aplicarPermisos() {
     [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
       var titulo = d.querySelector("summary").textContent;
-      var esDeAdmin = d.id === "acordeonConductores" || titulo === "Tarifas y costos";
+      var esDeAdmin = d.id === "acordeonConductores";
       var visible = MODO === "admin"
-        ? (SECCIONES_ADMIN.indexOf(d.id) !== -1 || TITULOS_ADMIN.indexOf(titulo) !== -1)
+        ? (SECCIONES_ADMIN.indexOf(d.id) !== -1 || d.id === "acordeonTarifas" || TITULOS_ADMIN.indexOf(titulo) !== -1)
         : !esDeAdmin;
       d.style.display = visible ? "" : "none";
     });
+    document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Mi vehículo y costos";
+    [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
+    [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { if (el.id !== "notaUniforme") el.style.display = MODO === "admin" ? "none" : ""; });
     if (MODO === "admin") {
       document.getElementById("tabPedidos").style.display = "none";
       document.getElementById("tabEnCurso").style.display = "none";
@@ -1238,9 +1259,24 @@
     pintarDias();
   });
 
+  // Conductor: valores de SU vehículo (combustible, rendimiento, valor hora),
+  // guardados en su cuenta. Admin: tarifas de toda la red (horarios, días,
+  // límite de km, minutos de búsqueda). Cada auto gasta distinto.
+  var CAMPOS_MI_VEHICULO = ["precioComb", "consumoCiudad", "consumoRuta", "valorHoraValle", "valorHoraPunta"];
+
   function cargarTarifas() {
-    api({ accion: "tarifas" }).then(function (res) {
+    api({ accion: MODO === "admin" ? "tarifas" : "mis_tarifas" }).then(function (res) {
       if (!res.ok) return;
+      if (res.tipo_combustible !== undefined) document.getElementById("tipoCombustible").value = res.tipo_combustible || "";
+      if (MODO === "admin") {
+        document.getElementById("cobroUniforme").checked = res.tarifas.cobroUniforme === true;
+      } else {
+        var bloqueado = res.cobro_uniforme === true;
+        document.getElementById("notaUniforme").style.display = bloqueado ? "" : "none";
+        CAMPOS_MI_VEHICULO.concat(["tipoCombustible", "btnGuardarTarifas"]).forEach(function (id) {
+          document.getElementById(id).disabled = bloqueado;
+        });
+      }
       CAMPOS_TARIFA.forEach(function (c) {
         if (res.tarifas[c] !== undefined) document.getElementById(c).value = res.tarifas[c];
       });
@@ -1256,10 +1292,16 @@
       tarifas[c] = el.type === "number" ? parseFloat(el.value) || 0 : el.value;
     });
     tarifas.diasPuntaTodoElDia = diasPuntaSeleccionados;
+    tarifas.cobroUniforme = document.getElementById("cobroUniforme").checked;
     var msg = document.getElementById("tarifasMsg");
     msg.textContent = "Guardando...";
     msg.className = "msg";
-    apiPost({ accion: "guardar_tarifas", tarifas: tarifas }).then(function (res) {
+    var cuerpo = { accion: "guardar_tarifas", tarifas: tarifas };
+    if (MODO !== "admin") {
+      cuerpo = { accion: "guardar_mis_tarifas", tipo_combustible: document.getElementById("tipoCombustible").value };
+      CAMPOS_MI_VEHICULO.forEach(function (c) { cuerpo[c] = tarifas[c]; });
+    }
+    apiPost(cuerpo).then(function (res) {
       msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
       msg.className = "msg " + (res.ok ? "ok" : "error");
     }).catch(function (err) {
