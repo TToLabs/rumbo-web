@@ -44,7 +44,7 @@
       <path d="M0 0 C3.3672038741705137 1.3933257410360511 4.985952402720329 2.9789286040804654 7 6 C4 6 4 6 1.8125 4.125 C0 2 0 2 0 0 Z " fill="#16333F" transform="translate(491,327)"/>
       <path d="M0 0 C2.798724365170301 2.527880071766731 4.457730190760685 4.2041113353247965 5 8 C3.0625 7.375 3.0625 7.375 1 6 C0.25 2.875 0.25 2.875 0 0 Z " fill="#16333F" transform="translate(473,299)"/>
   </g>
-  <g transform="translate(330 330) scale(0.62) translate(-392 -392)">
+  <g transform="translate(338 374) scale(0.92) translate(-392 -392)">
   <circle cx="392" cy="392" r="96" fill="#16333F" stroke="#0E2229" stroke-width="8"/>
   <g fill="none" stroke="#FFFFFF" stroke-linecap="round">
     <circle cx="392" cy="392" r="66" stroke-width="16"/>
