@@ -533,6 +533,12 @@
   <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <p class="nota" id="estadoDetalle" style="margin:0 2px 16px;"></p>
+    <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
+         El monto lo fija el backend (precio congelado): acá no se escribe. -->
+    <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
+    <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
+      Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o Mercado Pago, no Rumbo.
+    </p>
     <div id="mapaConductor"></div>
 
     <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
@@ -634,7 +640,7 @@
      es la única forma de dibujar un mapa. La protección NO es esconderla,
      es restringirla en Google Cloud Console ("Rumbo — Maps JS (público)"):
        · Restricción de API   → SOLO "Maps JavaScript API"
-       · Restricción de app   → Sitios web → https://mercadateapp.github.io/*
+       · Restricción de app   → Sitios web → https://ttolabs.github.io/*
                                              localhost/*
      Verificado el 13-sep-2026: con esta key, una llamada a Routes API
      devuelve API_KEY_HTTP_REFERRER_BLOCKED. NUNCA poner acá la key de
@@ -1186,18 +1192,26 @@
     document.getElementById("estadoDetalle").textContent = "Total " + fmt(totalConfirmado) + " · Código " + pedidoActualId;
   }
 
+  // El sondeo sigue vivo después de confirmar: ahora también espera que el
+  // conductor termine el viaje y, si cobra por Mercado Pago, que entre el pago.
+  var viajeConfirmadoMostrado = false;
+
   function iniciarPolling() {
     if (pollTimer) clearInterval(pollTimer);
+    viajeConfirmadoMostrado = false;
     pollTimer = setInterval(function () {
       api({ accion: "estado_pedido", pedido_id: pedidoActualId }).then(function (res) {
         if (!res.ok) return;
         if (res.estado === "CONFIRMADO") {
+          if (viajeConfirmadoMostrado) return;
+          viajeConfirmadoMostrado = true;
           document.getElementById("estadoBox").className = "estado-box confirmado";
           document.getElementById("estadoBox").textContent = "Viaje confirmado";
           mostrarMapaConductor();
           abrirChat();
           compartirMiUbicacion();
-          clearInterval(pollTimer);
+        } else if (res.estado === "COMPLETADO") {
+          mostrarCierreDeViaje(res);
         } else if (res.estado === "SIN_CONDUCTOR") {
           // No se le muestra cada rechazo individual mientras se deriva
           // entre conductores — solo el resultado final, para no generar
@@ -1208,6 +1222,33 @@
         }
       });
     }, 8000);
+  }
+
+  function mostrarCierreDeViaje(res) {
+    var box = document.getElementById("estadoBox");
+    var btnPagar = document.getElementById("btnPagarMp");
+    var nota = document.getElementById("notaPago");
+    dejarDeCompartirUbicacion();
+    if (mapaTimer) { clearInterval(mapaTimer); mapaTimer = null; }
+
+    if (res.estado_pago === "PENDIENTE" && res.mp_link) {
+      box.className = "estado-box pendiente";
+      box.textContent = "Llegaste. Falta pagar tu viaje";
+      btnPagar.textContent = "Pagar " + fmt(res.total) + " con Mercado Pago";
+      btnPagar.href = res.mp_link;
+      btnPagar.style.display = "flex";
+      nota.style.display = "block";
+      return; // se sigue sondeando hasta que Mercado Pago confirme el pago
+    }
+
+    btnPagar.style.display = "none";
+    nota.style.display = "none";
+    box.className = "estado-box confirmado";
+    box.textContent = res.forma_pago === "EFECTIVO"
+      ? "Viaje terminado · pagado en efectivo. ¡Gracias por viajar con Rumbo!"
+      : "Pago recibido. ¡Gracias por viajar con Rumbo!";
+    clearInterval(pollTimer);
+    if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
   }
 
   /* ---------------------------------------------------------------
@@ -1345,6 +1386,8 @@
     if (mapaTimer) clearInterval(mapaTimer);
     if (chatTimer) clearInterval(chatTimer);
     dejarDeCompartirUbicacion();
+    document.getElementById("btnPagarMp").style.display = "none";
+    document.getElementById("notaPago").style.display = "none";
     pedidoActualId = null;
     rutaActual = null;
     ultimoMensajeEn = "";

@@ -369,6 +369,19 @@
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <section class="card" id="cardMercadoPago">
+      <div class="card-head"><span class="card-title">Cobrar con Mercado Pago</span></div>
+      <p class="ayuda" style="margin:0 0 12px;">
+        La plata de cada viaje entra directo a <strong>tu</strong> cuenta de Mercado Pago.
+        El pasajero puede pagar con débito, crédito o en cuotas (el interés de las cuotas lo paga él).
+      </p>
+      <p class="msg" id="mpEstado" style="margin:0 0 12px;">Revisando...</p>
+      <button class="btn btn-medio" id="btnVincularMp" type="button" style="width:100%;display:none;">Vincular mi Mercado Pago</button>
+      <p class="ayuda" style="margin:12px 0 0;font-size:13px;">
+        Importante: en tu cuenta de Mercado Pago <strong>no actives "cuotas sin interés"</strong>; si lo activás, ese costo lo pagás vos en cada viaje.
+      </p>
+    </section>
+
     <section class="card" id="cardMiQr">
       <div class="card-head"><span class="card-title">Mi QR para pasajeros</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
@@ -655,6 +668,9 @@
       tab.classList.toggle("activo", esEsta);
     });
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
+    // Siempre al entrar: el conductor vuelve de vincular en el navegador y
+    // tiene que ver el cambio sin cerrar la app.
+    if (cual === "ajustes") cargarEstadoMp();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -696,6 +712,43 @@
      reparte SU QR sin depender de que alguien se lo genere a mano. */
   var LANDING_PASAJERO = "https://ttolabs.github.io/rumbo-web/";
   var miLinkPasajero = "";
+
+  function cargarEstadoMp() {
+    var estado = document.getElementById("mpEstado");
+    var boton = document.getElementById("btnVincularMp");
+    api({ accion: "mi_mercadopago" }).then(function (res) {
+      if (!res.ok) { estado.textContent = "No se pudo revisar: " + res.error; return; }
+      if (!res.configurado) {
+        estado.textContent = "El cobro con Mercado Pago todavía no está habilitado en la red.";
+        boton.style.display = "none";
+        return;
+      }
+      if (res.vinculado) {
+        estado.textContent = "✓ Tu cuenta está vinculada. Ya puedes cobrar viajes por Mercado Pago.";
+        estado.className = "msg ok";
+        boton.textContent = "Volver a vincular (otra cuenta)";
+      } else {
+        estado.textContent = "Todavía no vinculaste tu cuenta: por ahora solo puedes cobrar en efectivo.";
+        estado.className = "msg";
+        boton.textContent = "Vincular mi Mercado Pago";
+      }
+      boton.style.display = "flex";
+    });
+  }
+
+  document.getElementById("btnVincularMp").addEventListener("click", function () {
+    var boton = this;
+    boton.disabled = true;
+    api({ accion: "mp_link_vinculacion" }).then(function (res) {
+      boton.disabled = false;
+      if (!res.ok) { alert(res.error); return; }
+      // Se abre en el navegador: Mercado Pago no permite autorizar dentro de
+      // una vista embebida, y la vuelta llega a mp-vuelta.html en la web.
+      window.open(res.url, "_blank");
+      document.getElementById("mpEstado").textContent =
+        "Autoriza en Mercado Pago y vuelve acá. Si ya lo hiciste, toca Ajustes de nuevo para actualizar.";
+    });
+  });
 
   function pintarMiQr(c) {
     miLinkPasajero = LANDING_PASAJERO + "?c=" + encodeURIComponent(c.conductor_id);
@@ -1138,6 +1191,7 @@
       if (!res.ok) return;
       var vacio = document.getElementById("sinViajesEnCurso");
       if (!res.pedidos.length) {
+        avisarPagosRecibidos([]);
         grupo.style.display = "none";
         vacio.style.display = "block";
         lista.innerHTML = "";
@@ -1146,9 +1200,11 @@
       }
       grupo.style.display = "block";
       vacio.style.display = "none";
-      // Solo se redibuja si cambió el conjunto de viajes, para no borrar
-      // los mensajes ya pintados ni lo que el conductor está tipeando.
-      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id; }).join(",");
+      avisarPagosRecibidos(res.pedidos);
+      // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
+      // curso → esperando pago), para no borrar los mensajes ya pintados ni
+      // lo que el conductor está tipeando.
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago; }).join(",");
       if (lista.dataset.ids !== idsActuales) {
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
@@ -1162,9 +1218,28 @@
     });
   }
 
+  /* Un viaje con cobro por Mercado Pago sale de "En curso" recién cuando el
+     backend confirma el pago con Mercado Pago. Si desaparece de la lista
+     estando pendiente, es que entró la plata: se avisa con sonido. */
+  var cobrosPendientes = {}; // pedido_id -> total
+  function avisarPagosRecibidos(pedidos) {
+    var siguen = {};
+    pedidos.forEach(function (p) { if (p.estado_pago === "PENDIENTE") siguen[p.pedido_id] = p.total; });
+    Object.keys(cobrosPendientes).forEach(function (id) {
+      if (!(id in siguen) && !cobrosEfectivoPropios[id]) {
+        sonarAviso();
+        alert("Pago recibido por Mercado Pago: " + fmt(cobrosPendientes[id]));
+      }
+      delete cobrosEfectivoPropios[id];
+    });
+    cobrosPendientes = siguen;
+  }
+  var cobrosEfectivoPropios = {};
+
   function tarjetaEnCurso(p) {
     var div = document.createElement("div");
     div.className = "pedido-card";
+    if (p.estado_pago === "PENDIENTE") return tarjetaEsperandoPago(div, p);
     div.innerHTML =
       '<div class="pedido-tope">' +
         '<div>' +
@@ -1194,7 +1269,35 @@
         '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
         '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
       '</div>' +
-      '<button class="btn btn-ok" style="width:100%;margin-top:12px;" data-finalizar="' + escapar(p.pedido_id) + '">Finalizar viaje</button>';
+      // Finalizar = cobrar: el conductor elige cómo le paga el pasajero.
+      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">Finalizar viaje y cobrar ' + fmt(p.total) + '</p>' +
+      '<div class="btn-row">' +
+        '<button class="btn btn-ok" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="MERCADOPAGO">Mercado Pago</button>' +
+        '<button class="btn btn-chico" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="EFECTIVO">Efectivo</button>' +
+      '</div>';
+    return div;
+  }
+
+  function tarjetaEsperandoPago(div, p) {
+    div.innerHTML =
+      '<div class="pedido-tope">' +
+        '<div><div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
+        '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a></div>' +
+        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+      '</div>' +
+      '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
+        'Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre.' +
+      '</div>' +
+      // Por si al pasajero no le aparece el botón: el conductor le reenvía el link.
+      '<div class="btn-row" style="margin:10px 0 8px;">' +
+        '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' +
+        '<button class="btn btn-chico" data-efectivo="' + escapar(p.pedido_id) + '">Me pagó en efectivo</button>' +
+      '</div>' +
+      '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
+      '<div class="chat-entrada">' +
+        '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
+        '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
+      '</div>';
     return div;
   }
 
@@ -1271,13 +1374,37 @@
     }
     var finalizar = ev.target.closest("[data-finalizar]");
     if (finalizar) {
-      if (!confirm("¿Marcar este viaje como terminado?")) return;
+      var forma = finalizar.dataset.forma;
+      var pregunta = forma === "EFECTIVO"
+        ? "¿Terminar el viaje y marcarlo como cobrado en efectivo?"
+        : "¿Terminar el viaje y pedirle el pago al pasajero por Mercado Pago?";
+      if (!confirm(pregunta)) return;
       finalizar.disabled = true;
-      apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar }).then(function (res) {
+      apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar, forma_pago: forma }).then(function (res) {
         if (!res.ok) { alert("Error: " + res.error); finalizar.disabled = false; return; }
+        if (forma === "EFECTIVO") cobrosEfectivoPropios[finalizar.dataset.finalizar] = true;
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
       });
+      return;
+    }
+    var efectivo = ev.target.closest("[data-efectivo]");
+    if (efectivo) {
+      if (!confirm("¿El pasajero te pagó en efectivo? Se cierra el cobro por Mercado Pago.")) return;
+      efectivo.disabled = true;
+      cobrosEfectivoPropios[efectivo.dataset.efectivo] = true;
+      apiPost({ accion: "marcar_pagado_efectivo", pedido_id: efectivo.dataset.efectivo }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); efectivo.disabled = false; return; }
+        document.getElementById("listaEnCurso").dataset.ids = "";
+        cargarViajesEnCurso();
+      });
+      return;
+    }
+    var linkPago = ev.target.closest("[data-link-pago]");
+    if (linkPago) {
+      var texto = "Este es el link para pagar tu viaje en Rumbo: " + linkPago.dataset.linkPago;
+      if (navigator.share) navigator.share({ title: "Pago de tu viaje", text: texto }).catch(function () {});
+      else window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
     }
   });
 
