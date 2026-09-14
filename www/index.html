@@ -363,6 +363,13 @@
   .check-fila { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-2); line-height: 1.4; cursor: pointer; }
   .check-fila input { margin-top: 2px; width: 18px; height: 18px; flex: none; accent-color: var(--primary); }
   .link-inline { border: none; background: none; padding: 0; color: var(--primary); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+  /* Respuesta visual al tocar: el botón se hunde un poco. Sin esto, con la
+     latencia del servidor parecía que el toque no se había registrado. */
+  .btn, .nav-item, .tarifa-dia, .seg-btn { transition: transform 0.08s ease, background-color 0.12s ease, opacity 0.12s ease; }
+  .btn:active:not(:disabled), .nav-item:active, .tarifa-dia:active, .seg-btn:active { transform: scale(0.96); }
+  .btn.enviando { opacity: 0.7; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .btn:active, .nav-item:active { transform: none; } }
 </style>
 </head>
 <body>
@@ -550,7 +557,7 @@
         <span class="card-title">Chat con tu conductor</span>
       </div>
       <div class="chat-mensajes" id="chatMensajes"></div>
-      <div class="chat-entrada">
+      <div class="chat-entrada" data-enter="btnEnviarChat">
         <input type="text" id="chatTexto" placeholder="Escribe un mensaje..." maxlength="500">
         <button class="btn btn-medio" id="btnEnviarChat" type="button">Enviar</button>
       </div>
@@ -562,7 +569,7 @@
   <div id="vistaCuenta" role="tabpanel" aria-labelledby="tabCuenta" style="display:none;">
     <!-- Cuenta del pasajero: se pide UNA sola vez. Después queda la
          sesión guardada y solo se muestra la línea compacta de "sos vos". -->
-    <section class="card" id="cardCuenta">
+    <section class="card" id="cardCuenta" data-enter="btnCrearCuenta">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
         <span class="card-title">Crea tu cuenta</span>
@@ -618,12 +625,12 @@
 <nav class="nav-inferior" role="tablist" aria-label="Secciones">
   <button class="nav-item activo" id="tabCotizar" type="button" role="tab" aria-selected="true" aria-controls="vistaCotizar">
     <svg class="ico" aria-hidden="true"><use href="#i-ruta"/></svg>
-    Viaje
+    Calcula tu viaje
   </button>
   <button class="nav-item" id="tabSeguimiento" type="button" role="tab" aria-selected="false" aria-controls="vistaEstado" disabled>
     <span class="nav-badge" id="badgeSeguimiento"></span>
     <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
-    Seguimiento
+    En Rumbo
   </button>
   <button class="nav-item" id="tabCuenta" type="button" role="tab" aria-selected="false" aria-controls="vistaCuenta">
     <svg class="ico" aria-hidden="true"><use href="#i-persona"/></svg>
@@ -721,7 +728,7 @@
   // asegura que la dirección venga con comuna, como trae Google Maps).
   function cargarGoogleMaps() {
     var script = document.createElement("script");
-    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=places&callback=alGoogleMapsListo";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=places,geometry&callback=alGoogleMapsListo";
     document.head.appendChild(script);
   }
 
@@ -1199,8 +1206,39 @@
   function iniciarPolling() {
     if (pollTimer) clearInterval(pollTimer);
     viajeConfirmadoMostrado = false;
-    pollTimer = setInterval(function () {
-      api({ accion: "estado_pedido", pedido_id: pedidoActualId }).then(function (res) {
+    pollTimer = setInterval(sincronizarViaje, 5000);
+    sincronizarViaje();
+  }
+
+  /* UNA consulta cada 5 s trae estado, mensajes nuevos, ubicación del auto y
+     la ruta. Antes eran 3 temporizadores separados y Apps Script los
+     encolaba (medido: hasta 40 s de atraso). En segundo plano no consulta. */
+  var sincronizandoViaje = false;
+  function sincronizarViaje() {
+    if (sincronizandoViaje || document.hidden || !pedidoActualId) return;
+    sincronizandoViaje = true;
+    var sesion = obtenerSesionPasajero();
+    api({ accion: "sincronizar_pasajero", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "", desde: ultimoMensajeEn })
+      .then(function (res) {
+        if (!res.ok) return;
+        if (!res.estado) {
+          // Backend anterior a la versión 11: consulta suelta de estado.
+          return api({ accion: "estado_pedido", pedido_id: pedidoActualId }).then(manejarEstado);
+        }
+        if (res.polilinea) rutaViajeCodificada = res.polilinea;
+        manejarEstado(res.estado);
+        (res.mensajes || []).forEach(function (m) { pintarMensaje(m, m.autor === "pasajero"); ultimoMensajeEn = m.creado_en; });
+        if (res.ubicacion) moverAutoEnMapa(res.ubicacion);
+      })
+      .catch(function () {})
+      .then(function () { sincronizandoViaje = false; });
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) sincronizarViaje(); });
+
+  var rutaViajeCodificada = "";
+
+  function manejarEstado(res) {
+    (function () {
         if (!res.ok) return;
         if (res.estado === "CONFIRMADO") {
           if (viajeConfirmadoMostrado) return;
@@ -1220,8 +1258,7 @@
           document.getElementById("estadoBox").textContent = "Ningún conductor pudo tomar este viaje por ahora";
           clearInterval(pollTimer);
         }
-      });
-    }, 8000);
+    })();
   }
 
   function mostrarCierreDeViaje(res) {
@@ -1261,9 +1298,8 @@
 
   function abrirChat() {
     document.getElementById("cardChat").style.display = "block";
-    cargarMensajes();
-    if (chatTimer) clearInterval(chatTimer);
-    chatTimer = setInterval(cargarMensajes, 5000);
+    // Los mensajes nuevos llegan con sincronizarViaje (sin temporizador aparte).
+    if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
   }
 
   function cargarMensajes() {
@@ -1367,8 +1403,27 @@
       disableDefaultUI: true, zoomControl: true
     });
     marker = new google.maps.Marker({ map: mapa, title: "Conductor" });
-    actualizarUbicacionEnMapa();
-    mapaTimer = setInterval(actualizarUbicacionEnMapa, 10000);
+    dibujarRutaViaje();
+  }
+
+  var lineaRuta = null;
+  function dibujarRutaViaje() {
+    if (!mapa || lineaRuta || !rutaViajeCodificada || !google.maps.geometry) return;
+    var puntos = google.maps.geometry.encoding.decodePath(rutaViajeCodificada);
+    if (!puntos.length) return;
+    lineaRuta = new google.maps.Polyline({ map: mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (pt) { limites.extend(pt); });
+    mapa.fitBounds(limites, 30);
+  }
+
+  function moverAutoEnMapa(ubicacion) {
+    if (!mapa) return;
+    dibujarRutaViaje();
+    var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
+    if (isNaN(pos.lat) || isNaN(pos.lng)) return;
+    marker.setPosition(pos);
+    if (!lineaRuta) mapa.setCenter(pos);
   }
 
   function actualizarUbicacionEnMapa() {
@@ -1391,6 +1446,8 @@
     pedidoActualId = null;
     rutaActual = null;
     ultimoMensajeEn = "";
+    rutaViajeCodificada = "";
+    if (lineaRuta) { lineaRuta.setMap(null); lineaRuta = null; }
     document.getElementById("btnPedir").disabled = true;
     document.getElementById("pedirTexto").textContent = "";
     document.getElementById("tarjetaPrecio").style.display = "none";
@@ -1408,6 +1465,20 @@
   cargarGoogleMaps();
   mostrarBannerConductor();
   pintarSesionPasajero();
+
+  /* Enter en un campo = tocar el botón principal de su formulario. Se marca
+     en el HTML con data-enter="<id del botón>" en el contenedor. */
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" || ev.isComposing) return;
+    var campo = ev.target;
+    if (!campo || campo.tagName !== "INPUT") return;
+    var cont = campo.closest("[data-enter]");
+    if (!cont) return;
+    var boton = document.getElementById(cont.getAttribute("data-enter"));
+    if (!boton || boton.disabled || boton.offsetParent === null) return;
+    ev.preventDefault();
+    boton.click();
+  });
 })();
 </script>
 </body>

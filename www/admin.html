@@ -322,6 +322,13 @@
   .msg.ok { color: var(--accent); }
   .msg.error { color: var(--danger); }
   .vacio { color: var(--text-3); font-size: 15px; text-align: center; padding: 24px 0; margin: 0; }
+
+  /* Respuesta visual al tocar: el botón se hunde un poco. Sin esto, con la
+     latencia del servidor parecía que el toque no se había registrado. */
+  .btn, .nav-item, .tarifa-dia, .seg-btn { transition: transform 0.08s ease, background-color 0.12s ease, opacity 0.12s ease; }
+  .btn:active:not(:disabled), .nav-item:active, .tarifa-dia:active, .seg-btn:active { transform: scale(0.96); }
+  .btn.enviando { opacity: 0.7; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .btn:active, .nav-item:active { transform: none; } }
 </style>
 </head>
 <body>
@@ -333,6 +340,7 @@
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
   <symbol id="i-refrescar" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-.6 4"/><path d="M20 5v6h-6"/></symbol>
+  <symbol id="i-engranaje" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
   <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
 </svg>
 
@@ -346,7 +354,7 @@
       </span>
     </div>
   </header>
-  <section class="card" id="cardIngreso">
+  <section class="card" id="cardIngreso" data-enter="btnLogin">
     <div class="card-head"><span class="card-title">Ingresa a tu cuenta</span></div>
     <div class="campo" style="margin-bottom:12px;">
       <label class="campo-label" for="loginUsuario">Usuario</label>
@@ -366,7 +374,7 @@
 
   <!-- Registro: la cuenta queda PENDIENTE hasta que un administrador la
        apruebe. Recién ahí puede ingresar (regla de la red). -->
-  <section class="card" id="acordeonRegistro" style="display:none;">
+  <section class="card" id="acordeonRegistro" style="display:none;" data-enter="btnRegistrar">
     <div class="card-head"><span class="card-title">Crear cuenta de conductor</span></div>
     <div>
       <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Un administrador revisa y aprueba tu cuenta; cuando la apruebe podrás ingresar con tu correo y clave.</p>
@@ -497,9 +505,9 @@
     </section>
     </div></details>
 
-    <details class="acordeon simple"><summary>Mi QR para pasajeros</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple"><summary>QR para pasajeros</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMiQr">
-      <div class="card-head"><span class="card-title">Mi QR para pasajeros</span></div>
+      <div class="card-head"><span class="card-title">QR para pasajeros</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
         Quien escanee este QR o abra tu link queda registrado como tu cliente.
       </p>
@@ -679,7 +687,7 @@
     </section>
     </div></details>
 
-    <details class="acordeon simple"><summary>Tu cuenta y clave</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple"><summary>Mi cuenta</summary><div class="acordeon-cuerpo">
     <!-- Cerrar sesión solo desde acá, a propósito: la sesión queda abierta
          (hasta 5 dispositivos) y no debe cerrarse por un toque accidental. -->
     <button class="btn btn-danger" id="btnCerrarSesion" type="button" style="width:100%;margin:0 0 18px;">Cerrar sesión en este dispositivo</button>
@@ -724,14 +732,14 @@
   <button class="nav-item activo" id="tabPedidos" type="button" role="tab" aria-selected="true" aria-controls="panelPedidos">
     <span class="nav-badge" id="burbujaPedidos"></span>
     <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>
-    Pedidos
+    Mis Pedidos
   </button>
   <button class="nav-item" id="tabEnCurso" type="button" role="tab" aria-selected="false" aria-controls="panelEnCurso">
     <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
-    En curso
+    En Rumbo
   </button>
   <button class="nav-item" id="tabAjustes" type="button" role="tab" aria-selected="false" aria-controls="panelAjustes">
-    <svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>
+    <svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>
     Ajustes
   </button>
 </nav>
@@ -758,9 +766,31 @@
     return "";
   }
 
+  /* Enter en un campo = tocar el botón principal de su formulario. Se marca
+     en el HTML con data-enter="<id del botón>" en el contenedor. */
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" || ev.isComposing) return;
+    var campo = ev.target;
+    if (!campo || campo.tagName !== "INPUT") return;
+    // Chat de cada viaje en curso: Enter envía el mensaje de ESE viaje.
+    if (campo.hasAttribute("data-chat-input")) {
+      var enviar = document.querySelector('[data-chat-enviar="' + campo.getAttribute("data-chat-input") + '"]');
+      if (enviar) { ev.preventDefault(); enviar.click(); }
+      return;
+    }
+    var cont = campo.closest("[data-enter]");
+    if (!cont) return;
+    var boton = document.getElementById(cont.getAttribute("data-enter"));
+    if (!boton || boton.disabled || boton.offsetParent === null) return;
+    ev.preventDefault();
+    boton.click();
+  });
+
   (function prepararModo() {
     var esAdmin = MODO === "admin";
     document.title = esAdmin ? "Rumbo Admin" : "Rumbo — Panel del conductor";
+    var ico = esAdmin ? "img/icon-rumbo-admin.svg" : "img/icon-rumbo-conductor.svg";
+    [].forEach.call(document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]'), function (l) { l.href = ico; });
     [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
       if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Panel del conductor";
     });
@@ -796,7 +826,7 @@
     if (document.getElementById("gmapsScript")) return;
     var script = document.createElement("script");
     script.id = "gmapsScript";
-    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&callback=alGoogleMapsListo";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry&callback=alGoogleMapsListo";
     document.head.appendChild(script);
   }
   window.alGoogleMapsListo = function () { googleMapsListo = true; };
@@ -894,18 +924,32 @@
     pintarMiQr(sesion.conductor);
     pedirPermisoNotificaciones();
     if (sondeoTimer) clearInterval(sondeoTimer);
-    sondeoTimer = setInterval(function () {
-      cargarPedidos();
-      cargarViajesEnCurso();
-      // Mensajes nuevos de cada viaje en curso: sondeo incremental, solo
-      // pide lo posterior al último mensaje ya recibido.
-      Object.keys(ultimoMensajePorPedido).forEach(cargarMensajesConductor);
-      var enCurso = document.getElementById("listaEnCurso").dataset.ids || "";
-      enCurso.split(",").filter(Boolean).forEach(function (id) {
-        if (!(id in ultimoMensajePorPedido)) cargarMensajesConductor(id);
-      });
-    }, SONDEO_MS);
+    sondeoTimer = setInterval(sincronizar, SONDEO_MS);
   }
+
+  /* UNA consulta cada SONDEO_MS trae pedidos, viajes en curso, mensajes
+     nuevos y ubicación del pasajero. Antes eran 4-5 consultas separadas por
+     ciclo y Apps Script las encolaba (medido: hasta 40 s de atraso). No se
+     consulta con la app en segundo plano ni si la anterior no volvió. */
+  var sincronizando = false;
+  function sincronizar() {
+    if (sincronizando || document.hidden || MODO === "admin") return;
+    sincronizando = true;
+    api({ accion: "sincronizar_conductor", desde: JSON.stringify(ultimoMensajePorPedido) })
+      .then(function (res) {
+        // Backend anterior a la versión 11 no conoce esta consulta: se usan
+        // las consultas sueltas para no dejar la pantalla vacía.
+        if (!res.ok || !res.pendientes) { cargarPedidos(); cargarViajesEnCurso(); return; }
+        pintarPedidos({ ok: true, pedidos: res.pendientes });
+        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso }, res.ubicaciones || {});
+        Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
+      })
+      .catch(function () {})
+      .then(function () { sincronizando = false; });
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && obtenerSesion()) sincronizar();
+  });
 
   /* Mi QR: link propio del conductor (?c=<id>) hacia la landing pública,
      que arrastra el código hasta la web del pasajero. Así cada conductor
@@ -1002,7 +1046,7 @@
   // de conductor tenga permisos de admin, el panel de conductor no muestra
   // administración, y el panel admin no muestra pedidos ni cobros propios.
   var SECCIONES_ADMIN = ["acordeonConductores", "acordeonHistorial"];
-  var TITULOS_ADMIN = ["Tarifas y costos", "Tu cuenta y clave"];
+  var TITULOS_ADMIN = ["Tarifas y costos", "Mi cuenta"];
   function aplicarPermisos() {
     [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
       var titulo = d.querySelector("summary").textContent;
@@ -1520,7 +1564,7 @@
 
   // Sondeo automático de pedidos pendientes: cada cuánto se revisa solo,
   // sin que el conductor tenga que apretar "Actualizar" a mano.
-  var SONDEO_MS = 15000;
+  var SONDEO_MS = 5000;
   var sondeoTimer = null;
   var idsYaAvisados = {}; // para no repetir la notificación del mismo pedido en cada ciclo
 
@@ -1576,7 +1620,16 @@
   var ultimoMensajePorPedido = {};
 
   function cargarViajesEnCurso() {
-    api({ accion: "mis_viajes_confirmados" }).then(function (res) {
+    api({ accion: "mis_viajes_confirmados" }).then(function (res) { pintarViajesEnCurso(res, null); });
+  }
+
+  var rutasPorPedido = {};      // pedido_id -> polilinea codificada
+  var ubicacionAutoActivada = false;
+
+  // ubicaciones: {pedido_id: {lat,lng}} cuando viene de la sincronización;
+  // null si viene de la consulta suelta (entonces se piden aparte).
+  function pintarViajesEnCurso(res, ubicaciones) {
+    (function () {
       var grupo = document.getElementById("grupoEnCurso");
       var lista = document.getElementById("listaEnCurso");
       if (!res.ok) return;
@@ -1600,13 +1653,33 @@
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
         res.pedidos.forEach(function (p) { lista.appendChild(tarjetaEnCurso(p)); });
-        res.pedidos.forEach(function (p) { cargarMensajesConductor(p.pedido_id); });
+        // Tarjetas nuevas = chat vacío: se vuelve a pedir el historial
+        // completo (antes quedaba vacío porque se pedía solo "lo nuevo").
+        res.pedidos.forEach(function (p) { ultimoMensajePorPedido[p.pedido_id] = ""; });
+        if (!ubicaciones) res.pedidos.forEach(function (p) { cargarMensajesConductor(p.pedido_id); });
         // Los mapas viejos dejan de existir cuando cambia la lista (viaje
         // finalizado), si no quedarían referencias a nodos ya borrados.
         mapasPorPedido = {};
       }
-      res.pedidos.forEach(function (p) { actualizarUbicacionPasajero(p.pedido_id); });
-    });
+      res.pedidos.forEach(function (p) {
+        if (p.polilinea) rutasPorPedido[p.pedido_id] = p.polilinea;
+        if (p.estado === "CONFIRMADO") dibujarRutaPedido(p.pedido_id);
+      });
+      if (ubicaciones) {
+        Object.keys(ubicaciones).forEach(function (id) { pintarUbicacionPasajero(id, ubicaciones[id]); });
+      } else {
+        res.pedidos.forEach(function (p) { actualizarUbicacionPasajero(p.pedido_id); });
+      }
+      // Con un viaje confirmado, el pasajero necesita ver el auto: se activa
+      // compartir ubicación una vez por sesión (el conductor puede apagarlo).
+      var hayActivo = res.pedidos.some(function (p) { return p.estado === "CONFIRMADO"; });
+      var chk = document.getElementById("chkUbicacion");
+      if (hayActivo && !chk.checked && !ubicacionAutoActivada) {
+        ubicacionAutoActivada = true;
+        chk.checked = true;
+        chk.dispatchEvent(new Event("change"));
+      }
+    })();
   }
 
   /* Aviso de pago recibido. NUNCA se deduce de que el viaje "desapareció"
@@ -1707,38 +1780,61 @@
      deja el aviso en vez de un mapa vacío que no dice nada. */
   function actualizarUbicacionPasajero(pedidoId) {
     api({ accion: "ubicacion_pasajero", pedido_id: pedidoId }).then(function (res) {
-      if (!res.ok || !res.ubicacion) return;
-      var cont = document.querySelector('[data-mapa="' + pedidoId + '"]');
-      var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
-      if (!cont || !googleMapsListo) return;
-      var pos = { lat: Number(res.ubicacion.lat), lng: Number(res.ubicacion.lng) };
-      if (isNaN(pos.lat) || isNaN(pos.lng)) return;
-
-      cont.classList.add("activo");
-      if (aviso) aviso.classList.add("oculto");
-
-      var m = mapasPorPedido[pedidoId];
-      if (!m) {
-        var mapa = new google.maps.Map(cont, {
-          zoom: 15, center: pos, disableDefaultUI: true, zoomControl: true
-        });
-        m = { mapa: mapa, marcador: new google.maps.Marker({ map: mapa, title: "Pasajero" }) };
-        mapasPorPedido[pedidoId] = m;
-      }
-      m.marcador.setPosition(pos);
-      m.mapa.setCenter(pos);
+      if (res.ok) pintarUbicacionPasajero(pedidoId, res.ubicacion);
     });
+  }
+
+  // Mapa del viaje: ruta origen→destino dibujada + marcador del pasajero.
+  function mapaDelPedido(pedidoId, centro) {
+    var cont = document.querySelector('[data-mapa="' + pedidoId + '"]');
+    if (!cont || !googleMapsListo) return null;
+    var m = mapasPorPedido[pedidoId];
+    if (!m) {
+      cont.classList.add("activo");
+      var mapa = new google.maps.Map(cont, { zoom: 14, center: centro, disableDefaultUI: true, zoomControl: true });
+      m = { mapa: mapa, marcador: null, linea: null };
+      mapasPorPedido[pedidoId] = m;
+    }
+    return m;
+  }
+
+  function dibujarRutaPedido(pedidoId) {
+    var cod = rutasPorPedido[pedidoId];
+    if (!cod || !googleMapsListo || !google.maps.geometry) return;
+    var puntos = google.maps.geometry.encoding.decodePath(cod);
+    if (!puntos.length) return;
+    var m = mapaDelPedido(pedidoId, puntos[0]);
+    if (!m || m.linea) return;
+    m.linea = new google.maps.Polyline({ map: m.mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (pt) { limites.extend(pt); });
+    m.mapa.fitBounds(limites, 30);
+  }
+
+  function pintarUbicacionPasajero(pedidoId, ubicacion) {
+    if (!ubicacion) return;
+    var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
+    if (isNaN(pos.lat) || isNaN(pos.lng)) return;
+    var m = mapaDelPedido(pedidoId, pos);
+    if (!m) return;
+    var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
+    if (aviso) aviso.classList.add("oculto");
+    if (!m.marcador) m.marcador = new google.maps.Marker({ map: m.mapa, title: "Pasajero" });
+    m.marcador.setPosition(pos);
+    // Con ruta dibujada no se recentra: se pierde el encuadre de la ruta.
+    if (!m.linea) m.mapa.setCenter(pos);
   }
 
   function cargarMensajesConductor(pedidoId) {
     api({ accion: "mensajes_conductor", pedido_id: pedidoId, desde: ultimoMensajePorPedido[pedidoId] || "" })
-      .then(function (res) {
-        if (!res.ok || !res.mensajes.length) return;
-        res.mensajes.forEach(function (m) {
-          pintarMensajeConductor(pedidoId, m, m.autor === "conductor");
-          ultimoMensajePorPedido[pedidoId] = m.creado_en;
-        });
-      });
+      .then(function (res) { if (res.ok) pintarMensajesDe(pedidoId, res.mensajes); });
+  }
+
+  function pintarMensajesDe(pedidoId, mensajes) {
+    (mensajes || []).forEach(function (m) {
+      pintarMensajeConductor(pedidoId, m, m.autor === "conductor");
+      ultimoMensajePorPedido[pedidoId] = m.creado_en;
+    });
   }
 
   function pintarMensajeConductor(pedidoId, m, esMio) {
@@ -1810,8 +1906,12 @@
   function cargarPedidos() {
     var lista = document.getElementById("listaPedidos");
     if (!lista.dataset.cargadoUnaVez) lista.innerHTML = '<p class="vacio">Cargando pedidos...</p>';
+    api({ accion: "pedidos_pendientes" }).then(pintarPedidos);
+  }
 
-    api({ accion: "pedidos_pendientes" }).then(function (res) {
+  function pintarPedidos(res) {
+    var lista = document.getElementById("listaPedidos");
+    (function () {
       lista.dataset.cargadoUnaVez = "1";
       if (!res.ok) { lista.innerHTML = '<p class="vacio">Error: ' + escapar(res.error) + '</p>'; return; }
 
@@ -1830,7 +1930,7 @@
       if (!res.pedidos.length) { lista.innerHTML = '<p class="vacio">No hay pedidos pendientes.</p>'; return; }
       lista.innerHTML = "";
       res.pedidos.forEach(function (p) { lista.appendChild(pedidoCard(p)); });
-    });
+    })();
   }
 
   document.getElementById("btnRefrescar").addEventListener("click", cargarPedidos);
