@@ -525,14 +525,12 @@
     </div></details>
 
     <details class="acordeon" id="acordeonTarifas"><summary>Tarifas y costos</summary><div class="acordeon-cuerpo">
-    <div class="solo-red" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
-      <div>
-        <div style="font-weight:600;">Cobro uniforme</div>
-        <p class="ayuda" style="margin:2px 0 0;font-size:13px;">Activado: todos cotizan con estos valores. Desactivado: cada conductor usa los de su vehículo.</p>
-      </div>
-      <label class="switch"><input type="checkbox" id="cobroUniforme"><span class="sr-only">Cobro uniforme</span><span class="switch-pista"></span></label>
+    <!-- Conductor: modalidad de cobro que decide el admin. -->
+    <div class="solo-conductor" id="bloqueModoTarifa" style="padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
+      <div style="font-weight:600;" id="modoTarifaTitulo">Tarifa general</div>
+      <p class="ayuda" id="modoTarifaTexto" style="margin:4px 0 10px;font-size:13.5px;"></p>
+      <button class="btn btn-secundario" id="btnSolicitarTarifa" type="button" style="width:100%;">Solicitar tarifa propia</button>
     </div>
-    <p class="pedido-aviso solo-conductor" id="notaUniforme" style="display:none;margin:0 0 14px;">El administrador activó el cobro uniforme: los valores los fija la red y no se pueden editar por ahora.</p>
     <section class="card">
       <div class="card-head">
         <span class="card-title">Costos del vehículo</span>
@@ -567,7 +565,7 @@
           <input type="number" id="consumoRuta" step="0.1">
         </div>
       </div>
-      <div class="fila full solo-red" style="margin-bottom:0;">
+      <div class="fila full" style="margin-bottom:0;">
         <div class="campo">
           <label class="campo-label" for="busquedaMin">Minutos para ir a buscar al pasajero</label>
           <input type="number" id="busquedaMin" step="5">
@@ -1005,9 +1003,14 @@
       res.conductores.sort(function (a, b) { return (a.activo === b.activo) ? 0 : (a.activo ? 1 : -1); });
       lista.innerHTML = res.conductores.map(function (c) {
         var etiqueta = c.solo_admin ? "Administrador" : (!c.activo ? "Pendiente / suspendido" : (c.en_red ? "Activo · en la red" : "Activo · solo su clientela"));
+        if (!c.solo_admin) etiqueta += " · Tarifa " + (c.modo_tarifa === "INDIVIDUAL" ? "propia" : "general") + (c.solicitud_tarifa === "PENDIENTE" ? " · PIDE TARIFA PROPIA" : "");
         var botones = "";
         if (c.conductor_id !== yo) {
           botones += '<button class="btn btn-chico" data-activo="' + escapar(c.conductor_id) + '" data-valor="' + (c.activo ? "NO" : "SI") + '">' + (c.activo ? "Suspender" : "Aprobar") + '</button>';
+          if (!c.solo_admin) {
+            botones += '<button class="btn btn-chico" data-modo="' + escapar(c.conductor_id) + '" data-valor="' + (c.modo_tarifa === "INDIVIDUAL" ? "GENERAL" : "INDIVIDUAL") + '">' +
+              (c.modo_tarifa === "INDIVIDUAL" ? "Pasar a tarifa general" : (c.solicitud_tarifa === "PENDIENTE" ? "Autorizar tarifa propia" : "Dar tarifa propia")) + '</button>';
+          }
           if (c.activo && !c.solo_admin) {
             botones += '<button class="btn btn-chico" data-red="' + escapar(c.conductor_id) + '" data-valor="' + (c.en_red ? "NO" : "SI") + '">' + (c.en_red ? "Sacar de la red" : "Agregar a la red") + '</button>';
           }
@@ -1023,6 +1026,16 @@
   }
 
   document.getElementById("listaConductores").addEventListener("click", function (ev) {
+    var bm = ev.target.closest("[data-modo]");
+    if (bm) {
+      if (!confirm(bm.textContent + "?")) return;
+      bm.disabled = true;
+      apiPost({ accion: "cambiar_modo_tarifa", conductor_id: bm.dataset.modo, modo_tarifa: bm.dataset.valor }).then(function (res) {
+        if (!res.ok) { alert(res.error); bm.disabled = false; return; }
+        cargarConductoresAdmin();
+      });
+      return;
+    }
     var b = ev.target.closest("[data-activo],[data-red]");
     if (!b) return;
     var esActivo = b.hasAttribute("data-activo");
@@ -1058,7 +1071,7 @@
     });
     document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Mi vehículo y costos";
     [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
-    [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { if (el.id !== "notaUniforme") el.style.display = MODO === "admin" ? "none" : ""; });
+    [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { el.style.display = MODO === "admin" ? "none" : ""; });
     if (MODO === "admin") {
       document.getElementById("tabPedidos").style.display = "none";
       document.getElementById("tabEnCurso").style.display = "none";
@@ -1306,21 +1319,41 @@
   // Conductor: valores de SU vehículo (combustible, rendimiento, valor hora),
   // guardados en su cuenta. Admin: tarifas de toda la red (horarios, días,
   // límite de km, minutos de búsqueda). Cada auto gasta distinto.
-  var CAMPOS_MI_VEHICULO = ["precioComb", "consumoCiudad", "consumoRuta", "valorHoraValle", "valorHoraPunta"];
+  var CAMPOS_MI_VEHICULO = ["precioComb", "consumoCiudad", "consumoRuta", "valorHoraValle", "valorHoraPunta", "busquedaMin"];
+
+  // General: se ven los valores de la red, bloqueados, con opción de pedir la
+  // propia. Individual (autorizada por el admin): editables y se guardan.
+  function pintarModoTarifa(modo, solicitud) {
+    var individual = modo === "INDIVIDUAL";
+    document.getElementById("modoTarifaTitulo").textContent = individual ? "Tarifa propia (autorizada)" : "Tarifa general de la red";
+    document.getElementById("modoTarifaTexto").textContent = individual
+      ? "Tus pasajeros cotizan con estos valores de tu vehículo."
+      : (solicitud === "PENDIENTE"
+          ? "Pediste tarifa propia. Esperando autorización del administrador."
+          : "Tus pasajeros cotizan con los valores de la red. Si tu vehículo tiene costos distintos, pide tarifa propia.");
+    var boton = document.getElementById("btnSolicitarTarifa");
+    boton.style.display = individual ? "none" : "";
+    boton.disabled = solicitud === "PENDIENTE";
+    boton.textContent = solicitud === "PENDIENTE" ? "Solicitud enviada" : "Solicitar tarifa propia";
+    CAMPOS_MI_VEHICULO.concat(["tipoCombustible", "btnGuardarTarifas"]).forEach(function (id) {
+      document.getElementById(id).disabled = !individual;
+    });
+  }
+
+  document.getElementById("btnSolicitarTarifa").addEventListener("click", function () {
+    if (!confirm("¿Pedir al administrador que autorice tu tarifa propia?")) return;
+    var boton = this; boton.disabled = true;
+    apiPost({ accion: "solicitar_tarifa_propia" }).then(function (res) {
+      if (!res.ok) { alert(res.error); boton.disabled = false; return; }
+      pintarModoTarifa("GENERAL", "PENDIENTE");
+    });
+  });
 
   function cargarTarifas() {
     api({ accion: MODO === "admin" ? "tarifas" : "mis_tarifas" }).then(function (res) {
       if (!res.ok) return;
       if (res.tipo_combustible !== undefined) document.getElementById("tipoCombustible").value = res.tipo_combustible || "";
-      if (MODO === "admin") {
-        document.getElementById("cobroUniforme").checked = res.tarifas.cobroUniforme === true;
-      } else {
-        var bloqueado = res.cobro_uniforme === true;
-        document.getElementById("notaUniforme").style.display = bloqueado ? "" : "none";
-        CAMPOS_MI_VEHICULO.concat(["tipoCombustible", "btnGuardarTarifas"]).forEach(function (id) {
-          document.getElementById(id).disabled = bloqueado;
-        });
-      }
+      if (MODO !== "admin") pintarModoTarifa(res.modo_tarifa, res.solicitud_tarifa);
       CAMPOS_TARIFA.forEach(function (c) {
         if (res.tarifas[c] !== undefined) document.getElementById(c).value = res.tarifas[c];
       });
@@ -1336,7 +1369,6 @@
       tarifas[c] = el.type === "number" ? parseFloat(el.value) || 0 : el.value;
     });
     tarifas.diasPuntaTodoElDia = diasPuntaSeleccionados;
-    tarifas.cobroUniforme = document.getElementById("cobroUniforme").checked;
     var msg = document.getElementById("tarifasMsg");
     msg.textContent = "Guardando...";
     msg.className = "msg";

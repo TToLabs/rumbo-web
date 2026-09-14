@@ -902,7 +902,10 @@
   });
 
   function cargarTarifas() {
-    return api({ accion: "tarifas" }).then(function (res) {
+    // Se cotiza con la tarifa del conductor del QR: la misma con la que el
+    // backend cobra el pedido. Sin conductor, la de la red.
+    var cid = obtenerConductorId();
+    return api(cid ? { accion: "tarifas", conductor_id: cid } : { accion: "tarifas" }).then(function (res) {
       if (res.ok) tarifas = res.tarifas;
     });
   }
