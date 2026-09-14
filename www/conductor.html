@@ -144,7 +144,8 @@
   .campo-label { font-size: 14px; font-weight: 500; color: var(--text-2); }
   .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
   .fila.full { grid-template-columns: 1fr; }
-  input[type="number"], input[type="text"], input[type="time"] {
+  input[type="number"], input[type="text"], input[type="time"],
+  input[type="password"], input[type="email"], input[type="month"], select {
     width: 100%; background: var(--surface); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--r-input);
     padding: 11px 13px; font: inherit; font-size: 17px;
@@ -182,6 +183,12 @@
     background: var(--surface-2); border: 1px solid var(--border); flex: none;
   }
   .veh-foto-preview:not([src]), .veh-foto-preview[src=""] { visibility: hidden; }
+
+  /* ---------- Ingreso: separador "o" ---------- */
+  .separador-o { display: flex; align-items: center; gap: 10px; margin: 20px 0 12px; color: var(--text-3); font-size: 14px; }
+  .separador-o::before, .separador-o::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .btn.btn-secundario { background: var(--surface); color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn.btn-secundario:hover:not(:disabled) { background: var(--primary-soft); }
 
   /* ---------- Ajustes: secciones plegables ---------- */
   /* Todo arranca cerrado: son opciones sensibles (cobros, clave, tarifas) y
@@ -339,7 +346,7 @@
       </span>
     </div>
   </header>
-  <section class="card">
+  <section class="card" id="cardIngreso">
     <div class="card-head"><span class="card-title">Ingresa a tu cuenta</span></div>
     <div class="campo" style="margin-bottom:12px;">
       <label class="campo-label" for="loginUsuario">Usuario</label>
@@ -351,18 +358,22 @@
     </div>
     <button class="btn btn-primario" id="btnLogin" type="button" style="width:100%;">Ingresar</button>
     <p class="msg" id="loginMsg" style="margin:12px 2px 0;"></p>
+    <div id="bloqueCrearCuenta">
+      <div class="separador-o"><span>¿Eres conductor nuevo?</span></div>
+      <button class="btn btn-secundario" id="btnIrRegistro" type="button" style="width:100%;">Crear cuenta de conductor</button>
+    </div>
   </section>
 
   <!-- Registro: la cuenta queda PENDIENTE hasta que un administrador la
        apruebe. Recién ahí puede ingresar (regla de la red). -->
-  <details class="acordeon" id="acordeonRegistro">
-    <summary>¿Eres conductor nuevo? Crear cuenta</summary>
-    <div class="acordeon-cuerpo">
-      <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Un administrador revisa y aprueba tu cuenta; te avisamos por correo o WhatsApp cuando puedas ingresar.</p>
+  <section class="card" id="acordeonRegistro" style="display:none;">
+    <div class="card-head"><span class="card-title">Crear cuenta de conductor</span></div>
+    <div>
+      <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Un administrador revisa y aprueba tu cuenta; cuando la apruebe podrás ingresar con tu correo y clave.</p>
       <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regNombre">Nombre y apellido</label><input type="text" id="regNombre" autocomplete="name"></div>
       <div class="fila">
         <div class="campo"><label class="campo-label" for="regTelefono">WhatsApp</label><input type="text" id="regTelefono" inputmode="numeric" placeholder="56912345678" autocomplete="tel"></div>
-        <div class="campo"><label class="campo-label" for="regEmail">Correo (será tu usuario)</label><input type="email" id="regEmail" autocomplete="email" autocapitalize="none"></div>
+        <div class="campo"><label class="campo-label" for="regEmail">Correo (usuario)</label><input type="email" id="regEmail" autocomplete="email" autocapitalize="none"></div>
       </div>
       <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regClave">Clave (mínimo 6 caracteres)</label><input type="password" id="regClave" autocomplete="new-password"></div>
       <p class="campo-label" style="margin:6px 0 8px;">Tu vehículo</p>
@@ -380,8 +391,9 @@
       </label>
       <button class="btn btn-medio" id="btnRegistrar" type="button" style="width:100%;">Enviar solicitud</button>
       <p class="msg" id="regMsg" style="margin:12px 2px 0;"></p>
+      <button class="btn btn-chico" id="btnVolverIngreso" type="button" style="width:100%;margin-top:14px;">Ya tengo cuenta · Ingresar</button>
     </div>
-  </details>
+  </section>
 
   <!-- Solo tiene sentido en el navegador: dentro de la app instalada se oculta. -->
   <a class="btn btn-chico" id="linkDescargaApp" href="#" style="width:100%;margin-top:4px;"></a>
@@ -732,7 +744,8 @@
     [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
       if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Panel del conductor";
     });
-    document.getElementById("acordeonRegistro").style.display = esAdmin ? "none" : "";
+    // El admin no se registra desde acá: solo el panel de conductor ofrece crear cuenta.
+    document.getElementById("bloqueCrearCuenta").style.display = esAdmin ? "none" : "";
     var link = document.getElementById("linkDescargaApp");
     link.href = URL_APK;
     link.textContent = esAdmin ? "Descargar app Rumbo Admin (Android)" : "Descargar app Rumbo Conductor (Android)";
@@ -883,6 +896,15 @@
   /* ---------------------------------------------------------------
      Registro de conductor nuevo: queda pendiente de aprobación.
      --------------------------------------------------------------- */
+  function mostrarRegistro(si) {
+    document.getElementById("cardIngreso").style.display = si ? "none" : "";
+    document.getElementById("acordeonRegistro").style.display = si ? "" : "none";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    (si ? document.getElementById("regNombre") : document.getElementById("loginUsuario")).focus();
+  }
+  document.getElementById("btnIrRegistro").addEventListener("click", function () { mostrarRegistro(true); });
+  document.getElementById("btnVolverIngreso").addEventListener("click", function () { mostrarRegistro(false); });
+
   document.getElementById("btnRegistrar").addEventListener("click", function () {
     var boton = this, msg = document.getElementById("regMsg");
     function v(id) { return document.getElementById(id).value.trim(); }
