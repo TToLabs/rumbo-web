@@ -1402,23 +1402,33 @@
     });
   }
 
-  /* Un viaje con cobro por Mercado Pago sale de "En curso" recién cuando el
-     backend confirma el pago con Mercado Pago. Si desaparece de la lista
-     estando pendiente, es que entró la plata: se avisa con sonido. */
+  /* Aviso de pago recibido. NUNCA se deduce de que el viaje "desapareció"
+     de la lista: también desaparece al cambiar de cuenta, al cerrar sesión o
+     si falla una consulta, y eso disparaba avisos falsos de plata que no
+     entró. Si un cobro pendiente deja de estar, se le pregunta al backend
+     por ESE pedido y solo se avisa si confirma estado_pago = PAGADO por
+     Mercado Pago (que a su vez lo verificó con Mercado Pago). */
   var cobrosPendientes = {}; // pedido_id -> total
+  var cobrosDeConductor = ""; // de qué cuenta son los pendientes vigilados
   function avisarPagosRecibidos(pedidos) {
+    var ses = obtenerSesion();
+    var yo = ses ? ses.conductor.conductor_id : "";
+    if (yo !== cobrosDeConductor) { cobrosPendientes = {}; cobrosDeConductor = yo; }
+
     var siguen = {};
     pedidos.forEach(function (p) { if (p.estado_pago === "PENDIENTE") siguen[p.pedido_id] = p.total; });
     Object.keys(cobrosPendientes).forEach(function (id) {
-      if (!(id in siguen) && !cobrosEfectivoPropios[id]) {
-        sonarAviso();
-        alert("Pago recibido por Mercado Pago: " + fmt(cobrosPendientes[id]));
-      }
-      delete cobrosEfectivoPropios[id];
+      if (id in siguen) return;
+      api({ accion: "estado_pedido", pedido_id: id }).then(function (res) {
+        if (!res || !res.ok) return;
+        if (res.estado_pago === "PAGADO" && res.forma_pago === "MERCADOPAGO") {
+          sonarAviso();
+          alert("Pago recibido por Mercado Pago: " + fmt(res.total));
+        }
+      });
     });
     cobrosPendientes = siguen;
   }
-  var cobrosEfectivoPropios = {};
 
   function tarjetaEnCurso(p) {
     var div = document.createElement("div");
@@ -1566,7 +1576,6 @@
       finalizar.disabled = true;
       apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar, forma_pago: forma }).then(function (res) {
         if (!res.ok) { alert("Error: " + res.error); finalizar.disabled = false; return; }
-        if (forma === "EFECTIVO") cobrosEfectivoPropios[finalizar.dataset.finalizar] = true;
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
       });
@@ -1576,7 +1585,6 @@
     if (efectivo) {
       if (!confirm("¿El pasajero te pagó en efectivo? Se cierra el cobro por Mercado Pago.")) return;
       efectivo.disabled = true;
-      cobrosEfectivoPropios[efectivo.dataset.efectivo] = true;
       apiPost({ accion: "marcar_pagado_efectivo", pedido_id: efectivo.dataset.efectivo }).then(function (res) {
         if (!res.ok) { alert("Error: " + res.error); efectivo.disabled = false; return; }
         document.getElementById("listaEnCurso").dataset.ids = "";
