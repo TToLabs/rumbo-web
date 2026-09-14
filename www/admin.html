@@ -206,6 +206,8 @@
   /* Las tarjetas de adentro pierden su marco: el marco ya lo pone el plegable. */
   .acordeon .card { border: none; box-shadow: none; padding: 0; margin: 0 0 18px; background: none; }
   .acordeon.simple .card-head { display: none; }
+  .acordeon .estado-conductor { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
+  .acordeon .estado-titulo { display: none; }
 
   /* ---------- Barra de navegación inferior ---------- */
   .nav-inferior {
@@ -357,18 +359,6 @@
     <button class="btn btn-chico" id="btnCerrarSesion" type="button">Salir</button>
   </header>
 
-  <div class="estado-conductor" id="estadoConductor">
-    <div class="estado-texto">
-      <div class="estado-titulo">Compartir mi ubicación</div>
-      <p class="msg" id="ubicacionMsg" style="margin:2px 0 0;font-size:12.5px;">Actívalo cuando salgas a un viaje confirmado.</p>
-    </div>
-    <label class="switch">
-      <input type="checkbox" id="chkUbicacion">
-      <span class="sr-only">Compartir ubicación en vivo</span>
-      <span class="switch-pista"></span>
-    </label>
-  </div>
-
 
   <div id="panelEnCurso" role="tabpanel" aria-labelledby="tabEnCurso" style="display:none;">
     <section class="card" id="grupoEnCurso" style="display:none;">
@@ -395,6 +385,19 @@
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <details class="acordeon simple"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
+    <div class="estado-conductor" id="estadoConductor">
+      <div class="estado-texto">
+        <div class="estado-titulo">Compartir mi ubicación</div>
+        <p class="msg" id="ubicacionMsg" style="margin:2px 0 0;font-size:12.5px;">Actívalo cuando salgas a un viaje confirmado.</p>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="chkUbicacion">
+        <span class="sr-only">Compartir ubicación en vivo</span>
+        <span class="switch-pista"></span>
+      </label>
+    </div>
+    </div></details>
     <details class="acordeon simple"><summary>Cobrar con Mercado Pago</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMercadoPago">
       <div class="card-head"><span class="card-title">Cobrar con Mercado Pago</span></div>
