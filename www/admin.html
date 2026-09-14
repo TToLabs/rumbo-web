@@ -411,7 +411,6 @@
       </span>
     </div>
     <div class="topbar-spacer"></div>
-    <button class="btn btn-chico" id="btnCerrarSesion" type="button">Salir</button>
   </header>
 
 
@@ -663,6 +662,9 @@
     </div></details>
 
     <details class="acordeon simple"><summary>Tu cuenta y clave</summary><div class="acordeon-cuerpo">
+    <!-- Cerrar sesión solo desde acá, a propósito: la sesión queda abierta
+         (hasta 5 dispositivos) y no debe cerrarse por un toque accidental. -->
+    <button class="btn btn-danger" id="btnCerrarSesion" type="button" style="width:100%;margin:0 0 18px;">Cerrar sesión en este dispositivo</button>
     <section class="card">
       <div class="card-head"><span class="card-title">Tu cuenta</span></div>
       <div class="campo" style="margin-bottom:12px;">
@@ -1204,6 +1206,7 @@
   });
 
   document.getElementById("btnCerrarSesion").addEventListener("click", function () {
+    if (!confirm("¿Cerrar sesión en este dispositivo? Tendrás que volver a ingresar con tu usuario y clave.")) return;
     apiPost({ accion: "cerrar_sesion" }).catch(function () {});
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     if (sondeoTimer) clearInterval(sondeoTimer);
