@@ -181,6 +181,32 @@
   }
   .veh-foto-preview:not([src]), .veh-foto-preview[src=""] { visibility: hidden; }
 
+  /* ---------- Ajustes: secciones plegables ---------- */
+  /* Todo arranca cerrado: son opciones sensibles (cobros, clave, tarifas) y
+     no deben quedar a un toque accidental de distancia. <details> es nativo:
+     abre/cierra sin JS y es accesible por teclado y lector de pantalla. */
+  .acordeon {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-card); margin-bottom: 12px; box-shadow: var(--shadow-sm);
+  }
+  .acordeon > summary {
+    list-style: none; cursor: pointer; padding: 18px 20px;
+    font-size: 17px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .acordeon > summary::-webkit-details-marker { display: none; }
+  .acordeon > summary::after {
+    content: ""; width: 9px; height: 9px; border-right: 2px solid var(--text-3);
+    border-bottom: 2px solid var(--text-3); transform: rotate(45deg);
+    transition: transform 0.15s ease; margin-left: 12px; flex: none;
+  }
+  .acordeon[open] > summary::after { transform: rotate(-135deg); }
+  .acordeon > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: var(--r-card); }
+  .acordeon-cuerpo { padding: 0 20px 18px; }
+  /* Las tarjetas de adentro pierden su marco: el marco ya lo pone el plegable. */
+  .acordeon .card { border: none; box-shadow: none; padding: 0; margin: 0 0 18px; background: none; }
+  .acordeon.simple .card-head { display: none; }
+
   /* ---------- Barra de navegación inferior ---------- */
   .nav-inferior {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
@@ -369,6 +395,7 @@
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <details class="acordeon simple"><summary>Cobrar con Mercado Pago</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMercadoPago">
       <div class="card-head"><span class="card-title">Cobrar con Mercado Pago</span></div>
       <p class="ayuda" style="margin:0 0 12px;">
@@ -381,7 +408,9 @@
         Importante: en tu cuenta de Mercado Pago <strong>no actives "cuotas sin interés"</strong>; si lo activás, ese costo lo pagás vos en cada viaje.
       </p>
     </section>
+    </div></details>
 
+    <details class="acordeon simple"><summary>Mi QR para pasajeros</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMiQr">
       <div class="card-head"><span class="card-title">Mi QR para pasajeros</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
@@ -398,7 +427,9 @@
       <button class="btn btn-chico" id="btnImprimirQr" type="button" style="width:100%;margin-top:8px;">Imprimir / guardar QR</button>
       <p class="msg" id="miQrMsg" style="margin:10px 2px 0;"></p>
     </section>
+    </div></details>
 
+    <details class="acordeon"><summary>Tarifas y costos</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head">
         <span class="card-title">Costos del vehículo</span>
@@ -502,7 +533,9 @@
 
     <button class="btn btn-primario" id="btnGuardarTarifas" type="button">Guardar cambios</button>
     <p class="msg" id="tarifasMsg" style="margin:12px 2px 0;"></p>
+    </div></details>
 
+    <details class="acordeon simple"><summary>Mi vehículo</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head"><span class="card-title">Mi vehículo</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
@@ -539,7 +572,9 @@
       <button class="btn btn-chico" id="btnGuardarVehiculo" type="button">Guardar vehículo</button>
       <p class="msg" id="vehiculoMsg" style="margin:10px 2px 0;"></p>
     </section>
+    </div></details>
 
+    <details class="acordeon simple"><summary>Tu cuenta y clave</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head"><span class="card-title">Tu cuenta</span></div>
       <div class="campo" style="margin-bottom:12px;">
@@ -553,7 +588,9 @@
       <button class="btn btn-chico" id="btnCambiarClave" type="button">Cambiar clave</button>
       <p class="msg" id="claveMsg" style="margin:10px 2px 0;"></p>
     </section>
+    </div></details>
 
+    <details class="acordeon simple"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
@@ -571,6 +608,7 @@
     </section>
     <button class="btn btn-primario" id="btnGuardarDisponibilidad" type="button">Guardar disponibilidad</button>
     <p class="msg" id="disponibilidadMsg" style="margin:12px 2px 0;"></p>
+    </div></details>
   </div>
 </div>
 
