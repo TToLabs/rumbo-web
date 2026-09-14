@@ -343,6 +343,36 @@
     <button class="btn btn-primario" id="btnLogin" type="button" style="width:100%;">Ingresar</button>
     <p class="msg" id="loginMsg" style="margin:12px 2px 0;"></p>
   </section>
+
+  <!-- Registro: la cuenta queda PENDIENTE hasta que un administrador la
+       apruebe. Recién ahí puede ingresar (regla de la red). -->
+  <details class="acordeon" id="acordeonRegistro">
+    <summary>¿Eres conductor nuevo? Crear cuenta</summary>
+    <div class="acordeon-cuerpo">
+      <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Un administrador revisa y aprueba tu cuenta; te avisamos por correo o WhatsApp cuando puedas ingresar.</p>
+      <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regNombre">Nombre y apellido</label><input type="text" id="regNombre" autocomplete="name"></div>
+      <div class="fila">
+        <div class="campo"><label class="campo-label" for="regTelefono">WhatsApp</label><input type="text" id="regTelefono" inputmode="numeric" placeholder="56912345678" autocomplete="tel"></div>
+        <div class="campo"><label class="campo-label" for="regEmail">Correo (será tu usuario)</label><input type="email" id="regEmail" autocomplete="email" autocapitalize="none"></div>
+      </div>
+      <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regClave">Clave (mínimo 6 caracteres)</label><input type="password" id="regClave" autocomplete="new-password"></div>
+      <p class="campo-label" style="margin:6px 0 8px;">Tu vehículo</p>
+      <div class="fila">
+        <div class="campo"><label class="campo-label" for="regPatente">Patente</label><input type="text" id="regPatente" autocapitalize="characters"></div>
+        <div class="campo"><label class="campo-label" for="regColor">Color</label><input type="text" id="regColor"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label class="campo-label" for="regMarca">Marca</label><input type="text" id="regMarca"></div>
+        <div class="campo"><label class="campo-label" for="regModelo">Modelo</label><input type="text" id="regModelo"></div>
+      </div>
+      <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--text-2);margin:6px 0 14px;">
+        <input type="checkbox" id="regTerminos" style="width:auto;margin-top:3px;">
+        <span>Declaro que mis datos son reales y acepto que Rumbo los use para coordinar viajes con pasajeros.</span>
+      </label>
+      <button class="btn btn-medio" id="btnRegistrar" type="button" style="width:100%;">Enviar solicitud</button>
+      <p class="msg" id="regMsg" style="margin:12px 2px 0;"></p>
+    </div>
+  </details>
 </div>
 
 <div class="app" id="pantallaApp" style="display:none;">
@@ -385,6 +415,16 @@
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <!-- Solo administradores: aprobar cuentas nuevas y decidir quién recibe
+         viajes derivados de otros conductores. -->
+    <details class="acordeon" id="acordeonConductores" style="display:none;">
+      <summary>Conductores (administración)</summary>
+      <div class="acordeon-cuerpo">
+        <p class="ayuda" style="margin:0 0 12px;"><strong>Aprobar</strong>: puede ingresar y trabajar con su clientela. <strong>En la red</strong>: además recibe viajes que otros conductores no pudieron tomar.</p>
+        <div id="listaConductores"><p class="vacio">Cargando...</p></div>
+      </div>
+    </details>
+
     <details class="acordeon simple"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
     <div class="estado-conductor" id="estadoConductor">
       <div class="estado-texto">
@@ -711,7 +751,12 @@
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
     // Siempre al entrar: el conductor vuelve de vincular en el navegador y
     // tiene que ver el cambio sin cerrar la app.
-    if (cual === "ajustes") cargarEstadoMp();
+    if (cual === "ajustes") {
+      var ses = obtenerSesion();
+      var c = ses ? ses.conductor : {};
+      if (!c.solo_admin) cargarEstadoMp();
+      if (c.es_admin) cargarConductoresAdmin();
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -727,6 +772,13 @@
   function entrar(sesion) {
     document.getElementById("brandSubConductor").textContent = "Hola, " + sesion.conductor.nombre;
     mostrarPantalla("app");
+    aplicarPermisos(sesion.conductor);
+    if (sesion.conductor.solo_admin) {
+      // Cuenta solo de administración: sin pedidos, sin sondeo, sin mapa.
+      cargarTarifas();
+      mostrarPestana("ajustes");
+      return;
+    }
     cargarTarifas();
     cargarPedidos();
     cargarViajesEnCurso();
@@ -753,6 +805,97 @@
      reparte SU QR sin depender de que alguien se lo genere a mano. */
   var LANDING_PASAJERO = "https://ttolabs.github.io/rumbo-web/";
   var miLinkPasajero = "";
+
+  /* ---------------------------------------------------------------
+     Registro de conductor nuevo: queda pendiente de aprobación.
+     --------------------------------------------------------------- */
+  document.getElementById("btnRegistrar").addEventListener("click", function () {
+    var boton = this, msg = document.getElementById("regMsg");
+    function v(id) { return document.getElementById(id).value.trim(); }
+    boton.disabled = true;
+    msg.textContent = "Enviando..."; msg.className = "msg";
+    apiPost({
+      accion: "registrar_conductor", nombre: v("regNombre"), telefono: v("regTelefono"),
+      email: v("regEmail"), clave: document.getElementById("regClave").value,
+      vehiculo_patente: v("regPatente"), vehiculo_color: v("regColor"),
+      vehiculo_marca: v("regMarca"), vehiculo_modelo: v("regModelo"),
+      acepta_terminos: document.getElementById("regTerminos").checked
+    }).then(function (res) {
+      boton.disabled = false;
+      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      msg.textContent = "Solicitud enviada. Cuando el administrador apruebe tu cuenta, podrás ingresar con tu correo y clave.";
+      msg.className = "msg ok";
+      ["regNombre","regTelefono","regEmail","regClave","regPatente","regColor","regMarca","regModelo"].forEach(function (id) { document.getElementById(id).value = ""; });
+      document.getElementById("regTerminos").checked = false;
+    }).catch(function (err) {
+      boton.disabled = false;
+      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+    });
+  });
+
+  /* ---------------------------------------------------------------
+     Administración de conductores (solo admin).
+     --------------------------------------------------------------- */
+  function cargarConductoresAdmin() {
+    var lista = document.getElementById("listaConductores");
+    apiPost({ accion: "listar_conductores" }).then(function (res) {
+      if (!res.ok) { lista.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
+      var yo = (obtenerSesion() || { conductor: {} }).conductor.conductor_id;
+      // Pendientes primero: es lo que el admin viene a resolver.
+      res.conductores.sort(function (a, b) { return (a.activo === b.activo) ? 0 : (a.activo ? 1 : -1); });
+      lista.innerHTML = res.conductores.map(function (c) {
+        var etiqueta = c.solo_admin ? "Administrador" : (!c.activo ? "Pendiente / suspendido" : (c.en_red ? "Activo · en la red" : "Activo · solo su clientela"));
+        var botones = "";
+        if (c.conductor_id !== yo) {
+          botones += '<button class="btn btn-chico" data-activo="' + escapar(c.conductor_id) + '" data-valor="' + (c.activo ? "NO" : "SI") + '">' + (c.activo ? "Suspender" : "Aprobar") + '</button>';
+          if (c.activo && !c.solo_admin) {
+            botones += '<button class="btn btn-chico" data-red="' + escapar(c.conductor_id) + '" data-valor="' + (c.en_red ? "NO" : "SI") + '">' + (c.en_red ? "Sacar de la red" : "Agregar a la red") + '</button>';
+          }
+        }
+        return '<div class="pedido-card" style="margin-bottom:10px;">' +
+          '<div class="pedido-cliente">' + escapar(c.nombre) + (c.conductor_id === yo ? " (tú)" : "") + '</div>' +
+          '<div class="msg" style="margin:2px 0 6px;">' + escapar(etiqueta) + '</div>' +
+          '<div class="msg" style="margin:0 0 8px;font-size:13.5px;">' + escapar(c.email) + ' · +' + escapar(c.telefono) + (c.vehiculo ? '<br>' + escapar(c.vehiculo) : '') + '</div>' +
+          (botones ? '<div class="btn-row">' + botones + '</div>' : '') +
+        '</div>';
+      }).join("") || '<p class="vacio">No hay conductores.</p>';
+    });
+  }
+
+  document.getElementById("listaConductores").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-activo],[data-red]");
+    if (!b) return;
+    var esActivo = b.hasAttribute("data-activo");
+    var id = esActivo ? b.dataset.activo : b.dataset.red;
+    var valor = b.dataset.valor;
+    if (!confirm(b.textContent + "?")) return;
+    b.disabled = true;
+    apiPost(esActivo
+      ? { accion: "cambiar_activo", conductor_id: id, activo: valor }
+      : { accion: "cambiar_en_red", conductor_id: id, en_red: valor }
+    ).then(function (res) {
+      if (!res.ok) { alert(res.error); b.disabled = false; return; }
+      cargarConductoresAdmin();
+    });
+  });
+
+  // Qué ve cada tipo de cuenta. Solo-admin: únicamente administración (no
+  // recibe viajes). Conductor sin admin: no ve tarifas de red, que solo el
+  // admin puede guardar (el backend lo rechazaría igual).
+  function aplicarPermisos(c) {
+    document.getElementById("acordeonConductores").style.display = c.es_admin ? "block" : "none";
+    var tarifas = [].filter.call(document.querySelectorAll("#panelAjustes > details > summary"), function (s) { return s.textContent === "Tarifas y costos"; })[0];
+    if (tarifas) tarifas.parentNode.style.display = c.es_admin ? "block" : "none";
+    if (c.solo_admin) {
+      document.getElementById("tabPedidos").style.display = "none";
+      document.getElementById("tabEnCurso").style.display = "none";
+      [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
+        if (d.id !== "acordeonConductores" && d.querySelector("summary").textContent !== "Tarifas y costos" &&
+            d.querySelector("summary").textContent !== "Tu cuenta y clave") d.style.display = "none";
+      });
+      document.getElementById("navConductor").style.gridTemplateColumns = "1fr";
+    }
+  }
 
   function cargarEstadoMp() {
     var estado = document.getElementById("mpEstado");
