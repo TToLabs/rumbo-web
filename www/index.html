@@ -211,7 +211,8 @@
   .campo { display: flex; flex-direction: column; gap: 6px; }
   .campo-label { font-size: 14px; font-weight: 500; color: var(--text-2); }
   .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  input[type="text"], input[type="date"], input[type="time"], input[type="number"] {
+  input[type="text"], input[type="date"], input[type="time"], input[type="number"],
+  input[type="email"], input[type="password"] {
     width: 100%; background: var(--surface); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--r-input);
     padding: 12px 14px; font: inherit; font-size: 17px; font-weight: 400;
@@ -374,6 +375,9 @@
   .btn:active:not(:disabled), .nav-item:active, .tarifa-dia:active, .seg-btn:active { transform: scale(0.96); }
   .btn.enviando { opacity: 0.7; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { .btn:active, .nav-item:active { transform: none; } }
+
+  .btn.btn-peligro { background: transparent; color: #B42318; border: 1.5px solid #B42318; }
+  .btn.btn-peligro:hover:not(:disabled) { background: rgba(180, 35, 24, 0.08); }
 </style>
 </head>
 <body>
@@ -584,7 +588,11 @@
         <span class="card-title">Crea tu cuenta</span>
       </div>
       <p class="nota" style="margin:0 0 14px;">Una sola vez. Así tu conductor te reconoce en cada viaje.</p>
-      <div class="campo" style="margin-bottom:12px;">
+      <div class="segmentado" role="group" aria-label="Tipo de acceso" style="margin-bottom:14px;">
+        <button class="seg-btn active" id="modoCrear" type="button">Crear cuenta</button>
+        <button class="seg-btn" id="modoIngresar" type="button">Ya tengo cuenta</button>
+      </div>
+      <div class="campo solo-crear" style="margin-bottom:12px;">
         <label class="campo-label" for="nombreCliente">Nombre y apellido</label>
         <input type="text" id="nombreCliente" placeholder="Tu nombre" autocomplete="name">
       </div>
@@ -592,11 +600,15 @@
         <label class="campo-label" for="telefonoCliente">WhatsApp</label>
         <input type="text" id="telefonoCliente" placeholder="56912345678" inputmode="numeric" autocomplete="tel">
       </div>
-      <div class="campo" style="margin-bottom:16px;">
+      <div class="campo solo-crear" style="margin-bottom:12px;">
         <label class="campo-label" for="correoCliente">Correo</label>
         <input type="email" id="correoCliente" placeholder="tucorreo@ejemplo.cl" autocomplete="email">
       </div>
-      <label class="check-fila" style="margin-bottom:16px;">
+      <div class="campo" style="margin-bottom:16px;">
+        <label class="campo-label" for="claveCliente">Clave (mínimo 6 caracteres)</label>
+        <input type="password" id="claveCliente" autocomplete="current-password">
+      </div>
+      <label class="check-fila solo-crear" style="margin-bottom:16px;">
         <input type="checkbox" id="chkPolitica">
         <span>Entiendo cómo Rumbo usa mis datos para coordinar mis viajes. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
       </label>
@@ -609,7 +621,44 @@
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg>
         <span class="card-title">Tu cuenta</span>
       </div>
-      <p class="nota" id="sesionTexto" style="margin:0;"></p>
+      <p class="nota" id="sesionTexto" style="margin:0 0 14px;"></p>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="cuentaNombre">Nombre y apellido</label>
+        <input type="text" id="cuentaNombre" autocomplete="name">
+      </div>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="cuentaTelefono">WhatsApp</label>
+        <input type="text" id="cuentaTelefono" inputmode="numeric" autocomplete="tel">
+      </div>
+      <div class="campo" style="margin-bottom:14px;">
+        <label class="campo-label" for="cuentaEmail">Correo</label>
+        <input type="email" id="cuentaEmail" autocomplete="email">
+      </div>
+      <button class="btn btn-medio" id="btnGuardarCuenta" type="button">Guardar mis datos</button>
+      <p class="nota" id="cuentaEditMsg" style="margin:10px 2px 0;"></p>
+    </section>
+
+    <section class="card" id="cardClavePasajero" style="display:none;" data-enter="btnCambiarClavePasajero">
+      <div class="card-head"><span class="card-title">Cambiar clave</span></div>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="clavePasActual">Clave actual</label>
+        <input type="password" id="clavePasActual" autocomplete="current-password">
+      </div>
+      <div class="campo" style="margin-bottom:14px;">
+        <label class="campo-label" for="clavePasNueva">Clave nueva (mínimo 6 caracteres)</label>
+        <input type="password" id="clavePasNueva" autocomplete="new-password">
+      </div>
+      <button class="btn btn-medio" id="btnCambiarClavePasajero" type="button">Cambiar clave</button>
+      <p class="nota" id="clavePasMsg" style="margin:10px 2px 0;"></p>
+    </section>
+
+    <section class="card" id="cardPrivacidad" style="display:none;">
+      <div class="card-head"><span class="card-title">Tus datos y privacidad</span></div>
+      <p class="nota" style="margin:0 0 14px;">Puedes descargar una copia de tus datos o borrarlos. Al borrar se eliminan tu perfil, tus mensajes y tu ubicación; de tus viajes solo quedan el monto y la fecha, sin tu nombre ni direcciones, porque la ley tributaria obliga a conservar los cobros.</p>
+      <button class="btn btn-medio" id="btnExportarDatos" type="button" style="margin-bottom:10px;">Descargar mis datos</button>
+      <button class="btn btn-medio" id="btnCerrarSesionPasajero" type="button" style="margin-bottom:10px;">Cerrar sesión en este dispositivo</button>
+      <button class="btn btn-peligro" id="btnBorrarCuenta" type="button">Borrar mis datos</button>
+      <p class="nota" id="privacidadMsg" style="margin:10px 2px 0;"></p>
     </section>
 
     <div class="confianza">
@@ -851,10 +900,14 @@
     var sesion = obtenerSesionPasajero();
     var hayCuenta = !!(sesion && sesion.token);
     document.getElementById("cardCuenta").style.display = hayCuenta ? "none" : "block";
-    document.getElementById("cardSesion").style.display = hayCuenta ? "block" : "none";
+    ["cardSesion", "cardClavePasajero", "cardPrivacidad"].forEach(function (id) {
+      document.getElementById(id).style.display = hayCuenta ? "block" : "none";
+    });
     if (hayCuenta) {
-      document.getElementById("sesionTexto").textContent =
-        sesion.pasajero.nombre + " · " + sesion.pasajero.telefono;
+      document.getElementById("sesionTexto").textContent = "Conectado como " + sesion.pasajero.nombre;
+      document.getElementById("cuentaNombre").value = sesion.pasajero.nombre || "";
+      document.getElementById("cuentaTelefono").value = sesion.pasajero.telefono || "";
+      document.getElementById("cuentaEmail").value = sesion.pasajero.email || "";
     }
     actualizarBotonPedir();
   }
@@ -865,28 +918,45 @@
     document.getElementById("btnPedir").disabled = !(rutaActual && sesion && sesion.token);
   }
 
+  // Crear cuenta o "Ya tengo cuenta": mismo formulario, cambian los campos.
+  var modoCuenta = "crear";
+  function pintarModoCuenta() {
+    var crear = modoCuenta === "crear";
+    document.getElementById("modoCrear").classList.toggle("active", crear);
+    document.getElementById("modoIngresar").classList.toggle("active", !crear);
+    [].forEach.call(document.querySelectorAll(".solo-crear"), function (el) { el.style.display = crear ? "" : "none"; });
+    document.getElementById("btnCrearCuenta").textContent = crear ? "Crear mi cuenta" : "Ingresar";
+    document.getElementById("claveCliente").autocomplete = crear ? "new-password" : "current-password";
+    document.getElementById("cuentaMsg").textContent = "";
+  }
+  document.getElementById("modoCrear").addEventListener("click", function () { modoCuenta = "crear"; pintarModoCuenta(); });
+  document.getElementById("modoIngresar").addEventListener("click", function () { modoCuenta = "ingresar"; pintarModoCuenta(); });
+
   document.getElementById("btnCrearCuenta").addEventListener("click", function () {
     var nombre = document.getElementById("nombreCliente").value.trim();
     var telefono = document.getElementById("telefonoCliente").value.trim();
     var correo = document.getElementById("correoCliente").value.trim();
+    var clave = document.getElementById("claveCliente").value;
     var msg = document.getElementById("cuentaMsg");
-    if (!nombre || !telefono) {
-      msg.textContent = "Completa tu nombre y WhatsApp.";
+    var crear = modoCuenta === "crear";
+    if ((crear && !nombre) || !telefono || !clave) {
+      msg.textContent = crear ? "Completa nombre, WhatsApp y clave." : "Completa tu WhatsApp y tu clave.";
       msg.className = "nota error"; return;
     }
-    if (!document.getElementById("chkPolitica").checked) {
+    if (crear && clave.length < 6) { msg.textContent = "La clave debe tener al menos 6 caracteres."; msg.className = "nota error"; return; }
+    if (crear && !document.getElementById("chkPolitica").checked) {
       msg.textContent = "Marca que entiendes el uso de tus datos para continuar.";
       msg.className = "nota error"; return;
     }
-    msg.textContent = "Creando tu cuenta..."; msg.className = "nota";
-    apiPost({
-      accion: "iniciar_sesion_pasajero",
-      nombre: nombre, telefono: telefono, email: correo,
-      acepta_politica: true, version_politica: VERSION_POLITICA
-    }).then(function (res) {
+    msg.textContent = crear ? "Creando tu cuenta..." : "Ingresando..."; msg.className = "nota";
+    apiPost(crear
+      ? { accion: "registrar_pasajero", nombre: nombre, telefono: telefono, email: correo, clave: clave, acepta_politica: true, version_politica: VERSION_POLITICA }
+      : { accion: "ingresar_pasajero", telefono: telefono, clave: clave }
+    ).then(function (res) {
       if (!res.ok) { msg.textContent = res.error; msg.className = "nota error"; return; }
       guardarSesionPasajero(res);
       msg.textContent = "";
+      document.getElementById("claveCliente").value = "";
       pintarSesionPasajero();
       // Con la cuenta lista, lo natural es volver a lo que estaba haciendo:
       // pedir el viaje. Si ya tenía la ruta calculada, el botón ya está activo.
@@ -894,6 +964,82 @@
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
       msg.className = "nota error";
+    });
+  });
+
+  function accionCuenta(cuerpo, msgId, alTerminar) {
+    var sesion = obtenerSesionPasajero();
+    var msg = document.getElementById(msgId);
+    if (!sesion) return;
+    cuerpo.pasajero_token = sesion.token;
+    msg.textContent = "Procesando..."; msg.className = "nota";
+    return apiPost(cuerpo).then(function (res) {
+      if (res.requiere_login) { salirDeCuentaPasajero(); return; }
+      if (!res.ok) { msg.textContent = res.error; msg.className = "nota error"; return; }
+      msg.textContent = ""; alTerminar(res, sesion);
+    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "nota error"; });
+  }
+
+  function salirDeCuentaPasajero() {
+    try { localStorage.removeItem(PERFIL_KEY); } catch (e) {}
+    pintarSesionPasajero();
+    mostrarPestana("cuenta");
+  }
+
+  document.getElementById("btnGuardarCuenta").addEventListener("click", function () {
+    accionCuenta({
+      accion: "actualizar_pasajero",
+      nombre: document.getElementById("cuentaNombre").value.trim(),
+      telefono: document.getElementById("cuentaTelefono").value.trim(),
+      email: document.getElementById("cuentaEmail").value.trim()
+    }, "cuentaEditMsg", function (res, sesion) {
+      sesion.pasajero = res.pasajero; guardarSesionPasajero(sesion); pintarSesionPasajero();
+      var m = document.getElementById("cuentaEditMsg"); m.textContent = "Datos guardados."; m.className = "nota ok";
+    });
+  });
+
+  document.getElementById("btnCambiarClavePasajero").addEventListener("click", function () {
+    accionCuenta({
+      accion: "cambiar_clave_pasajero",
+      clave_actual: document.getElementById("clavePasActual").value,
+      clave_nueva: document.getElementById("clavePasNueva").value
+    }, "clavePasMsg", function (res) {
+      guardarSesionPasajero(res);
+      document.getElementById("clavePasActual").value = ""; document.getElementById("clavePasNueva").value = "";
+      var m = document.getElementById("clavePasMsg"); m.textContent = "Clave cambiada. Se cerraron tus otras sesiones."; m.className = "nota ok";
+    });
+  });
+
+  document.getElementById("btnExportarDatos").addEventListener("click", function () {
+    accionCuenta({ accion: "exportar_datos_pasajero" }, "privacidadMsg", function (res) {
+      var texto = JSON.stringify(res.datos, null, 2);
+      var m = document.getElementById("privacidadMsg");
+      try {
+        var enlace = document.createElement("a");
+        enlace.href = URL.createObjectURL(new Blob([texto], { type: "application/json" }));
+        enlace.download = "mis-datos-rumbo.json";
+        document.body.appendChild(enlace); enlace.click(); enlace.remove();
+        m.textContent = "Descargamos tus datos (mis-datos-rumbo.json).";
+      } catch (e) {
+        m.textContent = "No se pudo descargar; se copiaron al portapapeles.";
+      }
+      if (navigator.clipboard) navigator.clipboard.writeText(texto).catch(function () {});
+      m.className = "nota ok";
+    });
+  });
+
+  document.getElementById("btnCerrarSesionPasajero").addEventListener("click", function () {
+    if (!confirm("¿Cerrar sesión en este dispositivo?")) return;
+    accionCuenta({ accion: "cerrar_sesion_pasajero" }, "privacidadMsg", function () { salirDeCuentaPasajero(); });
+  });
+
+  document.getElementById("btnBorrarCuenta").addEventListener("click", function () {
+    if (!confirm("¿Borrar tus datos de Rumbo? Esto no se puede deshacer.")) return;
+    var clave = prompt("Para confirmar, escribe tu clave:");
+    if (!clave) return;
+    accionCuenta({ accion: "borrar_cuenta_pasajero", clave: clave }, "privacidadMsg", function () {
+      alert("Tus datos fueron borrados.");
+      salirDeCuentaPasajero();
     });
   });
 
@@ -905,7 +1051,7 @@
       "Para qué: coordinar y confirmar este viaje, y contactarte por WhatsApp si hace falta.\n" +
       "Con quién se comparte: con nadie fuera del conductor, salvo Google (aloja la planilla de pedidos).\n" +
       "Cuánto se guarda: mientras tengas viajes activos con este conductor; puedes pedir que se borre.\n" +
-      "Tus derechos: acceder, corregir o borrar tus datos escribiéndole al conductor por WhatsApp.\n\n" +
+      "Tus derechos: ver, corregir, descargar o borrar tus datos desde Mi cuenta en esta app.\n\n" +
       "Versión " + VERSION_POLITICA
     );
   });
@@ -1235,7 +1381,7 @@
         if (!res.ok) return;
         if (!res.estado) {
           // Backend anterior a la versión 11: consulta suelta de estado.
-          return api({ accion: "estado_pedido", pedido_id: pedidoActualId }).then(manejarEstado);
+          return api({ accion: "estado_pedido", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "" }).then(manejarEstado);
         }
         if (res.polilinea) rutaViajeCodificada = res.polilinea;
         manejarEstado(res.estado);
@@ -1475,7 +1621,8 @@
 
   function actualizarUbicacionEnMapa() {
     if (!mapa) return;
-    api({ accion: "ubicacion_pedido", pedido_id: pedidoActualId }).then(function (res) {
+    var sesionUbic = obtenerSesionPasajero();
+    api({ accion: "ubicacion_pedido", pedido_id: pedidoActualId, pasajero_token: sesionUbic ? sesionUbic.token : "" }).then(function (res) {
       if (!res.ok || !res.ubicacion) return;
       var pos = { lat: res.ubicacion.lat, lng: res.ubicacion.lng };
       marker.setPosition(pos);
