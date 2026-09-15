@@ -310,6 +310,10 @@
     background: var(--surface-2); border: 1px solid var(--border); flex: none;
   }
   .conductor-banner .nombre { font-weight: 700; font-size: 16px; }
+  .conductor-banner .patente {
+    display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 6px;
+    border: 2px solid var(--text); font-weight: 700; letter-spacing: 0.08em; font-size: 15px;
+  }
   .conductor-banner .vehiculo { color: var(--text-2); font-size: 14px; margin-top: 2px; }
 
   /* ---------- Chat ---------- */
@@ -540,6 +544,11 @@
   <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <p class="nota" id="estadoDetalle" style="margin:0 2px 16px;"></p>
+    <!-- Conductor asignado y su vehículo: aparece al confirmarse el viaje. -->
+    <p class="nota" id="avisoDerivado" style="display:none;margin:0 2px 12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);">
+      Tu conductor habitual no estaba disponible. Tu viaje lo tomó otro conductor de la red, al mismo precio.
+    </p>
+    <div class="card conductor-banner" id="tarjetaConductorAsignado" style="display:none;"></div>
     <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
          El monto lo fija el backend (precio congelado): acá no se escribe. -->
     <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
@@ -1232,6 +1241,8 @@
         manejarEstado(res.estado);
         (res.mensajes || []).forEach(function (m) { pintarMensaje(m, m.autor === "pasajero"); ultimoMensajeEn = m.creado_en; });
         if (res.ubicacion) moverAutoEnMapa(res.ubicacion);
+        if (res.conductor) pintarConductorAsignado(res.conductor);
+        document.getElementById("avisoDerivado").style.display = res.derivado ? "" : "none";
       })
       .catch(function () {})
       .then(function () { sincronizandoViaje = false; });
@@ -1239,6 +1250,35 @@
   document.addEventListener("visibilitychange", function () { if (!document.hidden) sincronizarViaje(); });
 
   var rutaViajeCodificada = "";
+
+  var conductorAsignadoPintado = "";
+  function pintarConductorAsignado(c) {
+    var clave = [c.conductor_id, c.vehiculo_patente, c.vehiculo_foto_url].join("|");
+    if (clave === conductorAsignadoPintado) return;
+    conductorAsignadoPintado = clave;
+    var tarjeta = document.getElementById("tarjetaConductorAsignado");
+    tarjeta.innerHTML = "";
+    if (c.vehiculo_foto_url) {
+      var img = document.createElement("img");
+      img.src = c.vehiculo_foto_url; img.alt = "Foto del vehículo";
+      tarjeta.appendChild(img);
+    }
+    var textos = document.createElement("div");
+    var titulo = document.createElement("div");
+    titulo.className = "nombre";
+    titulo.textContent = "Tu conductor: " + c.nombre;
+    textos.appendChild(titulo);
+    var auto = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" · ");
+    if (auto) { var l = document.createElement("div"); l.className = "vehiculo"; l.textContent = auto; textos.appendChild(l); }
+    if (c.vehiculo_patente) {
+      var p = document.createElement("div");
+      p.className = "patente";
+      p.textContent = "Patente " + c.vehiculo_patente;
+      textos.appendChild(p);
+    }
+    tarjeta.appendChild(textos);
+    tarjeta.style.display = "flex";
+  }
 
   function manejarEstado(res) {
     (function () {
@@ -1450,6 +1490,9 @@
     rutaActual = null;
     ultimoMensajeEn = "";
     rutaViajeCodificada = "";
+    conductorAsignadoPintado = "";
+    document.getElementById("tarjetaConductorAsignado").style.display = "none";
+    document.getElementById("avisoDerivado").style.display = "none";
     if (lineaRuta) { lineaRuta.setMap(null); lineaRuta = null; }
     document.getElementById("btnPedir").disabled = true;
     document.getElementById("pedirTexto").textContent = "";
