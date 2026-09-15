@@ -224,6 +224,9 @@
   .tabla-historial td.monto { text-align: right; white-space: nowrap; font-weight: 600; }
   .tabla-historial th:nth-last-child(2) { text-align: right; }
   .tabla-historial .pendiente { color: var(--text-3); font-size: 12.5px; }
+  .tabla-historial .hist-fila { cursor: pointer; }
+  .tabla-historial .hist-fila:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .tabla-historial .hist-detalle td { color: var(--text-3); font-size: 13px; background: color-mix(in srgb, var(--accent) 4%, transparent); }
 
   /* ---------- Barra de navegación inferior ---------- */
   .nav-inferior {
@@ -823,7 +826,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 3;
+  var APP_VERSION = 5;
   function revisarActualizacion(versionServidor) {
     if (!versionServidor || versionServidor <= APP_VERSION) return;
     document.getElementById("avisoActualizar").hidden = false;
@@ -1116,16 +1119,28 @@
       res.conductores.sort(function (a, b) { return (a.activo === b.activo) ? 0 : (a.activo ? 1 : -1); });
       lista.innerHTML = res.conductores.map(function (c) {
         var etiqueta = c.solo_admin ? "Administrador" : (!c.activo ? "Pendiente / suspendido" : (c.en_red ? "Activo · en la red" : "Activo · solo su clientela"));
-        if (!c.solo_admin) etiqueta += " · Tarifa " + (c.modo_tarifa === "INDIVIDUAL" ? "propia" : "general") + (c.solicitud_tarifa === "PENDIENTE" ? " · PIDE TARIFA PROPIA" : "");
         var botones = "";
+        var switchTarifa = "";
         if (c.conductor_id !== yo) {
           botones += '<button class="btn btn-chico" data-activo="' + escapar(c.conductor_id) + '" data-valor="' + (c.activo ? "NO" : "SI") + '">' + (c.activo ? "Suspender" : "Aprobar") + '</button>';
-          if (!c.solo_admin) {
-            botones += '<button class="btn btn-chico" data-modo="' + escapar(c.conductor_id) + '" data-valor="' + (c.modo_tarifa === "INDIVIDUAL" ? "GENERAL" : "INDIVIDUAL") + '">' +
-              (c.modo_tarifa === "INDIVIDUAL" ? "Pasar a tarifa general" : (c.solicitud_tarifa === "PENDIENTE" ? "Autorizar tarifa propia" : "Dar tarifa propia")) + '</button>';
-          }
           if (c.activo && !c.solo_admin) {
             botones += '<button class="btn btn-chico" data-red="' + escapar(c.conductor_id) + '" data-valor="' + (c.en_red ? "NO" : "SI") + '">' + (c.en_red ? "Sacar de la red" : "Agregar a la red") + '</button>';
+          }
+          if (!c.solo_admin) {
+            // Switch en vez de botón: se ve de un vistazo en qué modo está
+            // (pista verde = tarifa propia), y con un solo gesto se cambia o
+            // se autoriza un pedido de tarifa propia pendiente.
+            switchTarifa =
+              '<div class="estado-conductor' + (c.modo_tarifa === "INDIVIDUAL" ? " activo" : "") + '" style="margin-top:8px;">' +
+                '<div class="estado-texto"><div class="estado-titulo" style="font-size:13.5px;">Tarifa propia</div>' +
+                (c.solicitud_tarifa === "PENDIENTE" ? '<p class="msg" style="margin:2px 0 0;font-size:12px;color:var(--accent);">Pidió tarifa propia — activa para autorizar</p>' : '') +
+                '</div>' +
+                '<label class="switch">' +
+                  '<input type="checkbox" data-modo="' + escapar(c.conductor_id) + '"' + (c.modo_tarifa === "INDIVIDUAL" ? ' checked' : '') + '>' +
+                  '<span class="sr-only">Tarifa propia de ' + escapar(c.nombre) + '</span>' +
+                  '<span class="switch-pista"></span>' +
+                '</label>' +
+              '</div>';
           }
         }
         return '<div class="pedido-card" style="margin-bottom:10px;">' +
@@ -1133,22 +1148,26 @@
           '<div class="msg" style="margin:2px 0 6px;">' + escapar(etiqueta) + '</div>' +
           '<div class="msg" style="margin:0 0 8px;font-size:13.5px;">' + escapar(c.email) + ' · +' + escapar(c.telefono) + (c.vehiculo ? '<br>' + escapar(c.vehiculo) : '') + '</div>' +
           (botones ? '<div class="btn-row">' + botones + '</div>' : '') +
+          switchTarifa +
         '</div>';
       }).join("") || '<p class="vacio">No hay conductores.</p>';
     });
   }
 
+  document.getElementById("listaConductores").addEventListener("change", function (ev) {
+    var sw = ev.target.closest("[data-modo]");
+    if (!sw) return;
+    var valorAnterior = sw.checked ? "GENERAL" : "INDIVIDUAL"; // por si hay que revertir
+    var valorNuevo = sw.checked ? "INDIVIDUAL" : "GENERAL";
+    sw.disabled = true;
+    apiPost({ accion: "cambiar_modo_tarifa", conductor_id: sw.dataset.modo, modo_tarifa: valorNuevo }).then(function (res) {
+      sw.disabled = false;
+      if (!res.ok) { alert(res.error); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
+      cargarConductoresAdmin();
+    });
+  });
+
   document.getElementById("listaConductores").addEventListener("click", function (ev) {
-    var bm = ev.target.closest("[data-modo]");
-    if (bm) {
-      if (!confirm(bm.textContent + "?")) return;
-      bm.disabled = true;
-      apiPost({ accion: "cambiar_modo_tarifa", conductor_id: bm.dataset.modo, modo_tarifa: bm.dataset.valor }).then(function (res) {
-        if (!res.ok) { alert(res.error); bm.disabled = false; return; }
-        cargarConductoresAdmin();
-      });
-      return;
-    }
     var b = ev.target.closest("[data-activo],[data-red]");
     if (!b) return;
     var esActivo = b.hasAttribute("data-activo");
@@ -1182,7 +1201,7 @@
         : !esDeAdmin;
       d.style.display = visible ? "" : "none";
     });
-    document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Mi vehículo y costos";
+    document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Tarifas y costos";
     [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
     [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { el.style.display = MODO === "admin" ? "none" : ""; });
     if (MODO === "admin") {
@@ -1217,17 +1236,37 @@
         ? res.viajes.length + " viaje" + (res.viajes.length === 1 ? "" : "s") + " · Total " + fmt(res.total) +
           " · Cobrado " + fmt(res.cobrado) + (res.pendiente ? " · Pendiente " + fmt(res.pendiente) : "")
         : "Sin viajes finalizados en este mes.";
-      filas.innerHTML = res.viajes.map(function (v) {
+      filas.innerHTML = res.viajes.map(function (v, i) {
         var d = new Date(v.fecha);
         var fecha = isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit" }) + " " +
           d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
-        return "<tr><td>" + escapar(fecha) + "</td>" +
-          (esAdmin ? "<td>" + escapar(v.conductor || "") + "</td>" : "") +
-          '<td class="monto">' + fmt(v.monto) + "</td>" +
-          "<td>" + escapar(v.forma) + (v.pagado ? "" : '<br><span class="pendiente">sin cobrar</span>') + "</td></tr>";
+        var hayDetalle = v.origen || v.destino || v.nombre;
+        var colspan = esAdmin ? 4 : 3;
+        return '<tr class="hist-fila" data-detalle="' + i + '"' + (hayDetalle ? "" : ' style="cursor:default;"') + '>' +
+            "<td>" + escapar(fecha) + "</td>" +
+            (esAdmin ? "<td>" + escapar(v.conductor || "") + "</td>" : "") +
+            '<td class="monto">' + fmt(v.monto) + "</td>" +
+            "<td>" + escapar(v.forma) + (v.pagado ? "" : '<br><span class="pendiente">sin cobrar</span>') + "</td>" +
+          "</tr>" +
+          (hayDetalle
+            ? '<tr class="hist-detalle" data-detalle-de="' + i + '" hidden><td colspan="' + colspan + '">' +
+                (v.nombre ? '<strong>' + escapar(v.nombre) + '</strong><br>' : "") +
+                (v.origen ? escapar(v.origen) : "Origen no disponible") + " → " + (v.destino ? escapar(v.destino) : "destino no disponible") +
+              "</td></tr>"
+            : "");
       }).join("");
     });
   }
+
+  // Cada fila con detalle (origen/destino/pasajero) se puede desplegar: en
+  // el resumen mensual solo se veía el pago, no el viaje en sí.
+  document.getElementById("histFilas").addEventListener("click", function (ev) {
+    var fila = ev.target.closest(".hist-fila");
+    if (!fila) return;
+    var detalle = document.querySelector('[data-detalle-de="' + fila.dataset.detalle + '"]');
+    if (!detalle) return;
+    detalle.hidden = !detalle.hidden;
+  });
 
   document.getElementById("histMes").addEventListener("change", cargarHistorial);
   document.getElementById("histConductor").addEventListener("change", cargarHistorial);
@@ -1328,7 +1367,24 @@
     document.getElementById("vehMarca").value = c.vehiculo_marca || "";
     document.getElementById("vehModelo").value = c.vehiculo_modelo || "";
     document.getElementById("vehColor").value = c.vehiculo_color || "";
-    document.getElementById("vehFotoPreview").src = c.vehiculo_foto_url || "";
+    cargarFotoVehiculo(c.vehiculo_foto_url || "");
+  }
+
+  // Justo después de subir una foto, Drive a veces tarda 1-3 s en dejar el
+  // link público listo para verse — el primer intento devuelve "No se pudo
+  // abrir el archivo" aunque el archivo ya existe. Reintenta solo, sin que
+  // el conductor tenga que recargar la app pensando que la subida falló.
+  function cargarFotoVehiculo(url, intento) {
+    var img = document.getElementById("vehFotoPreview");
+    intento = intento || 0;
+    if (!url) { img.src = ""; img.onerror = null; return; }
+    if (intento === 0) img.style.visibility = "hidden"; // oculta el ícono roto durante los reintentos
+    img.onload = function () { img.style.visibility = "visible"; };
+    img.onerror = function () {
+      if (intento >= 4) { img.onerror = null; img.style.visibility = "visible"; return; }
+      setTimeout(function () { cargarFotoVehiculo(url, intento + 1); }, 1000 * (intento + 1));
+    };
+    img.src = url + (url.indexOf("?") === -1 ? "?" : "&") + "r=" + intento;
   }
 
   document.getElementById("btnGuardarVehiculo").addEventListener("click", function () {
@@ -1364,7 +1420,7 @@
     lector.onload = function () {
       apiPost({ accion: "subir_foto_vehiculo", foto_data_url: lector.result }).then(function (res) {
         if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
-        document.getElementById("vehFotoPreview").src = res.vehiculo_foto_url;
+        cargarFotoVehiculo(res.vehiculo_foto_url);
         msg.textContent = "Foto guardada."; msg.className = "msg ok";
         // Se actualiza también la sesión guardada, para que si el conductor
         // recarga sin volver a loguearse siga viendo su foto en el preview.
