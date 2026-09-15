@@ -60,13 +60,9 @@
     body.modo-admin { padding: 0 32px 48px; display: block; }
     body.modo-admin .app { max-width: 1080px; margin: 0 auto; }
     body.modo-admin .topbar {
-      background: var(--primary); color: var(--primary-ink); margin: 0 -32px 24px;
+      margin: 0 -32px 24px;
       padding: 20px 32px; border-radius: 0 0 18px 18px;
     }
-    body.modo-admin .topbar .brand-sub { color: color-mix(in srgb, var(--primary-ink) 70%, transparent); }
-    /* El logo navy se pierde sobre el topbar azul oscuro del dashboard de
-       escritorio: acá se usa la versión blanca del mismo logo. */
-    body.modo-admin .topbar .brand-mark img { content: url(img/logo-rumbo-blanco.png); }
     body.modo-admin #navConductor {
       position: static; display: flex; width: auto; background: none; border: none;
       box-shadow: none; padding: 0; margin: -8px 0 20px; gap: 4px;
@@ -78,12 +74,6 @@
     }
     body.modo-admin .nav-item.activo { background: var(--primary-soft); box-shadow: none; }
     body.modo-admin .nav-badge { top: 8px; right: 8px; margin: 0; }
-    /* El wordmark navy se pierde sobre el topbar azul oscuro de acá —
-       misma razón que el logo de arriba. Fuera de este @media (mobile)
-       el topbar es claro, así que el wordmark debe quedar en su color
-       normal (si esta regla se escapa del media query, se vuelve
-       invisible en mobile — ya pasó una vez). */
-    body.modo-admin .topbar .brand-wordmark { filter: brightness(0) invert(1); }
   }
   .sr-only {
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -100,11 +90,14 @@
     width: 72px; height: 72px; flex: none;
     display: flex; align-items: center; justify-content: center;
   }
-  .brand-mark img { width: 100%; height: 100%; display: block; }
+  /* El topbar tiene fondo azul oscuro: el logo/wordmark navy se pierden
+     ahí, así que van en blanco siempre (antes solo se aplicaba en el
+     dashboard de admin, cuando el topbar de mobile todavía era claro). */
+  .brand-mark img { width: 100%; height: 100%; display: block; content: url(img/logo-rumbo-blanco.png); }
   .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
   .brand-texto { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 72px; }
-  .brand-wordmark { height: 26px; width: auto; display: block; }
-  .brand-sub { font-size: 13.5px; color: var(--text-3); line-height: 1.3; }
+  .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
+  .brand-sub { font-size: 13.5px; color: color-mix(in srgb, var(--primary-ink) 70%, transparent); line-height: 1.3; }
 
   /* ---------- Estado del conductor (switch prominente) ---------- */
   .estado-conductor {
@@ -954,7 +947,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 11;
+  var APP_VERSION = 12;
   function revisarActualizacion(versionServidor) {
     if (!versionServidor || versionServidor <= APP_VERSION) return;
     document.getElementById("avisoActualizar").hidden = false;
