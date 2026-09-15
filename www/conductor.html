@@ -349,9 +349,24 @@
   @keyframes splashLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
   @keyframes splashPunto { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .splash img, .splash .splash-puntos span { animation: none; } }
+
+  /* ---------- Aviso de nueva versión disponible ---------- */
+  .aviso-actualizar {
+    position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 90;
+    background: #16333F; color: #FFFFFF; border-radius: 14px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .aviso-actualizar[hidden] { display: none; }
+  .aviso-actualizar span { flex: 1; font-size: 14.5px; line-height: 1.35; }
+  .aviso-actualizar a { background: #FFFFFF; color: #16333F; font-weight: 700; font-size: 13.5px;
+    padding: 8px 14px; border-radius: 10px; text-decoration: none; white-space: nowrap; }
 </style>
 </head>
 <body>
+<div class="aviso-actualizar" id="avisoActualizar" hidden>
+  <span>Hay una nueva versión de Rumbo disponible.</span>
+  <a id="linkActualizar" href="#">Descargar</a>
+</div>
 <div class="splash" id="splashIngresando">
   <img src="img/icon-rumbo.svg" alt="Rumbo" id="splashLogo">
   <div class="splash-titulo" id="splashTitulo">Ingresando a Rumbo</div>
@@ -804,6 +819,16 @@
     ? "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-admin.apk"
     : "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-conductor.apk";
 
+  // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
+  // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
+  // se muestra el aviso de actualizar con el link de descarga de esta app.
+  var APP_VERSION = 2;
+  function revisarActualizacion(versionServidor) {
+    if (!versionServidor || versionServidor <= APP_VERSION) return;
+    document.getElementById("linkActualizar").href = URL_APK;
+    document.getElementById("avisoActualizar").hidden = false;
+  }
+
   // Cada panel solo acepta su tipo de cuenta.
   function cuentaPermitida(c) {
     if (MODO === "admin" && !c.es_admin) return "Esta app es solo para administradores. Si eres conductor, usa Rumbo Conductor.";
@@ -1008,6 +1033,7 @@
       .then(function (res) {
         // Backend anterior a la versión 11 no conoce esta consulta: se usan
         // las consultas sueltas para no dejar la pantalla vacía.
+        revisarActualizacion(res.version_app);
         if (!res.ok || !res.pendientes) { cargarPedidos(); cargarViajesEnCurso(); return; }
         pintarPedidos({ ok: true, pedidos: res.pendientes });
         pintarViajesEnCurso({ ok: true, pedidos: res.en_curso }, res.ubicaciones || {});
@@ -1068,6 +1094,7 @@
   function cargarConductoresAdmin() {
     var lista = document.getElementById("listaConductores");
     apiPost({ accion: "listar_conductores" }).then(function (res) {
+      revisarActualizacion(res.version_app);
       if (!res.ok) { lista.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
       var yo = (obtenerSesion() || { conductor: {} }).conductor.conductor_id;
       // Pendientes primero: es lo que el admin viene a resolver.
