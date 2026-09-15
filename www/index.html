@@ -95,6 +95,7 @@
   }
   .brand-mark img { width: 100%; height: 100%; display: block; }
   .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+  .brand-texto { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; }
   .card-title, .precio-valor, .splash-titulo, h1, h2, h3 { font-weight: 700; }
 
@@ -527,9 +528,9 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
-      <span>
-        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados"><br>
-        <span class="brand-sub">Pasajero</span>
+      <span class="brand-texto">
+        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
+        <span class="brand-sub" id="brandSubPasajero">Programa tu próximo viaje</span>
       </span>
     </div>
     <span class="topbar-spacer"></span>
@@ -1044,7 +1045,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 6;
+  var APP_VERSION = 8;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
     if (!versionServidor || versionServidor <= APP_VERSION) return;
@@ -1078,6 +1079,10 @@
     ["cardSesion", "cardClavePasajero", "cardPrivacidad"].forEach(function (id) {
       document.getElementById(id).style.display = hayCuenta ? "block" : "none";
     });
+    var brandSub = document.getElementById("brandSubPasajero");
+    brandSub.textContent = hayCuenta
+      ? "Hola " + (sesion.pasajero.nombre || "").split(" ")[0] + ", programa tu próximo viaje"
+      : "Programa tu próximo viaje";
     if (hayCuenta) {
       document.getElementById("sesionTexto").textContent = "Conectado como " + sesion.pasajero.nombre;
       document.getElementById("cuentaNombre").value = sesion.pasajero.nombre || "";
