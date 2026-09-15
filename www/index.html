@@ -86,8 +86,12 @@
   /* ---------- Barra superior ---------- */
   .topbar {
     display: flex; align-items: center; gap: 12px;
-    padding: calc(16px + env(safe-area-inset-top)) 0 16px;
+    padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
     background: var(--primary); color: var(--primary-ink);
+    /* El body tiene padding lateral (16px) para el resto del contenido;
+       este margen negativo hace que el fondo azul llegue de borde a
+       borde de la pantalla en vez de quedar como una isla angosta. */
+    margin: 0 -16px 16px; border-radius: 0 0 18px 18px;
   }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .brand-mark {
@@ -1049,10 +1053,15 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 10;
+  var APP_VERSION = 11;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
-    if (!versionServidor || versionServidor <= APP_VERSION) return;
+    // Solo tiene sentido dentro de la app instalada (Capacitor): la web
+    // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
+    // que "descargar" ahi — sin este chequeo, el aviso bloqueante salia
+    // tambien navegando directo a la web.
+    var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+    if (!esAppNativa || !versionServidor || versionServidor <= APP_VERSION) return;
     document.getElementById("avisoActualizar").hidden = false;
   }
   // Descarga el .apk a la carpeta PRIVADA de la app e instala desde ahí
