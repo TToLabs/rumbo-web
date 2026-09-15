@@ -1264,9 +1264,13 @@
       tarjeta.appendChild(img);
     }
     var textos = document.createElement("div");
+    var cabecera = document.createElement("div");
+    cabecera.className = "vehiculo";
+    cabecera.textContent = "Tu conductor y vehículo";
+    textos.appendChild(cabecera);
     var titulo = document.createElement("div");
     titulo.className = "nombre";
-    titulo.textContent = "Tu conductor: " + c.nombre;
+    titulo.textContent = c.nombre;
     textos.appendChild(titulo);
     var auto = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" · ");
     if (auto) { var l = document.createElement("div"); l.className = "vehiculo"; l.textContent = auto; textos.appendChild(l); }
