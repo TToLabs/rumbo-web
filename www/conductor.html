@@ -437,23 +437,32 @@
   @keyframes splashPunto { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .splash img, .splash .splash-puntos span { animation: none; } }
 
-  /* ---------- Aviso de nueva versión disponible ---------- */
+  /* ---------- Actualización obligatoria (pantalla completa, no se puede
+     cerrar hasta descargar) — mismo criterio que DAOMA. ---------- */
   .aviso-actualizar {
-    position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 90;
-    background: #16333F; color: #FFFFFF; border-radius: 14px; padding: 14px 16px;
-    display: flex; align-items: center; gap: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+    justify-content: center; padding: 24px; background: rgba(16,26,32,0.55);
+    backdrop-filter: blur(2px);
   }
   .aviso-actualizar[hidden] { display: none; }
-  .aviso-actualizar span { flex: 1; font-size: 14.5px; line-height: 1.35; }
-  .aviso-actualizar button { background: #FFFFFF; color: #16333F; font-weight: 700; font-size: 13.5px;
-    padding: 8px 14px; border-radius: 10px; border: none; white-space: nowrap; cursor: pointer; }
-  .aviso-actualizar button:disabled { opacity: 0.6; }
+  .actualizacion-card {
+    background: var(--surface); border-radius: var(--r-card); padding: 28px 24px;
+    max-width: 340px; width: 100%; text-align: center; box-shadow: var(--shadow-md);
+  }
+  .actualizacion-ico { font-size: 40px; line-height: 1; margin-bottom: 10px; }
+  .actualizacion-card h2 { margin: 0 0 8px; font-size: 19px; font-weight: 700; }
+  .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
+  .actualizacion-card button { width: 100%; }
 </style>
 </head>
 <body>
 <div class="aviso-actualizar" id="avisoActualizar" hidden>
-  <span>Hay una nueva versión de Rumbo disponible.</span>
-  <button type="button" id="btnActualizar" class="btn btn-chico">Descargar</button>
+  <div class="actualizacion-card">
+    <div class="actualizacion-ico">⬆️</div>
+    <h2>Hay una versión nueva</h2>
+    <p>Para seguir usando Rumbo hace falta actualizar la app primero. Es rápido.</p>
+    <button type="button" id="btnActualizar" class="btn btn-primario">Descargar actualización</button>
+  </div>
 </div>
 <div class="splash" id="splashIngresando">
   <img src="img/logo-rumbo.png" alt="Rumbo" id="splashLogo">
@@ -939,7 +948,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 7;
+  var APP_VERSION = 8;
   function revisarActualizacion(versionServidor) {
     if (!versionServidor || versionServidor <= APP_VERSION) return;
     document.getElementById("avisoActualizar").hidden = false;
@@ -954,7 +963,7 @@
       boton.disabled = true; boton.textContent = "Descargando...";
       window.Capacitor.Plugins.ApkInstalador.descargarEInstalar({ url: URL_APK })
         .catch(function () { window.open(URL_APK, "_system"); })
-        .finally(function () { boton.disabled = false; boton.textContent = "Descargar"; });
+        .finally(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; });
     } else {
       window.open(URL_APK, "_system");
     }
