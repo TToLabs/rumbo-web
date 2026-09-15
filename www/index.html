@@ -9,11 +9,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#16333F">
-<link rel="icon" type="image/svg+xml" href="img/icon-rumbo.svg">
-<link rel="apple-touch-icon" href="img/icon-rumbo.svg">
+<link rel="icon" type="image/png" href="img/icon-rumbo-1024.png">
+<link rel="apple-touch-icon" href="img/icon-rumbo-1024.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* =====================================================================
      SISTEMA VISUAL
@@ -35,14 +35,14 @@
     --text: #101A20;
     --text-2: #55666D;
     --text-3: #859097;
-    --primary: #16333F;
-    --primary-hover: #0E232C;
+    --primary: #0A1F44;
+    --primary-hover: #071531;
     --primary-ink: #FFFFFF;
-    --primary-soft: #E4EBED;
-    --primary-soft-hover: #D6E1E4;
-    --primary-soft-ink: #16333F;
-    --primary-mid: #2C4E5C;
-    --primary-mid-hover: #223E4A;
+    --primary-soft: #E7EAF1;
+    --primary-soft-hover: #D9DEEA;
+    --primary-soft-ink: #0A1F44;
+    --primary-mid: #142B57;
+    --primary-mid-hover: #0E2045;
     --accent: #0B7A4B;
     --accent-soft: #E6F4ED;
     --danger: #B3392B;
@@ -62,7 +62,8 @@
   html, body { margin: 0; background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2)); background-attachment: fixed; }
   body {
     color: var(--text);
-    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-weight: 400;
     font-size: 17px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -94,6 +95,24 @@
   }
   .brand-mark img { width: 100%; height: 100%; display: block; }
   .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+  .brand-wordmark { height: 26px; width: auto; display: block; }
+  .card-title, .precio-valor, .splash-titulo, h1, h2, h3 { font-weight: 700; }
+
+  /* ---------- Fondo "mapa" del hero ---------- */
+  /* Entramado de líneas simulando calles: da sensación de mapa sin depender
+     de una API externa ni de datos reales de tráfico en el fondo. */
+  .mapa-fondo {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-color: #EEF1F4;
+    background-image:
+      linear-gradient(rgba(10,31,68,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10,31,68,0.06) 1px, transparent 1px),
+      linear-gradient(rgba(10,31,68,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10,31,68,0.03) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+    mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 92%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 92%);
+  }
   .brand-sub { font-size: 13.5px; color: var(--text-3); line-height: 1.3; }
   .topbar-spacer { flex: 1; }
 
@@ -135,6 +154,8 @@
     background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600;
     box-shadow: var(--shadow-sm);
   }
+  .segmentado, .tabs { border-radius: 999px; }
+  .seg-btn, .tab { border-radius: 999px !important; }
   .tab:disabled { opacity: 0.45; cursor: default; }
   .tab-badge {
     width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: none;
@@ -157,9 +178,10 @@
   .precio-card { padding: 22px 20px 18px; }
   .precio-label { font-size: 15px; color: var(--text-2); margin-bottom: 4px; }
   .precio-valor {
-    font-size: 40px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1;
-    font-variant-numeric: tabular-nums;
+    font-size: 46px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1;
+    font-variant-numeric: tabular-nums; color: var(--primary);
   }
+  .precio-card { box-shadow: var(--shadow-md); border-radius: 18px; }
   .precio-detalle { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: grid; gap: 10px; }
   .detalle-fila { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
   .detalle-fila dt { color: var(--text-2); margin: 0; }
@@ -202,10 +224,33 @@
   .btn-agregar-parada:hover { text-decoration: underline; }
 
   .check-espera {
-    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
     font-size: 15px; font-weight: 500; color: var(--text-2);
   }
-  .check-espera input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+  /* Interruptor estilizado en vez de checkbox nativo: el input real queda
+     oculto (accesible) y el track/thumb visual reacciona a :checked. */
+  .check-espera input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch-track {
+    width: 44px; height: 26px; border-radius: 999px; background: var(--border-strong);
+    flex: none; position: relative; transition: background-color 0.15s ease;
+  }
+  .switch-track::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(16,26,32,0.3);
+    transition: transform 0.18s ease;
+  }
+  .check-espera input:checked ~ .switch-track { background: var(--primary); }
+  .check-espera input:checked ~ .switch-track::after { transform: translateX(18px); }
+  .check-espera input:focus-visible ~ .switch-track { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* Despliegue suave de horas/minutos al activar el interruptor. */
+  #camposEsperaHM {
+    display: grid; grid-template-rows: 0fr; overflow: hidden;
+    transition: grid-template-rows 0.25s ease, margin-top 0.25s ease, opacity 0.2s ease;
+    opacity: 0; margin-top: 0;
+  }
+  #camposEsperaHM.abierta { grid-template-rows: 1fr; opacity: 1; margin-top: 10px; }
+  #camposEsperaHM > * { min-height: 0; }
 
   /* ---------- Campos ---------- */
   .campo { display: flex; flex-direction: column; gap: 6px; }
@@ -268,9 +313,21 @@
   .nota.error { color: var(--danger); }
 
   /* ---------- Confianza ---------- */
-  .confianza { display: grid; gap: 10px; margin: 20px 2px 0; }
-  .confianza-item { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--text-2); }
-  .confianza-item svg { color: var(--accent); }
+  .confianza {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 8px; margin: 20px 2px 0;
+  }
+  .confianza-item {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: 6px; font-size: 12.5px; line-height: 1.3; color: var(--text-2);
+  }
+  .confianza-item svg { width: 24px; height: 24px; color: var(--primary); }
+
+  /* ---------- Botón principal fijo al pulgar (sticky bottom) ---------- */
+  .btn-sticky-wrap {
+    position: sticky; bottom: calc(64px + env(safe-area-inset-bottom));
+    z-index: 20; margin: 0 -2px 12px; padding-top: 6px;
+    background: linear-gradient(to top, var(--bg) 55%, transparent);
+  }
 
   /* ---------- Estado del pedido ---------- */
   .estado-box {
@@ -380,19 +437,21 @@
   .btn.btn-peligro:hover:not(:disabled) { background: rgba(180, 35, 24, 0.08); }
 
   /* ---------- Pantalla "Ingresando" (con sesión ya abierta) ---------- */
+  /* Fondo claro (el mismo --bg de la app), no el gris azulado oscuro de
+     antes — más agradable y no rompe con el resto de la app al entrar. */
   .splash {
     position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 18px; padding: 32px;
-    background: #16333F; color: #FFFFFF; text-align: center;
+    background: var(--bg); color: var(--text); text-align: center;
     transition: opacity 0.35s ease;
   }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
-  .splash img { width: 168px; height: 168px; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35)); animation: splashLatido 1.6s ease-in-out infinite; }
-  .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
-  .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; opacity: 0.9; }
+  .splash img { width: 148px; height: 148px; filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
+  .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--primary); }
+  .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; color: var(--text-2); }
   .splash .splash-puntos { display: flex; gap: 6px; margin-top: 6px; }
-  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: #FFFFFF; opacity: 0.35; animation: splashPunto 1.2s infinite; }
+  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); opacity: 0.35; animation: splashPunto 1.2s infinite; }
   .splash .splash-puntos span:nth-child(2) { animation-delay: 0.2s; }
   .splash .splash-puntos span:nth-child(3) { animation-delay: 0.4s; }
   @keyframes splashLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
@@ -413,13 +472,14 @@
 </style>
 </head>
 <body>
+<div class="mapa-fondo" aria-hidden="true"></div>
 <div class="aviso-actualizar" id="avisoActualizar" hidden>
   <span>Hay una nueva versión de Rumbo disponible.</span>
   <button type="button" id="btnActualizar" class="btn btn-chico">Descargar</button>
 </div>
 <div class="splash" id="splashIngresando">
-  <img src="img/icon-rumbo.svg" alt="Rumbo" id="splashLogo">
-  <div class="splash-titulo" id="splashTitulo">Ingresando a Rumbo</div>
+  <img src="img/logo-rumbo.png" alt="Rumbo" id="splashLogo">
+  <div class="splash-titulo" id="splashTitulo">Rumbo</div>
   <div class="splash-texto" id="splashTexto"></div>
   <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
 </div>
@@ -457,10 +517,10 @@
 
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark"><img src="img/logo-rumbo.svg" width="72" height="72" alt="" aria-hidden="true"></span>
+      <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span>
-        <span class="brand-name">Rumbo</span><br>
-        <span class="brand-sub">Traslados privados</span>
+        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados"><br>
+        <span class="brand-sub">Pasajero</span>
       </span>
     </div>
     <span class="topbar-spacer"></span>
@@ -487,31 +547,6 @@
 
     <section class="card">
       <div class="card-head">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
-        <span class="card-title">Cuándo</span>
-      </div>
-      <div class="fila" style="margin-bottom:16px;">
-        <div class="campo">
-          <label class="campo-label" for="fechaSalida">Día</label>
-          <input type="date" id="fechaSalida">
-        </div>
-        <div class="campo">
-          <label class="campo-label" for="horaSalida">Hora</label>
-          <input type="time" id="horaSalida">
-        </div>
-      </div>
-
-      <div class="campo">
-        <span class="campo-label">Tipo de viaje</span>
-        <div class="segmentado" role="group" aria-label="Tipo de viaje">
-          <button class="seg-btn" id="tipoIdaVuelta" type="button" data-vuelta="1">Ida y vuelta</button>
-          <button class="seg-btn active" id="tipoSoloIda" type="button" data-vuelta="0">Solo ida</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
         <span class="card-title">Tu ruta</span>
       </div>
@@ -535,10 +570,11 @@
 
       <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
         <label class="check-espera">
+          <span>¿Necesitas que el conductor espere?</span>
           <input type="checkbox" id="chkEspera">
-          <span>¿Debe esperar?</span>
+          <span class="switch-track" aria-hidden="true"></span>
         </label>
-        <div class="fila" id="camposEsperaHM" style="display:none; margin-top:10px;">
+        <div class="fila" id="camposEsperaHM">
           <div class="campo">
             <label class="campo-label" for="esperaHoras">Horas</label>
             <input type="number" id="esperaHoras" inputmode="numeric" min="0" step="1" value="0">
@@ -556,10 +592,37 @@
       </button>
     </section>
 
-    <button class="btn btn-medio" id="buscarAuto" type="button" style="margin-bottom:12px;">
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-buscar"/></svg>
-      Calcular precio
-    </button>
+    <section class="card">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
+        <span class="card-title">Cuándo</span>
+      </div>
+      <div class="fila" style="margin-bottom:16px;">
+        <div class="campo">
+          <label class="campo-label" for="fechaSalida">Día</label>
+          <input type="date" id="fechaSalida">
+        </div>
+        <div class="campo">
+          <label class="campo-label" for="horaSalida">Hora</label>
+          <input type="time" id="horaSalida">
+        </div>
+      </div>
+
+      <div class="campo">
+        <span class="campo-label">Tipo de viaje</span>
+        <div class="segmentado" role="group" aria-label="Tipo de viaje">
+          <button class="seg-btn" id="tipoIdaVuelta" type="button" data-vuelta="1">Ida y vuelta</button>
+          <button class="seg-btn active" id="tipoSoloIda" type="button" data-vuelta="0">Solo ida</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="btn-sticky-wrap">
+      <button class="btn btn-medio" id="buscarAuto" type="button">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-buscar"/></svg>
+        Calcular precio
+      </button>
+    </div>
     <p class="nota" id="buscarAutoTexto" style="margin:0 2px 12px;"></p>
 
     <section class="card precio-card" id="tarjetaPrecio" aria-live="polite" style="display:none;">
@@ -972,7 +1035,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 3;
+  var APP_VERSION = 5;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
     if (!versionServidor || versionServidor <= APP_VERSION) return;
@@ -1278,7 +1341,7 @@
     return h + (m / 60);
   }
   document.getElementById("chkEspera").addEventListener("change", function (ev) {
-    document.getElementById("camposEsperaHM").style.display = ev.target.checked ? "grid" : "none";
+    document.getElementById("camposEsperaHM").classList.toggle("abierta", ev.target.checked);
     calcularTotal();
   });
   document.getElementById("esperaHoras").addEventListener("input", calcularTotal);
@@ -1294,7 +1357,7 @@
       // se limpia el casillero para que no quede una marca vieja
       // esperando a que se vuelva a activar "Ida y vuelta".
       document.getElementById("chkEspera").checked = false;
-      document.getElementById("camposEsperaHM").style.display = "none";
+      document.getElementById("camposEsperaHM").classList.remove("abierta");
       document.getElementById("esperaHoras").value = "0";
       document.getElementById("esperaMinutos").value = "0";
     }
