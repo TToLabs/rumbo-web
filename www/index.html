@@ -387,6 +387,7 @@
     transition: opacity 0.35s ease;
   }
   .splash.oculta { opacity: 0; pointer-events: none; }
+  .splash[hidden] { display: none; }
   .splash img { width: 168px; height: 168px; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35)); animation: splashLatido 1.6s ease-in-out infinite; }
   .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
   .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; opacity: 0.9; }
@@ -400,12 +401,23 @@
 </style>
 </head>
 <body>
-<div class="splash" id="splashIngresando" hidden>
+<div class="splash" id="splashIngresando">
   <img src="img/icon-rumbo.svg" alt="Rumbo" id="splashLogo">
   <div class="splash-titulo" id="splashTitulo">Ingresando a Rumbo</div>
   <div class="splash-texto" id="splashTexto"></div>
   <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
 </div>
+<script>
+  /* Se decide ANTES de dibujar el resto: con sesión, la pantalla de espera
+     cubre todo desde el primer instante; sin sesión, se quita al tiro. */
+  (function () {
+    var ses = null;
+    try { ses = JSON.parse(localStorage.getItem("rumbo_mi_perfil") || "null"); } catch (e) {}
+    var el = document.getElementById("splashIngresando");
+    if (ses && ses.token) document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás solicitar tu próximo viaje.";
+    else el.hidden = true;
+  })();
+</script>
 
 
 <!-- Set de iconos: un solo trazo, un solo estilo. -->
@@ -1709,10 +1721,7 @@
 
   actualizarBotonAgregarParada();
   cargarTarifas();
-  (function () {
-    var ses = obtenerSesionPasajero();
-    if (ses && ses.token) mostrarSplash("Ingresando a Rumbo, donde podrás solicitar tu próximo viaje.");
-  })();
+  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();
   mostrarBannerConductor();
   pintarSesionPasajero();

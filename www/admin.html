@@ -338,6 +338,7 @@
     transition: opacity 0.35s ease;
   }
   .splash.oculta { opacity: 0; pointer-events: none; }
+  .splash[hidden] { display: none; }
   .splash img { width: 168px; height: 168px; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35)); animation: splashLatido 1.6s ease-in-out infinite; }
   .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
   .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; opacity: 0.9; }
@@ -351,12 +352,32 @@
 </style>
 </head>
 <body>
-<div class="splash" id="splashIngresando" hidden>
+<div class="splash" id="splashIngresando">
   <img src="img/icon-rumbo.svg" alt="Rumbo" id="splashLogo">
   <div class="splash-titulo" id="splashTitulo">Ingresando a Rumbo</div>
   <div class="splash-texto" id="splashTexto"></div>
   <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
 </div>
+<script>
+  /* MODO lo fija scripts/generar-paneles.js. Esta pantalla se decide ANTES
+     de dibujar el resto: con sesión cubre todo desde el primer instante. */
+  var MODO = "admin";
+  (function () {
+    var clave = "rumbo_sesion_" + (MODO === "admin" ? "admin" : "conductor");
+    var ses = null;
+    try { ses = JSON.parse(localStorage.getItem(clave) || localStorage.getItem("rumbo_conductor_sesion") || "null"); } catch (e) {}
+    var el = document.getElementById("splashIngresando");
+    if (!(ses && ses.token)) { el.hidden = true; return; }
+    if (MODO === "admin") {
+      document.getElementById("splashTitulo").textContent = "Rumbo Admin";
+      document.getElementById("splashLogo").src = "img/icon-rumbo-admin.svg";
+      document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
+    } else {
+      document.getElementById("splashLogo").src = "img/icon-rumbo-conductor.svg";
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás coordinar tus viajes solicitados.";
+    }
+  })();
+</script>
 
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -778,7 +799,7 @@
      "admin"). Nunca editar esos dos a mano: se pisan en la próxima
      generación. Separados a propósito para que un conductor no vea
      administración y el admin no vea pedidos ni cobros de nadie. */
-  var MODO = "admin";
+  var MODO = window.MODO;
   var URL_APK = MODO === "admin"
     ? "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-admin.apk"
     : "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-conductor.apk";
@@ -2076,11 +2097,10 @@
   }
 
   var sesionGuardada = obtenerSesion();
+  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   // Una sesión guardada de otro tipo de cuenta (p. ej. entraste como admin en
   // este navegador y ahora abres el panel de conductor) no se reutiliza.
   if (sesionGuardada && sesionGuardada.token && !cuentaPermitida(sesionGuardada.conductor)) {
-    if (MODO === "admin") mostrarSplash("Ingresando al sistema de Administración Rumbo.", "Rumbo Admin", "img/icon-rumbo-admin.svg");
-    else mostrarSplash("Ingresando a Rumbo, donde podrás coordinar tus viajes solicitados.", "Ingresando a Rumbo", "img/icon-rumbo-conductor.svg");
     entrar(sesionGuardada);
   }
   else mostrarPantalla("login");
