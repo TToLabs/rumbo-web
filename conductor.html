@@ -1,14 +1,2377 @@
 <!DOCTYPE html>
+<!-- ARCHIVO GENERADO desde www/panel.html por scripts/generar-paneles.js — NO EDITAR A MANO -->
+
+
 <html lang="es-CL">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rumbo — Panel del conductor</title>
 <meta name="robots" content="noindex, nofollow">
-<title>Rumbo Conductor</title>
-<link rel="icon" type="image/png" href="www/img/icon-rumbo-conductor-1024.png">
-<!-- Acceso directo al panel web. La descarga de la app está dentro del panel. -->
-<meta http-equiv="refresh" content="0; url=www/conductor.html">
-<script>location.replace("www/conductor.html" + location.search);</script>
+<meta name="theme-color" content="#16333F">
+<link rel="icon" type="image/png" href="img/icon-rumbo-conductor-1024.png">
+<link rel="apple-touch-icon" href="img/icon-rumbo-conductor-1024.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Centro de control del administrador: mismo esquema de tokens que el
+     resto de Rumbo, pero con el gris de fondo aún más neutro (#F8F9FA) y
+     el azul corporativo profundo como color de marca — esta pantalla es
+     de escritorio/análisis, no de viaje, así que el fondo puede ser más
+     "papel" y menos "app". */
+  :root {
+    --bg: #F8F9FA; --bg-grad-1: #F8F9FA; --bg-grad-2: #F8F9FA;
+    --surface: #FFFFFF; --surface-2: #F4F6F8;
+    --border: #E2E6EA; --border-strong: #C9D0D7;
+    --text: #101828; --text-2: #56606D; --text-3: #8A94A0;
+    --primary: #0A1F44; --primary-hover: #071531; --primary-ink: #FFFFFF;
+    --primary-soft: #E7EAF1; --primary-soft-hover: #D9DEEA; --primary-soft-ink: #0A1F44;
+    --primary-mid: #142B57; --primary-mid-hover: #0E2045;
+    --accent: #0B7A4B; --accent-soft: #E6F4ED;
+    --danger: #B3392B; --danger-soft: #FBEDEB;
+    --warn: #966A11; --warn-soft: #FBF3DC; --warn-border: #EFD99A;
+    --info: #2455A4; --info-soft: #E7EFFB; --info-border: #BDD3F0;
+    --shadow-sm: 0 1px 2px rgba(10,20,40,0.05);
+    --shadow-md: 0 1px 2px rgba(10,20,40,0.04), 0 6px 16px rgba(10,20,40,0.08);
+    --r-card: 14px; --r-input: 10px; --r-btn: 12px;
+  }
+  /* Tema único (claro) por ahora — ver nota en index.html. */
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body {
+    color: var(--text); font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; justify-content: center;
+    /* Reserva el alto de la barra fija de abajo (.nav-inferior) en móvil. */
+    padding: 0 16px calc(96px + env(safe-area-inset-bottom));
+  }
+  .app { width: 100%; max-width: 448px; }
+  .card-title, .estado-titulo, .splash-titulo, .pedido-total, .kpi-valor { font-weight: 700; }
+
+  /* ---------- Escritorio: panel ancho tipo dashboard ---------- */
+  /* Bajo esta anchura, el admin sigue viendo el mismo panel angosto que
+     el conductor (misma app, mismo código). Desde acá se despliega en un
+     centro de control: header ancho, cabecera azul, tabs arriba en vez de
+     nav inferior, tarjetas KPI en fila. Nada de esto toca al conductor. */
+  @media (min-width: 900px) {
+    body.modo-admin { padding: 0 32px 48px; display: block; }
+    body.modo-admin .app { max-width: 1080px; margin: 0 auto; }
+    body.modo-admin .topbar {
+      margin: 0 -32px 24px;
+      padding: 20px 32px; border-radius: 0 0 18px 18px;
+    }
+    body.modo-admin #navConductor {
+      position: static; display: flex; width: auto; background: none; border: none;
+      box-shadow: none; padding: 0; margin: -8px 0 20px; gap: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    body.modo-admin .nav-item {
+      flex-direction: row; flex: none; padding: 10px 18px; border-radius: 10px 10px 0 0;
+      font-size: 14.5px;
+    }
+    body.modo-admin .nav-item.activo { background: var(--primary-soft); box-shadow: none; }
+    body.modo-admin .nav-badge { top: 8px; right: 8px; margin: 0; }
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  svg.ico { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  svg.ico-sm { width: 16px; height: 16px; }
+
+  /* ---------- Barra superior ---------- */
+  /* El body tiene padding lateral para el resto del contenido; el margen
+     negativo hace que el fondo azul llegue de borde a borde de la
+     pantalla en vez de quedar como una isla angosta. */
+  .topbar { display: flex; align-items: center; gap: 12px; padding: calc(16px + env(safe-area-inset-top)) 16px 16px; background: var(--primary); color: var(--primary-ink); margin: 0 -16px 16px; border-radius: 0 0 18px 18px; }
+  .topbar-spacer { flex: 1; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 72px; height: 72px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* El topbar tiene fondo azul oscuro: el logo/wordmark navy se pierden
+     ahí, así que van en blanco siempre (antes solo se aplicaba en el
+     dashboard de admin, cuando el topbar de mobile todavía era claro). */
+  .brand-mark img { width: 100%; height: 100%; display: block; content: url(img/logo-rumbo-blanco.png); }
+  .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
+  .brand-texto { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 72px; }
+  .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
+  .brand-sub { font-size: 13.5px; color: color-mix(in srgb, var(--primary-ink) 70%, transparent); line-height: 1.3; }
+
+  /* ---------- Estado del conductor (switch prominente) ---------- */
+  .estado-conductor {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-card); margin-bottom: 16px; box-shadow: var(--shadow-sm);
+  }
+  .estado-conductor.activo { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+  .estado-texto { flex: 1; min-width: 0; }
+  .estado-titulo { font-size: 16px; font-weight: 600; }
+  .switch { position: relative; width: 46px; height: 27px; flex: none; }
+  .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 2; }
+  .switch-pista {
+    position: absolute; inset: 0; background: var(--border-strong);
+    border-radius: 999px; transition: background-color 0.16s ease;
+  }
+  .switch-pista::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 21px; height: 21px;
+    background: #FFFFFF; border-radius: 50%; box-shadow: var(--shadow-sm);
+    transition: transform 0.16s ease;
+  }
+  .switch input:checked ~ .switch-pista { background: var(--accent); }
+  .switch input:checked ~ .switch-pista::after { transform: translateX(19px); }
+  .switch input:focus-visible ~ .switch-pista { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ---------- Pestañas ---------- */
+  .tabs {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    padding: 4px; border-radius: 12px; margin-bottom: 16px;
+  }
+  .tab {
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 13.5px; font-weight: 500; color: var(--text-2);
+    padding: 9px 4px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .tab[aria-selected="true"] { background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600; box-shadow: var(--shadow-sm); }
+
+  /* ---------- Tarjetas ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-card); padding: 20px; margin-bottom: 12px; box-shadow: var(--shadow-sm);
+  }
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--text-2); }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .card-head-spacer { flex: 1; }
+
+  /* ---------- Burbuja de pendientes ---------- */
+  .burbuja {
+    display: none; background: var(--danger); color: #FFFFFF;
+    font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+    border-radius: 999px; min-width: 20px; height: 20px; padding: 0 6px;
+    align-items: center; justify-content: center;
+  }
+  .burbuja.activa { display: inline-flex; }
+  #grupoPedidos.hay-pendientes { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); }
+
+  /* ---------- Tarjeta de pedido ---------- */
+  .pedido-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 12px; background: var(--surface-2);
+  }
+  .pedido-card:last-child { margin-bottom: 0; }
+  .pedido-tope { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .pedido-cliente { font-size: 17px; font-weight: 600; }
+  .pedido-tel { font-size: 15px; color: var(--text-2); text-decoration: none; }
+  .pedido-tel:hover { color: var(--text); text-decoration: underline; }
+  .pedido-total { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pedido-ruta { display: grid; grid-template-columns: 14px 1fr; gap: 0 10px; align-items: center; margin-bottom: 14px; }
+  .pedido-punto-o { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--text-2); justify-self: center; }
+  .pedido-punto-d { width: 8px; height: 8px; border-radius: 2px; background: var(--text-2); justify-self: center; }
+  .pedido-linea-conector { width: 2px; height: 14px; background: var(--border-strong); justify-self: center; }
+  .pedido-dir { font-size: 15px; padding: 2px 0; overflow-wrap: anywhere; }
+  .pedido-meta { font-size: 13.5px; color: var(--text-3); margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+  .pedido-aviso { font-size: 13.5px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; }
+  .pedido-linea { font-size: 15px; }
+
+  /* ---------- Campos ---------- */
+  .campo { display: flex; flex-direction: column; gap: 6px; }
+  .campo-label { font-size: 14px; font-weight: 500; color: var(--text-2); }
+  .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .fila.full { grid-template-columns: 1fr; }
+  input[type="number"], input[type="text"], input[type="time"],
+  input[type="password"], input[type="email"], input[type="month"], select {
+    width: 100%; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-input);
+    padding: 11px 13px; font: inherit; font-size: 17px;
+    font-variant-numeric: tabular-nums; transition: border-color 0.12s ease;
+  }
+  input:hover { border-color: var(--border-strong); }
+  input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+  }
+
+  /* ---------- Días de tarifa punta ---------- */
+  .dias-toggle { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tarifa-dia {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
+    padding: 8px 11px; font: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text-2); cursor: pointer; transition: all 0.12s ease;
+  }
+  .tarifa-dia:hover { border-color: var(--border-strong); }
+  .tarifa-dia.activo { border-color: var(--primary); background: var(--primary); color: var(--primary-ink); font-weight: 600; }
+  .tarifa-dia.chico { padding: 6px 9px; font-size: 13px; }
+
+  /* ---------- Bloqueos de disponibilidad ---------- */
+  .bloqueo-fila { border: 1px solid var(--border); border-radius: var(--r-input); padding: 14px; margin-bottom: 10px; }
+  .bloqueo-cabecera { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .bloqueo-todo-dia { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); margin-bottom: 10px; }
+  .bloqueo-todo-dia input { width: 16px; height: 16px; accent-color: var(--primary); }
+  .bloqueo-horas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-quitar { border: none; background: none; color: var(--danger); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; padding: 4px; }
+
+  /* ---------- Vehículo ---------- */
+  .veh-foto-fila { display: flex; align-items: center; gap: 16px; }
+  .veh-foto-preview {
+    width: 84px; height: 84px; border-radius: 12px; object-fit: cover;
+    background: var(--surface-2); border: 1px solid var(--border); flex: none;
+  }
+  .veh-foto-preview:not([src]), .veh-foto-preview[src=""] { visibility: hidden; }
+
+  /* ---------- Ingreso: separador "o" ---------- */
+  .separador-o { display: flex; align-items: center; gap: 10px; margin: 20px 0 12px; color: var(--text-3); font-size: 14px; }
+  .separador-o::before, .separador-o::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .btn.btn-secundario { background: var(--surface); color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn.btn-secundario:hover:not(:disabled) { background: var(--primary-soft); }
+
+  /* ---------- Ajustes: secciones plegables ---------- */
+  /* Todo arranca cerrado: son opciones sensibles (cobros, clave, tarifas) y
+     no deben quedar a un toque accidental de distancia. <details> es nativo:
+     abre/cierra sin JS y es accesible por teclado y lector de pantalla. */
+  .acordeon {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-card); margin-bottom: 12px; box-shadow: var(--shadow-sm);
+  }
+  .acordeon > summary {
+    list-style: none; cursor: pointer; padding: 18px 20px;
+    font-size: 17px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .acordeon > summary::-webkit-details-marker { display: none; }
+  .acordeon > summary::after {
+    content: ""; width: 9px; height: 9px; border-right: 2px solid var(--text-3);
+    border-bottom: 2px solid var(--text-3); transform: rotate(45deg);
+    transition: transform 0.15s ease; margin-left: 12px; flex: none;
+  }
+  .acordeon[open] > summary::after { transform: rotate(-135deg); }
+  .acordeon > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: var(--r-card); }
+  .acordeon-cuerpo { padding: 0 20px 18px; }
+  /* Las tarjetas de adentro pierden su marco: el marco ya lo pone el plegable. */
+  .acordeon .card { border: none; box-shadow: none; padding: 0; margin: 0 0 18px; background: none; }
+  .acordeon.simple .card-head { display: none; }
+  .acordeon .estado-conductor { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
+  .acordeon .estado-titulo { display: none; }
+
+  .tabla-historial { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12.5px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
+  .tabla-historial td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .tabla-historial td.monto { text-align: right; white-space: nowrap; font-weight: 600; }
+  .tabla-historial th:nth-last-child(2) { text-align: right; }
+  .tabla-historial .pendiente { color: var(--text-3); font-size: 12.5px; }
+  .tabla-historial .hist-fila { cursor: pointer; }
+  .tabla-historial .hist-fila:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .tabla-historial .hist-detalle td { color: var(--text-3); font-size: 13px; background: color-mix(in srgb, var(--accent) 4%, transparent); }
+
+  /* ---------- KPIs del administrador ---------- */
+  .kpi-fila {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; margin-bottom: 16px;
+  }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+    padding: 16px 18px; box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .kpi-cabeza { display: flex; align-items: center; justify-content: space-between; color: var(--text-3); }
+  .kpi-cabeza svg { color: var(--primary); }
+  .kpi-etiqueta { font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .kpi-valor { font-size: 30px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .kpi-nota { font-size: 12.5px; color: var(--text-3); }
+
+  /* ---------- Badges de estado ---------- */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px; line-height: 1.6;
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge-ambar { background: var(--warn-soft); color: var(--warn); }
+  .badge-verde { background: var(--accent-soft); color: var(--accent); }
+  .badge-azul { background: var(--info-soft); color: var(--info); }
+  .badge-gris { background: var(--surface-2); color: var(--text-3); }
+
+  /* ---------- Cuadrícula de perfiles de conductor ---------- */
+  #listaConductores {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;
+  }
+  #listaConductores .pedido-card { margin-bottom: 0; display: flex; flex-direction: column; }
+  #listaConductores .btn-row { margin-top: auto; padding-top: 10px; }
+
+  /* ---------- Filtros de historial alineados a la derecha del título ---------- */
+  .hist-cabecera { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 14px; }
+  .hist-cabecera .card-title { margin-right: auto; }
+  .hist-filtros { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hist-filtros .campo { gap: 4px; min-width: 130px; }
+  .hist-filtros .campo-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .hist-filtros select, .hist-filtros input {
+    padding: 8px 10px; font-size: 14px; border-radius: 999px; background: var(--surface-2);
+  }
+
+  /* ---------- Barra de navegación inferior ---------- */
+  .nav-inferior {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 12px rgba(16,26,32,0.06);
+  }
+  .nav-item {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 12px; font-weight: 500; color: var(--text-3);
+    padding: 8px 4px; border-radius: 10px;
+  }
+  .nav-item .ico { width: 22px; height: 22px; }
+  .nav-item.activo { color: var(--primary); font-weight: 600; }
+  .nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .nav-badge {
+    position: absolute; top: 6px; right: 50%; margin-right: -16px;
+    width: 9px; height: 9px; border-radius: 50%; background: var(--danger); display: none;
+  }
+  .nav-badge.activa { display: block; }
+
+  /* ---------- Mapa con la ubicación del pasajero ---------- */
+  .mapa-pasajero {
+    display: none; height: 180px; border-radius: var(--r-input);
+    border: 1px solid var(--border); margin: 12px 0 4px; overflow: hidden;
+  }
+  .mapa-pasajero.activo { display: block; }
+  .nota-mapa { font-size: 13.5px; color: var(--text-3); margin: 10px 0 0; }
+  .nota-mapa.oculto { display: none; }
+
+  /* ---------- Chat (mismo diseño que el lado del pasajero) ---------- */
+  .chat-mensajes {
+    max-height: 220px; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 8px; margin: 12px 0; padding-right: 2px;
+  }
+  .chat-vacio { color: var(--text-3); font-size: 14px; text-align: center; padding: 14px 0; }
+  .chat-burbuja {
+    max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 15px; line-height: 1.4;
+    word-break: break-word;
+  }
+  .chat-burbuja.mia { align-self: flex-end; background: var(--primary); color: var(--primary-ink); border-bottom-right-radius: 4px; }
+  .chat-burbuja.suya { align-self: flex-start; background: var(--surface-2); color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-hora { display: block; font-size: 11.5px; opacity: 0.7; margin-top: 3px; }
+  .chat-entrada { display: flex; gap: 8px; }
+  .chat-entrada input {
+    flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: var(--r-input);
+    padding: 11px 13px; font: inherit; font-size: 15px; background: var(--surface); color: var(--text);
+  }
+  .chat-entrada input:focus { outline: none; border-color: var(--primary); }
+  .chat-entrada .btn { padding: 11px 16px; font-size: 15px; }
+
+  /* ---------- Sección plegable (lo poco usado, escondido) ---------- */
+  .plegable { border-top: 1px solid var(--border); margin-top: 4px; }
+  .plegable-btn {
+    width: 100%; background: none; border: none; cursor: pointer; font: inherit;
+    font-size: 15px; font-weight: 600; color: var(--text); text-align: left;
+    padding: 16px 0; display: flex; align-items: center; gap: 8px;
+  }
+  .plegable-btn .chevron { transition: transform 0.16s ease; margin-left: auto; color: var(--text-3); }
+  .plegable-btn[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+  .plegable-cuerpo { display: none; padding-bottom: 4px; }
+  .plegable-cuerpo.abierto { display: block; }
+  .ayuda { font-size: 14px; color: var(--text-3); margin: 0 0 12px; line-height: 1.45; }
+
+  /* ---------- Botones ---------- */
+  .btn {
+    border: none; border-radius: var(--r-btn); cursor: pointer; font: inherit;
+    font-size: 16.5px; font-weight: 600; padding: 13px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background-color 0.12s ease, opacity 0.12s ease;
+    text-decoration: none; /* .btn se usa tanto en <button> como en <a> (links de navegación externa) */
+  }
+  .btn-primario { background: var(--primary); color: var(--primary-ink); width: 100%; }
+  .btn-primario:hover:not(:disabled) { background: var(--primary-hover); }
+  .btn-suave { background: var(--primary-soft); color: var(--primary-soft-ink); }
+  .btn-suave:hover:not(:disabled) { background: var(--primary-soft-hover); }
+  .btn-medio { background: var(--primary-mid); color: var(--primary-ink); box-shadow: var(--shadow-md); }
+  .btn-medio:hover:not(:disabled) { background: var(--primary-mid-hover); }
+  .btn-ok { background: var(--accent); color: #FFFFFF; }
+  .btn-danger { background: none; color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border)); }
+  .btn-danger:hover:not(:disabled) { background: var(--danger-soft); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn-chico {
+    padding: 7px 12px; font-size: 14px; border-radius: 9px;
+    background: var(--surface); color: var(--text-2); border: 1px solid var(--border);
+  }
+  .btn-chico:hover { border-color: var(--border-strong); color: var(--text); }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .msg { font-size: 15px; margin: 12px 0 0; color: var(--text-2); }
+  .msg:empty { display: none; }
+  .msg.ok { color: var(--accent); }
+  .msg.error { color: var(--danger); }
+  .vacio { color: var(--text-3); font-size: 15px; text-align: center; padding: 24px 0; margin: 0; }
+
+  /* Respuesta visual al tocar: el botón se hunde un poco. Sin esto, con la
+     latencia del servidor parecía que el toque no se había registrado. */
+  .btn, .nav-item, .tarifa-dia, .seg-btn { transition: transform 0.08s ease, background-color 0.12s ease, opacity 0.12s ease; }
+  .btn:active:not(:disabled), .nav-item:active, .tarifa-dia:active, .seg-btn:active { transform: scale(0.96); }
+  .btn.enviando { opacity: 0.7; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) { .btn:active, .nav-item:active { transform: none; } }
+
+  /* ---------- Pantalla "Ingresando" (con sesión ya abierta) ---------- */
+  /* Fondo claro (el mismo --bg de la app), no el gris azulado oscuro de
+     antes — más agradable y no rompe con el resto de la app al entrar. */
+  .splash {
+    position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px; padding: 32px;
+    background: var(--bg); color: var(--text); text-align: center;
+    transition: opacity 0.35s ease;
+  }
+  .splash.oculta { opacity: 0; pointer-events: none; }
+  .splash[hidden] { display: none; }
+  .splash img { width: 148px; height: 148px; filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
+  .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--primary); }
+  .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; color: var(--text-2); }
+  .splash .splash-puntos { display: flex; gap: 6px; margin-top: 6px; }
+  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); opacity: 0.35; animation: splashPunto 1.2s infinite; }
+  .splash .splash-puntos span:nth-child(2) { animation-delay: 0.2s; }
+  .splash .splash-puntos span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes splashLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  @keyframes splashPunto { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .splash img, .splash .splash-puntos span { animation: none; } }
+
+  /* ---------- Actualización obligatoria (pantalla completa, no se puede
+     cerrar hasta descargar) — mismo criterio que DAOMA. ---------- */
+  .aviso-actualizar {
+    position: fixed; inset: 0; z-index: 200; display: flex; align-items: center;
+    justify-content: center; padding: 24px; background: rgba(16,26,32,0.55);
+    backdrop-filter: blur(2px);
+  }
+  .aviso-actualizar[hidden] { display: none; }
+  .actualizacion-card {
+    background: var(--surface); border-radius: var(--r-card); padding: 28px 24px;
+    max-width: 340px; width: 100%; text-align: center; box-shadow: var(--shadow-md);
+  }
+  .actualizacion-ico { font-size: 40px; line-height: 1; margin-bottom: 10px; }
+  .actualizacion-card h2 { margin: 0 0 8px; font-size: 19px; font-weight: 700; }
+  .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
+  .actualizacion-card button { width: 100%; }
+</style>
 </head>
-<body><p style="font-family:sans-serif;text-align:center;margin-top:40px;"><a href="www/conductor.html">Abrir Rumbo Conductor</a></p></body>
+<body>
+<div class="aviso-actualizar" id="avisoActualizar" hidden>
+  <div class="actualizacion-card">
+    <div class="actualizacion-ico">⬆️</div>
+    <h2>Hay una versión nueva</h2>
+    <p>Para seguir usando Rumbo hace falta actualizar la app primero. Es rápido.</p>
+    <button type="button" id="btnActualizar" class="btn btn-primario">Descargar actualización</button>
+  </div>
+</div>
+<div class="splash" id="splashIngresando">
+  <img src="img/logo-rumbo.png" alt="Rumbo" id="splashLogo">
+  <div class="splash-titulo" id="splashTitulo">Rumbo</div>
+  <div class="splash-texto" id="splashTexto"></div>
+  <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+<script>
+  /* MODO lo fija scripts/generar-paneles.js. Esta pantalla se decide ANTES
+     de dibujar el resto: con sesión cubre todo desde el primer instante. */
+  var MODO = "conductor";
+  (function () {
+    var clave = "rumbo_sesion_" + (MODO === "admin" ? "admin" : "conductor");
+    var ses = null;
+    try { ses = JSON.parse(localStorage.getItem(clave) || localStorage.getItem("rumbo_conductor_sesion") || "null"); } catch (e) {}
+    var el = document.getElementById("splashIngresando");
+    if (!(ses && ses.token)) { el.hidden = true; return; }
+    if (MODO === "admin") {
+      document.getElementById("splashTitulo").textContent = "Rumbo Admin";
+      document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
+    } else {
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás coordinar tus viajes solicitados.";
+    }
+  })();
+</script>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-auto" viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm18 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/><path d="M3 17v-4.5L5 7h14l2 5.5V17"/><path d="M6 12h12"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-precio" viewBox="0 0 24 24"><path d="M12 3v18M16.5 7.5c0-1.7-2-2.7-4.5-2.7S7.5 5.9 7.5 7.8s2 2.5 4.5 3 4.5 1.2 4.5 3.1-2 3-4.5 3-4.5-1.1-4.5-2.8"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-refrescar" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-.6 4"/><path d="M20 5v6h-6"/></symbol>
+  <symbol id="i-engranaje" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+</svg>
+
+<div class="app" id="pantallaLogin" style="display:none;">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
+      <span class="brand-texto">
+        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
+        <span class="brand-sub">Panel del conductor</span>
+      </span>
+    </div>
+  </header>
+  <section class="card" id="cardIngreso" data-enter="btnLogin">
+    <div class="card-head"><span class="card-title">Ingresa a tu cuenta</span></div>
+    <div class="campo" style="margin-bottom:12px;">
+      <label class="campo-label" for="loginUsuario">Usuario</label>
+      <input type="text" id="loginUsuario" autocomplete="username" autocapitalize="none">
+    </div>
+    <div class="campo" style="margin-bottom:16px;">
+      <label class="campo-label" for="loginClave">Clave</label>
+      <input type="password" id="loginClave" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primario" id="btnLogin" type="button" style="width:100%;">Ingresar</button>
+    <p class="msg" id="loginMsg" style="margin:12px 2px 0;"></p>
+    <div id="bloqueCrearCuenta">
+      <div class="separador-o"><span>¿Eres conductor nuevo?</span></div>
+      <button class="btn btn-secundario" id="btnIrRegistro" type="button" style="width:100%;">Crear cuenta de conductor</button>
+    </div>
+  </section>
+
+  <!-- Registro: la cuenta queda PENDIENTE hasta que un administrador la
+       apruebe. Recién ahí puede ingresar (regla de la red). -->
+  <section class="card" id="acordeonRegistro" style="display:none;" data-enter="btnRegistrar">
+    <div class="card-head"><span class="card-title">Crear cuenta de conductor</span></div>
+    <div>
+      <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Un administrador revisa y aprueba tu cuenta; cuando la apruebe podrás ingresar con tu correo y clave.</p>
+      <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regNombre">Nombre y apellido</label><input type="text" id="regNombre" autocomplete="name"></div>
+      <div class="fila">
+        <div class="campo"><label class="campo-label" for="regTelefono">WhatsApp</label><input type="text" id="regTelefono" inputmode="numeric" placeholder="56912345678" autocomplete="tel"></div>
+        <div class="campo"><label class="campo-label" for="regEmail">Correo (usuario)</label><input type="email" id="regEmail" autocomplete="email" autocapitalize="none"></div>
+      </div>
+      <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regClave">Clave (mínimo 6 caracteres)</label><input type="password" id="regClave" autocomplete="new-password"></div>
+      <p class="campo-label" style="margin:6px 0 8px;">Tu vehículo</p>
+      <div class="fila">
+        <div class="campo"><label class="campo-label" for="regPatente">Patente</label><input type="text" id="regPatente" autocapitalize="characters"></div>
+        <div class="campo"><label class="campo-label" for="regColor">Color</label><input type="text" id="regColor"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label class="campo-label" for="regMarca">Marca</label><input type="text" id="regMarca"></div>
+        <div class="campo"><label class="campo-label" for="regModelo">Modelo</label><input type="text" id="regModelo"></div>
+      </div>
+      <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--text-2);margin:6px 0 14px;">
+        <input type="checkbox" id="regTerminos" style="width:auto;margin-top:3px;">
+        <span>Declaro que mis datos son reales y acepto que Rumbo los use para coordinar viajes con pasajeros.</span>
+      </label>
+      <button class="btn btn-medio" id="btnRegistrar" type="button" style="width:100%;">Enviar solicitud</button>
+      <p class="msg" id="regMsg" style="margin:12px 2px 0;"></p>
+      <button class="btn btn-chico" id="btnVolverIngreso" type="button" style="width:100%;margin-top:14px;">Ya tengo cuenta · Ingresar</button>
+    </div>
+  </section>
+
+  <!-- Solo tiene sentido en el navegador: dentro de la app instalada se oculta. -->
+  <a class="btn btn-chico" id="linkDescargaApp" href="#" style="width:100%;margin-top:4px;"></a>
+  <p class="ayuda" id="notaDescargaApp" style="text-align:center;font-size:13px;margin:8px 0 0;">Android pedirá permitir "fuentes desconocidas" la primera vez.</p>
+</div>
+
+<div class="app" id="pantallaApp" style="display:none;">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
+      <span class="brand-texto">
+        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
+        <span class="brand-sub" id="brandSubConductor">Panel del conductor</span>
+      </span>
+    </div>
+    <div class="topbar-spacer"></div>
+  </header>
+
+
+  <div id="panelEnCurso" role="tabpanel" aria-labelledby="tabEnCurso" style="display:none;">
+    <section class="card" id="grupoEnCurso" style="display:none;">
+      <div class="card-head">
+        <span class="card-title">Viaje en curso</span>
+      </div>
+      <div id="listaEnCurso"></div>
+    </section>
+    <p class="vacio" id="sinViajesEnCurso">No tienes viajes en curso.</p>
+  </div>
+
+  <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
+    <section class="card" id="grupoPedidos">
+      <div class="card-head">
+        <span class="card-title">Pedidos pendientes</span>
+        <span class="card-head-spacer"></span>
+        <button class="btn btn-chico" id="btnRefrescar" type="button">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-refrescar"/></svg>
+          Actualizar
+        </button>
+      </div>
+      <div id="listaPedidos"><p class="vacio">Cargando pedidos...</p></div>
+    </section>
+  </div>
+
+  <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <!-- Centro de control: solo tiene sentido para el administrador, así
+         que reutiliza la clase "solo-red" que ya oculta/muestra bloques
+         según MODO === "admin" (ver aplicarPermisos en el script). -->
+    <div class="kpi-fila solo-red" id="kpiAdmin">
+      <div class="kpi-card">
+        <div class="kpi-cabeza">
+          <span class="kpi-etiqueta">Conductores registrados</span>
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-auto"/></svg>
+        </div>
+        <div class="kpi-valor" id="kpiConductores">—</div>
+        <div class="kpi-nota" id="kpiConductoresNota">&nbsp;</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-cabeza">
+          <span class="kpi-etiqueta">Solicitudes por aprobar</span>
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-lista"/></svg>
+        </div>
+        <div class="kpi-valor" id="kpiPendientes">—</div>
+        <div class="kpi-nota">Cuentas nuevas o suspendidas</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-cabeza">
+          <span class="kpi-etiqueta">Total facturado</span>
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-precio"/></svg>
+        </div>
+        <div class="kpi-valor" id="kpiFacturado">—</div>
+        <div class="kpi-nota" id="kpiFacturadoNota">Mes en curso</div>
+      </div>
+    </div>
+
+    <!-- Solo administradores: aprobar cuentas nuevas y decidir quién recibe
+         viajes derivados de otros conductores. -->
+    <details class="acordeon" id="acordeonConductores" style="display:none;">
+      <summary>Conductores (administración)</summary>
+      <div class="acordeon-cuerpo">
+        <p class="ayuda" style="margin:0 0 12px;"><strong>Aprobar</strong>: puede ingresar y trabajar con su clientela. <strong>En la red</strong>: además recibe viajes que otros conductores no pudieron tomar.</p>
+        <div id="listaConductores"><p class="vacio">Cargando...</p></div>
+      </div>
+    </details>
+
+    <details class="acordeon" id="acordeonHistorial">
+      <summary>Historial de pagos</summary>
+      <div class="acordeon-cuerpo">
+        <div class="hist-cabecera">
+          <div class="hist-filtros">
+            <div class="campo"><label class="campo-label" for="histMes">Mes</label><input type="month" id="histMes"></div>
+            <div class="campo" id="histFiltroConductor" style="display:none;">
+              <label class="campo-label" for="histConductor">Conductor</label>
+              <select id="histConductor"><option value="">Todos</option></select>
+            </div>
+          </div>
+        </div>
+        <div id="histResumen" class="msg" style="margin:0 0 10px;"></div>
+        <div style="overflow-x:auto;">
+          <table class="tabla-historial">
+            <thead><tr><th>Fecha</th><th id="histColConductor" style="display:none;">Conductor</th><th>Monto</th><th>Estado de pago</th></tr></thead>
+            <tbody id="histFilas"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="acordeon simple"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
+    <div class="estado-conductor" id="estadoConductor">
+      <div class="estado-texto">
+        <div class="estado-titulo">Compartir mi ubicación</div>
+        <p class="msg" id="ubicacionMsg" style="margin:2px 0 0;font-size:12.5px;">Actívalo cuando salgas a un viaje confirmado.</p>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="chkUbicacion">
+        <span class="sr-only">Compartir ubicación en vivo</span>
+        <span class="switch-pista"></span>
+      </label>
+    </div>
+    </div></details>
+    <details class="acordeon simple"><summary>Cobrar con Mercado Pago</summary><div class="acordeon-cuerpo">
+    <section class="card" id="cardMercadoPago">
+      <div class="card-head"><span class="card-title">Cobrar con Mercado Pago</span></div>
+      <p class="ayuda" style="margin:0 0 12px;">
+        La plata de cada viaje entra directo a <strong>tu</strong> cuenta de Mercado Pago.
+        El pasajero puede pagar con débito, crédito o en cuotas (el interés de las cuotas lo paga él).
+      </p>
+      <p class="msg" id="mpEstado" style="margin:0 0 12px;">Revisando...</p>
+      <button class="btn btn-medio" id="btnVincularMp" type="button" style="width:100%;display:none;">Vincular mi Mercado Pago</button>
+      <p class="ayuda" style="margin:12px 0 0;font-size:13px;">
+        Importante: en tu cuenta de Mercado Pago <strong>no actives "cuotas sin interés"</strong>; si lo activás, ese costo lo pagás vos en cada viaje.
+      </p>
+    </section>
+    </div></details>
+
+    <details class="acordeon simple"><summary>QR para pasajeros</summary><div class="acordeon-cuerpo">
+    <section class="card" id="cardMiQr">
+      <div class="card-head"><span class="card-title">QR para pasajeros</span></div>
+      <p class="ayuda" style="margin:0 0 14px;">
+        Quien escanee este QR o abra tu link queda registrado como tu cliente.
+      </p>
+      <div style="text-align:center;">
+        <img id="miQrImg" alt="Código QR de tu link" style="width:220px;height:220px;border:1px solid var(--border);border-radius:12px;background:#fff;">
+        <p class="msg" id="miQrLink" style="word-break:break-all;font-size:13px;margin:10px 0 14px;"></p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-chico" id="btnCompartirQr" type="button">Compartir</button>
+        <button class="btn btn-chico" id="btnCopiarQr" type="button">Copiar link</button>
+      </div>
+      <button class="btn btn-chico" id="btnImprimirQr" type="button" style="width:100%;margin-top:8px;">Imprimir / guardar QR</button>
+      <p class="msg" id="miQrMsg" style="margin:10px 2px 0;"></p>
+    </section>
+    </div></details>
+
+    <details class="acordeon" id="acordeonTarifas"><summary>Tarifas y costos</summary><div class="acordeon-cuerpo">
+    <!-- Conductor: modalidad de cobro que decide el admin. -->
+    <div class="solo-conductor" id="bloqueModoTarifa" style="padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
+      <div style="font-weight:600;" id="modoTarifaTitulo">Tarifa general</div>
+      <p class="ayuda" id="modoTarifaTexto" style="margin:4px 0 10px;font-size:13.5px;"></p>
+      <button class="btn btn-secundario" id="btnSolicitarTarifa" type="button" style="width:100%;">Solicitar tarifa propia</button>
+    </div>
+    <section class="card">
+      <div class="card-head">
+        <span class="card-title">Costos del vehículo</span>
+      </div>
+      <div class="fila">
+        <div class="campo">
+          <label class="campo-label" for="precioComb">Precio de tu combustible ($/L)</label>
+          <input type="number" id="precioComb" step="1">
+        </div>
+        <div class="campo solo-conductor">
+          <label class="campo-label" for="tipoCombustible">Combustible</label>
+          <select id="tipoCombustible">
+            <option value="">Elegir</option>
+            <option value="GASOLINA_93">Gasolina 93</option>
+            <option value="GASOLINA_95">Gasolina 95</option>
+            <option value="GASOLINA_97">Gasolina 97</option>
+            <option value="DIESEL">Diésel</option>
+          </select>
+        </div>
+        <div class="campo solo-red">
+          <label class="campo-label" for="kmLimiteSantiago">Límite Santiago, km (solo respaldo)</label>
+          <input type="number" id="kmLimiteSantiago" step="1">
+        </div>
+      </div>
+      <div class="fila">
+        <div class="campo">
+          <label class="campo-label" for="consumoCiudad">Consumo ciudad (km/L)</label>
+          <input type="number" id="consumoCiudad" step="0.1">
+        </div>
+        <div class="campo">
+          <label class="campo-label" for="consumoRuta">Consumo ruta (km/L)</label>
+          <input type="number" id="consumoRuta" step="0.1">
+        </div>
+      </div>
+      <div class="fila full" style="margin-bottom:0;">
+        <div class="campo">
+          <label class="campo-label" for="busquedaMin">Minutos para ir a buscar al pasajero</label>
+          <input type="number" id="busquedaMin" step="5">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="card-title">Valor de la hora</span>
+      </div>
+      <div class="fila" style="margin-bottom:16px;">
+        <div class="campo">
+          <label class="campo-label" for="valorHoraValle">Hora valle ($)</label>
+          <input type="number" id="valorHoraValle" step="500">
+        </div>
+        <div class="campo">
+          <label class="campo-label" for="valorHoraPunta">Hora punta ($)</label>
+          <input type="number" id="valorHoraPunta" step="500">
+        </div>
+      </div>
+
+      <p class="ayuda solo-red">Días con tarifa punta todo el día. Los feriados se detectan solos.</p>
+      <div class="dias-toggle solo-red" id="diasPuntaTodoElDia">
+        <button class="tarifa-dia" type="button" data-dia="1">Lun</button>
+        <button class="tarifa-dia" type="button" data-dia="2">Mar</button>
+        <button class="tarifa-dia" type="button" data-dia="3">Mié</button>
+        <button class="tarifa-dia" type="button" data-dia="4">Jue</button>
+        <button class="tarifa-dia" type="button" data-dia="5">Vie</button>
+        <button class="tarifa-dia" type="button" data-dia="6">Sáb</button>
+        <button class="tarifa-dia" type="button" data-dia="0">Dom</button>
+      </div>
+
+      <div class="plegable solo-red">
+        <button class="plegable-btn" id="btnHorarios" type="button" aria-expanded="false" aria-controls="cuerpoHorarios">
+          Franjas horarias
+          <svg class="ico ico-sm chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+        </button>
+        <div class="plegable-cuerpo" id="cuerpoHorarios">
+          <p class="ayuda">En los días marcados arriba, todo el día es punta salvo esta franja:</p>
+          <div class="fila">
+            <div class="campo">
+              <label class="campo-label" for="finDeSemanaValleInicio">Valle desde</label>
+              <input type="time" id="finDeSemanaValleInicio">
+            </div>
+            <div class="campo">
+              <label class="campo-label" for="finDeSemanaValleFin">hasta</label>
+              <input type="time" id="finDeSemanaValleFin">
+            </div>
+          </div>
+
+          <p class="ayuda">El resto de los días solo son punta en estas dos franjas:</p>
+          <div class="fila">
+            <div class="campo">
+              <label class="campo-label" for="horaPuntaMananaInicio">Mañana desde</label>
+              <input type="time" id="horaPuntaMananaInicio">
+            </div>
+            <div class="campo">
+              <label class="campo-label" for="horaPuntaMananaFin">hasta</label>
+              <input type="time" id="horaPuntaMananaFin">
+            </div>
+          </div>
+          <div class="fila" style="margin-bottom:4px;">
+            <div class="campo">
+              <label class="campo-label" for="horaPuntaTardeInicio">Noche desde</label>
+              <input type="time" id="horaPuntaTardeInicio">
+            </div>
+            <div class="campo">
+              <label class="campo-label" for="horaPuntaTardeFin">hasta (día siguiente)</label>
+              <input type="time" id="horaPuntaTardeFin">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <button class="btn btn-primario" id="btnGuardarTarifas" type="button">Guardar cambios</button>
+    <p class="msg" id="tarifasMsg" style="margin:12px 2px 0;"></p>
+    </div></details>
+
+    <details class="acordeon simple"><summary>Mi vehículo</summary><div class="acordeon-cuerpo">
+    <section class="card">
+      <div class="card-head"><span class="card-title">Mi vehículo</span></div>
+      <p class="ayuda" style="margin:0 0 14px;">
+        El pasajero ve esto al pedir el viaje, para reconocer tu auto al llegar.
+      </p>
+      <div class="veh-foto-fila">
+        <img id="vehFotoPreview" alt="" class="veh-foto-preview">
+        <div>
+          <label class="btn btn-chico" for="vehFotoInput" style="cursor:pointer;">Subir foto</label>
+          <input type="file" id="vehFotoInput" accept="image/png,image/jpeg,image/webp" style="display:none;">
+          <p class="msg" id="vehFotoMsg" style="margin:8px 0 0;"></p>
+        </div>
+      </div>
+      <div class="fila" style="margin-top:16px;">
+        <div class="campo">
+          <label class="campo-label" for="vehPatente">Patente</label>
+          <input type="text" id="vehPatente" placeholder="AB·CD·12" autocapitalize="characters">
+        </div>
+        <div class="campo">
+          <label class="campo-label" for="vehColor">Color</label>
+          <input type="text" id="vehColor" placeholder="Blanco">
+        </div>
+      </div>
+      <div class="fila">
+        <div class="campo">
+          <label class="campo-label" for="vehMarca">Marca</label>
+          <input type="text" id="vehMarca" placeholder="Toyota">
+        </div>
+        <div class="campo">
+          <label class="campo-label" for="vehModelo">Modelo</label>
+          <input type="text" id="vehModelo" placeholder="Yaris">
+        </div>
+      </div>
+      <button class="btn btn-chico" id="btnGuardarVehiculo" type="button">Guardar vehículo</button>
+      <p class="msg" id="vehiculoMsg" style="margin:10px 2px 0;"></p>
+    </section>
+    </div></details>
+
+    <details class="acordeon simple"><summary>Mi cuenta</summary><div class="acordeon-cuerpo">
+    <!-- Cerrar sesión solo desde acá, a propósito: la sesión queda abierta
+         (hasta 5 dispositivos) y no debe cerrarse por un toque accidental. -->
+    <button class="btn btn-danger" id="btnCerrarSesion" type="button" style="width:100%;margin:0 0 18px;">Cerrar sesión en este dispositivo</button>
+    <section class="card">
+      <div class="card-head"><span class="card-title">Tu cuenta</span></div>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="claveActual">Clave actual</label>
+        <input type="password" id="claveActual" autocomplete="current-password">
+      </div>
+      <div class="campo" style="margin-bottom:16px;">
+        <label class="campo-label" for="claveNueva">Clave nueva (mínimo 6 caracteres)</label>
+        <input type="password" id="claveNueva" autocomplete="new-password">
+      </div>
+      <button class="btn btn-chico" id="btnCambiarClave" type="button">Cambiar clave</button>
+      <p class="msg" id="claveMsg" style="margin:10px 2px 0;"></p>
+    </section>
+    </div></details>
+
+    <details class="acordeon simple"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
+    <section class="card">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
+        <span class="card-title">Cuándo NO estás disponible</span>
+      </div>
+      <p class="ayuda" style="margin:0 0 14px;">
+        Los pedidos agendados para estos días/horarios pasan directo al
+        siguiente conductor de tu red — no te van a llegar ofertas en ese
+        rango.
+      </p>
+      <div id="listaBloqueos"></div>
+      <button class="btn btn-chico" id="btnAgregarBloqueo" type="button" style="margin-top:4px;">
+        + Agregar bloqueo
+      </button>
+    </section>
+    <button class="btn btn-primario" id="btnGuardarDisponibilidad" type="button">Guardar disponibilidad</button>
+    <p class="msg" id="disponibilidadMsg" style="margin:12px 2px 0;"></p>
+    </div></details>
+  </div>
+</div>
+
+<nav class="nav-inferior" role="tablist" aria-label="Secciones" id="navConductor" style="display:none;">
+  <button class="nav-item activo" id="tabPedidos" type="button" role="tab" aria-selected="true" aria-controls="panelPedidos">
+    <span class="nav-badge" id="burbujaPedidos"></span>
+    <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>
+    Mis Pedidos
+  </button>
+  <button class="nav-item" id="tabEnCurso" type="button" role="tab" aria-selected="false" aria-controls="panelEnCurso">
+    <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
+    En Rumbo
+  </button>
+  <button class="nav-item" id="tabAjustes" type="button" role="tab" aria-selected="false" aria-controls="panelAjustes">
+    <svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>
+    Ajustes
+  </button>
+</nav>
+
+<script>
+(function () {
+  // Poner acá la URL /exec de tu Apps Script (ver INSTRUCCIONES.md).
+  var API_URL = "https://script.google.com/macros/s/AKfycbwMr2YGxsGkz2RarJ1kCbAgmQMp10VHXvKjKwXJjEE01Py7tggqN3DK4XibnXpAjEMb/exec";
+
+  /* Este archivo es la FUENTE de dos paneles: scripts/generar-paneles.js
+     escribe www/conductor.html (MODO "conductor") y www/admin.html (MODO
+     "admin"). Nunca editar esos dos a mano: se pisan en la próxima
+     generación. Separados a propósito para que un conductor no vea
+     administración y el admin no vea pedidos ni cobros de nadie. */
+  var URL_APK = MODO === "admin"
+    ? "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-admin.apk"
+    : "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-conductor.apk";
+
+  // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
+  // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
+  // se muestra el aviso de actualizar con el link de descarga de esta app.
+  var APP_VERSION = 14;
+  function revisarActualizacion(versionServidor) {
+    // Solo tiene sentido dentro de la app instalada (Capacitor): la web
+    // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
+    // que "descargar" ahi — sin este chequeo, el aviso bloqueante salia
+    // tambien navegando directo a la web.
+    var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+    if (!esAppNativa || !versionServidor || versionServidor <= APP_VERSION) return;
+    document.getElementById("avisoActualizar").hidden = false;
+  }
+  // Descarga el .apk a la carpeta PRIVADA de la app e instala desde ahí
+  // (ver ApkInstalador.java): nunca queda una copia vieja dando vueltas en
+  // Descargas que el usuario pueda abrir por error. Si el plugin no está
+  // (por ejemplo, corriendo en el navegador), se cae al método anterior.
+  document.getElementById("btnActualizar").addEventListener("click", function () {
+    var boton = this;
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador) {
+      boton.disabled = true; boton.textContent = "Descargando...";
+      window.Capacitor.Plugins.ApkInstalador.descargarEInstalar({ url: URL_APK })
+        .catch(function () { window.open(URL_APK, "_system"); })
+        .finally(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; });
+    } else {
+      window.open(URL_APK, "_system");
+    }
+  });
+
+  // Cada panel solo acepta su tipo de cuenta.
+  function cuentaPermitida(c) {
+    if (MODO === "admin" && !c.es_admin) return "Esta app es solo para administradores. Si eres conductor, usa Rumbo Conductor.";
+    if (MODO === "conductor" && c.solo_admin) return "Esta cuenta es de administración. Usa Rumbo Admin.";
+    return "";
+  }
+
+  /* Enter en un campo = tocar el botón principal de su formulario. Se marca
+     en el HTML con data-enter="<id del botón>" en el contenedor. */
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Enter" || ev.isComposing) return;
+    var campo = ev.target;
+    if (!campo || campo.tagName !== "INPUT") return;
+    // Chat de cada viaje en curso: Enter envía el mensaje de ESE viaje.
+    if (campo.hasAttribute("data-chat-input")) {
+      var enviar = document.querySelector('[data-chat-enviar="' + campo.getAttribute("data-chat-input") + '"]');
+      if (enviar) { ev.preventDefault(); enviar.click(); }
+      return;
+    }
+    var cont = campo.closest("[data-enter]");
+    if (!cont) return;
+    var boton = document.getElementById(cont.getAttribute("data-enter"));
+    if (!boton || boton.disabled || boton.offsetParent === null) return;
+    ev.preventDefault();
+    boton.click();
+  });
+
+  (function prepararModo() {
+    var esAdmin = MODO === "admin";
+    document.body.classList.toggle("modo-admin", esAdmin);
+    document.title = esAdmin ? "Rumbo Admin" : "Rumbo — Panel del conductor";
+    var ico = esAdmin ? "img/icon-rumbo-admin-1024.png" : "img/icon-rumbo-conductor-1024.png";
+    [].forEach.call(document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]'), function (l) { l.href = ico; });
+    [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
+      if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Panel del conductor";
+    });
+    // El admin no se registra desde acá: solo el panel de conductor ofrece crear cuenta.
+    document.getElementById("bloqueCrearCuenta").style.display = esAdmin ? "none" : "";
+    var link = document.getElementById("linkDescargaApp");
+    link.href = URL_APK;
+    link.textContent = esAdmin ? "Descargar app Rumbo Admin (Android)" : "Descargar app Rumbo Conductor (Android)";
+  })();
+  // Una clave por panel: conductor.html y admin.html comparten el mismo
+  // dominio en la web, y con una sola clave entrar a uno borraba la sesión
+  // del otro. La primera vez se hereda la sesión guardada con la clave vieja
+  // si corresponde a este panel, para no pedir login al actualizar.
+
+  /* Pantalla "Ingresando": solo si ya hay sesión guardada. Se ve al menos
+     1,2 s (para que se lea) y se quita apenas la app está lista; nunca más
+     de 6 s, aunque el servidor tarde. */
+  var splashDesde = 0;
+  function mostrarSplash(texto, titulo, logo) {
+    var el = document.getElementById("splashIngresando");
+    if (titulo) document.getElementById("splashTitulo").textContent = titulo;
+    if (logo) document.getElementById("splashLogo").src = logo;
+    document.getElementById("splashTexto").textContent = texto;
+    el.hidden = false; el.classList.remove("oculta");
+    splashDesde = Date.now();
+    setTimeout(ocultarSplash, 1800);
+  }
+  function ocultarSplash() {
+    var el = document.getElementById("splashIngresando");
+    if (el.hidden) return;
+    var espera = Math.max(0, 1200 - (Date.now() - splashDesde));
+    setTimeout(function () {
+      el.classList.add("oculta");
+      setTimeout(function () { el.hidden = true; }, 380);
+    }, espera);
+  }
+
+  var SESION_KEY = "rumbo_sesion_" + (MODO === "admin" ? "admin" : "conductor");
+  try {
+    var viejaSesion = localStorage.getItem("rumbo_conductor_sesion");
+    if (viejaSesion && !localStorage.getItem(SESION_KEY)) {
+      var vs = JSON.parse(viejaSesion);
+      var esSoloAdmin = !!(vs && vs.conductor && vs.conductor.solo_admin);
+      if ((MODO === "admin") === esSoloAdmin) localStorage.setItem(SESION_KEY, viejaSesion);
+    }
+  } catch (e) {}
+
+  /* Key PÚBLICA de Maps JavaScript ("Rumbo — Maps JS (público)"). Es la
+     misma que usa index.html: viaja al navegador a propósito, y está
+     restringida en Cloud Console a Maps JavaScript API + los referentes
+     ttolabs.github.io y localhost. NUNCA poner acá la de Routes. */
+  var GOOGLE_MAPS_JS_KEY = "AIzaSyBvkEjQdOsFN7CM2EpRXoY5iuh-OgA6js4";
+  var googleMapsListo = false;
+  var mapasPorPedido = {};   // pedido_id -> { mapa, marcador }
+
+  function cargarGoogleMaps() {
+    if (document.getElementById("gmapsScript")) return;
+    var script = document.createElement("script");
+    script.id = "gmapsScript";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry&callback=alGoogleMapsListo";
+    document.head.appendChild(script);
+  }
+  window.alGoogleMapsListo = function () { googleMapsListo = true; };
+
+  function obtenerSesion() {
+    try { return JSON.parse(localStorage.getItem(SESION_KEY) || "null"); } catch (e) { return null; }
+  }
+  function guardarSesion(sesion) { localStorage.setItem(SESION_KEY, JSON.stringify(sesion)); }
+  function borrarSesion() { localStorage.removeItem(SESION_KEY); }
+
+  // Todo endpoint que toca pedidos/ubicación exige token de sesión — se
+  // agrega automático acá para no repetirlo en cada llamada del archivo.
+  function api(params) {
+    var sesion = obtenerSesion();
+    if (sesion && sesion.token) params.token = sesion.token;
+    var url = API_URL + "?" + Object.keys(params).map(function (k) {
+      return k + "=" + encodeURIComponent(params[k]);
+    }).join("&");
+    return fetch(url).then(function (r) { return r.json(); }).then(verificarSesionValida);
+  }
+
+  function apiPost(body) {
+    var sesion = obtenerSesion();
+    if (sesion && sesion.token && !("token" in body)) body.token = sesion.token;
+    return fetch(API_URL, { method: "POST", body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); }).then(verificarSesionValida);
+  }
+
+  // Si el backend dice "requiere_login" (token vencido o cerrado desde
+  // otro lugar), se vuelve a la pantalla de login en vez de dejar al
+  // conductor viendo un panel que ya no puede usar.
+  function verificarSesionValida(res) {
+    if (res && res.requiere_login) { borrarSesion(); mostrarPantalla("login"); }
+    return res;
+  }
+
+  function mostrarPantalla(cual) {
+    document.getElementById("pantallaLogin").style.display = cual === "login" ? "block" : "none";
+    document.getElementById("pantallaApp").style.display = cual === "app" ? "block" : "none";
+    // La barra de secciones no tiene sentido en la pantalla de login.
+    document.getElementById("navConductor").style.display = cual === "app" ? "grid" : "none";
+  }
+
+  /* ---------------------------------------------------------------
+     Pestañas y sección plegable: solo cambian qué se ve.
+     --------------------------------------------------------------- */
+  // Cada sección es una pantalla completa, con la barra fija abajo.
+  // "Mi auto" y disponibilidad viven dentro de Ajustes, que es donde el
+  // conductor entra pocas veces — lo del día a día son Pedidos y En curso.
+  var PESTANAS = ["pedidos", "enCurso", "ajustes"];
+  function mostrarPestana(cual) {
+    PESTANAS.forEach(function (p) {
+      var esEsta = p === cual;
+      document.getElementById("panel" + capitalizar(p)).style.display = esEsta ? "block" : "none";
+      var tab = document.getElementById("tab" + capitalizar(p));
+      tab.setAttribute("aria-selected", esEsta ? "true" : "false");
+      tab.classList.toggle("activo", esEsta);
+    });
+    if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
+    // Siempre al entrar: el conductor vuelve de vincular en el navegador y
+    // tiene que ver el cambio sin cerrar la app.
+    if (cual === "ajustes") {
+      var ses = obtenerSesion();
+      var c = ses ? ses.conductor : {};
+      if (MODO === "conductor") cargarEstadoMp();
+      if (MODO === "admin") { cargarConductoresAdmin(); cargarHistorial(); }
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  PESTANAS.forEach(function (p) {
+    document.getElementById("tab" + capitalizar(p)).addEventListener("click", function () { mostrarPestana(p); });
+  });
+
+  document.getElementById("btnHorarios").addEventListener("click", function () {
+    var abierto = document.getElementById("cuerpoHorarios").classList.toggle("abierto");
+    this.setAttribute("aria-expanded", abierto ? "true" : "false");
+  });
+
+  function entrar(sesion) {
+    document.getElementById("brandSubConductor").textContent = "Hola, " + sesion.conductor.nombre;
+    mostrarPantalla("app");
+    aplicarPermisos();
+    if (MODO === "admin") {
+      // Panel de administración: sin pedidos, sin sondeo, sin mapa.
+      cargarTarifas();
+      mostrarPestana("ajustes");
+      return;
+    }
+    cargarTarifas();
+    cargarPedidos();
+    cargarViajesEnCurso();
+    cargarGoogleMaps();
+    pintarVehiculo(sesion.conductor);
+    pintarMiQr(sesion.conductor);
+    pedirPermisoNotificaciones();
+    if (sondeoTimer) clearInterval(sondeoTimer);
+    sondeoTimer = setInterval(sincronizar, SONDEO_MS);
+  }
+
+  /* UNA consulta cada SONDEO_MS trae pedidos, viajes en curso, mensajes
+     nuevos y ubicación del pasajero. Antes eran 4-5 consultas separadas por
+     ciclo y Apps Script las encolaba (medido: hasta 40 s de atraso). No se
+     consulta con la app en segundo plano ni si la anterior no volvió. */
+  var sincronizando = false;
+  function sincronizar() {
+    if (sincronizando || document.hidden || MODO === "admin") return;
+    sincronizando = true;
+    api({ accion: "sincronizar_conductor", desde: JSON.stringify(ultimoMensajePorPedido) })
+      .then(function (res) {
+        // Backend anterior a la versión 11 no conoce esta consulta: se usan
+        // las consultas sueltas para no dejar la pantalla vacía.
+        revisarActualizacion(res.version_app);
+        if (!res.ok || !res.pendientes) { cargarPedidos(); cargarViajesEnCurso(); return; }
+        pintarPedidos({ ok: true, pedidos: res.pendientes });
+        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso }, res.ubicaciones || {});
+        Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
+      })
+      .catch(function () {})
+      .then(function () { sincronizando = false; });
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && obtenerSesion()) sincronizar();
+  });
+
+  /* Mi QR: link propio del conductor (?c=<id>) hacia la landing pública,
+     que arrastra el código hasta la web del pasajero. Así cada conductor
+     reparte SU QR sin depender de que alguien se lo genere a mano. */
+  var LANDING_PASAJERO = "https://ttolabs.github.io/rumbo-web/";
+  var miLinkPasajero = "";
+
+  /* ---------------------------------------------------------------
+     Registro de conductor nuevo: queda pendiente de aprobación.
+     --------------------------------------------------------------- */
+  function mostrarRegistro(si) {
+    document.getElementById("cardIngreso").style.display = si ? "none" : "";
+    document.getElementById("acordeonRegistro").style.display = si ? "" : "none";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    (si ? document.getElementById("regNombre") : document.getElementById("loginUsuario")).focus();
+  }
+  document.getElementById("btnIrRegistro").addEventListener("click", function () { mostrarRegistro(true); });
+  document.getElementById("btnVolverIngreso").addEventListener("click", function () { mostrarRegistro(false); });
+
+  document.getElementById("btnRegistrar").addEventListener("click", function () {
+    var boton = this, msg = document.getElementById("regMsg");
+    function v(id) { return document.getElementById(id).value.trim(); }
+    boton.disabled = true;
+    msg.textContent = "Enviando..."; msg.className = "msg";
+    apiPost({
+      accion: "registrar_conductor", nombre: v("regNombre"), telefono: v("regTelefono"),
+      email: v("regEmail"), clave: document.getElementById("regClave").value,
+      vehiculo_patente: v("regPatente"), vehiculo_color: v("regColor"),
+      vehiculo_marca: v("regMarca"), vehiculo_modelo: v("regModelo"),
+      acepta_terminos: document.getElementById("regTerminos").checked
+    }).then(function (res) {
+      boton.disabled = false;
+      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      msg.textContent = "Solicitud enviada. Cuando el administrador apruebe tu cuenta, podrás ingresar con tu correo y clave.";
+      msg.className = "msg ok";
+      ["regNombre","regTelefono","regEmail","regClave","regPatente","regColor","regMarca","regModelo"].forEach(function (id) { document.getElementById(id).value = ""; });
+      document.getElementById("regTerminos").checked = false;
+    }).catch(function (err) {
+      boton.disabled = false;
+      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+    });
+  });
+
+  /* ---------------------------------------------------------------
+     Administración de conductores (solo admin).
+     --------------------------------------------------------------- */
+  function cargarConductoresAdmin() {
+    var lista = document.getElementById("listaConductores");
+    apiPost({ accion: "listar_conductores" }).then(function (res) {
+      revisarActualizacion(res.version_app);
+      if (!res.ok) { lista.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
+      var yo = (obtenerSesion() || { conductor: {} }).conductor.conductor_id;
+      // Pendientes primero: es lo que el admin viene a resolver.
+      res.conductores.sort(function (a, b) { return (a.activo === b.activo) ? 0 : (a.activo ? 1 : -1); });
+      // KPIs: se recalculan acá mismo, con los mismos datos que ya llegaron
+      // para pintar la lista — nada de una consulta aparte al backend.
+      var kpiConductores = document.getElementById("kpiConductores");
+      var kpiConductoresNota = document.getElementById("kpiConductoresNota");
+      var kpiPendientes = document.getElementById("kpiPendientes");
+      if (kpiConductores) {
+        var noAdmin = res.conductores.filter(function (c) { return !c.solo_admin; });
+        var pendientes = noAdmin.filter(function (c) { return !c.activo; }).length;
+        kpiConductores.textContent = noAdmin.length;
+        kpiConductoresNota.textContent = (noAdmin.length - pendientes) + " activos";
+        kpiPendientes.textContent = pendientes;
+      }
+      lista.innerHTML = res.conductores.map(function (c) {
+        var etiqueta = c.solo_admin
+          ? '<span class="badge badge-gris">Administrador</span>'
+          : !c.activo
+            ? '<span class="badge badge-ambar">Pendiente / suspendido</span>'
+            : c.en_red
+              ? '<span class="badge badge-azul">Activo · en la red</span>'
+              : '<span class="badge badge-verde">Activo · su clientela</span>';
+        var botones = "";
+        var switchTarifa = "";
+        if (c.conductor_id !== yo) {
+          botones += '<button class="btn btn-chico" data-activo="' + escapar(c.conductor_id) + '" data-valor="' + (c.activo ? "NO" : "SI") + '">' + (c.activo ? "Suspender" : "Aprobar") + '</button>';
+          if (c.activo && !c.solo_admin) {
+            botones += '<button class="btn btn-chico" data-red="' + escapar(c.conductor_id) + '" data-valor="' + (c.en_red ? "NO" : "SI") + '">' + (c.en_red ? "Sacar de la red" : "Agregar a la red") + '</button>';
+          }
+          if (!c.solo_admin) {
+            // Switch en vez de botón: se ve de un vistazo en qué modo está
+            // (pista verde = tarifa propia), y con un solo gesto se cambia o
+            // se autoriza un pedido de tarifa propia pendiente.
+            switchTarifa =
+              '<div class="estado-conductor' + (c.modo_tarifa === "INDIVIDUAL" ? " activo" : "") + '" style="margin-top:8px;">' +
+                '<div class="estado-texto"><div class="estado-titulo" style="font-size:13.5px;">Tarifa propia</div>' +
+                (c.solicitud_tarifa === "PENDIENTE" ? '<p class="msg" style="margin:2px 0 0;font-size:12px;color:var(--accent);">Pidió tarifa propia — activa para autorizar</p>' : '') +
+                '</div>' +
+                '<label class="switch">' +
+                  '<input type="checkbox" data-modo="' + escapar(c.conductor_id) + '"' + (c.modo_tarifa === "INDIVIDUAL" ? ' checked' : '') + '>' +
+                  '<span class="sr-only">Tarifa propia de ' + escapar(c.nombre) + '</span>' +
+                  '<span class="switch-pista"></span>' +
+                '</label>' +
+              '</div>';
+          }
+        }
+        return '<div class="pedido-card" style="margin-bottom:10px;">' +
+          '<div class="pedido-cliente">' + escapar(c.nombre) + (c.conductor_id === yo ? " (tú)" : "") + '</div>' +
+          '<div style="margin:4px 0 6px;">' + etiqueta + '</div>' +
+          '<div class="msg" style="margin:0 0 8px;font-size:13.5px;">' + escapar(c.email) + ' · +' + escapar(c.telefono) + (c.vehiculo ? '<br>' + escapar(c.vehiculo) : '') + '</div>' +
+          (botones ? '<div class="btn-row">' + botones + '</div>' : '') +
+          switchTarifa +
+        '</div>';
+      }).join("") || '<p class="vacio">No hay conductores.</p>';
+    });
+  }
+
+  document.getElementById("listaConductores").addEventListener("change", function (ev) {
+    var sw = ev.target.closest("[data-modo]");
+    if (!sw) return;
+    var valorAnterior = sw.checked ? "GENERAL" : "INDIVIDUAL"; // por si hay que revertir
+    var valorNuevo = sw.checked ? "INDIVIDUAL" : "GENERAL";
+    sw.disabled = true;
+    apiPost({ accion: "cambiar_modo_tarifa", conductor_id: sw.dataset.modo, modo_tarifa: valorNuevo }).then(function (res) {
+      sw.disabled = false;
+      if (!res.ok) { alert(res.error); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
+      cargarConductoresAdmin();
+    });
+  });
+
+  document.getElementById("listaConductores").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-activo],[data-red]");
+    if (!b) return;
+    var esActivo = b.hasAttribute("data-activo");
+    var id = esActivo ? b.dataset.activo : b.dataset.red;
+    var valor = b.dataset.valor;
+    if (!confirm(b.textContent + "?")) return;
+    b.disabled = true;
+    apiPost(esActivo
+      ? { accion: "cambiar_activo", conductor_id: id, activo: valor }
+      : { accion: "cambiar_en_red", conductor_id: id, en_red: valor }
+    ).then(function (res) {
+      if (!res.ok) { alert(res.error); b.disabled = false; return; }
+      cargarConductoresAdmin();
+    });
+  });
+
+  // Qué ve cada tipo de cuenta. Solo-admin: únicamente administración (no
+  // recibe viajes). Conductor sin admin: no ve tarifas de red, que solo el
+  // admin puede guardar (el backend lo rechazaría igual).
+  // Lo que se ve depende del PANEL (MODO), no de la cuenta: aunque una cuenta
+  // de conductor tenga permisos de admin, el panel de conductor no muestra
+  // administración, y el panel admin no muestra pedidos ni cobros propios.
+  var SECCIONES_ADMIN = ["acordeonConductores", "acordeonHistorial"];
+  var TITULOS_ADMIN = ["Tarifas y costos", "Mi cuenta"];
+  function aplicarPermisos() {
+    [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
+      var titulo = d.querySelector("summary").textContent;
+      var esDeAdmin = d.id === "acordeonConductores";
+      var visible = MODO === "admin"
+        ? (SECCIONES_ADMIN.indexOf(d.id) !== -1 || d.id === "acordeonTarifas" || TITULOS_ADMIN.indexOf(titulo) !== -1)
+        : !esDeAdmin;
+      d.style.display = visible ? "" : "none";
+    });
+    document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Tarifas y costos";
+    [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
+    [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { el.style.display = MODO === "admin" ? "none" : ""; });
+    if (MODO === "admin") {
+      document.getElementById("tabPedidos").style.display = "none";
+      document.getElementById("tabEnCurso").style.display = "none";
+      document.getElementById("navConductor").style.gridTemplateColumns = "1fr";
+      document.getElementById("tabAjustes").lastChild.textContent = " Administración";
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     Historial de pagos por mes (solo monto, estado y forma de pago).
+     --------------------------------------------------------------- */
+  (function () {
+    var hoy = new Date();
+    document.getElementById("histMes").value = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0");
+  })();
+
+  function cargarHistorial() {
+    var esAdmin = MODO === "admin";
+    var mes = document.getElementById("histMes").value;
+    var filas = document.getElementById("histFilas");
+    var resumen = document.getElementById("histResumen");
+    document.getElementById("histColConductor").style.display = esAdmin ? "" : "none";
+    if (!mes) return;
+    resumen.textContent = "Cargando...";
+    var params = { accion: "historial_pagos", mes: mes, vista: MODO };
+    if (esAdmin) params.conductor_id = document.getElementById("histConductor").value;
+    api(params).then(function (res) {
+      if (!res.ok) { resumen.textContent = res.error; filas.innerHTML = ""; return; }
+      resumen.innerHTML = res.viajes.length
+        ? res.viajes.length + " viaje" + (res.viajes.length === 1 ? "" : "s") + " · Total " + fmt(res.total) +
+          " · Cobrado " + fmt(res.cobrado) + (res.pendiente ? " · Pendiente " + fmt(res.pendiente) : "")
+        : "Sin viajes finalizados en este mes.";
+      // El KPI "Total facturado" refleja el mes que el admin tiene elegido
+      // en el filtro — cuando abre el historial ya viene en el mes actual.
+      var kpiFacturado = document.getElementById("kpiFacturado");
+      if (esAdmin && kpiFacturado) {
+        kpiFacturado.textContent = fmt(res.total);
+        document.getElementById("kpiFacturadoNota").textContent =
+          mes === (new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, "0")) ? "Mes en curso" : mes;
+      }
+      filas.innerHTML = res.viajes.map(function (v, i) {
+        var d = new Date(v.fecha);
+        var fecha = isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit" }) + " " +
+          d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+        var hayDetalle = v.origen || v.destino || v.nombre;
+        var colspan = esAdmin ? 4 : 3;
+        return '<tr class="hist-fila" data-detalle="' + i + '"' + (hayDetalle ? "" : ' style="cursor:default;"') + '>' +
+            "<td>" + escapar(fecha) + "</td>" +
+            (esAdmin ? "<td>" + escapar(v.conductor || "") + "</td>" : "") +
+            '<td class="monto">' + fmt(v.monto) + "</td>" +
+            "<td>" + escapar(v.forma) + " " +
+              (v.pagado ? '<span class="badge badge-verde">Cobrado</span>' : '<span class="badge badge-ambar">Sin cobrar</span>') +
+            "</td>" +
+          "</tr>" +
+          (hayDetalle
+            ? '<tr class="hist-detalle" data-detalle-de="' + i + '" hidden><td colspan="' + colspan + '">' +
+                (v.nombre ? '<strong>' + escapar(v.nombre) + '</strong><br>' : "") +
+                (v.origen ? escapar(v.origen) : "Origen no disponible") + " → " + (v.destino ? escapar(v.destino) : "destino no disponible") +
+              "</td></tr>"
+            : "");
+      }).join("");
+    });
+  }
+
+  // Cada fila con detalle (origen/destino/pasajero) se puede desplegar: en
+  // el resumen mensual solo se veía el pago, no el viaje en sí.
+  document.getElementById("histFilas").addEventListener("click", function (ev) {
+    var fila = ev.target.closest(".hist-fila");
+    if (!fila) return;
+    var detalle = document.querySelector('[data-detalle-de="' + fila.dataset.detalle + '"]');
+    if (!detalle) return;
+    detalle.hidden = !detalle.hidden;
+  });
+
+  document.getElementById("histMes").addEventListener("change", cargarHistorial);
+  document.getElementById("histConductor").addEventListener("change", cargarHistorial);
+  document.getElementById("acordeonHistorial").addEventListener("toggle", function () {
+    if (!this.open) return;
+    if (MODO === "admin") {
+      document.getElementById("histFiltroConductor").style.display = "";
+      var sel = document.getElementById("histConductor");
+      if (sel.options.length <= 1) {
+        apiPost({ accion: "listar_conductores" }).then(function (res) {
+          if (!res.ok) return;
+          res.conductores.filter(function (c) { return !c.solo_admin; }).forEach(function (c) {
+            var o = document.createElement("option");
+            o.value = c.conductor_id; o.textContent = c.nombre;
+            sel.appendChild(o);
+          });
+        });
+      }
+    }
+    cargarHistorial();
+  });
+
+  function cargarEstadoMp() {
+    var estado = document.getElementById("mpEstado");
+    var boton = document.getElementById("btnVincularMp");
+    api({ accion: "mi_mercadopago" }).then(function (res) {
+      if (!res.ok) { estado.textContent = "No se pudo revisar: " + res.error; return; }
+      if (!res.configurado) {
+        estado.textContent = "El cobro con Mercado Pago todavía no está habilitado en la red.";
+        boton.style.display = "none";
+        return;
+      }
+      if (res.vinculado) {
+        estado.textContent = "✓ Tu cuenta está vinculada. Ya puedes cobrar viajes por Mercado Pago.";
+        estado.className = "msg ok";
+        // Un conductor tiene UNA sola cuenta de Mercado Pago vinculada, no
+        // varias — este botón re-autoriza esa misma cuenta (útil si se le
+        // revocó el permiso sin querer), nunca agrega una cuenta distinta.
+        boton.textContent = "Reconectar mi Mercado Pago";
+      } else {
+        estado.textContent = "Todavía no vinculaste tu cuenta: por ahora solo puedes cobrar en efectivo.";
+        estado.className = "msg";
+        boton.textContent = "Vincular mi Mercado Pago";
+      }
+      boton.style.display = "flex";
+    });
+  }
+
+  document.getElementById("btnVincularMp").addEventListener("click", function () {
+    var boton = this;
+    boton.disabled = true;
+    api({ accion: "mp_link_vinculacion" }).then(function (res) {
+      boton.disabled = false;
+      if (!res.ok) { alert(res.error); return; }
+      // Se abre en el navegador: Mercado Pago no permite autorizar dentro de
+      // una vista embebida, y la vuelta llega a mp-vuelta.html en la web.
+      window.open(res.url, "_blank");
+      document.getElementById("mpEstado").textContent =
+        "Autoriza en Mercado Pago y vuelve acá. Si ya lo hiciste, toca Ajustes de nuevo para actualizar.";
+    });
+  });
+
+  function pintarMiQr(c) {
+    miLinkPasajero = LANDING_PASAJERO + "?c=" + encodeURIComponent(c.conductor_id);
+    document.getElementById("miQrLink").textContent = miLinkPasajero;
+    document.getElementById("miQrImg").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=16&data=" + encodeURIComponent(miLinkPasajero);
+  }
+
+  document.getElementById("btnCopiarQr").addEventListener("click", function () {
+    var msg = document.getElementById("miQrMsg");
+    (navigator.clipboard ? navigator.clipboard.writeText(miLinkPasajero) : Promise.reject())
+      .then(function () { msg.textContent = "Link copiado."; msg.className = "msg ok"; })
+      .catch(function () { msg.textContent = "No se pudo copiar; mantené presionado el link para copiarlo."; msg.className = "msg error"; });
+  });
+
+  document.getElementById("btnCompartirQr").addEventListener("click", function () {
+    var texto = "Pide tu traslado conmigo en Rumbo: " + miLinkPasajero;
+    if (navigator.share) {
+      navigator.share({ title: "Rumbo — Traslados privados", text: texto, url: miLinkPasajero }).catch(function () {});
+    } else {
+      window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
+    }
+  });
+
+  document.getElementById("btnImprimirQr").addEventListener("click", function () {
+    var nombre = (obtenerSesion() || { conductor: {} }).conductor.nombre || "";
+    var w = window.open("", "_blank");
+    if (!w) { window.open(document.getElementById("miQrImg").src, "_blank"); return; }
+    w.document.write(
+      '<html><head><title>QR Rumbo</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
+      '<h1 style="margin:0 0 6px;">Rumbo</h1><p style="margin:0 0 24px;color:#555;">Traslados privados' +
+      (nombre ? " con " + nombre.replace(/[<>&]/g, "") : "") + '</p>' +
+      '<img src="' + document.getElementById("miQrImg").src + '" style="width:320px;height:320px;" onload="setTimeout(function(){window.print()},300)">' +
+      '<p style="margin-top:20px;font-size:14px;color:#333;">Escanea para cotizar y pedir tu viaje</p></body></html>');
+    w.document.close();
+  });
+
+  function pintarVehiculo(c) {
+    document.getElementById("vehPatente").value = c.vehiculo_patente || "";
+    document.getElementById("vehMarca").value = c.vehiculo_marca || "";
+    document.getElementById("vehModelo").value = c.vehiculo_modelo || "";
+    document.getElementById("vehColor").value = c.vehiculo_color || "";
+    cargarFotoVehiculo(c.vehiculo_foto_url || "");
+  }
+
+  // Justo después de subir una foto, Drive a veces tarda 1-3 s en dejar el
+  // link público listo para verse — el primer intento devuelve "No se pudo
+  // abrir el archivo" aunque el archivo ya existe. Reintenta solo, sin que
+  // el conductor tenga que recargar la app pensando que la subida falló.
+  function cargarFotoVehiculo(url, intento) {
+    var img = document.getElementById("vehFotoPreview");
+    intento = intento || 0;
+    if (!url) { img.src = ""; img.onerror = null; return; }
+    if (intento === 0) img.style.visibility = "hidden"; // oculta el ícono roto durante los reintentos
+    img.onload = function () { img.style.visibility = "visible"; };
+    img.onerror = function () {
+      if (intento >= 4) { img.onerror = null; img.style.visibility = "visible"; return; }
+      setTimeout(function () { cargarFotoVehiculo(url, intento + 1); }, 1000 * (intento + 1));
+    };
+    img.src = url + (url.indexOf("?") === -1 ? "?" : "&") + "r=" + intento;
+  }
+
+  document.getElementById("btnGuardarVehiculo").addEventListener("click", function () {
+    var msg = document.getElementById("vehiculoMsg");
+    msg.textContent = "Guardando..."; msg.className = "msg";
+    apiPost({
+      accion: "guardar_vehiculo",
+      vehiculo_patente: document.getElementById("vehPatente").value.trim(),
+      vehiculo_marca: document.getElementById("vehMarca").value.trim(),
+      vehiculo_modelo: document.getElementById("vehModelo").value.trim(),
+      vehiculo_color: document.getElementById("vehColor").value.trim()
+    }).then(function (res) {
+      msg.textContent = res.ok ? "Vehículo guardado." : ("Error: " + res.error);
+      msg.className = "msg " + (res.ok ? "ok" : "error");
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message;
+      msg.className = "msg error";
+    });
+  });
+
+  document.getElementById("vehFotoInput").addEventListener("change", function (ev) {
+    var archivo = ev.target.files[0];
+    var msg = document.getElementById("vehFotoMsg");
+    if (!archivo) return;
+    if (archivo.size > 3 * 1024 * 1024) {
+      msg.textContent = "La imagen pesa más de 3 MB, usa una más liviana.";
+      msg.className = "msg error";
+      ev.target.value = "";
+      return;
+    }
+    msg.textContent = "Subiendo..."; msg.className = "msg";
+    var lector = new FileReader();
+    lector.onload = function () {
+      apiPost({ accion: "subir_foto_vehiculo", foto_data_url: lector.result }).then(function (res) {
+        if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+        cargarFotoVehiculo(res.vehiculo_foto_url);
+        msg.textContent = "Foto guardada."; msg.className = "msg ok";
+        // Se actualiza también la sesión guardada, para que si el conductor
+        // recarga sin volver a loguearse siga viendo su foto en el preview.
+        var sesion = obtenerSesion();
+        if (sesion) { sesion.conductor.vehiculo_foto_url = res.vehiculo_foto_url; guardarSesion(sesion); }
+      }).catch(function (err) {
+        msg.textContent = "Error de red: " + err.message;
+        msg.className = "msg error";
+      });
+    };
+    lector.readAsDataURL(archivo);
+  });
+
+  document.getElementById("btnLogin").addEventListener("click", function () {
+    var usuario = document.getElementById("loginUsuario").value.trim();
+    var clave = document.getElementById("loginClave").value;
+    var msg = document.getElementById("loginMsg");
+    if (!usuario || !clave) { msg.textContent = "Completa usuario y clave."; msg.className = "msg error"; return; }
+    msg.textContent = "Ingresando..."; msg.className = "msg";
+    apiPost({ accion: "login_conductor", usuario: usuario, clave: clave }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      var rechazo = cuentaPermitida(res.conductor);
+      if (rechazo) { msg.textContent = rechazo; msg.className = "msg error"; return; }
+      guardarSesion(res);
+      document.getElementById("loginClave").value = "";
+      entrar(res);
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+    });
+  });
+
+  document.getElementById("btnCerrarSesion").addEventListener("click", function () {
+    if (!confirm("¿Cerrar sesión en este dispositivo? Tendrás que volver a ingresar con tu usuario y clave.")) return;
+    apiPost({ accion: "cerrar_sesion" }).catch(function () {});
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    if (sondeoTimer) clearInterval(sondeoTimer);
+    borrarSesion();
+    disponibilidadCargada = false; // para que la próxima sesión recargue SU propia disponibilidad, no la del anterior
+    mostrarPantalla("login");
+  });
+
+  function fmt(n) { return "$" + Math.round(n || 0).toLocaleString("es-CL"); }
+
+  var CAMPOS_TARIFA = ["precioComb", "kmLimiteSantiago", "busquedaMin", "consumoCiudad", "consumoRuta",
+    "valorHoraValle", "valorHoraPunta", "finDeSemanaValleInicio", "finDeSemanaValleFin",
+    "horaPuntaMananaInicio", "horaPuntaMananaFin", "horaPuntaTardeInicio", "horaPuntaTardeFin"];
+
+  var diasPuntaSeleccionados = [0, 5, 6];
+
+  function pintarDias() {
+    document.querySelectorAll(".tarifa-dia").forEach(function (btn) {
+      btn.classList.toggle("activo", diasPuntaSeleccionados.indexOf(parseInt(btn.dataset.dia, 10)) !== -1);
+    });
+  }
+
+  document.getElementById("diasPuntaTodoElDia").addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".tarifa-dia");
+    if (!btn) return;
+    var dia = parseInt(btn.dataset.dia, 10);
+    var i = diasPuntaSeleccionados.indexOf(dia);
+    if (i === -1) diasPuntaSeleccionados.push(dia); else diasPuntaSeleccionados.splice(i, 1);
+    pintarDias();
+  });
+
+  // Conductor: valores de SU vehículo (combustible, rendimiento, valor hora),
+  // guardados en su cuenta. Admin: tarifas de toda la red (horarios, días,
+  // límite de km, minutos de búsqueda). Cada auto gasta distinto.
+  var CAMPOS_MI_VEHICULO = ["precioComb", "consumoCiudad", "consumoRuta", "valorHoraValle", "valorHoraPunta", "busquedaMin"];
+
+  // General: se ven los valores de la red, bloqueados, con opción de pedir la
+  // propia. Individual (autorizada por el admin): editables y se guardan.
+  function pintarModoTarifa(modo, solicitud) {
+    var individual = modo === "INDIVIDUAL";
+    document.getElementById("modoTarifaTitulo").textContent = individual ? "Tarifa propia (autorizada)" : "Tarifa general de la red";
+    document.getElementById("modoTarifaTexto").textContent = individual
+      ? "Tus pasajeros cotizan con estos valores de tu vehículo."
+      : (solicitud === "PENDIENTE"
+          ? "Pediste tarifa propia. Esperando autorización del administrador."
+          : "Tus pasajeros cotizan con los valores de la red. Si tu vehículo tiene costos distintos, pide tarifa propia.");
+    var boton = document.getElementById("btnSolicitarTarifa");
+    boton.style.display = individual ? "none" : "";
+    boton.disabled = solicitud === "PENDIENTE";
+    boton.textContent = solicitud === "PENDIENTE" ? "Solicitud enviada" : "Solicitar tarifa propia";
+    CAMPOS_MI_VEHICULO.concat(["tipoCombustible", "btnGuardarTarifas"]).forEach(function (id) {
+      document.getElementById(id).disabled = !individual;
+    });
+  }
+
+  document.getElementById("btnSolicitarTarifa").addEventListener("click", function () {
+    if (!confirm("¿Pedir al administrador que autorice tu tarifa propia?")) return;
+    var boton = this; boton.disabled = true;
+    apiPost({ accion: "solicitar_tarifa_propia" }).then(function (res) {
+      if (!res.ok) { alert(res.error); boton.disabled = false; return; }
+      pintarModoTarifa("GENERAL", "PENDIENTE");
+    });
+  });
+
+  function cargarTarifas() {
+    api({ accion: MODO === "admin" ? "tarifas" : "mis_tarifas" }).then(function (res) {
+      if (!res.ok) return;
+      if (res.tipo_combustible !== undefined) document.getElementById("tipoCombustible").value = res.tipo_combustible || "";
+      if (MODO !== "admin") pintarModoTarifa(res.modo_tarifa, res.solicitud_tarifa);
+      CAMPOS_TARIFA.forEach(function (c) {
+        if (res.tarifas[c] !== undefined) document.getElementById(c).value = res.tarifas[c];
+      });
+      if (Array.isArray(res.tarifas.diasPuntaTodoElDia)) diasPuntaSeleccionados = res.tarifas.diasPuntaTodoElDia;
+      pintarDias();
+    });
+  }
+
+  document.getElementById("btnGuardarTarifas").addEventListener("click", function () {
+    var tarifas = {};
+    CAMPOS_TARIFA.forEach(function (c) {
+      var el = document.getElementById(c);
+      tarifas[c] = el.type === "number" ? parseFloat(el.value) || 0 : el.value;
+    });
+    tarifas.diasPuntaTodoElDia = diasPuntaSeleccionados;
+    var msg = document.getElementById("tarifasMsg");
+    msg.textContent = "Guardando...";
+    msg.className = "msg";
+    var cuerpo = { accion: "guardar_tarifas", tarifas: tarifas };
+    if (MODO !== "admin") {
+      cuerpo = { accion: "guardar_mis_tarifas", tipo_combustible: document.getElementById("tipoCombustible").value };
+      CAMPOS_MI_VEHICULO.forEach(function (c) { cuerpo[c] = tarifas[c]; });
+    }
+    apiPost(cuerpo).then(function (res) {
+      msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
+      msg.className = "msg " + (res.ok ? "ok" : "error");
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message;
+      msg.className = "msg error";
+    });
+  });
+
+  document.getElementById("btnCambiarClave").addEventListener("click", function () {
+    var actual = document.getElementById("claveActual").value;
+    var nueva = document.getElementById("claveNueva").value;
+    var msg = document.getElementById("claveMsg");
+    if (!actual || !nueva) { msg.textContent = "Completa las dos claves."; msg.className = "msg error"; return; }
+    msg.textContent = "Guardando..."; msg.className = "msg";
+    apiPost({ accion: "cambiar_clave", clave_actual: actual, clave_nueva: nueva }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      // Cambiar la clave invalida el token actual del lado del servidor
+      // (ver cambiarClave en Codigo.gs) — se cierra sesión acá también
+      // para no dejar la pantalla mostrando algo que ya no puede usarse.
+      alert("Clave cambiada. Vuelve a ingresar con tu clave nueva.");
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      if (sondeoTimer) clearInterval(sondeoTimer);
+      borrarSesion();
+      disponibilidadCargada = false;
+      mostrarPantalla("login");
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message;
+      msg.className = "msg error";
+    });
+  });
+
+  /* ---------------------------------------------------------------
+     Disponibilidad: días/horarios en que NO se ofrecen pedidos a este
+     conductor — se derivan directo al siguiente de la red.
+     --------------------------------------------------------------- */
+  var DIAS_ETIQUETA = [
+    { valor: 1, texto: "Lun" }, { valor: 2, texto: "Mar" }, { valor: 3, texto: "Mié" },
+    { valor: 4, texto: "Jue" }, { valor: 5, texto: "Vie" }, { valor: 6, texto: "Sáb" }, { valor: 0, texto: "Dom" }
+  ];
+  var bloqueos = [];
+  var disponibilidadCargada = false;
+
+  function nuevoBloqueoVacio() { return { dias: [], desde: "", hasta: "" }; }
+
+  function filaBloqueo(bloqueo, indice) {
+    var div = document.createElement("div");
+    div.className = "bloqueo-fila";
+    var todoElDia = !bloqueo.desde && !bloqueo.hasta;
+
+    var dias = document.createElement("div");
+    dias.className = "dias-toggle";
+    dias.style.marginBottom = "10px";
+    DIAS_ETIQUETA.forEach(function (d) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tarifa-dia chico" + (bloqueo.dias.indexOf(d.valor) !== -1 ? " activo" : "");
+      btn.textContent = d.texto;
+      btn.addEventListener("click", function () {
+        var i = bloqueo.dias.indexOf(d.valor);
+        if (i === -1) bloqueo.dias.push(d.valor); else bloqueo.dias.splice(i, 1);
+        btn.classList.toggle("activo");
+      });
+      dias.appendChild(btn);
+    });
+
+    var cabecera = document.createElement("div");
+    cabecera.className = "bloqueo-cabecera";
+    var titulo = document.createElement("span");
+    titulo.className = "campo-label";
+    titulo.textContent = "Bloqueo " + (indice + 1);
+    var quitar = document.createElement("button");
+    quitar.type = "button"; quitar.className = "btn-quitar"; quitar.textContent = "Quitar";
+    quitar.addEventListener("click", function () {
+      bloqueos.splice(indice, 1);
+      pintarBloqueos();
+    });
+    cabecera.appendChild(titulo); cabecera.appendChild(quitar);
+
+    var chkTodoDia = document.createElement("label");
+    chkTodoDia.className = "bloqueo-todo-dia";
+    var input = document.createElement("input");
+    input.type = "checkbox"; input.checked = todoElDia;
+    var horas = document.createElement("div");
+    horas.className = "bloqueo-horas";
+    horas.style.display = todoElDia ? "none" : "grid";
+
+    var campoDesde = document.createElement("div"); campoDesde.className = "campo";
+    campoDesde.innerHTML = '<label class="campo-label">Desde</label>';
+    var inputDesde = document.createElement("input");
+    inputDesde.type = "time"; inputDesde.value = bloqueo.desde || "";
+    inputDesde.addEventListener("change", function () { bloqueo.desde = inputDesde.value; });
+    campoDesde.appendChild(inputDesde);
+
+    var campoHasta = document.createElement("div"); campoHasta.className = "campo";
+    campoHasta.innerHTML = '<label class="campo-label">Hasta</label>';
+    var inputHasta = document.createElement("input");
+    inputHasta.type = "time"; inputHasta.value = bloqueo.hasta || "";
+    inputHasta.addEventListener("change", function () { bloqueo.hasta = inputHasta.value; });
+    campoHasta.appendChild(inputHasta);
+
+    horas.appendChild(campoDesde); horas.appendChild(campoHasta);
+
+    input.addEventListener("change", function () {
+      horas.style.display = input.checked ? "none" : "grid";
+      if (input.checked) { bloqueo.desde = ""; bloqueo.hasta = ""; inputDesde.value = ""; inputHasta.value = ""; }
+    });
+    chkTodoDia.appendChild(input);
+    chkTodoDia.appendChild(document.createTextNode("Todo el día"));
+
+    div.appendChild(cabecera);
+    div.appendChild(dias);
+    div.appendChild(chkTodoDia);
+    div.appendChild(horas);
+    return div;
+  }
+
+  function pintarBloqueos() {
+    var lista = document.getElementById("listaBloqueos");
+    lista.innerHTML = "";
+    if (!bloqueos.length) {
+      lista.innerHTML = '<p class="vacio">No tienes días ni horarios bloqueados.</p>';
+      return;
+    }
+    bloqueos.forEach(function (b, i) { lista.appendChild(filaBloqueo(b, i)); });
+  }
+
+  function cargarDisponibilidad() {
+    api({ accion: "mi_disponibilidad" }).then(function (res) {
+      disponibilidadCargada = true;
+      if (!res.ok) return;
+      try { bloqueos = JSON.parse(res.horario_no_disponible || "[]"); } catch (e) { bloqueos = []; }
+      pintarBloqueos();
+    });
+  }
+
+  document.getElementById("btnAgregarBloqueo").addEventListener("click", function () {
+    bloqueos.push(nuevoBloqueoVacio());
+    pintarBloqueos();
+  });
+
+  document.getElementById("btnGuardarDisponibilidad").addEventListener("click", function () {
+    var msg = document.getElementById("disponibilidadMsg");
+    var sinDias = bloqueos.some(function (b) { return b.dias.length === 0; });
+    if (sinDias) {
+      msg.textContent = "Cada bloqueo necesita al menos un día marcado.";
+      msg.className = "msg error";
+      return;
+    }
+    msg.textContent = "Guardando..."; msg.className = "msg";
+    apiPost({ accion: "guardar_disponibilidad", horario_no_disponible: JSON.stringify(bloqueos) }).then(function (res) {
+      msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
+      msg.className = "msg " + (res.ok ? "ok" : "error");
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message;
+      msg.className = "msg error";
+    });
+  });
+
+  function escapar(v) {
+    return String(v === undefined || v === null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function horaCorta(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString("es-CL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function pedidoCard(p) {
+    var div = document.createElement("div");
+    div.className = "pedido-card";
+    div.innerHTML =
+      '<div class="pedido-tope">' +
+        '<div>' +
+          '<div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
+          '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a>' +
+        '</div>' +
+        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+      '</div>' +
+      '<div class="pedido-ruta">' +
+        '<span class="pedido-punto-o"></span><div class="pedido-dir">' + escapar(p.origen) + '</div>' +
+        '<span class="pedido-linea-conector"></span><span></span>' +
+        '<span class="pedido-punto-d"></span><div class="pedido-dir">' + escapar(p.destino) + '</div>' +
+      '</div>' +
+      '<div class="pedido-meta">' +
+        (p.fuera_de_santiago === "SI" ? "Fuera de Santiago" : "En ciudad") +
+        ' · ' + (p.ida_vuelta === "SI" ? "Ida y vuelta" : "Solo ida") +
+        ' · ' + escapar(horaCorta(p.creado_en)) +
+      '</div>' +
+      (p.peaje_incompleto === "SI"
+        ? '<div class="pedido-aviso">⚠ Cruza un pórtico sin tarifa cargada — revisa el peaje a mano antes de confirmar.</div>'
+        : '') +
+      (p.margen
+        // Este pedido llegó derivado desde otro conductor: el precio al
+        // pasajero ya está fijo (no cambia), pero con TU auto te deja esto.
+        ? '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
+            'Viaje derivado — con tu auto te deja aprox. ' + fmt(p.margen.margen_estimado) +
+          '</div>'
+        : '') +
+      // Navegar hasta el ORIGEN (donde hay que ir a buscar al pasajero) —
+      // se abre la app instalada si existe, si no cae a la web de cada
+      // servicio. No navega al destino: eso lo decide el pasajero arriba.
+      '<div class="btn-row" style="margin-bottom:8px;">' +
+        '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
+          'href="https://waze.com/ul?q=' + encodeURIComponent(p.origen) + '&navigate=yes">Ir con Waze</a>' +
+        '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
+          'href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(p.origen) + '&travelmode=driving">Ir con Maps</a>' +
+      '</div>' +
+      '<div class="btn-row">' +
+        '<button class="btn btn-ok" data-accion="confirmar_pedido" data-id="' + escapar(p.pedido_id) + '">Confirmar</button>' +
+        '<button class="btn btn-danger" data-accion="rechazar_pedido" data-id="' + escapar(p.pedido_id) + '">Rechazar</button>' +
+      '</div>';
+    return div;
+  }
+
+  // Sondeo automático de pedidos pendientes: cada cuánto se revisa solo,
+  // sin que el conductor tenga que apretar "Actualizar" a mano.
+  var SONDEO_MS = 5000;
+  var sondeoTimer = null;
+  var idsYaAvisados = {}; // para no repetir la notificación del mismo pedido en cada ciclo
+
+  function pedirPermisoNotificaciones() {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") Notification.requestPermission();
+  }
+
+  // Tres beeps, no uno: un solo tono corto se pierde si el conductor tiene
+  // el teléfono en el bolsillo o en el soporte del auto con ruido — pedido
+  // explícito de que la alerta sea "emergente", no un aviso discreto.
+  function sonarAviso() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.5, 1.0].forEach(function (retraso) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        var t = ctx.currentTime + retraso;
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.start(t); osc.stop(t + 0.35);
+      });
+    } catch (e) {}
+  }
+
+  function avisarPedidoNuevo(p) {
+    sonarAviso();
+    if ("vibrate" in navigator) navigator.vibrate([300, 150, 300, 150, 300]);
+    if ("Notification" in window && Notification.permission === "granted") {
+      var n = new Notification("🚗 Pedido nuevo de viaje", {
+        body: p.nombre + "\n" + p.origen + " → " + p.destino + "\n" + fmt(p.total),
+        tag: p.pedido_id,
+        requireInteraction: true
+      });
+      n.onclick = function () { window.focus(); n.close(); };
+    }
+  }
+
+  // La burbuja ahora es un punto en la barra de abajo (sin número): con la
+  // pestaña de Pedidos a un toque, el conteo exacto se ve al entrar.
+  function actualizarBurbuja(cantidad) {
+    document.getElementById("burbujaPedidos").classList.toggle("activa", cantidad > 0);
+    document.getElementById("grupoPedidos").classList.toggle("hay-pendientes", cantidad > 0);
+  }
+
+  /* ---------------------------------------------------------------
+     Viajes en curso (ya confirmados): salen de la lista de pendientes
+     y pasan acá, que es donde vive el chat con el pasajero hasta que el
+     conductor marca el viaje como terminado.
+     --------------------------------------------------------------- */
+  var ultimoMensajePorPedido = {};
+
+  function cargarViajesEnCurso() {
+    api({ accion: "mis_viajes_confirmados" }).then(function (res) { pintarViajesEnCurso(res, null); });
+  }
+
+  var rutasPorPedido = {};      // pedido_id -> polilinea codificada
+  var ubicacionAutoActivada = false;
+
+  // ubicaciones: {pedido_id: {lat,lng}} cuando viene de la sincronización;
+  // null si viene de la consulta suelta (entonces se piden aparte).
+  function pintarViajesEnCurso(res, ubicaciones) {
+    (function () {
+      var grupo = document.getElementById("grupoEnCurso");
+      var lista = document.getElementById("listaEnCurso");
+      if (!res.ok) return;
+      var vacio = document.getElementById("sinViajesEnCurso");
+      if (!res.pedidos.length) {
+        avisarPagosRecibidos([]);
+        grupo.style.display = "none";
+        vacio.style.display = "block";
+        lista.innerHTML = "";
+        lista.dataset.ids = "";
+        return;
+      }
+      grupo.style.display = "block";
+      vacio.style.display = "none";
+      avisarPagosRecibidos(res.pedidos);
+      // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
+      // curso → esperando pago), para no borrar los mensajes ya pintados ni
+      // lo que el conductor está tipeando.
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago; }).join(",");
+      if (lista.dataset.ids !== idsActuales) {
+        lista.dataset.ids = idsActuales;
+        lista.innerHTML = "";
+        res.pedidos.forEach(function (p) { lista.appendChild(tarjetaEnCurso(p)); });
+        // Tarjetas nuevas = chat vacío: se vuelve a pedir el historial
+        // completo (antes quedaba vacío porque se pedía solo "lo nuevo").
+        res.pedidos.forEach(function (p) { ultimoMensajePorPedido[p.pedido_id] = ""; });
+        if (!ubicaciones) res.pedidos.forEach(function (p) { cargarMensajesConductor(p.pedido_id); });
+        // Los mapas viejos dejan de existir cuando cambia la lista (viaje
+        // finalizado), si no quedarían referencias a nodos ya borrados.
+        mapasPorPedido = {};
+      }
+      res.pedidos.forEach(function (p) {
+        if (p.polilinea) rutasPorPedido[p.pedido_id] = p.polilinea;
+        if (p.estado === "CONFIRMADO") dibujarRutaPedido(p.pedido_id);
+      });
+      if (ubicaciones) {
+        Object.keys(ubicaciones).forEach(function (id) { pintarUbicacionPasajero(id, ubicaciones[id]); });
+      } else {
+        res.pedidos.forEach(function (p) { actualizarUbicacionPasajero(p.pedido_id); });
+      }
+      // Con un viaje confirmado, el pasajero necesita ver el auto: se activa
+      // compartir ubicación una vez por sesión (el conductor puede apagarlo).
+      var hayActivo = res.pedidos.some(function (p) { return p.estado === "CONFIRMADO"; });
+      var chk = document.getElementById("chkUbicacion");
+      if (hayActivo && !chk.checked && !ubicacionAutoActivada) {
+        ubicacionAutoActivada = true;
+        chk.checked = true;
+        chk.dispatchEvent(new Event("change"));
+      }
+    })();
+  }
+
+  /* Aviso de pago recibido. NUNCA se deduce de que el viaje "desapareció"
+     de la lista: también desaparece al cambiar de cuenta, al cerrar sesión o
+     si falla una consulta, y eso disparaba avisos falsos de plata que no
+     entró. Si un cobro pendiente deja de estar, se le pregunta al backend
+     por ESE pedido y solo se avisa si confirma estado_pago = PAGADO por
+     Mercado Pago (que a su vez lo verificó con Mercado Pago). */
+  var cobrosPendientes = {}; // pedido_id -> total
+  var cobrosDeConductor = ""; // de qué cuenta son los pendientes vigilados
+  function avisarPagosRecibidos(pedidos) {
+    var ses = obtenerSesion();
+    var yo = ses ? ses.conductor.conductor_id : "";
+    if (yo !== cobrosDeConductor) { cobrosPendientes = {}; cobrosDeConductor = yo; }
+
+    var siguen = {};
+    pedidos.forEach(function (p) { if (p.estado_pago === "PENDIENTE") siguen[p.pedido_id] = p.total; });
+    Object.keys(cobrosPendientes).forEach(function (id) {
+      if (id in siguen) return;
+      api({ accion: "estado_pedido", pedido_id: id }).then(function (res) {
+        if (!res || !res.ok) return;
+        if (res.estado_pago === "PAGADO" && res.forma_pago === "MERCADOPAGO") {
+          sonarAviso();
+          alert("Pago recibido por Mercado Pago: " + fmt(res.total));
+        }
+      });
+    });
+    cobrosPendientes = siguen;
+  }
+
+  function tarjetaEnCurso(p) {
+    var div = document.createElement("div");
+    div.className = "pedido-card";
+    if (p.estado_pago === "PENDIENTE") return tarjetaEsperandoPago(div, p);
+    div.innerHTML =
+      '<div class="pedido-tope">' +
+        '<div>' +
+          '<div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
+          '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a>' +
+        '</div>' +
+        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+      '</div>' +
+      '<div class="pedido-ruta">' +
+        '<span class="pedido-punto-o"></span><div class="pedido-dir">' + escapar(p.origen) + '</div>' +
+        '<span class="pedido-linea-conector"></span><span></span>' +
+        '<span class="pedido-punto-d"></span><div class="pedido-dir">' + escapar(p.destino) + '</div>' +
+      '</div>' +
+      '<div class="btn-row" style="margin-bottom:8px;">' +
+        '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
+          'href="https://waze.com/ul?q=' + encodeURIComponent(p.origen) + '&navigate=yes">Ir con Waze</a>' +
+        '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
+          'href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(p.origen) + '&travelmode=driving">Ir con Maps</a>' +
+      '</div>' +
+      // Mapa con la posición del pasajero, para ir a buscarlo. Solo se
+      // dibuja si el pasajero aceptó compartir ubicación; si no, queda
+      // el aviso y el conductor lo ubica por la dirección de siempre.
+      '<div class="mapa-pasajero" data-mapa="' + escapar(p.pedido_id) + '"></div>' +
+      '<p class="nota-mapa" data-mapa-aviso="' + escapar(p.pedido_id) + '">Esperando la ubicación del pasajero...</p>' +
+      '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
+      '<div class="chat-entrada">' +
+        '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
+        '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
+      '</div>' +
+      // Finalizar = cobrar: el conductor elige cómo le paga el pasajero.
+      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">Finalizar viaje y cobrar ' + fmt(p.total) + '</p>' +
+      '<div class="btn-row">' +
+        '<button class="btn btn-ok" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="MERCADOPAGO">Mercado Pago</button>' +
+        '<button class="btn btn-chico" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="EFECTIVO">Efectivo</button>' +
+      '</div>';
+    return div;
+  }
+
+  function tarjetaEsperandoPago(div, p) {
+    div.innerHTML =
+      '<div class="pedido-tope">' +
+        '<div><div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
+        '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a></div>' +
+        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+      '</div>' +
+      '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
+        'Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre.' +
+      '</div>' +
+      // Por si al pasajero no le aparece el botón: el conductor le reenvía el link.
+      '<div class="btn-row" style="margin:10px 0 8px;">' +
+        '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' +
+        '<button class="btn btn-chico" data-efectivo="' + escapar(p.pedido_id) + '">Me pagó en efectivo</button>' +
+      '</div>' +
+      '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
+      '<div class="chat-entrada">' +
+        '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
+        '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
+      '</div>';
+    return div;
+  }
+
+  /* Ubicación del pasajero en el mapa: se consulta mientras el viaje está
+     en curso. Si el pasajero no dio permiso, el backend devuelve null y se
+     deja el aviso en vez de un mapa vacío que no dice nada. */
+  function actualizarUbicacionPasajero(pedidoId) {
+    api({ accion: "ubicacion_pasajero", pedido_id: pedidoId }).then(function (res) {
+      if (res.ok) pintarUbicacionPasajero(pedidoId, res.ubicacion);
+    });
+  }
+
+  // Mapa del viaje: ruta origen→destino dibujada + marcador del pasajero.
+  function mapaDelPedido(pedidoId, centro) {
+    var cont = document.querySelector('[data-mapa="' + pedidoId + '"]');
+    if (!cont || !googleMapsListo) return null;
+    var m = mapasPorPedido[pedidoId];
+    if (!m) {
+      cont.classList.add("activo");
+      var mapa = new google.maps.Map(cont, { zoom: 14, center: centro, disableDefaultUI: true, zoomControl: true });
+      m = { mapa: mapa, marcador: null, linea: null };
+      mapasPorPedido[pedidoId] = m;
+    }
+    return m;
+  }
+
+  function dibujarRutaPedido(pedidoId) {
+    var cod = rutasPorPedido[pedidoId];
+    if (!cod || !googleMapsListo || !google.maps.geometry) return;
+    var puntos = google.maps.geometry.encoding.decodePath(cod);
+    if (!puntos.length) return;
+    var m = mapaDelPedido(pedidoId, puntos[0]);
+    if (!m || m.linea) return;
+    m.linea = new google.maps.Polyline({ map: m.mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (pt) { limites.extend(pt); });
+    m.mapa.fitBounds(limites, 30);
+  }
+
+  function pintarUbicacionPasajero(pedidoId, ubicacion) {
+    if (!ubicacion) return;
+    var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
+    if (isNaN(pos.lat) || isNaN(pos.lng)) return;
+    var m = mapaDelPedido(pedidoId, pos);
+    if (!m) return;
+    var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
+    if (aviso) aviso.classList.add("oculto");
+    if (!m.marcador) m.marcador = new google.maps.Marker({ map: m.mapa, title: "Pasajero" });
+    m.marcador.setPosition(pos);
+    // Con ruta dibujada no se recentra: se pierde el encuadre de la ruta.
+    if (!m.linea) m.mapa.setCenter(pos);
+  }
+
+  function cargarMensajesConductor(pedidoId) {
+    api({ accion: "mensajes_conductor", pedido_id: pedidoId, desde: ultimoMensajePorPedido[pedidoId] || "" })
+      .then(function (res) { if (res.ok) pintarMensajesDe(pedidoId, res.mensajes); });
+  }
+
+  function pintarMensajesDe(pedidoId, mensajes) {
+    (mensajes || []).forEach(function (m) {
+      pintarMensajeConductor(pedidoId, m, m.autor === "conductor");
+      ultimoMensajePorPedido[pedidoId] = m.creado_en;
+    });
+  }
+
+  function pintarMensajeConductor(pedidoId, m, esMio) {
+    var cont = document.querySelector('[data-chat="' + pedidoId + '"]');
+    if (!cont) return;
+    var vacio = cont.querySelector(".chat-vacio");
+    if (vacio) vacio.remove();
+    var burbuja = document.createElement("div");
+    burbuja.className = "chat-burbuja " + (esMio ? "mia" : "suya");
+    burbuja.textContent = m.texto;
+    var hora = document.createElement("span");
+    hora.className = "chat-hora";
+    var d = new Date(m.creado_en);
+    hora.textContent = isNaN(d.getTime()) ? "" : d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+    burbuja.appendChild(hora);
+    cont.appendChild(burbuja);
+    cont.scrollTop = cont.scrollHeight;
+  }
+
+  document.getElementById("listaEnCurso").addEventListener("click", function (ev) {
+    var enviar = ev.target.closest("[data-chat-enviar]");
+    if (enviar) {
+      var pedidoId = enviar.dataset.chatEnviar;
+      var input = document.querySelector('[data-chat-input="' + pedidoId + '"]');
+      var texto = input.value.trim();
+      if (!texto) return;
+      input.value = "";
+      apiPost({ accion: "enviar_mensaje_conductor", pedido_id: pedidoId, texto: texto }).then(function (res) {
+        if (!res.ok) { input.value = texto; alert("No se pudo enviar: " + res.error); return; }
+        pintarMensajeConductor(pedidoId, res.mensaje, true);
+        ultimoMensajePorPedido[pedidoId] = res.mensaje.creado_en;
+      });
+      return;
+    }
+    var finalizar = ev.target.closest("[data-finalizar]");
+    if (finalizar) {
+      var forma = finalizar.dataset.forma;
+      var pregunta = forma === "EFECTIVO"
+        ? "¿Terminar el viaje y marcarlo como cobrado en efectivo?"
+        : "¿Terminar el viaje y pedirle el pago al pasajero por Mercado Pago?";
+      if (!confirm(pregunta)) return;
+      finalizar.disabled = true;
+      apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar, forma_pago: forma }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); finalizar.disabled = false; return; }
+        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
+        cargarViajesEnCurso();
+      });
+      return;
+    }
+    var efectivo = ev.target.closest("[data-efectivo]");
+    if (efectivo) {
+      if (!confirm("¿El pasajero te pagó en efectivo? Se cierra el cobro por Mercado Pago.")) return;
+      efectivo.disabled = true;
+      apiPost({ accion: "marcar_pagado_efectivo", pedido_id: efectivo.dataset.efectivo }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); efectivo.disabled = false; return; }
+        document.getElementById("listaEnCurso").dataset.ids = "";
+        cargarViajesEnCurso();
+      });
+      return;
+    }
+    var linkPago = ev.target.closest("[data-link-pago]");
+    if (linkPago) {
+      var texto = "Este es el link para pagar tu viaje en Rumbo: " + linkPago.dataset.linkPago;
+      if (navigator.share) navigator.share({ title: "Pago de tu viaje", text: texto }).catch(function () {});
+      else window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
+    }
+  });
+
+  function cargarPedidos() {
+    var lista = document.getElementById("listaPedidos");
+    if (!lista.dataset.cargadoUnaVez) lista.innerHTML = '<p class="vacio">Cargando pedidos...</p>';
+    api({ accion: "pedidos_pendientes" }).then(pintarPedidos);
+  }
+
+  function pintarPedidos(res) {
+    var lista = document.getElementById("listaPedidos");
+    (function () {
+      lista.dataset.cargadoUnaVez = "1";
+      if (!res.ok) { lista.innerHTML = '<p class="vacio">Error: ' + escapar(res.error) + '</p>'; return; }
+
+      actualizarBurbuja(res.pedidos.length);
+
+      res.pedidos.forEach(function (p) {
+        if (!idsYaAvisados[p.pedido_id]) {
+          idsYaAvisados[p.pedido_id] = true;
+          // La primera carga (recién entraste) no debe disparar avisos de
+          // pedidos que ya estaban ahí antes de abrir el panel.
+          if (lista.dataset.yaAviso) avisarPedidoNuevo(p);
+        }
+      });
+      lista.dataset.yaAviso = "1";
+
+      if (!res.pedidos.length) { lista.innerHTML = '<p class="vacio">No hay pedidos pendientes.</p>'; return; }
+      lista.innerHTML = "";
+      res.pedidos.forEach(function (p) { lista.appendChild(pedidoCard(p)); });
+    })();
+  }
+
+  document.getElementById("btnRefrescar").addEventListener("click", cargarPedidos);
+
+  document.getElementById("listaPedidos").addEventListener("click", function (ev) {
+    var btn = ev.target.closest("button[data-accion]");
+    if (!btn) return;
+    btn.disabled = true;
+    apiPost({ accion: btn.dataset.accion, pedido_id: btn.dataset.id }).then(function (res) {
+      if (!res.ok) { alert("Error: " + res.error); btn.disabled = false; return; }
+      cargarPedidos();
+    });
+  });
+
+  // Ubicación en vivo: manda la posición cada vez que el navegador la
+  // reporta, pero no más seguido que cada 15s (para no gastar cuota de
+  // Apps Script si el GPS actualiza muy rápido).
+  var watchId = null;
+  var ultimoEnvio = 0;
+  var UBICACION_MIN_MS = 15000;
+
+  document.getElementById("chkUbicacion").addEventListener("change", function (ev) {
+    var msg = document.getElementById("ubicacionMsg");
+    var caja = document.getElementById("estadoConductor");
+    if (ev.target.checked) {
+      if (!navigator.geolocation) {
+        msg.textContent = "Tu navegador no soporta geolocalización.";
+        msg.className = "msg error"; ev.target.checked = false; return;
+      }
+      watchId = navigator.geolocation.watchPosition(function (pos) {
+        var ahora = Date.now();
+        if (ahora - ultimoEnvio < UBICACION_MIN_MS) return;
+        ultimoEnvio = ahora;
+        apiPost({ accion: "actualizar_ubicacion", lat: pos.coords.latitude, lng: pos.coords.longitude })
+          .then(function (res) {
+            msg.textContent = res.ok ? "Compartiendo ubicación en vivo." : ("Error: " + res.error);
+            msg.className = "msg " + (res.ok ? "ok" : "error");
+          });
+      }, function (err) {
+        msg.textContent = "No se pudo obtener ubicación: " + err.message;
+        msg.className = "msg error";
+        ev.target.checked = false;
+        caja.classList.remove("activo");
+      }, { enableHighAccuracy: true });
+      msg.textContent = "Activando...";
+      msg.className = "msg";
+      caja.classList.add("activo");
+    } else {
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+      msg.textContent = "Actívalo cuando salgas a un viaje confirmado.";
+      msg.className = "msg";
+      caja.classList.remove("activo");
+    }
+  });
+
+  // Dentro de la app instalada (Capacitor) no se ofrece descargar la app.
+  if (window.Capacitor) {
+    document.getElementById("linkDescargaApp").style.display = "none";
+    document.getElementById("notaDescargaApp").style.display = "none";
+  }
+
+  var sesionGuardada = obtenerSesion();
+  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
+  // Una sesión guardada de otro tipo de cuenta (p. ej. entraste como admin en
+  // este navegador y ahora abres el panel de conductor) no se reutiliza.
+  if (sesionGuardada && sesionGuardada.token && !cuentaPermitida(sesionGuardada.conductor)) {
+    entrar(sesionGuardada);
+  }
+  else mostrarPantalla("login");
+
+  // Revisa la versión SIN necesitar sesión: si el conductor/admin abre la
+  // app deslogueado, el aviso de actualizar tiene que salir igual en la
+  // pantalla de login, no recién después de entrar (antes no se pedía
+  // nunca actualizar si la app estaba deslogueada).
+  api({}).then(function (res) {
+    if (res && res.ok && res.versiones_app) revisarActualizacion(res.versiones_app[MODO]);
+  });
+})();
+</script>
+</body>
 </html>
