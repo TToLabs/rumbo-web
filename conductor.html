@@ -98,7 +98,7 @@
      dashboard de admin, cuando el topbar de mobile todavía era claro). */
   .brand-mark img { width: 100%; height: 100%; display: block; content: url(img/logo-rumbo-blanco.png); }
   .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
-  .brand-texto { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 72px; }
+  .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
   .brand-sub { font-size: 13.5px; color: color-mix(in srgb, var(--primary-ink) 70%, transparent); line-height: 1.3; }
 
@@ -950,7 +950,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 14;
+  var APP_VERSION = 15;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -966,14 +966,22 @@
   // (por ejemplo, corriendo en el navegador), se cae al método anterior.
   document.getElementById("btnActualizar").addEventListener("click", function () {
     var boton = this;
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador) {
-      boton.disabled = true; boton.textContent = "Descargando...";
-      window.Capacitor.Plugins.ApkInstalador.descargarEInstalar({ url: URL_APK })
-        .catch(function () { window.open(URL_APK, "_system"); })
-        .finally(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; });
-    } else {
-      window.open(URL_APK, "_system");
-    }
+    var plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador;
+    if (!plugin) { window.open(URL_APK, "_system"); return; }
+    boton.disabled = true; boton.textContent = "Descargando… 0 %";
+    var escucha = plugin.addListener
+      ? plugin.addListener("progreso", function (e) { boton.textContent = "Descargando… " + e.porcentaje + " %"; })
+      : Promise.resolve({ remove: function () {} });
+    plugin.descargarEInstalar({ url: URL_APK })
+      .then(function () {
+        boton.textContent = "Abriendo instalador…";
+        setTimeout(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; }, 4000);
+      })
+      .catch(function () {
+        boton.disabled = false;
+        boton.textContent = "No se pudo descargar. Toca para reintentar";
+      })
+      .finally(function () { escucha.then(function (h) { h.remove(); }); });
   });
 
   // Cada panel solo acepta su tipo de cuenta.
