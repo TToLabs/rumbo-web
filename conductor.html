@@ -341,6 +341,36 @@
     border: 1px solid var(--border); margin: 12px 0 4px; overflow: hidden;
   }
   .mapa-pasajero.activo { display: block; }
+
+  /* ---------- Tablero del conductor cuando no hay pedidos ---------- */
+  .tablero { display: none; margin-bottom: 4px; }
+  .tablero.visible { display: block; }
+  .tablero-estado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; min-height: 44px; }
+  .tablero .kpi-fila { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tablero .kpi-valor { font-size: 22px; white-space: nowrap; }
+  .tablero .kpi-card { padding: 14px; }
+  .tablero-mapa {
+    position: relative; height: 210px; border-radius: var(--r-card); border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 12px; background: var(--surface-2);
+  }
+  .tablero-mapa-aviso {
+    position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; padding: 16px; text-align: center; color: var(--text-3);
+    font-size: 13.5px; background: var(--surface-2);
+  }
+  .tablero-mapa-aviso.oculto { display: none; }
+  .tablero-mapa .btn-centrar { position: absolute; left: 10px; top: 10px; z-index: 2; min-height: 44px; box-shadow: var(--shadow-md); }
+  .tablero-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14.5px; white-space: nowrap; }
+  .vacio-bloque {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+    padding: 22px 16px; color: var(--text-2);
+  }
+  #sinViajesEnCurso { padding-top: 40px; }
+  .vacio-bloque svg.ico { width: 34px; height: 34px; color: var(--primary); }
+  .vacio-bloque strong { color: var(--text); font-size: 16px; }
+  .vacio-bloque p { margin: 0; font-size: 14px; color: var(--text-3); max-width: 300px; }
+  .vacio-bloque .tablero-acciones { width: 100%; margin: 12px 0 4px; }
   .nota-mapa { font-size: 13.5px; color: var(--text-3); margin: 10px 0 0; }
   .nota-mapa.oculto { display: none; }
 
@@ -588,10 +618,58 @@
       </div>
       <div id="listaEnCurso"></div>
     </section>
-    <p class="vacio" id="sinViajesEnCurso">No tienes viajes en curso.</p>
+    <div class="vacio-bloque" id="sinViajesEnCurso">
+      <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
+      <strong>No tienes viajes en curso</strong>
+      <p>Cuando aceptes un pedido, aparece aquí con el mapa y el chat del pasajero.</p>
+      <div class="tablero-acciones">
+        <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
+        <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
+      </div>
+      <button class="btn btn-chico" data-tablero="pedidos" type="button">Ver pedidos pendientes</button>
+    </div>
   </div>
 
   <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
+    <!-- Solo conductor y solo cuando no hay pedidos pendientes: en vez de una
+         pantalla vacía, resumen del mes, mapa de la zona y accesos rápidos. -->
+    <div class="tablero" id="tableroConductor">
+      <div class="tablero-estado">
+        <span class="badge badge-verde" id="tabEstadoBadge">Disponible ahora</span>
+        <button class="btn btn-chico" data-tablero="horarios" type="button">Cambiar horarios</button>
+      </div>
+      <div class="kpi-fila">
+        <div class="kpi-card">
+          <div class="kpi-cabeza">
+            <span class="kpi-etiqueta">Total facturado</span>
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-precio"/></svg>
+          </div>
+          <div class="kpi-valor" id="tabFacturado">—</div>
+          <div class="kpi-nota">Mes en curso</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-cabeza">
+            <span class="kpi-etiqueta">Viajes realizados</span>
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-auto"/></svg>
+          </div>
+          <div class="kpi-valor" id="tabViajes">—</div>
+          <div class="kpi-nota">Mes en curso</div>
+        </div>
+      </div>
+      <div class="tablero-mapa">
+        <div id="tabMapaLienzo" style="position:absolute;inset:0;"></div>
+        <div class="tablero-mapa-aviso" id="tabMapaAviso">
+          <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+          <span id="tabMapaTexto">Cargando mapa...</span>
+        </div>
+        <button class="btn btn-chico btn-centrar" id="tabBtnCentrar" data-tablero="centrar" type="button" hidden>Usar mi ubicación</button>
+      </div>
+      <div class="tablero-acciones">
+        <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
+        <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
+      </div>
+    </div>
+
     <section class="card" id="grupoPedidos">
       <div class="card-head">
         <span class="card-title">Pedidos pendientes</span>
@@ -895,7 +973,7 @@
     </section>
     </div></details>
 
-    <details class="acordeon simple"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonDisponibilidad"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
@@ -950,7 +1028,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 16;
+  var APP_VERSION = 17;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1136,6 +1214,7 @@
       tab.classList.toggle("activo", esEsta);
     });
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
+    if (cual === "pedidos" && MODO === "conductor") { pintarEstadoTablero(); pintarMapaEspera(); }
     // Siempre al entrar: el conductor vuelve de vincular en el navegador y
     // tiene que ver el cambio sin cerrar la app.
     if (cual === "ajustes") {
@@ -1167,6 +1246,7 @@
       return;
     }
     cargarTarifas();
+    ultimoResumenMes = 0;
     cargarPedidos();
     cargarViajesEnCurso();
     cargarGoogleMaps();
@@ -1848,7 +1928,8 @@
       if (!res.ok) return;
       try { bloqueos = JSON.parse(res.horario_no_disponible || "[]"); } catch (e) { bloqueos = []; }
       pintarBloqueos();
-    });
+      if (MODO === "conductor") pintarEstadoTablero();
+    }).catch(function () {});
   }
 
   document.getElementById("btnAgregarBloqueo").addEventListener("click", function () {
@@ -2007,7 +2088,7 @@
       if (!res.pedidos.length) {
         avisarPagosRecibidos([]);
         grupo.style.display = "none";
-        vacio.style.display = "block";
+        vacio.style.display = "flex";
         lista.innerHTML = "";
         lista.dataset.ids = "";
         return;
@@ -2297,11 +2378,127 @@
       });
       lista.dataset.yaAviso = "1";
 
-      if (!res.pedidos.length) { lista.innerHTML = '<p class="vacio">No hay pedidos pendientes.</p>'; return; }
+      if (!res.pedidos.length) {
+        lista.innerHTML = '<div class="vacio-bloque"><strong>Sin pedidos por ahora</strong>' +
+          '<p>Apenas llegue uno, te avisamos y aparece aquí.</p></div>';
+        mostrarTablero(true);
+        return;
+      }
+      mostrarTablero(false);
       lista.innerHTML = "";
       res.pedidos.forEach(function (p) { lista.appendChild(pedidoCard(p)); });
     })();
   }
+
+  /* ---------------------------------------------------------------
+     Tablero del conductor (sin pedidos pendientes): resumen del mes,
+     mapa de su zona y accesos rápidos. Los datos salen de endpoints que
+     ya existen (historial_pagos, mi_disponibilidad): no hay backend nuevo.
+     --------------------------------------------------------------- */
+  var mapaEspera = null, marcadorEspera = null, reintentosMapa = 0, ultimoResumenMes = 0;
+  var SANTIAGO_CENTRO = { lat: -33.4489, lng: -70.6693 };
+
+  function mostrarTablero(si) {
+    if (MODO !== "conductor") return;
+    document.getElementById("tableroConductor").classList.toggle("visible", si);
+    if (!si) return;
+    cargarResumenMes();
+    pintarEstadoTablero();
+    pintarMapaEspera();
+  }
+
+  // Máximo una consulta cada 2 minutos: el sondeo repinta la lista seguido.
+  function cargarResumenMes() {
+    if (Date.now() - ultimoResumenMes < 120000) return;
+    ultimoResumenMes = Date.now();
+    var h = new Date();
+    var mes = h.getFullYear() + "-" + String(h.getMonth() + 1).padStart(2, "0");
+    api({ accion: "historial_pagos", mes: mes, vista: MODO }).then(function (res) {
+      if (!res || !res.ok || !res.viajes) { ultimoResumenMes = 0; return; }
+      document.getElementById("tabFacturado").textContent = fmt(res.total);
+      document.getElementById("tabViajes").textContent = String(res.viajes.length);
+    }).catch(function () { ultimoResumenMes = 0; });
+  }
+
+  // "Disponible" salvo que ahora caiga dentro de un bloqueo de Ajustes.
+  function estaBloqueadoAhora() {
+    var ahora = new Date(), min = ahora.getHours() * 60 + ahora.getMinutes(), dia = ahora.getDay();
+    function aMin(s) { var p = String(s || "").split(":"); return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0); }
+    return bloqueos.some(function (b) {
+      if ((b.dias || []).indexOf(dia) === -1) return false;
+      if (!b.desde && !b.hasta) return true;
+      var d = aMin(b.desde), h = aMin(b.hasta);
+      return d <= h ? (min >= d && min < h) : (min >= d || min < h);
+    });
+  }
+
+  function pintarEstadoTablero() {
+    if (!disponibilidadCargada) { cargarDisponibilidad(); return; }
+    var no = estaBloqueadoAhora(), badge = document.getElementById("tabEstadoBadge");
+    badge.className = "badge " + (no ? "badge-ambar" : "badge-verde");
+    badge.textContent = no ? "No disponible ahora" : "Disponible ahora";
+  }
+
+  function pintarMapaEspera() {
+    var lienzo = document.getElementById("tabMapaLienzo");
+    var aviso = document.getElementById("tabMapaAviso"), texto = document.getElementById("tabMapaTexto");
+    if (!lienzo.offsetWidth) return;   // tablero o pestaña ocultos: se reintenta al mostrarlos
+    try {
+      if (mapaEspera) { google.maps.event.trigger(mapaEspera, "resize"); return; }
+      if (!googleMapsListo) {
+        if (reintentosMapa++ < 15) setTimeout(pintarMapaEspera, 1000);
+        else texto.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
+        return;
+      }
+      mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true });
+      aviso.classList.add("oculto");
+      centrarMapaEspera(false);
+    } catch (e) {
+      texto.textContent = "No se pudo cargar el mapa.";
+      aviso.classList.remove("oculto");
+    }
+  }
+
+  // Sin permiso de ubicación se queda en Santiago y ofrece un botón; el
+  // diálogo del sistema solo aparece cuando el conductor toca ese botón.
+  function centrarMapaEspera(desdeBoton) {
+    var btn = document.getElementById("tabBtnCentrar");
+    if (!navigator.geolocation || !mapaEspera) { btn.hidden = true; return; }
+    function ir() {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        var p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        mapaEspera.setCenter(p); mapaEspera.setZoom(14);
+        if (!marcadorEspera) marcadorEspera = new google.maps.Marker({ map: mapaEspera, title: "Tú" });
+        marcadorEspera.setPosition(p);
+        btn.hidden = true;
+      }, function () { btn.hidden = false; }, { timeout: 10000, maximumAge: 60000 });
+    }
+    if (desdeBoton) { ir(); return; }
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: "geolocation" })
+        .then(function (r) { if (r.state === "granted") ir(); else btn.hidden = false; })
+        .catch(function () { btn.hidden = false; });
+    } else { btn.hidden = false; }
+  }
+
+  function irASeccionAjustes(idAcordeon) {
+    mostrarPestana("ajustes");
+    var a = document.getElementById(idAcordeon);
+    if (!a) return;
+    a.open = true;
+    setTimeout(function () { a.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+  }
+
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-tablero]");
+    if (!b) return;
+    var q = b.dataset.tablero;
+    if (q === "qr") document.getElementById("btnCompartirQr").click();
+    else if (q === "tarifas") irASeccionAjustes("acordeonTarifas");
+    else if (q === "horarios") irASeccionAjustes("acordeonDisponibilidad");
+    else if (q === "pedidos") mostrarPestana("pedidos");
+    else if (q === "centrar") centrarMapaEspera(true);
+  });
 
   document.getElementById("btnRefrescar").addEventListener("click", cargarPedidos);
 
