@@ -485,8 +485,7 @@
   .actualizacion-card button { width: 100%; }
 
   /* ---------- Viaje en curso y cierre con recálculo ----------
-     El pasajero ve la tarifa mínima garantizada mientras viaja y, al
-     terminar, el desglose de cómo se llegó al monto final. ---------- */
+     Al terminar, el pasajero ve el desglose de cómo se llegó al monto final. ---------- */
   .viaje-panel {
     position: fixed; inset: 0; z-index: 150; display: flex; align-items: flex-end;
     justify-content: center; background: rgba(16,26,32,0.55); backdrop-filter: blur(2px);
@@ -546,10 +545,6 @@
     <div id="viajeEnCurso">
       <h2 id="viajeTitulo">Viaje en curso</h2>
       <p class="nota">El valor final se recalcula al terminar, con la distancia y el tiempo reales.</p>
-      <div class="viaje-garantia">
-        <span>Tarifa mínima garantizada</span>
-        <strong id="viajeGarantia">—</strong>
-      </div>
       <p class="sim-titulo">Simular imprevistos del trayecto</p>
       <div class="sim-controles">
         <div class="sim-fila">
@@ -1131,7 +1126,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 15;
+  var APP_VERSION = 16;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
@@ -1660,7 +1655,6 @@
   function abrirPanelViaje() {
     document.getElementById("viajeEnCurso").style.display = "";
     document.getElementById("viajeCierre").style.display = "none";
-    document.getElementById("viajeGarantia").textContent = fmt(tarifaMinimaGarantizada);
     ["simTrafico", "simDesvio", "simPeaje"].forEach(function (id) {
       document.getElementById(id).value = "0";
     });
@@ -1697,7 +1691,7 @@
 
     document.getElementById("desgloseMotivo").textContent = cobro.superaMinimo
       ? "El viaje tomó más tiempo o distancia de lo previsto, así que el valor final superó la tarifa estimada."
-      : "El viaje resultó más corto de lo previsto. Se cobra la tarifa mínima garantizada que te ofrecimos al cotizar.";
+      : "El viaje resultó más corto de lo previsto. Se cobra la tarifa estimada que viste al cotizar.";
 
     document.getElementById("viajeEnCurso").style.display = "none";
     document.getElementById("viajeCierre").style.display = "";
