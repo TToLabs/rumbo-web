@@ -1028,7 +1028,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 17;
+  var APP_VERSION = 18;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1272,7 +1272,7 @@
         revisarActualizacion(res.version_app);
         if (!res.ok || !res.pendientes) { cargarPedidos(); cargarViajesEnCurso(); return; }
         pintarPedidos({ ok: true, pedidos: res.pendientes });
-        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso }, res.ubicaciones || {});
+        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso, cobro_real: res.cobro_real }, res.ubicaciones || {});
         Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
       })
       .catch(function () {})
@@ -1713,6 +1713,15 @@
 
   function fmt(n) { return "$" + Math.round(n || 0).toLocaleString("es-CL"); }
 
+  // Lo que se cobra de un viaje: el monto final si ya se calculó, si no el
+  // cotizado. cobroRealActivo lo informa el servidor (interruptor del backend).
+  var cobroRealActivo = false;
+  function montoP(p) { return Number(p.total_final) > 0 ? Number(p.total_final) : Number(p.total); }
+  function horaDe(iso) {
+    var d = new Date(iso);
+    return isNaN(d.getTime()) ? "" : d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+  }
+
   var CAMPOS_TARIFA = ["precioComb", "kmLimiteSantiago", "busquedaMin", "consumoCiudad", "consumoRuta",
     "valorHoraValle", "valorHoraPunta", "finDeSemanaValleInicio", "finDeSemanaValleFin",
     "horaPuntaMananaInicio", "horaPuntaMananaFin", "horaPuntaTardeInicio", "horaPuntaTardeFin"];
@@ -2084,6 +2093,7 @@
       var grupo = document.getElementById("grupoEnCurso");
       var lista = document.getElementById("listaEnCurso");
       if (!res.ok) return;
+      if (res.cobro_real !== undefined) cobroRealActivo = !!res.cobro_real;
       var vacio = document.getElementById("sinViajesEnCurso");
       if (!res.pedidos.length) {
         avisarPagosRecibidos([]);
@@ -2099,7 +2109,7 @@
       // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
       // curso → esperando pago), para no borrar los mensajes ya pintados ni
       // lo que el conductor está tipeando.
-      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago; }).join(",");
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : ""); }).join(",");
       if (lista.dataset.ids !== idsActuales) {
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
@@ -2171,7 +2181,7 @@
           '<div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
           '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a>' +
         '</div>' +
-        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+        '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       '<div class="pedido-ruta">' +
         '<span class="pedido-punto-o"></span><div class="pedido-dir">' + escapar(p.origen) + '</div>' +
@@ -2194,8 +2204,16 @@
         '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
         '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
       '</div>' +
+      // Iniciar viaje: desde ahí el servidor mide el tiempo y los km reales.
+      (p.inicio_viaje_en
+        ? '<p class="msg ok" style="margin:14px 2px 6px;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>'
+        : '<button class="btn btn-medio" style="width:100%;margin-top:14px;" data-iniciar="' + escapar(p.pedido_id) + '">Iniciar viaje</button>' +
+          '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">Tócalo cuando el pasajero suba: así se miden el tiempo y los km reales del viaje.</p>') +
       // Finalizar = cobrar: el conductor elige cómo le paga el pasajero.
-      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">Finalizar viaje y cobrar ' + fmt(p.total) + '</p>' +
+      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">' +
+        (cobroRealActivo && p.inicio_viaje_en
+          ? 'Finalizar viaje: se cobra el valor real (mínimo ' + fmt(montoP(p)) + ')'
+          : 'Finalizar viaje y cobrar ' + fmt(montoP(p))) + '</p>' +
       '<div class="btn-row">' +
         '<button class="btn btn-ok" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="MERCADOPAGO">Mercado Pago</button>' +
         '<button class="btn btn-chico" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="EFECTIVO">Efectivo</button>' +
@@ -2208,7 +2226,7 @@
       '<div class="pedido-tope">' +
         '<div><div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
         '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a></div>' +
-        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+        '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
         'Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre.' +
@@ -2320,6 +2338,17 @@
       });
       return;
     }
+    var iniciar = ev.target.closest("[data-iniciar]");
+    if (iniciar) {
+      if (!confirm("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales.")) return;
+      iniciar.disabled = true;
+      apiPost({ accion: "iniciar_viaje", pedido_id: iniciar.dataset.iniciar }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); iniciar.disabled = false; return; }
+        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
+        cargarViajesEnCurso();
+      }).catch(function (err) { alert("Error de red: " + err.message); iniciar.disabled = false; });
+      return;
+    }
     var finalizar = ev.target.closest("[data-finalizar]");
     if (finalizar) {
       var forma = finalizar.dataset.forma;
@@ -2330,6 +2359,12 @@
       finalizar.disabled = true;
       apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar, forma_pago: forma }).then(function (res) {
         if (!res.ok) { alert("Error: " + res.error); finalizar.disabled = false; return; }
+        // Si el monto final es mayor que lo cotizado, el conductor tiene que
+        // saber cuánto cobrar (sobre todo en efectivo).
+        if (res.ajuste > 0) {
+          alert("Monto final: " + fmt(res.total_final) + "\n(cotizado " + fmt(res.total_cotizado) + " + " + fmt(res.ajuste) + " por tiempo y km reales)\n\n" +
+            (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
+        }
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
       });

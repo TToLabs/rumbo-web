@@ -519,7 +519,7 @@
     display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
     padding: 11px 0; font-size: 15px; border-bottom: 1px solid var(--borde);
   }
-  .desglose-fila dd, .desglose-fila span:last-child { font-variant-numeric: tabular-nums; }
+  .desglose-fila dd, .desglose-fila span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
   .desglose-fila.ajuste span:last-child { color: #B42318; font-weight: 600; }
   .desglose-fila.final {
     border-bottom: none; margin-top: 6px; padding: 14px 16px; border-radius: 14px;
@@ -538,38 +538,6 @@
     <h2>Hay una versión nueva</h2>
     <p>Para seguir usando Rumbo hace falta actualizar la app primero. Es rápido.</p>
     <button type="button" id="btnActualizar" class="btn btn-primario">Descargar actualización</button>
-  </div>
-</div>
-<div class="viaje-panel" id="panelViaje" hidden role="dialog" aria-modal="true" aria-labelledby="viajeTitulo">
-  <div class="viaje-hoja">
-    <div id="viajeEnCurso">
-      <h2 id="viajeTitulo">Viaje en curso</h2>
-      <p class="nota">El valor final se recalcula al terminar, con la distancia y el tiempo reales.</p>
-      <p class="sim-titulo">Simular imprevistos del trayecto</p>
-      <div class="sim-controles">
-        <div class="sim-fila">
-          <label for="simTrafico">Tráfico extra (min)</label>
-          <input type="number" id="simTrafico" inputmode="numeric" min="0" step="5" value="0">
-        </div>
-        <div class="sim-fila">
-          <label for="simDesvio">Desvío extra (km)</label>
-          <input type="number" id="simDesvio" inputmode="decimal" min="0" step="1" value="0">
-        </div>
-        <div class="sim-fila">
-          <label for="simPeaje">Peajes extra</label>
-          <input type="number" id="simPeaje" inputmode="numeric" min="0" step="500" value="0">
-        </div>
-      </div>
-      <button class="btn btn-primario" id="btnTerminarViaje" type="button">Terminar viaje</button>
-    </div>
-
-    <div id="viajeCierre" style="display:none;">
-      <h2>Resumen del viaje</h2>
-      <p class="nota">Así se llegó al monto final.</p>
-      <div class="desglose" id="desgloseCierre"></div>
-      <p class="desglose-motivo" id="desgloseMotivo"></p>
-      <button class="btn btn-primario" id="btnCerrarResumen" type="button">Entendido</button>
-    </div>
   </div>
 </div>
 <div class="splash" id="splashIngresando">
@@ -731,7 +699,7 @@
       </dl>
       <p class="precio-nota">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
-        <span>Tarifa inicial estimada. El valor final se recalculará al terminar el viaje según el tráfico real e imprevistos.</span>
+        <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
       </p>
     </section>
 
@@ -742,6 +710,10 @@
     <p class="nota" id="pedirTexto" style="margin:10px 2px 0;"></p>
 
     <div class="confianza">
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
+        Ves la tarifa estimada antes de pedir el viaje
+      </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
         Conductor identificado y seguimiento en vivo del trayecto
@@ -761,10 +733,13 @@
       Tu conductor habitual no estaba disponible. Tu viaje lo tomó otro conductor de la red, al mismo precio.
     </p>
     <div class="card conductor-banner" id="tarjetaConductorAsignado" style="display:none;"></div>
-    <button class="btn btn-medio" id="btnVerViaje" type="button" style="display:none;margin-bottom:12px;">
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
-      Ver viaje en curso
-    </button>
+    <!-- Al terminar el viaje: si el monto final es mayor que lo cotizado
+         (el conductor midió más tiempo o distancia reales), se explica acá. -->
+    <div class="card" id="cardDesgloseFinal" style="display:none;">
+      <div class="card-head"><span class="card-title">Resumen del cobro</span></div>
+      <div class="desglose" id="desgloseFinal"></div>
+      <p class="desglose-motivo" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
+    </div>
     <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
          El monto lo fija el backend (precio congelado): acá no se escribe. -->
     <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
@@ -874,6 +849,10 @@
     </section>
 
     <div class="confianza">
+      <div class="confianza-item">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
+        Ves la tarifa estimada antes de pedir el viaje
+      </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
         Conductor identificado y seguimiento en vivo del trayecto
@@ -1126,7 +1105,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 16;
+  var APP_VERSION = 18;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
@@ -1424,20 +1403,6 @@
     };
   }
 
-  /* Regla de cobro asimétrica: el pasajero nunca paga menos que lo
-     cotizado, pero sí absorbe el tráfico o los desvíos que encarecen
-     el viaje por encima de esa tarifa. */
-  function aplicarTarifaMinima(tarifaMinimaGarantizada, precioFinalReal) {
-    var superaMinimo = precioFinalReal >= tarifaMinimaGarantizada;
-    return {
-      garantizado: tarifaMinimaGarantizada,
-      real: precioFinalReal,
-      ajuste: superaMinimo ? precioFinalReal - tarifaMinimaGarantizada : 0,
-      cobrado: superaMinimo ? precioFinalReal : tarifaMinimaGarantizada,
-      superaMinimo: superaMinimo
-    };
-  }
-
   function calcularTotal() {
     if (!rutaActual || !tarifas) return;
     var d = cotizarViaje(rutaActual.km, rutaActual.minutos, rutaActual.peaje);
@@ -1644,67 +1609,8 @@
     });
   });
 
-  /* ---------------------------------------------------------------
-     Viaje en curso: la tarifa que devolvió el servidor al crear el
-     pedido es la Tarifa Mínima Garantizada. Al cerrar, se recalcula
-     con lo que realmente pasó en la ruta y se aplica la regla
-     asimétrica de cobro.
-     --------------------------------------------------------------- */
-  var tarifaMinimaGarantizada = 0;
-
-  function abrirPanelViaje() {
-    document.getElementById("viajeEnCurso").style.display = "";
-    document.getElementById("viajeCierre").style.display = "none";
-    ["simTrafico", "simDesvio", "simPeaje"].forEach(function (id) {
-      document.getElementById(id).value = "0";
-    });
-    document.getElementById("panelViaje").hidden = false;
-  }
-
-  function leerImprevisto(id) {
-    return Math.max(0, parseFloat(document.getElementById(id).value) || 0);
-  }
-
-  function cerrarViaje() {
-    var real = cotizarViaje(
-      rutaActual.km + leerImprevisto("simDesvio"),
-      rutaActual.minutos + leerImprevisto("simTrafico"),
-      rutaActual.peaje + leerImprevisto("simPeaje")
-    );
-    var cobro = aplicarTarifaMinima(tarifaMinimaGarantizada, real.total);
-
-    var filas = [
-      ["Monto inicial estimado", fmt(cobro.garantizado), ""]
-    ];
-    if (cobro.ajuste > 0) {
-      filas.push(["Ajuste por tráfico e imprevistos", "+ " + fmt(cobro.ajuste), "ajuste"]);
-    }
-    filas.push(["Monto final a cobrar", fmt(cobro.cobrado), "final"]);
-
-    document.getElementById("desgloseCierre").innerHTML = filas.map(function (f) {
-      return '<div class="desglose-fila ' + f[2] + '"><span></span><span></span></div>';
-    }).join("");
-    document.querySelectorAll("#desgloseCierre .desglose-fila").forEach(function (fila, i) {
-      fila.children[0].textContent = filas[i][0];
-      fila.children[1].textContent = filas[i][1];
-    });
-
-    document.getElementById("desgloseMotivo").textContent = cobro.superaMinimo
-      ? "El viaje tomó más tiempo o distancia de lo previsto, así que el valor final superó la tarifa estimada."
-      : "El viaje resultó más corto de lo previsto. Se cobra la tarifa estimada que viste al cotizar.";
-
-    document.getElementById("viajeEnCurso").style.display = "none";
-    document.getElementById("viajeCierre").style.display = "";
-  }
-
-  document.getElementById("btnVerViaje").addEventListener("click", abrirPanelViaje);
-  document.getElementById("btnTerminarViaje").addEventListener("click", cerrarViaje);
-  document.getElementById("btnCerrarResumen").addEventListener("click", function () {
-    document.getElementById("panelViaje").hidden = true;
-  });
-
   function mostrarVistaEstado(totalConfirmado) {
-    tarifaMinimaGarantizada = totalConfirmado;
+    document.getElementById("cardDesgloseFinal").style.display = "none";
     document.getElementById("tabSeguimiento").disabled = false;
     document.getElementById("badgeSeguimiento").classList.add("activo");
     mostrarPestana("seguimiento");
@@ -1794,7 +1700,6 @@
           viajeConfirmadoMostrado = true;
           document.getElementById("estadoBox").className = "estado-box confirmado";
           document.getElementById("estadoBox").textContent = "Viaje confirmado";
-          document.getElementById("btnVerViaje").style.display = "flex";
           mostrarMapaConductor();
           abrirChat();
           compartirMiUbicacion();
@@ -1811,12 +1716,38 @@
     })();
   }
 
+  // Si al terminar el viaje el monto final es mayor que lo cotizado, se le
+  // explica al pasajero de dónde sale la diferencia. Si es igual, no se
+  // muestra nada: paga lo que le dijeron.
+  function pintarDesgloseFinal(res) {
+    var tarjeta = document.getElementById("cardDesgloseFinal");
+    var cotizado = Number(res.total_cotizado) || 0, total = Number(res.total) || 0;
+    if (!(cotizado > 0) || !(total > cotizado)) { tarjeta.style.display = "none"; return; }
+    var filas = [
+      ["Tarifa estimada", fmt(cotizado), ""],
+      ["Ajuste por tiempo y distancia reales", "+ " + fmt(total - cotizado), "ajuste"],
+      ["Total a pagar", fmt(total), "final"]
+    ];
+    var cont = document.getElementById("desgloseFinal");
+    cont.innerHTML = "";
+    filas.forEach(function (f) {
+      var fila = document.createElement("div");
+      fila.className = "desglose-fila " + f[2];
+      var a = document.createElement("span"), b = document.createElement("span");
+      a.textContent = f[0]; b.textContent = f[1];
+      fila.appendChild(a); fila.appendChild(b);
+      cont.appendChild(fila);
+    });
+    tarjeta.style.display = "block";
+  }
+
   function mostrarCierreDeViaje(res) {
     var box = document.getElementById("estadoBox");
     var btnPagar = document.getElementById("btnPagarMp");
     var nota = document.getElementById("notaPago");
     dejarDeCompartirUbicacion();
     if (mapaTimer) { clearInterval(mapaTimer); mapaTimer = null; }
+    pintarDesgloseFinal(res);
 
     if (res.estado_pago === "PENDIENTE" && res.mp_link) {
       box.className = "estado-box pendiente";
