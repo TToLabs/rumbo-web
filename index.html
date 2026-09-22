@@ -592,8 +592,10 @@
     var ses = null;
     try { ses = JSON.parse(localStorage.getItem("rumbo_mi_perfil") || "null"); } catch (e) {}
     var el = document.getElementById("splashIngresando");
-    if (ses && ses.token) document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás solicitar tu próximo viaje.";
-    else el.hidden = true;
+    if (ses && ses.token) {
+      document.getElementById("splashTitulo").textContent = "Rumbo Pasajero";
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Pasajero, para que puedas solicitar tu próximo viaje.";
+    } else el.hidden = true;
   })();
 </script>
 
@@ -645,6 +647,12 @@
 
   <div class="card conductor-banner" id="conductorBanner" style="display:none;"></div>
 
+  <div class="card" id="cardInstalarApp" style="display:none;">
+    <p class="nota" style="margin:0 0 10px;">Para pedir tu viaje con este conductor, instala la app Rumbo Pasajero.</p>
+    <button type="button" class="btn btn-primario" id="btnInstalarApp" style="width:100%;">Descargar app</button>
+    <button type="button" class="btn btn-secundario" id="btnYaInstale" style="width:100%;margin-top:8px;">Ya la instalé, continuar</button>
+  </div>
+
   <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
 
     <section class="card">
@@ -675,6 +683,10 @@
           </button>
         </div>
       </div>
+      <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
+        Agregar parada
+      </button>
       <div class="mapa-cotizar-wrap">
         <div class="mapa-cotizar-cabecera">
           <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
@@ -700,11 +712,6 @@
           </div>
         </div>
       </div>
-
-      <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
-        Agregar parada
-      </button>
     </section>
 
     <section class="card">
@@ -1243,6 +1250,16 @@
 
   var PERFIL_KEY = "rumbo_mi_perfil";
 
+  // El link viejo "uc?export=view" de Drive fallaba intermitente al
+  // cargar en un <img> (Drive no está pensado para eso a escala); se
+  // convierte acá a "thumbnail", que carga desde el CDN de imágenes de
+  // Google. Los links nuevos ya se guardan así (ver subirFotoVehiculoConductor).
+  function urlFotoDrive(url) {
+    if (!url) return url;
+    var m = /[?&]id=([^&]+)/.exec(url);
+    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1000" : url;
+  }
+
   function obtenerConductorId() {
     var params = new URLSearchParams(window.location.search);
     var deLaUrl = params.get("c");
@@ -1261,7 +1278,7 @@
 
       if (c.vehiculo_foto_url) {
         var img = document.createElement("img");
-        img.src = c.vehiculo_foto_url;
+        img.src = urlFotoDrive(c.vehiculo_foto_url);
         img.alt = "";
         banner.appendChild(img);
       }
@@ -1294,14 +1311,14 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 20;
+  var APP_VERSION = 22;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
+  var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
     // que "descargar" ahi — sin este chequeo, el aviso bloqueante salia
     // tambien navegando directo a la web.
-    var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
     if (!esAppNativa || !versionServidor || versionServidor <= APP_VERSION) return;
     document.getElementById("avisoActualizar").hidden = false;
   }
@@ -1861,7 +1878,7 @@
     tarjeta.innerHTML = "";
     if (c.vehiculo_foto_url) {
       var img = document.createElement("img");
-      img.src = c.vehiculo_foto_url; img.alt = "Foto del vehículo";
+      img.src = urlFotoDrive(c.vehiculo_foto_url); img.alt = "Foto del vehículo";
       tarjeta.appendChild(img);
     }
     var textos = document.createElement("div");
@@ -2200,7 +2217,48 @@
   if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();
   mostrarBannerConductor();
+  mostrarAvisoInstalarApp();
   pintarSesionPasajero();
+
+  // Si llegaste sin la app (navegador) con el link/QR de un conductor, no
+  // hay forma de pedir el viaje sin instalarla — se avisa antes de que
+  // intente cotizar y se confunda por qué no pasa nada.
+  function mostrarAvisoInstalarApp() {
+    var card = document.getElementById("cardInstalarApp");
+    if (esAppNativa || !obtenerConductorId()) { card.style.display = "none"; return; }
+    card.style.display = "block";
+  }
+  document.getElementById("btnInstalarApp").addEventListener("click", function () {
+    window.open(URL_APK_PASAJERO, "_system");
+  });
+  // Si para este momento ya instaló la app y el Android App Link quedó
+  // verificado, recargar este mismo link hace que el sistema lo abra con
+  // la app en vez de con el navegador — no hay otra forma de "detectar"
+  // la instalación fuera de Play Store.
+  document.getElementById("btnYaInstale").addEventListener("click", function () {
+    window.location.href = window.location.href;
+  });
+
+  // Si la app YA está abierta y el pasajero toca un link de conductor
+  // (Android App Link), Capacitor entrega la URL acá en vez de recargar
+  // la página — sin esto, el conductor_id del link nunca se guardaría.
+  if (esAppNativa) {
+    try {
+      var AppPlugin = window.Capacitor.Plugins.App;
+      if (AppPlugin && AppPlugin.addListener) {
+        AppPlugin.addListener("appUrlOpen", function (datos) {
+          try {
+            var url = new URL(datos.url);
+            var conductorId = url.searchParams.get("c");
+            if (conductorId) {
+              localStorage.setItem(CONDUCTOR_KEY, conductorId);
+              mostrarBannerConductor();
+            }
+          } catch (e) { /* link con formato raro: no rompe nada */ }
+        });
+      }
+    } catch (e) { /* plugin no disponible: no bloquea el arranque */ }
+  }
 
   /* Enter en un campo = tocar el botón principal de su formulario. Se marca
      en el HTML con data-enter="<id del botón>" en el contenedor. */

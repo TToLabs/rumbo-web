@@ -98,7 +98,7 @@
      dashboard de admin, cuando el topbar de mobile todavía era claro). */
   .brand-mark img { width: 100%; height: 100%; display: block; content: url(img/logo-rumbo-blanco.png); }
   .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
-  .brand-texto { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 72px; }
+  .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
   .brand-sub { font-size: 13.5px; color: color-mix(in srgb, var(--primary-ink) 70%, transparent); line-height: 1.3; }
 
@@ -258,6 +258,25 @@
   .acordeon .estado-conductor { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
   .acordeon .estado-titulo { display: none; }
 
+  /* ---------- Modal de calificación (al finalizar un viaje) ---------- */
+  .modal-fondo {
+    position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,0.5);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-fondo[hidden] { display: none; }
+  .modal-hoja {
+    background: var(--surface); width: 100%; max-width: 480px;
+    border-radius: 18px 18px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+    box-shadow: var(--shadow-md);
+  }
+  .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+  .estrella {
+    border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
+    color: var(--border-strong); padding: 4px; transition: transform 0.08s ease, color 0.12s ease;
+  }
+  .estrella:active { transform: scale(0.9); }
+  .estrella.activa { color: #F5A623; }
+
   .tabla-historial { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
   .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12.5px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
   .tabla-historial td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -341,6 +360,36 @@
     border: 1px solid var(--border); margin: 12px 0 4px; overflow: hidden;
   }
   .mapa-pasajero.activo { display: block; }
+
+  /* ---------- Tablero del conductor cuando no hay pedidos ---------- */
+  .tablero { display: none; margin-bottom: 4px; }
+  .tablero.visible { display: block; }
+  .tablero-estado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; min-height: 44px; }
+  .tablero .kpi-fila { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tablero .kpi-valor { font-size: 22px; white-space: nowrap; }
+  .tablero .kpi-card { padding: 14px; }
+  .tablero-mapa {
+    position: relative; height: 210px; border-radius: var(--r-card); border: 1px solid var(--border);
+    overflow: hidden; margin-bottom: 12px; background: var(--surface-2);
+  }
+  .tablero-mapa-aviso {
+    position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 8px; padding: 16px; text-align: center; color: var(--text-3);
+    font-size: 13.5px; background: var(--surface-2);
+  }
+  .tablero-mapa-aviso.oculto { display: none; }
+  .tablero-mapa .btn-centrar { position: absolute; left: 10px; top: 10px; z-index: 2; min-height: 44px; box-shadow: var(--shadow-md); }
+  .tablero-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14.5px; white-space: nowrap; }
+  .vacio-bloque {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+    padding: 22px 16px; color: var(--text-2);
+  }
+  #sinViajesEnCurso { padding-top: 40px; }
+  .vacio-bloque svg.ico { width: 34px; height: 34px; color: var(--primary); }
+  .vacio-bloque strong { color: var(--text); font-size: 16px; }
+  .vacio-bloque p { margin: 0; font-size: 14px; color: var(--text-3); max-width: 300px; }
+  .vacio-bloque .tablero-acciones { width: 100%; margin: 12px 0 4px; }
   .nota-mapa { font-size: 13.5px; color: var(--text-3); margin: 10px 0 0; }
   .nota-mapa.oculto { display: none; }
 
@@ -486,7 +535,8 @@
       document.getElementById("splashTitulo").textContent = "Rumbo Admin";
       document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
     } else {
-      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás coordinar tus viajes solicitados.";
+      document.getElementById("splashTitulo").textContent = "Rumbo Conductor";
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Conductor, para que puedas coordinar tus viajes.";
     }
   })();
 </script>
@@ -588,10 +638,58 @@
       </div>
       <div id="listaEnCurso"></div>
     </section>
-    <p class="vacio" id="sinViajesEnCurso">No tienes viajes en curso.</p>
+    <div class="vacio-bloque" id="sinViajesEnCurso">
+      <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
+      <strong>No tienes viajes en curso</strong>
+      <p>Cuando aceptes un pedido, aparece aquí con el mapa y el chat del pasajero.</p>
+      <div class="tablero-acciones">
+        <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
+        <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
+      </div>
+      <button class="btn btn-chico" data-tablero="pedidos" type="button">Ver pedidos pendientes</button>
+    </div>
   </div>
 
   <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
+    <!-- Solo conductor y solo cuando no hay pedidos pendientes: en vez de una
+         pantalla vacía, resumen del mes, mapa de la zona y accesos rápidos. -->
+    <div class="tablero" id="tableroConductor">
+      <div class="tablero-estado">
+        <span class="badge badge-verde" id="tabEstadoBadge">Disponible ahora</span>
+        <button class="btn btn-chico" data-tablero="horarios" type="button">Cambiar horarios</button>
+      </div>
+      <div class="kpi-fila">
+        <div class="kpi-card">
+          <div class="kpi-cabeza">
+            <span class="kpi-etiqueta">Total facturado</span>
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-precio"/></svg>
+          </div>
+          <div class="kpi-valor" id="tabFacturado">—</div>
+          <div class="kpi-nota">Mes en curso</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-cabeza">
+            <span class="kpi-etiqueta">Viajes realizados</span>
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-auto"/></svg>
+          </div>
+          <div class="kpi-valor" id="tabViajes">—</div>
+          <div class="kpi-nota">Mes en curso</div>
+        </div>
+      </div>
+      <div class="tablero-mapa">
+        <div id="tabMapaLienzo" style="position:absolute;inset:0;"></div>
+        <div class="tablero-mapa-aviso" id="tabMapaAviso">
+          <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+          <span id="tabMapaTexto">Cargando mapa...</span>
+        </div>
+        <button class="btn btn-chico btn-centrar" id="tabBtnCentrar" data-tablero="centrar" type="button" hidden>Usar mi ubicación</button>
+      </div>
+      <div class="tablero-acciones">
+        <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
+        <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
+      </div>
+    </div>
+
     <section class="card" id="grupoPedidos">
       <div class="card-head">
         <span class="card-title">Pedidos pendientes</span>
@@ -668,6 +766,20 @@
       </div>
     </details>
 
+    <details class="acordeon simple"><summary>Visibilidad en la red</summary><div class="acordeon-cuerpo">
+    <div class="estado-conductor" id="estadoRed" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <strong style="font-size:15px;flex:1;min-width:0;">Conectado al radar</strong>
+        <span class="badge badge-gris" id="badgeRed">Revisando...</span>
+        <label class="switch">
+          <input type="checkbox" id="chkRed">
+          <span class="sr-only">Conectado al radar de la red</span>
+          <span class="switch-pista"></span>
+        </label>
+      </div>
+      <p class="msg" id="redMsg" style="margin:0;font-size:12.5px;">Con esto activado, además de tu clientela, puedes recibir viajes que otros conductores de la red no pudieron tomar.</p>
+    </div>
+    </div></details>
     <details class="acordeon simple"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
     <div class="estado-conductor" id="estadoConductor">
       <div class="estado-texto">
@@ -895,7 +1007,7 @@
     </section>
     </div></details>
 
-    <details class="acordeon simple"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonDisponibilidad"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
@@ -933,6 +1045,26 @@
   </button>
 </nav>
 
+<!-- Calificar al pasajero: se abre apenas se finaliza un viaje. No bloquea
+     nada si se omite (el conductor ya puede seguir trabajando). -->
+<div class="modal-fondo" id="modalCalificarPasajero" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 4px;font-size:19px;">¿Cómo fue el pasajero?</h2>
+    <p class="nota" style="margin:0 0 16px;">Tu calificación queda registrada en el viaje.</p>
+    <div class="estrellas" id="estrellasPasajero" role="radiogroup" aria-label="Calificación del pasajero">
+      <button type="button" class="estrella" data-estrella="1" aria-label="1 estrella">★</button>
+      <button type="button" class="estrella" data-estrella="2" aria-label="2 estrellas">★</button>
+      <button type="button" class="estrella" data-estrella="3" aria-label="3 estrellas">★</button>
+      <button type="button" class="estrella" data-estrella="4" aria-label="4 estrellas">★</button>
+      <button type="button" class="estrella" data-estrella="5" aria-label="5 estrellas">★</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-chico" id="btnOmitirCalifPasajero" type="button">Omitir</button>
+      <button class="btn btn-primario" id="btnEnviarCalifPasajero" type="button" disabled>Enviar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   // Poner acá la URL /exec de tu Apps Script (ver INSTRUCCIONES.md).
@@ -950,7 +1082,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 13;
+  var APP_VERSION = 22;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -966,14 +1098,22 @@
   // (por ejemplo, corriendo en el navegador), se cae al método anterior.
   document.getElementById("btnActualizar").addEventListener("click", function () {
     var boton = this;
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador) {
-      boton.disabled = true; boton.textContent = "Descargando...";
-      window.Capacitor.Plugins.ApkInstalador.descargarEInstalar({ url: URL_APK })
-        .catch(function () { window.open(URL_APK, "_system"); })
-        .finally(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; });
-    } else {
-      window.open(URL_APK, "_system");
-    }
+    var plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador;
+    if (!plugin) { window.open(URL_APK, "_system"); return; }
+    boton.disabled = true; boton.textContent = "Descargando… 0 %";
+    var escucha = plugin.addListener
+      ? plugin.addListener("progreso", function (e) { boton.textContent = "Descargando… " + e.porcentaje + " %"; })
+      : Promise.resolve({ remove: function () {} });
+    plugin.descargarEInstalar({ url: URL_APK })
+      .then(function () {
+        boton.textContent = "Abriendo instalador…";
+        setTimeout(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; }, 4000);
+      })
+      .catch(function () {
+        boton.disabled = false;
+        boton.textContent = "No se pudo descargar. Toca para reintentar";
+      })
+      .finally(function () { escucha.then(function (h) { h.remove(); }); });
   });
 
   // Cada panel solo acepta su tipo de cuenta.
@@ -1128,12 +1268,13 @@
       tab.classList.toggle("activo", esEsta);
     });
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
+    if (cual === "pedidos" && MODO === "conductor") { pintarEstadoTablero(); pintarMapaEspera(); }
     // Siempre al entrar: el conductor vuelve de vincular en el navegador y
     // tiene que ver el cambio sin cerrar la app.
     if (cual === "ajustes") {
       var ses = obtenerSesion();
       var c = ses ? ses.conductor : {};
-      if (MODO === "conductor") cargarEstadoMp();
+      if (MODO === "conductor") { cargarEstadoMp(); cargarEstadoRed(); }
       if (MODO === "admin") { cargarConductoresAdmin(); cargarHistorial(); }
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1159,6 +1300,7 @@
       return;
     }
     cargarTarifas();
+    ultimoResumenMes = 0;
     cargarPedidos();
     cargarViajesEnCurso();
     cargarGoogleMaps();
@@ -1184,7 +1326,7 @@
         revisarActualizacion(res.version_app);
         if (!res.ok || !res.pendientes) { cargarPedidos(); cargarViajesEnCurso(); return; }
         pintarPedidos({ ok: true, pedidos: res.pendientes });
-        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso }, res.ubicaciones || {});
+        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso, cobro_real: res.cobro_real }, res.ubicaciones || {});
         Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
       })
       .catch(function () {})
@@ -1447,6 +1589,37 @@
     cargarHistorial();
   });
 
+  // "En la red" (público, conectado al radar): además de su clientela,
+  // puede recibir viajes derivados de otros conductores. "Solo mi
+  // clientela" (privado): nunca recibe nada ajeno. Mismo campo que el
+  // admin puede forzar desde su panel — acá el conductor lo prende él mismo.
+  function pintarEstadoRed(enRed) {
+    var badge = document.getElementById("badgeRed");
+    badge.className = "badge " + (enRed ? "badge-azul" : "badge-verde");
+    badge.textContent = enRed ? "En la red" : "Solo mi clientela";
+    document.getElementById("chkRed").checked = enRed;
+  }
+
+  function cargarEstadoRed() {
+    api({ accion: "mi_red" }).then(function (res) {
+      if (!res.ok) return;
+      pintarEstadoRed(res.en_red);
+    });
+  }
+
+  document.getElementById("chkRed").addEventListener("change", function (ev) {
+    var deseado = ev.target.checked;
+    ev.target.disabled = true;
+    apiPost({ accion: "cambiar_mi_red", en_red: deseado }).then(function (res) {
+      ev.target.disabled = false;
+      if (!res.ok) { ev.target.checked = !deseado; alert("No se pudo cambiar: " + res.error); return; }
+      pintarEstadoRed(res.en_red);
+    }).catch(function (err) {
+      ev.target.disabled = false; ev.target.checked = !deseado;
+      alert("Error de red: " + err.message);
+    });
+  });
+
   function cargarEstadoMp() {
     var estado = document.getElementById("mpEstado");
     var boton = document.getElementById("btnVincularMp");
@@ -1535,10 +1708,21 @@
   // link público listo para verse — el primer intento devuelve "No se pudo
   // abrir el archivo" aunque el archivo ya existe. Reintenta solo, sin que
   // el conductor tenga que recargar la app pensando que la subida falló.
+  // El link viejo "uc?export=view" de Drive fallaba intermitente al
+  // cargar en un <img> (Drive no está pensado para eso a escala); se
+  // convierte acá a "thumbnail", que carga desde el CDN de imágenes de
+  // Google. Los links nuevos ya se guardan así (ver subirFotoVehiculoConductor).
+  function urlFotoDrive(url) {
+    if (!url) return url;
+    var m = /[?&]id=([^&]+)/.exec(url);
+    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1000" : url;
+  }
+
   function cargarFotoVehiculo(url, intento) {
     var img = document.getElementById("vehFotoPreview");
     intento = intento || 0;
     if (!url) { img.src = ""; img.onerror = null; return; }
+    url = urlFotoDrive(url);
     if (intento === 0) img.style.visibility = "hidden"; // oculta el ícono roto durante los reintentos
     img.onload = function () { img.style.visibility = "visible"; };
     img.onerror = function () {
@@ -1624,6 +1808,15 @@
   });
 
   function fmt(n) { return "$" + Math.round(n || 0).toLocaleString("es-CL"); }
+
+  // Lo que se cobra de un viaje: el monto final si ya se calculó, si no el
+  // cotizado. cobroRealActivo lo informa el servidor (interruptor del backend).
+  var cobroRealActivo = false;
+  function montoP(p) { return Number(p.total_final) > 0 ? Number(p.total_final) : Number(p.total); }
+  function horaDe(iso) {
+    var d = new Date(iso);
+    return isNaN(d.getTime()) ? "" : d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+  }
 
   var CAMPOS_TARIFA = ["precioComb", "kmLimiteSantiago", "busquedaMin", "consumoCiudad", "consumoRuta",
     "valorHoraValle", "valorHoraPunta", "finDeSemanaValleInicio", "finDeSemanaValleFin",
@@ -1840,7 +2033,8 @@
       if (!res.ok) return;
       try { bloqueos = JSON.parse(res.horario_no_disponible || "[]"); } catch (e) { bloqueos = []; }
       pintarBloqueos();
-    });
+      if (MODO === "conductor") pintarEstadoTablero();
+    }).catch(function () {});
   }
 
   document.getElementById("btnAgregarBloqueo").addEventListener("click", function () {
@@ -1995,11 +2189,12 @@
       var grupo = document.getElementById("grupoEnCurso");
       var lista = document.getElementById("listaEnCurso");
       if (!res.ok) return;
+      if (res.cobro_real !== undefined) cobroRealActivo = !!res.cobro_real;
       var vacio = document.getElementById("sinViajesEnCurso");
       if (!res.pedidos.length) {
         avisarPagosRecibidos([]);
         grupo.style.display = "none";
-        vacio.style.display = "block";
+        vacio.style.display = "flex";
         lista.innerHTML = "";
         lista.dataset.ids = "";
         return;
@@ -2010,7 +2205,7 @@
       // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
       // curso → esperando pago), para no borrar los mensajes ya pintados ni
       // lo que el conductor está tipeando.
-      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago; }).join(",");
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : ""); }).join(",");
       if (lista.dataset.ids !== idsActuales) {
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
@@ -2082,7 +2277,7 @@
           '<div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
           '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a>' +
         '</div>' +
-        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+        '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       '<div class="pedido-ruta">' +
         '<span class="pedido-punto-o"></span><div class="pedido-dir">' + escapar(p.origen) + '</div>' +
@@ -2105,8 +2300,16 @@
         '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
         '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
       '</div>' +
+      // Iniciar viaje: desde ahí el servidor mide el tiempo y los km reales.
+      (p.inicio_viaje_en
+        ? '<p class="msg ok" style="margin:14px 2px 6px;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>'
+        : '<button class="btn btn-medio" style="width:100%;margin-top:14px;" data-iniciar="' + escapar(p.pedido_id) + '">Iniciar viaje</button>' +
+          '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">Tócalo cuando el pasajero suba: así se miden el tiempo y los km reales del viaje.</p>') +
       // Finalizar = cobrar: el conductor elige cómo le paga el pasajero.
-      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">Finalizar viaje y cobrar ' + fmt(p.total) + '</p>' +
+      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">' +
+        (cobroRealActivo && p.inicio_viaje_en
+          ? 'Finalizar viaje: se cobra el valor real (mínimo ' + fmt(montoP(p)) + ')'
+          : 'Finalizar viaje y cobrar ' + fmt(montoP(p))) + '</p>' +
       '<div class="btn-row">' +
         '<button class="btn btn-ok" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="MERCADOPAGO">Mercado Pago</button>' +
         '<button class="btn btn-chico" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="EFECTIVO">Efectivo</button>' +
@@ -2119,7 +2322,7 @@
       '<div class="pedido-tope">' +
         '<div><div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
         '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a></div>' +
-        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+        '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
         'Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre.' +
@@ -2187,6 +2390,53 @@
     if (!m.linea) m.mapa.setCenter(pos);
   }
 
+  /* ---------------------------------------------------------------
+     Calificar al pasajero: se ofrece apenas se finaliza el viaje, pero es
+     opcional (el conductor puede omitirlo y seguir trabajando).
+     --------------------------------------------------------------- */
+  var pedidoACalificar = null;
+  var estrellaPasajeroElegida = 0;
+
+  function pintarEstrellasPasajero(n) {
+    document.querySelectorAll("#estrellasPasajero .estrella").forEach(function (b) {
+      b.classList.toggle("activa", parseInt(b.dataset.estrella, 10) <= n);
+    });
+    document.getElementById("btnEnviarCalifPasajero").disabled = n === 0;
+  }
+
+  function cerrarCalificarPasajero() {
+    document.getElementById("modalCalificarPasajero").hidden = true;
+    pedidoACalificar = null;
+  }
+
+  function abrirCalificarPasajero(pedidoId) {
+    pedidoACalificar = pedidoId;
+    estrellaPasajeroElegida = 0;
+    pintarEstrellasPasajero(0);
+    document.getElementById("modalCalificarPasajero").hidden = false;
+  }
+
+  document.getElementById("estrellasPasajero").addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".estrella");
+    if (!btn) return;
+    estrellaPasajeroElegida = parseInt(btn.dataset.estrella, 10);
+    pintarEstrellasPasajero(estrellaPasajeroElegida);
+  });
+
+  document.getElementById("btnOmitirCalifPasajero").addEventListener("click", cerrarCalificarPasajero);
+
+  document.getElementById("btnEnviarCalifPasajero").addEventListener("click", function () {
+    if (!estrellaPasajeroElegida || !pedidoACalificar) return;
+    var boton = this;
+    boton.disabled = true;
+    apiPost({ accion: "calificar_pasajero", pedido_id: pedidoACalificar, estrellas: estrellaPasajeroElegida })
+      .then(function (res) {
+        boton.disabled = false;
+        if (!res.ok) { alert("No se pudo calificar: " + res.error); return; }
+        cerrarCalificarPasajero();
+      }).catch(function (err) { boton.disabled = false; alert("Error de red: " + err.message); });
+  });
+
   function cargarMensajesConductor(pedidoId) {
     api({ accion: "mensajes_conductor", pedido_id: pedidoId, desde: ultimoMensajePorPedido[pedidoId] || "" })
       .then(function (res) { if (res.ok) pintarMensajesDe(pedidoId, res.mensajes); });
@@ -2231,6 +2481,17 @@
       });
       return;
     }
+    var iniciar = ev.target.closest("[data-iniciar]");
+    if (iniciar) {
+      if (!confirm("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales.")) return;
+      iniciar.disabled = true;
+      apiPost({ accion: "iniciar_viaje", pedido_id: iniciar.dataset.iniciar }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); iniciar.disabled = false; return; }
+        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
+        cargarViajesEnCurso();
+      }).catch(function (err) { alert("Error de red: " + err.message); iniciar.disabled = false; });
+      return;
+    }
     var finalizar = ev.target.closest("[data-finalizar]");
     if (finalizar) {
       var forma = finalizar.dataset.forma;
@@ -2241,8 +2502,15 @@
       finalizar.disabled = true;
       apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar, forma_pago: forma }).then(function (res) {
         if (!res.ok) { alert("Error: " + res.error); finalizar.disabled = false; return; }
+        // Si el monto final es mayor que lo cotizado, el conductor tiene que
+        // saber cuánto cobrar (sobre todo en efectivo).
+        if (res.ajuste > 0) {
+          alert("Monto final: " + fmt(res.total_final) + "\n(cotizado " + fmt(res.total_cotizado) + " + " + fmt(res.ajuste) + " por tiempo y km reales)\n\n" +
+            (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
+        }
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
+        abrirCalificarPasajero(finalizar.dataset.finalizar);
       });
       return;
     }
@@ -2289,11 +2557,127 @@
       });
       lista.dataset.yaAviso = "1";
 
-      if (!res.pedidos.length) { lista.innerHTML = '<p class="vacio">No hay pedidos pendientes.</p>'; return; }
+      if (!res.pedidos.length) {
+        lista.innerHTML = '<div class="vacio-bloque"><strong>Sin pedidos por ahora</strong>' +
+          '<p>Apenas llegue uno, te avisamos y aparece aquí.</p></div>';
+        mostrarTablero(true);
+        return;
+      }
+      mostrarTablero(false);
       lista.innerHTML = "";
       res.pedidos.forEach(function (p) { lista.appendChild(pedidoCard(p)); });
     })();
   }
+
+  /* ---------------------------------------------------------------
+     Tablero del conductor (sin pedidos pendientes): resumen del mes,
+     mapa de su zona y accesos rápidos. Los datos salen de endpoints que
+     ya existen (historial_pagos, mi_disponibilidad): no hay backend nuevo.
+     --------------------------------------------------------------- */
+  var mapaEspera = null, marcadorEspera = null, reintentosMapa = 0, ultimoResumenMes = 0;
+  var SANTIAGO_CENTRO = { lat: -33.4489, lng: -70.6693 };
+
+  function mostrarTablero(si) {
+    if (MODO !== "conductor") return;
+    document.getElementById("tableroConductor").classList.toggle("visible", si);
+    if (!si) return;
+    cargarResumenMes();
+    pintarEstadoTablero();
+    pintarMapaEspera();
+  }
+
+  // Máximo una consulta cada 2 minutos: el sondeo repinta la lista seguido.
+  function cargarResumenMes() {
+    if (Date.now() - ultimoResumenMes < 120000) return;
+    ultimoResumenMes = Date.now();
+    var h = new Date();
+    var mes = h.getFullYear() + "-" + String(h.getMonth() + 1).padStart(2, "0");
+    api({ accion: "historial_pagos", mes: mes, vista: MODO }).then(function (res) {
+      if (!res || !res.ok || !res.viajes) { ultimoResumenMes = 0; return; }
+      document.getElementById("tabFacturado").textContent = fmt(res.total);
+      document.getElementById("tabViajes").textContent = String(res.viajes.length);
+    }).catch(function () { ultimoResumenMes = 0; });
+  }
+
+  // "Disponible" salvo que ahora caiga dentro de un bloqueo de Ajustes.
+  function estaBloqueadoAhora() {
+    var ahora = new Date(), min = ahora.getHours() * 60 + ahora.getMinutes(), dia = ahora.getDay();
+    function aMin(s) { var p = String(s || "").split(":"); return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0); }
+    return bloqueos.some(function (b) {
+      if ((b.dias || []).indexOf(dia) === -1) return false;
+      if (!b.desde && !b.hasta) return true;
+      var d = aMin(b.desde), h = aMin(b.hasta);
+      return d <= h ? (min >= d && min < h) : (min >= d || min < h);
+    });
+  }
+
+  function pintarEstadoTablero() {
+    if (!disponibilidadCargada) { cargarDisponibilidad(); return; }
+    var no = estaBloqueadoAhora(), badge = document.getElementById("tabEstadoBadge");
+    badge.className = "badge " + (no ? "badge-ambar" : "badge-verde");
+    badge.textContent = no ? "No disponible ahora" : "Disponible ahora";
+  }
+
+  function pintarMapaEspera() {
+    var lienzo = document.getElementById("tabMapaLienzo");
+    var aviso = document.getElementById("tabMapaAviso"), texto = document.getElementById("tabMapaTexto");
+    if (!lienzo.offsetWidth) return;   // tablero o pestaña ocultos: se reintenta al mostrarlos
+    try {
+      if (mapaEspera) { google.maps.event.trigger(mapaEspera, "resize"); return; }
+      if (!googleMapsListo) {
+        if (reintentosMapa++ < 15) setTimeout(pintarMapaEspera, 1000);
+        else texto.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
+        return;
+      }
+      mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true });
+      aviso.classList.add("oculto");
+      centrarMapaEspera(false);
+    } catch (e) {
+      texto.textContent = "No se pudo cargar el mapa.";
+      aviso.classList.remove("oculto");
+    }
+  }
+
+  // Sin permiso de ubicación se queda en Santiago y ofrece un botón; el
+  // diálogo del sistema solo aparece cuando el conductor toca ese botón.
+  function centrarMapaEspera(desdeBoton) {
+    var btn = document.getElementById("tabBtnCentrar");
+    if (!navigator.geolocation || !mapaEspera) { btn.hidden = true; return; }
+    function ir() {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        var p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        mapaEspera.setCenter(p); mapaEspera.setZoom(14);
+        if (!marcadorEspera) marcadorEspera = new google.maps.Marker({ map: mapaEspera, title: "Tú" });
+        marcadorEspera.setPosition(p);
+        btn.hidden = true;
+      }, function () { btn.hidden = false; }, { timeout: 10000, maximumAge: 60000 });
+    }
+    if (desdeBoton) { ir(); return; }
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: "geolocation" })
+        .then(function (r) { if (r.state === "granted") ir(); else btn.hidden = false; })
+        .catch(function () { btn.hidden = false; });
+    } else { btn.hidden = false; }
+  }
+
+  function irASeccionAjustes(idAcordeon) {
+    mostrarPestana("ajustes");
+    var a = document.getElementById(idAcordeon);
+    if (!a) return;
+    a.open = true;
+    setTimeout(function () { a.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
+  }
+
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-tablero]");
+    if (!b) return;
+    var q = b.dataset.tablero;
+    if (q === "qr") document.getElementById("btnCompartirQr").click();
+    else if (q === "tarifas") irASeccionAjustes("acordeonTarifas");
+    else if (q === "horarios") irASeccionAjustes("acordeonDisponibilidad");
+    else if (q === "pedidos") mostrarPestana("pedidos");
+    else if (q === "centrar") centrarMapaEspera(true);
+  });
 
   document.getElementById("btnRefrescar").addEventListener("click", cargarPedidos);
 

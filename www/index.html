@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rumbo — Traslados privados</title>
-<meta name="description" content="Cotiza y solicita traslados privados dentro y fuera de Santiago. Precio calculado con la ruta real, sin sorpresas.">
+<meta name="description" content="Cotiza y solicita traslados privados dentro y fuera de Santiago. Tarifa inicial estimada con la ruta real y valor final según el viaje efectivo.">
 <meta name="apple-mobile-web-app-title" content="Rumbo">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -103,7 +103,7 @@
      el dashboard de admin antes). */
   .brand-mark img { width: 100%; height: 100%; display: block; content: url(img/logo-rumbo-blanco.png); }
   .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
-  .brand-texto { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 72px; }
+  .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
   .card-title, .precio-valor, .splash-titulo, h1, h2, h3 { font-weight: 700; }
 
@@ -216,14 +216,16 @@
   }
   .parada-fila .ruta-marca { display: flex; align-items: center; justify-content: center; }
   .parada-quitar-celda { display: flex; }
-  .parada-input-wrap { position: relative; }
-  .parada-input-wrap input { padding-right: 40px; }
-  .btn-quitar-parada {
+  .parada-input-wrap, .ruta-input-wrap { position: relative; }
+  .parada-input-wrap input, .ruta-input-wrap input { padding-right: 40px; }
+  .btn-quitar-parada, .btn-borrar-direccion {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
     width: 26px; height: 26px; border: none; background: none; cursor: pointer;
     color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 8px;
   }
-  .btn-quitar-parada:hover { background: var(--surface-2); color: var(--text-2); }
+  .btn-quitar-parada:hover, .btn-borrar-direccion:hover { background: var(--surface-2); color: var(--text-2); }
+  .btn-borrar-direccion { display: none; }
+  .btn-borrar-direccion.visible { display: flex; }
 
   .btn-agregar-parada {
     display: flex; align-items: center; gap: 6px; margin-top: 4px;
@@ -276,6 +278,23 @@
   input:hover { border-color: var(--border-strong); }
   input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
   input[type="date"], input[type="time"], input[type="number"] { font-variant-numeric: tabular-nums; }
+  textarea {
+    width: 100%; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-input);
+    padding: 12px 14px; font: inherit; font-size: 15px; font-weight: 400;
+    resize: vertical; margin-bottom: 12px; transition: border-color 0.12s ease;
+  }
+  textarea::placeholder { color: var(--text-3); }
+  textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+
+  /* ---------- Calificación del viaje ---------- */
+  .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+  .estrella {
+    border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
+    color: var(--border-strong); padding: 4px; transition: transform 0.08s ease, color 0.12s ease;
+  }
+  .estrella:active { transform: scale(0.9); }
+  .estrella.activa { color: #F5A623; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator,
     :root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
@@ -362,6 +381,26 @@
     70% { box-shadow: 0 0 0 10px transparent; }
   }
   .estado-icono { position: absolute; }
+
+  /* La caja de direcciones queda como su propio módulo, sutilmente
+     destacado (fondo levemente distinto), y el mapa como otro módulo
+     aparte más abajo — antes quedaban pegados y las direcciones se
+     perdían contra el mapa. */
+  .ruta {
+    background: var(--surface-2); border-radius: var(--r-input);
+    padding: 14px 12px; margin: 0 -2px;
+  }
+  .mapa-cotizar-wrap { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .mapa-cotizar-cabecera {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+  }
+  .mapa-cotizar-cabecera svg { color: var(--primary); }
+  #mapaCotizar {
+    width: 100%; height: 200px; border-radius: var(--r-card);
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+  }
 
   #mapaConductor {
     width: 100%; height: 240px; border-radius: var(--r-card);
@@ -483,6 +522,51 @@
   .actualizacion-card h2 { margin: 0 0 8px; font-size: 19px; font-weight: 700; }
   .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
   .actualizacion-card button { width: 100%; }
+
+  /* ---------- Viaje en curso y cierre con recálculo ----------
+     Al terminar, el pasajero ve el desglose de cómo se llegó al monto final. ---------- */
+  .viaje-panel {
+    position: fixed; inset: 0; z-index: 150; display: flex; align-items: flex-end;
+    justify-content: center; background: rgba(16,26,32,0.55); backdrop-filter: blur(2px);
+  }
+  .viaje-panel[hidden] { display: none; }
+  .viaje-hoja {
+    background: var(--surface); border-radius: 20px 20px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+    width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto; box-shadow: var(--shadow-md);
+    animation: hojaSube 0.28s ease;
+  }
+  @keyframes hojaSube { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .viaje-hoja { animation: none; } }
+  .viaje-hoja h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; }
+  .viaje-hoja > p.nota { margin: 0 0 18px; }
+  .viaje-garantia {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 14px 16px; border-radius: 14px; background: var(--surface-2); margin-bottom: 18px;
+  }
+  .viaje-garantia span { font-size: 13.5px; color: var(--text-2); }
+  .viaje-garantia strong { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sim-titulo { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); margin: 0 0 10px; }
+  .sim-controles { display: grid; gap: 10px; margin-bottom: 20px; }
+  .sim-fila {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 14px; border: 1.5px solid var(--borde); border-radius: 12px;
+  }
+  .sim-fila label { font-size: 14.5px; }
+  .sim-fila input { width: 84px; text-align: right; font-variant-numeric: tabular-nums; }
+  .desglose { display: grid; gap: 2px; margin-bottom: 18px; }
+  .desglose-fila {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 11px 0; font-size: 15px; border-bottom: 1px solid var(--borde);
+  }
+  .desglose-fila dd, .desglose-fila span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .desglose-fila.ajuste span:last-child { color: #B42318; font-weight: 600; }
+  .desglose-fila.final {
+    border-bottom: none; margin-top: 6px; padding: 14px 16px; border-radius: 14px;
+    background: var(--primary); color: var(--primary-ink);
+  }
+  .desglose-fila.final span { font-size: 16px; font-weight: 600; }
+  .desglose-fila.final span:last-child { font-size: 22px; font-weight: 700; }
+  .desglose-motivo { margin: 0 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
 </style>
 </head>
 <body>
@@ -508,8 +592,10 @@
     var ses = null;
     try { ses = JSON.parse(localStorage.getItem("rumbo_mi_perfil") || "null"); } catch (e) {}
     var el = document.getElementById("splashIngresando");
-    if (ses && ses.token) document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás solicitar tu próximo viaje.";
-    else el.hidden = true;
+    if (ses && ses.token) {
+      document.getElementById("splashTitulo").textContent = "Rumbo Pasajero";
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Pasajero, para que puedas solicitar tu próximo viaje.";
+    } else el.hidden = true;
   })();
 </script>
 
@@ -561,6 +647,12 @@
 
   <div class="card conductor-banner" id="conductorBanner" style="display:none;"></div>
 
+  <div class="card" id="cardInstalarApp" style="display:none;">
+    <p class="nota" style="margin:0 0 10px;">Para pedir tu viaje con este conductor, instala la app Rumbo Pasajero.</p>
+    <button type="button" class="btn btn-primario" id="btnInstalarApp" style="width:100%;">Descargar app</button>
+    <button type="button" class="btn btn-secundario" id="btnYaInstale" style="width:100%;margin-top:8px;">Ya la instalé, continuar</button>
+  </div>
+
   <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
 
     <section class="card">
@@ -570,9 +662,12 @@
       </div>
       <div class="ruta">
         <span class="ruta-marca"><span class="punto-origen"></span></span>
-        <div>
+        <div class="ruta-input-wrap">
           <label class="sr-only" for="origen">Dirección de origen</label>
-          <input type="text" id="origen" placeholder="¿Desde dónde sales?" autocomplete="off">
+          <input type="text" id="origen" placeholder="¿Desde dónde?" autocomplete="off">
+          <button type="button" class="btn-borrar-direccion" data-borrar="origen" aria-label="Borrar origen">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+          </button>
         </div>
         <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
         <span></span>
@@ -580,10 +675,24 @@
         <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
         <span></span>
         <span class="ruta-marca"><span class="punto-destino"></span></span>
-        <div>
+        <div class="ruta-input-wrap">
           <label class="sr-only" for="destino">Dirección de destino</label>
           <input type="text" id="destino" placeholder="¿A dónde vas?" autocomplete="off">
+          <button type="button" class="btn-borrar-direccion" data-borrar="destino" aria-label="Borrar destino">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+          </button>
         </div>
+      </div>
+      <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
+        Agregar parada
+      </button>
+      <div class="mapa-cotizar-wrap">
+        <div class="mapa-cotizar-cabecera">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+          <span>Ubicación y ruta</span>
+        </div>
+        <div id="mapaCotizar"></div>
       </div>
 
       <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
@@ -603,11 +712,6 @@
           </div>
         </div>
       </div>
-
-      <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
-        Agregar parada
-      </button>
     </section>
 
     <section class="card">
@@ -654,7 +758,7 @@
       </dl>
       <p class="precio-nota">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
-        <span>El conductor confirma el valor final antes de salir.</span>
+        <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
       </p>
     </section>
 
@@ -667,7 +771,7 @@
     <div class="confianza">
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
-        Precio cerrado antes de salir, sin cargos sorpresa
+        Ves la tarifa estimada antes de pedir el viaje
       </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
@@ -688,6 +792,13 @@
       Tu conductor habitual no estaba disponible. Tu viaje lo tomó otro conductor de la red, al mismo precio.
     </p>
     <div class="card conductor-banner" id="tarjetaConductorAsignado" style="display:none;"></div>
+    <!-- Al terminar el viaje: si el monto final es mayor que lo cotizado
+         (el conductor midió más tiempo o distancia reales), se explica acá. -->
+    <div class="card" id="cardDesgloseFinal" style="display:none;">
+      <div class="card-head"><span class="card-title">Resumen del cobro</span></div>
+      <div class="desglose" id="desgloseFinal"></div>
+      <p class="desglose-motivo" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
+    </div>
     <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
          El monto lo fija el backend (precio congelado): acá no se escribe. -->
     <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
@@ -710,6 +821,24 @@
         <button class="btn btn-medio" id="btnEnviarChat" type="button">Enviar</button>
       </div>
     </section>
+
+    <!-- Calificación: aparece cuando el viaje terminó y se cobró (no antes,
+         para no calificar algo que todavía puede cambiar), y solo si el
+         pasajero no calificó ya este mismo viaje. -->
+    <section class="card" id="cardCalificar" style="display:none;">
+      <div class="card-head"><span class="card-title">¿Cómo fue tu viaje?</span></div>
+      <div class="estrellas" id="estrellasCalificar" role="radiogroup" aria-label="Calificación del viaje">
+        <button type="button" class="estrella" data-estrella="1" aria-label="1 estrella">★</button>
+        <button type="button" class="estrella" data-estrella="2" aria-label="2 estrellas">★</button>
+        <button type="button" class="estrella" data-estrella="3" aria-label="3 estrellas">★</button>
+        <button type="button" class="estrella" data-estrella="4" aria-label="4 estrellas">★</button>
+        <button type="button" class="estrella" data-estrella="5" aria-label="5 estrellas">★</button>
+      </div>
+      <textarea id="comentarioCalificar" placeholder="Cuéntanos algo del viaje (opcional)" maxlength="300" rows="2"></textarea>
+      <button class="btn btn-primario" id="btnEnviarCalificacion" type="button" disabled>Enviar calificación</button>
+      <p class="nota" id="calificarMsg" style="margin:10px 2px 0;"></p>
+    </section>
+    <p class="nota" id="calificacionEnviada" style="display:none;text-align:center;">¡Gracias por tu calificación!</p>
 
     <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
   </div>
@@ -799,7 +928,7 @@
     <div class="confianza">
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
-        Precio cerrado antes de salir, sin cargos sorpresa
+        Ves la tarifa estimada antes de pedir el viaje
       </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
@@ -928,23 +1057,142 @@
   window.alGoogleMapsListo = function () {
     googleMapsListo = true;
     configurarAutocomplete();
+    crearMapaCotizar();
     if (mostrarMapaPendiente) crearMapaConductor();
   };
 
-  function configurarAutocompleteInput(input) {
-    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address"] };
+  // marcador: "origen" | "destino" | null (paradas no llevan marcador propio).
+  function configurarAutocompleteInput(input, marcador) {
+    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry"] };
     var auto = new google.maps.places.Autocomplete(input, opciones);
     auto.addListener("place_changed", function () {
       var lugar = auto.getPlace();
       if (lugar && lugar.formatted_address) input.value = lugar.formatted_address;
+      if (marcador && lugar && lugar.geometry && lugar.geometry.location) {
+        pintarMarcadorCotizar(marcador, { lat: lugar.geometry.location.lat(), lng: lugar.geometry.location.lng() });
+      }
     });
   }
 
   function configurarAutocomplete() {
-    ["origen", "destino"].forEach(function (id) {
-      configurarAutocompleteInput(document.getElementById(id));
+    configurarAutocompleteInput(document.getElementById("origen"), "origen");
+    configurarAutocompleteInput(document.getElementById("destino"), "destino");
+    document.querySelectorAll("#paradasContenedor input").forEach(function (input) {
+      configurarAutocompleteInput(input, input.id);
     });
-    document.querySelectorAll("#paradasContenedor input").forEach(configurarAutocompleteInput);
+  }
+
+  // Botón "×" de origen/destino: aparece solo con texto escrito, y borra
+  // todo de un toque (en vez de retroceder letra por letra) junto con su
+  // marcador en el mapa y el precio ya calculado, que dejó de ser válido.
+  ["origen", "destino"].forEach(function (id) {
+    var input = document.getElementById(id);
+    var boton = document.querySelector('[data-borrar="' + id + '"]');
+    function refrescar() { boton.classList.toggle("visible", input.value.trim().length > 0); }
+    input.addEventListener("input", refrescar);
+    refrescar();
+    boton.addEventListener("click", function () {
+      input.value = "";
+      refrescar();
+      input.focus();
+      if (marcadoresCotizar[id]) { marcadoresCotizar[id].setMap(null); marcadoresCotizar[id] = null; }
+      if (lineaCotizar) { lineaCotizar.setMap(null); lineaCotizar = null; }
+      rutaActual = null;
+      document.getElementById("tarjetaPrecio").style.display = "none";
+      document.getElementById("btnPedir").disabled = true;
+    });
+  });
+
+  /* ---------------------------------------------------------------
+     Mapa interactivo mientras se coordina el viaje (pantalla "Calcula tu
+     viaje"): muestra dónde estás, y a medida que eliges origen/destino del
+     autocompletado los va marcando. Al calcular el precio se reemplazan
+     esos marcadores por los extremos de la ruta real y se dibuja el
+     trayecto completo (con el mismo trazado que usa Google para cobrar).
+     --------------------------------------------------------------- */
+  var mapaCotizar = null;
+  var marcadoresCotizar = { origen: null, destino: null, yo: null };
+  var lineaCotizar = null;
+
+  function crearMapaCotizar() {
+    var cont = document.getElementById("mapaCotizar");
+    if (!cont || mapaCotizar) return;
+    mapaCotizar = new google.maps.Map(cont, {
+      zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true
+    });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        var yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        marcadoresCotizar.yo = new google.maps.Marker({
+          map: mapaCotizar, position: yo, title: "Tu ubicación",
+          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#1A73E8", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 2 }
+        });
+        if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) mapaCotizar.setCenter(yo);
+      }, function () { /* sin permiso: se queda centrado en Santiago */ }, { maximumAge: 60000, timeout: 8000 });
+    }
+  }
+
+  // cual: "origen", "destino", o el id de una parada ("parada1", "parada2"...).
+  // Google no informa el punto exacto de cada parada dentro del trazado (el
+  // backend solo pide el polígono completo, no el desglose por tramos), así
+  // que el marcador de una parada se ubica con lo que devolvió el
+  // autocompletado y queda fijo ahí — solo origen/destino se corrigen
+  // después con los extremos reales de la ruta (ver dibujarRutaCotizar).
+  function etiquetaMarcadorCotizar(cual) {
+    if (cual === "origen") return "A";
+    if (cual === "destino") return "B";
+    return "P" + cual.replace(/\D/g, "");
+  }
+
+  function pintarMarcadorCotizar(cual, pos) {
+    if (!mapaCotizar) return;
+    if (!marcadoresCotizar[cual]) {
+      marcadoresCotizar[cual] = new google.maps.Marker({
+        map: mapaCotizar, label: etiquetaMarcadorCotizar(cual)
+      });
+    }
+    marcadoresCotizar[cual].setPosition(pos);
+    ajustarEncuadreCotizar();
+  }
+
+  function quitarMarcadorCotizar(cual) {
+    if (marcadoresCotizar[cual]) { marcadoresCotizar[cual].setMap(null); delete marcadoresCotizar[cual]; }
+    ajustarEncuadreCotizar();
+  }
+
+  function ajustarEncuadreCotizar() {
+    var puntos = Object.keys(marcadoresCotizar).filter(function (k) { return k !== "yo"; })
+      .map(function (k) { return marcadoresCotizar[k]; }).filter(Boolean).map(function (m) { return m.getPosition(); });
+    if (!puntos.length) return;
+    if (puntos.length === 1) { mapaCotizar.setCenter(puntos[0]); mapaCotizar.setZoom(14); return; }
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (p) { limites.extend(p); });
+    mapaCotizar.fitBounds(limites, 40);
+  }
+
+  // Se llama al calcular el precio: reemplaza los marcadores "sueltos" del
+  // autocompletado por los extremos reales de la ruta y dibuja el trazado.
+  function dibujarRutaCotizar(polilineaCodificada) {
+    if (!mapaCotizar || !polilineaCodificada || !google.maps.geometry) return;
+    var puntos = google.maps.geometry.encoding.decodePath(polilineaCodificada);
+    if (!puntos.length) return;
+    if (lineaCotizar) lineaCotizar.setMap(null);
+    lineaCotizar = new google.maps.Polyline({ map: mapaCotizar, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    pintarMarcadorCotizar("origen", puntos[0]);
+    pintarMarcadorCotizar("destino", puntos[puntos.length - 1]);
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (p) { limites.extend(p); });
+    mapaCotizar.fitBounds(limites, 40);
+  }
+
+  function limpiarMapaCotizar() {
+    if (lineaCotizar) { lineaCotizar.setMap(null); lineaCotizar = null; }
+    Object.keys(marcadoresCotizar).forEach(function (k) {
+      if (k === "yo") return;
+      if (marcadoresCotizar[k]) marcadoresCotizar[k].setMap(null);
+      delete marcadoresCotizar[k];
+    });
+    if (mapaCotizar) mapaCotizar.setZoom(12);
   }
 
   // Si el número no es válido se muestra "—", nunca "$0": un precio roto
@@ -1002,6 +1250,16 @@
 
   var PERFIL_KEY = "rumbo_mi_perfil";
 
+  // El link viejo "uc?export=view" de Drive fallaba intermitente al
+  // cargar en un <img> (Drive no está pensado para eso a escala); se
+  // convierte acá a "thumbnail", que carga desde el CDN de imágenes de
+  // Google. Los links nuevos ya se guardan así (ver subirFotoVehiculoConductor).
+  function urlFotoDrive(url) {
+    if (!url) return url;
+    var m = /[?&]id=([^&]+)/.exec(url);
+    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1000" : url;
+  }
+
   function obtenerConductorId() {
     var params = new URLSearchParams(window.location.search);
     var deLaUrl = params.get("c");
@@ -1020,7 +1278,7 @@
 
       if (c.vehiculo_foto_url) {
         var img = document.createElement("img");
-        img.src = c.vehiculo_foto_url;
+        img.src = urlFotoDrive(c.vehiculo_foto_url);
         img.alt = "";
         banner.appendChild(img);
       }
@@ -1053,14 +1311,14 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 11;
+  var APP_VERSION = 22;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
+  var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
     // que "descargar" ahi — sin este chequeo, el aviso bloqueante salia
     // tambien navegando directo a la web.
-    var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
     if (!esAppNativa || !versionServidor || versionServidor <= APP_VERSION) return;
     document.getElementById("avisoActualizar").hidden = false;
   }
@@ -1070,14 +1328,22 @@
   // (por ejemplo, corriendo en el navegador), se cae al método anterior.
   document.getElementById("btnActualizar").addEventListener("click", function () {
     var boton = this;
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador) {
-      boton.disabled = true; boton.textContent = "Descargando...";
-      window.Capacitor.Plugins.ApkInstalador.descargarEInstalar({ url: URL_APK_PASAJERO })
-        .catch(function () { window.open(URL_APK_PASAJERO, "_system"); })
-        .finally(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; });
-    } else {
-      window.open(URL_APK_PASAJERO, "_system");
-    }
+    var plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ApkInstalador;
+    if (!plugin) { window.open(URL_APK_PASAJERO, "_system"); return; }
+    boton.disabled = true; boton.textContent = "Descargando… 0 %";
+    var escucha = plugin.addListener
+      ? plugin.addListener("progreso", function (e) { boton.textContent = "Descargando… " + e.porcentaje + " %"; })
+      : Promise.resolve({ remove: function () {} });
+    plugin.descargarEInstalar({ url: URL_APK_PASAJERO })
+      .then(function () {
+        boton.textContent = "Abriendo instalador…";
+        setTimeout(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; }, 4000);
+      })
+      .catch(function () {
+        boton.disabled = false;
+        boton.textContent = "No se pudo descargar. Toca para reintentar";
+      })
+      .finally(function () { escucha.then(function (h) { h.remove(); }); });
   });
 
   function obtenerSesionPasajero() {
@@ -1310,18 +1576,17 @@
     return { punta: punta, valorHora: punta ? tarifas.valorHoraPunta : tarifas.valorHoraValle };
   }
 
-  function calcularTotal() {
-    if (!rutaActual || !tarifas) return;
-    // Lo decide el servidor (por comuna), no un umbral de km acá — así el
-    // pasajero ve la misma clasificación que después va a cobrar el
-    // servidor al confirmar el pedido.
+  /* Núcleo del precio: mismas reglas para la cotización inicial y para el
+     recálculo al cerrar el viaje. Recibe los datos crudos de la ruta y
+     devuelve el desglose; no toca el DOM, así se puede reusar y probar. */
+  function cotizarViaje(km, minutos, peaje) {
     var fueraDeSantiago = rutaActual.fueraDeSantiago;
     // Doble si el pasajero pidió ida y vuelta, o si el auto siempre tiene
     // que hacer el otro tramo vacío (fuera de Santiago, o un viaje al
     // aeropuerto aunque quede dentro de Gran Santiago por comuna).
     var FACTOR = (rutaActual.cobraRegresoSiempre || idaYVuelta) ? 2 : 1;
 
-    var kmTotal = rutaActual.km * FACTOR;
+    var kmTotal = km * FACTOR;
     var consumo = fueraDeSantiago ? tarifas.consumoRuta : tarifas.consumoCiudad;
     var litros = consumo > 0 ? kmTotal / consumo : 0;
     var fuel = litros * tarifas.precioComb;
@@ -1330,16 +1595,27 @@
     // se usa el valor por defecto en vez de arrastrar un NaN que termine
     // mostrándose como "$0" al pasajero.
     var busquedaMin = typeof tarifas.busquedaMin === "number" ? tarifas.busquedaMin : 30;
-    var minutosViaje = rutaActual.minutos * FACTOR + busquedaMin;
+    var minutosViaje = minutos * FACTOR + busquedaMin;
     var espera = idaYVuelta ? obtenerHorasEspera() : 0;
     var horas = (minutosViaje / 60) + espera;
     var tarifaH = calcularTarifaHoraria();
-    var time = horas * tarifaH.valorHora;
+    var peajeTotal = peaje * FACTOR;
 
-    var peaje = rutaActual.peaje * FACTOR;
-    var total = fuel + time + peaje;
+    return {
+      fueraDeSantiago: fueraDeSantiago, punta: tarifaH.punta,
+      km: km, minutos: minutos, litros: litros, fuel: fuel,
+      horas: horas, valorHora: tarifaH.valorHora, time: horas * tarifaH.valorHora,
+      peaje: peajeTotal, total: fuel + (horas * tarifaH.valorHora) + peajeTotal
+    };
+  }
 
-    document.getElementById("outTipoTarifa").textContent = (fueraDeSantiago ? "Fuera de Santiago" : "En ciudad") + " · " + (tarifaH.punta ? "Punta" : "Valle");
+  function calcularTotal() {
+    if (!rutaActual || !tarifas) return;
+    var d = cotizarViaje(rutaActual.km, rutaActual.minutos, rutaActual.peaje);
+    var peaje = d.peaje;
+    var total = d.total;
+
+    document.getElementById("outTipoTarifa").textContent = (d.fueraDeSantiago ? "Fuera de Santiago" : "En ciudad") + " · " + (d.punta ? "Punta" : "Valle");
     document.getElementById("total").textContent = fmt(total);
 
     // Un solo ítem por dato: distancia y tiempo muestran el valor POR
@@ -1356,9 +1632,7 @@
     document.getElementById("lblPeaje").textContent = "Peajes" + (idaYVuelta ? " (ida y vuelta, total)" : "");
     document.getElementById("outPeaje").textContent = peaje ? fmt(peaje) : "—";
 
-    return { fueraDeSantiago: fueraDeSantiago, km: rutaActual.km, minutos: rutaActual.minutos,
-      litros: litros, fuel: fuel, horas: horas, valorHora: tarifaH.valorHora, time: time,
-      peaje: peaje, total: total };
+    return d;
   }
 
   function obtenerHorasEspera() {
@@ -1429,9 +1703,10 @@
     contenedor.appendChild(fila);
     fila.querySelector(".btn-quitar-parada").addEventListener("click", function () {
       fila.remove();
+      quitarMarcadorCotizar(id);
       actualizarBotonAgregarParada();
     });
-    if (googleMapsListo) configurarAutocompleteInput(fila.querySelector("input"));
+    if (googleMapsListo) configurarAutocompleteInput(fila.querySelector("input"), id);
     actualizarBotonAgregarParada();
   }
 
@@ -1479,6 +1754,7 @@
         km: res.km, minutos: res.minutos, peaje: res.peaje, fueraDeSantiago: res.fueraDeSantiago,
         cobraRegresoSiempre: res.cobraRegresoSiempre
       };
+      dibujarRutaCotizar(res.polilinea);
       textoEl.textContent = "";
       textoEl.className = "nota";
       calcularTotal();
@@ -1542,6 +1818,9 @@
   });
 
   function mostrarVistaEstado(totalConfirmado) {
+    document.getElementById("cardDesgloseFinal").style.display = "none";
+    document.getElementById("cardCalificar").style.display = "none";
+    document.getElementById("calificacionEnviada").style.display = "none";
     document.getElementById("tabSeguimiento").disabled = false;
     document.getElementById("badgeSeguimiento").classList.add("activo");
     mostrarPestana("seguimiento");
@@ -1599,7 +1878,7 @@
     tarjeta.innerHTML = "";
     if (c.vehiculo_foto_url) {
       var img = document.createElement("img");
-      img.src = c.vehiculo_foto_url; img.alt = "Foto del vehículo";
+      img.src = urlFotoDrive(c.vehiculo_foto_url); img.alt = "Foto del vehículo";
       tarjeta.appendChild(img);
     }
     var textos = document.createElement("div");
@@ -1610,6 +1889,12 @@
     var titulo = document.createElement("div");
     titulo.className = "nombre";
     titulo.textContent = c.nombre;
+    if (c.calificacion_promedio) {
+      var estrella = document.createElement("span");
+      estrella.style.cssText = "color:var(--text-3);font-weight:400;font-size:14px;margin-left:6px;";
+      estrella.textContent = "★ " + c.calificacion_promedio.toFixed(1).replace(".0", "") + " (" + c.calificacion_cantidad + ")";
+      titulo.appendChild(estrella);
+    }
     textos.appendChild(titulo);
     var auto = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" · ");
     if (auto) { var l = document.createElement("div"); l.className = "vehiculo"; l.textContent = auto; textos.appendChild(l); }
@@ -1647,12 +1932,38 @@
     })();
   }
 
+  // Si al terminar el viaje el monto final es mayor que lo cotizado, se le
+  // explica al pasajero de dónde sale la diferencia. Si es igual, no se
+  // muestra nada: paga lo que le dijeron.
+  function pintarDesgloseFinal(res) {
+    var tarjeta = document.getElementById("cardDesgloseFinal");
+    var cotizado = Number(res.total_cotizado) || 0, total = Number(res.total) || 0;
+    if (!(cotizado > 0) || !(total > cotizado)) { tarjeta.style.display = "none"; return; }
+    var filas = [
+      ["Tarifa estimada", fmt(cotizado), ""],
+      ["Ajuste por tiempo y distancia reales", "+ " + fmt(total - cotizado), "ajuste"],
+      ["Total a pagar", fmt(total), "final"]
+    ];
+    var cont = document.getElementById("desgloseFinal");
+    cont.innerHTML = "";
+    filas.forEach(function (f) {
+      var fila = document.createElement("div");
+      fila.className = "desglose-fila " + f[2];
+      var a = document.createElement("span"), b = document.createElement("span");
+      a.textContent = f[0]; b.textContent = f[1];
+      fila.appendChild(a); fila.appendChild(b);
+      cont.appendChild(fila);
+    });
+    tarjeta.style.display = "block";
+  }
+
   function mostrarCierreDeViaje(res) {
     var box = document.getElementById("estadoBox");
     var btnPagar = document.getElementById("btnPagarMp");
     var nota = document.getElementById("notaPago");
     dejarDeCompartirUbicacion();
     if (mapaTimer) { clearInterval(mapaTimer); mapaTimer = null; }
+    pintarDesgloseFinal(res);
 
     if (res.estado_pago === "PENDIENTE" && res.mp_link) {
       box.className = "estado-box pendiente";
@@ -1672,7 +1983,55 @@
       : "Pago recibido. ¡Gracias por viajar con Rumbo!";
     clearInterval(pollTimer);
     if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+    mostrarCalificacion(res);
   }
+
+  /* ---------------------------------------------------------------
+     Calificación del viaje: solo cuando ya terminó de cobrarse, y solo
+     una vez por viaje (el backend igual lo rechaza si se reintenta).
+     --------------------------------------------------------------- */
+  var estrellaElegida = 0;
+
+  function mostrarCalificacion(res) {
+    document.getElementById("cardCalificar").style.display = res.calificado ? "none" : "block";
+    document.getElementById("calificacionEnviada").style.display = res.calificado ? "block" : "none";
+    if (res.calificado) return;
+    estrellaElegida = 0;
+    document.getElementById("comentarioCalificar").value = "";
+    document.getElementById("calificarMsg").textContent = "";
+    pintarEstrellas(0);
+  }
+
+  function pintarEstrellas(n) {
+    document.querySelectorAll(".estrella").forEach(function (b) {
+      b.classList.toggle("activa", parseInt(b.dataset.estrella, 10) <= n);
+    });
+    document.getElementById("btnEnviarCalificacion").disabled = n === 0;
+  }
+
+  document.getElementById("estrellasCalificar").addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".estrella");
+    if (!btn) return;
+    estrellaElegida = parseInt(btn.dataset.estrella, 10);
+    pintarEstrellas(estrellaElegida);
+  });
+
+  document.getElementById("btnEnviarCalificacion").addEventListener("click", function () {
+    var sesion = obtenerSesionPasajero();
+    if (!estrellaElegida || !pedidoActualId || !sesion) return;
+    var boton = this, msg = document.getElementById("calificarMsg");
+    boton.disabled = true;
+    apiPost({
+      accion: "calificar_conductor", pasajero_token: sesion.token, pedido_id: pedidoActualId,
+      estrellas: estrellaElegida, comentario: document.getElementById("comentarioCalificar").value.trim()
+    }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "nota error"; boton.disabled = false; return; }
+      document.getElementById("cardCalificar").style.display = "none";
+      document.getElementById("calificacionEnviada").style.display = "block";
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message; msg.className = "nota error"; boton.disabled = false;
+    });
+  });
 
   /* ---------------------------------------------------------------
      Chat con el conductor (solo con viaje confirmado). Sondeo
@@ -1832,6 +2191,7 @@
     document.getElementById("notaPago").style.display = "none";
     pedidoActualId = null;
     rutaActual = null;
+    limpiarMapaCotizar();
     ultimoMensajeEn = "";
     rutaViajeCodificada = "";
     conductorAsignadoPintado = "";
@@ -1845,6 +2205,8 @@
     document.getElementById("mapaConductor").style.display = "none";
     document.getElementById("cardChat").style.display = "none";
     document.getElementById("chatMensajes").innerHTML = "";
+    document.getElementById("cardCalificar").style.display = "none";
+    document.getElementById("calificacionEnviada").style.display = "none";
     document.getElementById("badgeSeguimiento").classList.remove("activo");
     document.getElementById("tabSeguimiento").disabled = true;
     mostrarPestana("cotizar");
@@ -1855,7 +2217,48 @@
   if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();
   mostrarBannerConductor();
+  mostrarAvisoInstalarApp();
   pintarSesionPasajero();
+
+  // Si llegaste sin la app (navegador) con el link/QR de un conductor, no
+  // hay forma de pedir el viaje sin instalarla — se avisa antes de que
+  // intente cotizar y se confunda por qué no pasa nada.
+  function mostrarAvisoInstalarApp() {
+    var card = document.getElementById("cardInstalarApp");
+    if (esAppNativa || !obtenerConductorId()) { card.style.display = "none"; return; }
+    card.style.display = "block";
+  }
+  document.getElementById("btnInstalarApp").addEventListener("click", function () {
+    window.open(URL_APK_PASAJERO, "_system");
+  });
+  // Si para este momento ya instaló la app y el Android App Link quedó
+  // verificado, recargar este mismo link hace que el sistema lo abra con
+  // la app en vez de con el navegador — no hay otra forma de "detectar"
+  // la instalación fuera de Play Store.
+  document.getElementById("btnYaInstale").addEventListener("click", function () {
+    window.location.href = window.location.href;
+  });
+
+  // Si la app YA está abierta y el pasajero toca un link de conductor
+  // (Android App Link), Capacitor entrega la URL acá en vez de recargar
+  // la página — sin esto, el conductor_id del link nunca se guardaría.
+  if (esAppNativa) {
+    try {
+      var AppPlugin = window.Capacitor.Plugins.App;
+      if (AppPlugin && AppPlugin.addListener) {
+        AppPlugin.addListener("appUrlOpen", function (datos) {
+          try {
+            var url = new URL(datos.url);
+            var conductorId = url.searchParams.get("c");
+            if (conductorId) {
+              localStorage.setItem(CONDUCTOR_KEY, conductorId);
+              mostrarBannerConductor();
+            }
+          } catch (e) { /* link con formato raro: no rompe nada */ }
+        });
+      }
+    } catch (e) { /* plugin no disponible: no bloquea el arranque */ }
+  }
 
   /* Enter en un campo = tocar el botón principal de su formulario. Se marca
      en el HTML con data-enter="<id del botón>" en el contenedor. */

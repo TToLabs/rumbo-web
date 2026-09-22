@@ -535,7 +535,8 @@
       document.getElementById("splashTitulo").textContent = "Rumbo Admin";
       document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
     } else {
-      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo, donde podrás coordinar tus viajes solicitados.";
+      document.getElementById("splashTitulo").textContent = "Rumbo Conductor";
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Conductor, para que puedas coordinar tus viajes.";
     }
   })();
 </script>
@@ -1081,7 +1082,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 20;
+  var APP_VERSION = 22;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1707,10 +1708,21 @@
   // link público listo para verse — el primer intento devuelve "No se pudo
   // abrir el archivo" aunque el archivo ya existe. Reintenta solo, sin que
   // el conductor tenga que recargar la app pensando que la subida falló.
+  // El link viejo "uc?export=view" de Drive fallaba intermitente al
+  // cargar en un <img> (Drive no está pensado para eso a escala); se
+  // convierte acá a "thumbnail", que carga desde el CDN de imágenes de
+  // Google. Los links nuevos ya se guardan así (ver subirFotoVehiculoConductor).
+  function urlFotoDrive(url) {
+    if (!url) return url;
+    var m = /[?&]id=([^&]+)/.exec(url);
+    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1000" : url;
+  }
+
   function cargarFotoVehiculo(url, intento) {
     var img = document.getElementById("vehFotoPreview");
     intento = intento || 0;
     if (!url) { img.src = ""; img.onerror = null; return; }
+    url = urlFotoDrive(url);
     if (intento === 0) img.style.visibility = "hidden"; // oculta el ícono roto durante los reintentos
     img.onload = function () { img.style.visibility = "visible"; };
     img.onerror = function () {
