@@ -278,6 +278,23 @@
   input:hover { border-color: var(--border-strong); }
   input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
   input[type="date"], input[type="time"], input[type="number"] { font-variant-numeric: tabular-nums; }
+  textarea {
+    width: 100%; background: var(--surface); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--r-input);
+    padding: 12px 14px; font: inherit; font-size: 15px; font-weight: 400;
+    resize: vertical; margin-bottom: 12px; transition: border-color 0.12s ease;
+  }
+  textarea::placeholder { color: var(--text-3); }
+  textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+
+  /* ---------- Calificación del viaje ---------- */
+  .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 14px; }
+  .estrella {
+    border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
+    color: var(--border-strong); padding: 4px; transition: transform 0.08s ease, color 0.12s ease;
+  }
+  .estrella:active { transform: scale(0.9); }
+  .estrella.activa { color: #F5A623; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator,
     :root:not([data-theme="light"]) input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
@@ -365,9 +382,23 @@
   }
   .estado-icono { position: absolute; }
 
+  /* La caja de direcciones queda como su propio módulo, sutilmente
+     destacado (fondo levemente distinto), y el mapa como otro módulo
+     aparte más abajo — antes quedaban pegados y las direcciones se
+     perdían contra el mapa. */
+  .ruta {
+    background: var(--surface-2); border-radius: var(--r-input);
+    padding: 14px 12px; margin: 0 -2px;
+  }
+  .mapa-cotizar-wrap { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .mapa-cotizar-cabecera {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    font-size: 13px; font-weight: 600; color: var(--text-2);
+  }
+  .mapa-cotizar-cabecera svg { color: var(--primary); }
   #mapaCotizar {
     width: 100%; height: 200px; border-radius: var(--r-card);
-    border: 1px solid var(--border); margin-bottom: 12px;
+    border: 1px solid var(--border);
     background: var(--surface-2);
   }
 
@@ -625,7 +656,7 @@
         <span class="ruta-marca"><span class="punto-origen"></span></span>
         <div class="ruta-input-wrap">
           <label class="sr-only" for="origen">Dirección de origen</label>
-          <input type="text" id="origen" placeholder="¿Desde dónde sales?" autocomplete="off">
+          <input type="text" id="origen" placeholder="¿Desde dónde?" autocomplete="off">
           <button type="button" class="btn-borrar-direccion" data-borrar="origen" aria-label="Borrar origen">
             <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
           </button>
@@ -644,7 +675,13 @@
           </button>
         </div>
       </div>
-      <div id="mapaCotizar"></div>
+      <div class="mapa-cotizar-wrap">
+        <div class="mapa-cotizar-cabecera">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+          <span>Ubicación y ruta</span>
+        </div>
+        <div id="mapaCotizar"></div>
+      </div>
 
       <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
         <label class="check-espera">
@@ -777,6 +814,24 @@
         <button class="btn btn-medio" id="btnEnviarChat" type="button">Enviar</button>
       </div>
     </section>
+
+    <!-- Calificación: aparece cuando el viaje terminó y se cobró (no antes,
+         para no calificar algo que todavía puede cambiar), y solo si el
+         pasajero no calificó ya este mismo viaje. -->
+    <section class="card" id="cardCalificar" style="display:none;">
+      <div class="card-head"><span class="card-title">¿Cómo fue tu viaje?</span></div>
+      <div class="estrellas" id="estrellasCalificar" role="radiogroup" aria-label="Calificación del viaje">
+        <button type="button" class="estrella" data-estrella="1" aria-label="1 estrella">★</button>
+        <button type="button" class="estrella" data-estrella="2" aria-label="2 estrellas">★</button>
+        <button type="button" class="estrella" data-estrella="3" aria-label="3 estrellas">★</button>
+        <button type="button" class="estrella" data-estrella="4" aria-label="4 estrellas">★</button>
+        <button type="button" class="estrella" data-estrella="5" aria-label="5 estrellas">★</button>
+      </div>
+      <textarea id="comentarioCalificar" placeholder="Cuéntanos algo del viaje (opcional)" maxlength="300" rows="2"></textarea>
+      <button class="btn btn-primario" id="btnEnviarCalificacion" type="button" disabled>Enviar calificación</button>
+      <p class="nota" id="calificarMsg" style="margin:10px 2px 0;"></p>
+    </section>
+    <p class="nota" id="calificacionEnviada" style="display:none;text-align:center;">¡Gracias por tu calificación!</p>
 
     <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
   </div>
@@ -1016,7 +1071,7 @@
     configurarAutocompleteInput(document.getElementById("origen"), "origen");
     configurarAutocompleteInput(document.getElementById("destino"), "destino");
     document.querySelectorAll("#paradasContenedor input").forEach(function (input) {
-      configurarAutocompleteInput(input, null);
+      configurarAutocompleteInput(input, input.id);
     });
   }
 
@@ -1070,19 +1125,37 @@
     }
   }
 
+  // cual: "origen", "destino", o el id de una parada ("parada1", "parada2"...).
+  // Google no informa el punto exacto de cada parada dentro del trazado (el
+  // backend solo pide el polígono completo, no el desglose por tramos), así
+  // que el marcador de una parada se ubica con lo que devolvió el
+  // autocompletado y queda fijo ahí — solo origen/destino se corrigen
+  // después con los extremos reales de la ruta (ver dibujarRutaCotizar).
+  function etiquetaMarcadorCotizar(cual) {
+    if (cual === "origen") return "A";
+    if (cual === "destino") return "B";
+    return "P" + cual.replace(/\D/g, "");
+  }
+
   function pintarMarcadorCotizar(cual, pos) {
     if (!mapaCotizar) return;
     if (!marcadoresCotizar[cual]) {
       marcadoresCotizar[cual] = new google.maps.Marker({
-        map: mapaCotizar, label: cual === "origen" ? "A" : "B"
+        map: mapaCotizar, label: etiquetaMarcadorCotizar(cual)
       });
     }
     marcadoresCotizar[cual].setPosition(pos);
     ajustarEncuadreCotizar();
   }
 
+  function quitarMarcadorCotizar(cual) {
+    if (marcadoresCotizar[cual]) { marcadoresCotizar[cual].setMap(null); delete marcadoresCotizar[cual]; }
+    ajustarEncuadreCotizar();
+  }
+
   function ajustarEncuadreCotizar() {
-    var puntos = [marcadoresCotizar.origen, marcadoresCotizar.destino].filter(Boolean).map(function (m) { return m.getPosition(); });
+    var puntos = Object.keys(marcadoresCotizar).filter(function (k) { return k !== "yo"; })
+      .map(function (k) { return marcadoresCotizar[k]; }).filter(Boolean).map(function (m) { return m.getPosition(); });
     if (!puntos.length) return;
     if (puntos.length === 1) { mapaCotizar.setCenter(puntos[0]); mapaCotizar.setZoom(14); return; }
     var limites = new google.maps.LatLngBounds();
@@ -1107,8 +1180,10 @@
 
   function limpiarMapaCotizar() {
     if (lineaCotizar) { lineaCotizar.setMap(null); lineaCotizar = null; }
-    ["origen", "destino"].forEach(function (k) {
-      if (marcadoresCotizar[k]) { marcadoresCotizar[k].setMap(null); marcadoresCotizar[k] = null; }
+    Object.keys(marcadoresCotizar).forEach(function (k) {
+      if (k === "yo") return;
+      if (marcadoresCotizar[k]) marcadoresCotizar[k].setMap(null);
+      delete marcadoresCotizar[k];
     });
     if (mapaCotizar) mapaCotizar.setZoom(12);
   }
@@ -1219,7 +1294,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 19;
+  var APP_VERSION = 20;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
@@ -1611,9 +1686,10 @@
     contenedor.appendChild(fila);
     fila.querySelector(".btn-quitar-parada").addEventListener("click", function () {
       fila.remove();
+      quitarMarcadorCotizar(id);
       actualizarBotonAgregarParada();
     });
-    if (googleMapsListo) configurarAutocompleteInput(fila.querySelector("input"));
+    if (googleMapsListo) configurarAutocompleteInput(fila.querySelector("input"), id);
     actualizarBotonAgregarParada();
   }
 
@@ -1726,6 +1802,8 @@
 
   function mostrarVistaEstado(totalConfirmado) {
     document.getElementById("cardDesgloseFinal").style.display = "none";
+    document.getElementById("cardCalificar").style.display = "none";
+    document.getElementById("calificacionEnviada").style.display = "none";
     document.getElementById("tabSeguimiento").disabled = false;
     document.getElementById("badgeSeguimiento").classList.add("activo");
     mostrarPestana("seguimiento");
@@ -1794,6 +1872,12 @@
     var titulo = document.createElement("div");
     titulo.className = "nombre";
     titulo.textContent = c.nombre;
+    if (c.calificacion_promedio) {
+      var estrella = document.createElement("span");
+      estrella.style.cssText = "color:var(--text-3);font-weight:400;font-size:14px;margin-left:6px;";
+      estrella.textContent = "★ " + c.calificacion_promedio.toFixed(1).replace(".0", "") + " (" + c.calificacion_cantidad + ")";
+      titulo.appendChild(estrella);
+    }
     textos.appendChild(titulo);
     var auto = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" · ");
     if (auto) { var l = document.createElement("div"); l.className = "vehiculo"; l.textContent = auto; textos.appendChild(l); }
@@ -1882,7 +1966,55 @@
       : "Pago recibido. ¡Gracias por viajar con Rumbo!";
     clearInterval(pollTimer);
     if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+    mostrarCalificacion(res);
   }
+
+  /* ---------------------------------------------------------------
+     Calificación del viaje: solo cuando ya terminó de cobrarse, y solo
+     una vez por viaje (el backend igual lo rechaza si se reintenta).
+     --------------------------------------------------------------- */
+  var estrellaElegida = 0;
+
+  function mostrarCalificacion(res) {
+    document.getElementById("cardCalificar").style.display = res.calificado ? "none" : "block";
+    document.getElementById("calificacionEnviada").style.display = res.calificado ? "block" : "none";
+    if (res.calificado) return;
+    estrellaElegida = 0;
+    document.getElementById("comentarioCalificar").value = "";
+    document.getElementById("calificarMsg").textContent = "";
+    pintarEstrellas(0);
+  }
+
+  function pintarEstrellas(n) {
+    document.querySelectorAll(".estrella").forEach(function (b) {
+      b.classList.toggle("activa", parseInt(b.dataset.estrella, 10) <= n);
+    });
+    document.getElementById("btnEnviarCalificacion").disabled = n === 0;
+  }
+
+  document.getElementById("estrellasCalificar").addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".estrella");
+    if (!btn) return;
+    estrellaElegida = parseInt(btn.dataset.estrella, 10);
+    pintarEstrellas(estrellaElegida);
+  });
+
+  document.getElementById("btnEnviarCalificacion").addEventListener("click", function () {
+    var sesion = obtenerSesionPasajero();
+    if (!estrellaElegida || !pedidoActualId || !sesion) return;
+    var boton = this, msg = document.getElementById("calificarMsg");
+    boton.disabled = true;
+    apiPost({
+      accion: "calificar_conductor", pasajero_token: sesion.token, pedido_id: pedidoActualId,
+      estrellas: estrellaElegida, comentario: document.getElementById("comentarioCalificar").value.trim()
+    }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "nota error"; boton.disabled = false; return; }
+      document.getElementById("cardCalificar").style.display = "none";
+      document.getElementById("calificacionEnviada").style.display = "block";
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message; msg.className = "nota error"; boton.disabled = false;
+    });
+  });
 
   /* ---------------------------------------------------------------
      Chat con el conductor (solo con viaje confirmado). Sondeo
@@ -2056,6 +2188,8 @@
     document.getElementById("mapaConductor").style.display = "none";
     document.getElementById("cardChat").style.display = "none";
     document.getElementById("chatMensajes").innerHTML = "";
+    document.getElementById("cardCalificar").style.display = "none";
+    document.getElementById("calificacionEnviada").style.display = "none";
     document.getElementById("badgeSeguimiento").classList.remove("activo");
     document.getElementById("tabSeguimiento").disabled = true;
     mostrarPestana("cotizar");

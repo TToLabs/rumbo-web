@@ -258,6 +258,25 @@
   .acordeon .estado-conductor { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
   .acordeon .estado-titulo { display: none; }
 
+  /* ---------- Modal de calificación (al finalizar un viaje) ---------- */
+  .modal-fondo {
+    position: fixed; inset: 0; z-index: 200; background: rgba(10,16,24,0.5);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-fondo[hidden] { display: none; }
+  .modal-hoja {
+    background: var(--surface); width: 100%; max-width: 480px;
+    border-radius: 18px 18px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+    box-shadow: var(--shadow-md);
+  }
+  .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+  .estrella {
+    border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
+    color: var(--border-strong); padding: 4px; transition: transform 0.08s ease, color 0.12s ease;
+  }
+  .estrella:active { transform: scale(0.9); }
+  .estrella.activa { color: #F5A623; }
+
   .tabla-historial { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
   .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12.5px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
   .tabla-historial td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -746,6 +765,20 @@
       </div>
     </details>
 
+    <details class="acordeon simple"><summary>Visibilidad en la red</summary><div class="acordeon-cuerpo">
+    <div class="estado-conductor" id="estadoRed" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <strong style="font-size:15px;flex:1;min-width:0;">Conectado al radar</strong>
+        <span class="badge badge-gris" id="badgeRed">Revisando...</span>
+        <label class="switch">
+          <input type="checkbox" id="chkRed">
+          <span class="sr-only">Conectado al radar de la red</span>
+          <span class="switch-pista"></span>
+        </label>
+      </div>
+      <p class="msg" id="redMsg" style="margin:0;font-size:12.5px;">Con esto activado, además de tu clientela, puedes recibir viajes que otros conductores de la red no pudieron tomar.</p>
+    </div>
+    </div></details>
     <details class="acordeon simple"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
     <div class="estado-conductor" id="estadoConductor">
       <div class="estado-texto">
@@ -1011,6 +1044,26 @@
   </button>
 </nav>
 
+<!-- Calificar al pasajero: se abre apenas se finaliza un viaje. No bloquea
+     nada si se omite (el conductor ya puede seguir trabajando). -->
+<div class="modal-fondo" id="modalCalificarPasajero" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 4px;font-size:19px;">¿Cómo fue el pasajero?</h2>
+    <p class="nota" style="margin:0 0 16px;">Tu calificación queda registrada en el viaje.</p>
+    <div class="estrellas" id="estrellasPasajero" role="radiogroup" aria-label="Calificación del pasajero">
+      <button type="button" class="estrella" data-estrella="1" aria-label="1 estrella">★</button>
+      <button type="button" class="estrella" data-estrella="2" aria-label="2 estrellas">★</button>
+      <button type="button" class="estrella" data-estrella="3" aria-label="3 estrellas">★</button>
+      <button type="button" class="estrella" data-estrella="4" aria-label="4 estrellas">★</button>
+      <button type="button" class="estrella" data-estrella="5" aria-label="5 estrellas">★</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-chico" id="btnOmitirCalifPasajero" type="button">Omitir</button>
+      <button class="btn btn-primario" id="btnEnviarCalifPasajero" type="button" disabled>Enviar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   // Poner acá la URL /exec de tu Apps Script (ver INSTRUCCIONES.md).
@@ -1028,7 +1081,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 18;
+  var APP_VERSION = 20;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1220,7 +1273,7 @@
     if (cual === "ajustes") {
       var ses = obtenerSesion();
       var c = ses ? ses.conductor : {};
-      if (MODO === "conductor") cargarEstadoMp();
+      if (MODO === "conductor") { cargarEstadoMp(); cargarEstadoRed(); }
       if (MODO === "admin") { cargarConductoresAdmin(); cargarHistorial(); }
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1533,6 +1586,37 @@
       }
     }
     cargarHistorial();
+  });
+
+  // "En la red" (público, conectado al radar): además de su clientela,
+  // puede recibir viajes derivados de otros conductores. "Solo mi
+  // clientela" (privado): nunca recibe nada ajeno. Mismo campo que el
+  // admin puede forzar desde su panel — acá el conductor lo prende él mismo.
+  function pintarEstadoRed(enRed) {
+    var badge = document.getElementById("badgeRed");
+    badge.className = "badge " + (enRed ? "badge-azul" : "badge-verde");
+    badge.textContent = enRed ? "En la red" : "Solo mi clientela";
+    document.getElementById("chkRed").checked = enRed;
+  }
+
+  function cargarEstadoRed() {
+    api({ accion: "mi_red" }).then(function (res) {
+      if (!res.ok) return;
+      pintarEstadoRed(res.en_red);
+    });
+  }
+
+  document.getElementById("chkRed").addEventListener("change", function (ev) {
+    var deseado = ev.target.checked;
+    ev.target.disabled = true;
+    apiPost({ accion: "cambiar_mi_red", en_red: deseado }).then(function (res) {
+      ev.target.disabled = false;
+      if (!res.ok) { ev.target.checked = !deseado; alert("No se pudo cambiar: " + res.error); return; }
+      pintarEstadoRed(res.en_red);
+    }).catch(function (err) {
+      ev.target.disabled = false; ev.target.checked = !deseado;
+      alert("Error de red: " + err.message);
+    });
   });
 
   function cargarEstadoMp() {
@@ -2294,6 +2378,53 @@
     if (!m.linea) m.mapa.setCenter(pos);
   }
 
+  /* ---------------------------------------------------------------
+     Calificar al pasajero: se ofrece apenas se finaliza el viaje, pero es
+     opcional (el conductor puede omitirlo y seguir trabajando).
+     --------------------------------------------------------------- */
+  var pedidoACalificar = null;
+  var estrellaPasajeroElegida = 0;
+
+  function pintarEstrellasPasajero(n) {
+    document.querySelectorAll("#estrellasPasajero .estrella").forEach(function (b) {
+      b.classList.toggle("activa", parseInt(b.dataset.estrella, 10) <= n);
+    });
+    document.getElementById("btnEnviarCalifPasajero").disabled = n === 0;
+  }
+
+  function cerrarCalificarPasajero() {
+    document.getElementById("modalCalificarPasajero").hidden = true;
+    pedidoACalificar = null;
+  }
+
+  function abrirCalificarPasajero(pedidoId) {
+    pedidoACalificar = pedidoId;
+    estrellaPasajeroElegida = 0;
+    pintarEstrellasPasajero(0);
+    document.getElementById("modalCalificarPasajero").hidden = false;
+  }
+
+  document.getElementById("estrellasPasajero").addEventListener("click", function (ev) {
+    var btn = ev.target.closest(".estrella");
+    if (!btn) return;
+    estrellaPasajeroElegida = parseInt(btn.dataset.estrella, 10);
+    pintarEstrellasPasajero(estrellaPasajeroElegida);
+  });
+
+  document.getElementById("btnOmitirCalifPasajero").addEventListener("click", cerrarCalificarPasajero);
+
+  document.getElementById("btnEnviarCalifPasajero").addEventListener("click", function () {
+    if (!estrellaPasajeroElegida || !pedidoACalificar) return;
+    var boton = this;
+    boton.disabled = true;
+    apiPost({ accion: "calificar_pasajero", pedido_id: pedidoACalificar, estrellas: estrellaPasajeroElegida })
+      .then(function (res) {
+        boton.disabled = false;
+        if (!res.ok) { alert("No se pudo calificar: " + res.error); return; }
+        cerrarCalificarPasajero();
+      }).catch(function (err) { boton.disabled = false; alert("Error de red: " + err.message); });
+  });
+
   function cargarMensajesConductor(pedidoId) {
     api({ accion: "mensajes_conductor", pedido_id: pedidoId, desde: ultimoMensajePorPedido[pedidoId] || "" })
       .then(function (res) { if (res.ok) pintarMensajesDe(pedidoId, res.mensajes); });
@@ -2367,6 +2498,7 @@
         }
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
+        abrirCalificarPasajero(finalizar.dataset.finalizar);
       });
       return;
     }
