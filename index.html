@@ -216,14 +216,16 @@
   }
   .parada-fila .ruta-marca { display: flex; align-items: center; justify-content: center; }
   .parada-quitar-celda { display: flex; }
-  .parada-input-wrap { position: relative; }
-  .parada-input-wrap input { padding-right: 40px; }
-  .btn-quitar-parada {
+  .parada-input-wrap, .ruta-input-wrap { position: relative; }
+  .parada-input-wrap input, .ruta-input-wrap input { padding-right: 40px; }
+  .btn-quitar-parada, .btn-borrar-direccion {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
     width: 26px; height: 26px; border: none; background: none; cursor: pointer;
     color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 8px;
   }
-  .btn-quitar-parada:hover { background: var(--surface-2); color: var(--text-2); }
+  .btn-quitar-parada:hover, .btn-borrar-direccion:hover { background: var(--surface-2); color: var(--text-2); }
+  .btn-borrar-direccion { display: none; }
+  .btn-borrar-direccion.visible { display: flex; }
 
   .btn-agregar-parada {
     display: flex; align-items: center; gap: 6px; margin-top: 4px;
@@ -362,6 +364,12 @@
     70% { box-shadow: 0 0 0 10px transparent; }
   }
   .estado-icono { position: absolute; }
+
+  #mapaCotizar {
+    width: 100%; height: 200px; border-radius: var(--r-card);
+    border: 1px solid var(--border); margin-bottom: 12px;
+    background: var(--surface-2);
+  }
 
   #mapaConductor {
     width: 100%; height: 240px; border-radius: var(--r-card);
@@ -615,9 +623,12 @@
       </div>
       <div class="ruta">
         <span class="ruta-marca"><span class="punto-origen"></span></span>
-        <div>
+        <div class="ruta-input-wrap">
           <label class="sr-only" for="origen">Dirección de origen</label>
           <input type="text" id="origen" placeholder="¿Desde dónde sales?" autocomplete="off">
+          <button type="button" class="btn-borrar-direccion" data-borrar="origen" aria-label="Borrar origen">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+          </button>
         </div>
         <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
         <span></span>
@@ -625,11 +636,15 @@
         <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
         <span></span>
         <span class="ruta-marca"><span class="punto-destino"></span></span>
-        <div>
+        <div class="ruta-input-wrap">
           <label class="sr-only" for="destino">Dirección de destino</label>
           <input type="text" id="destino" placeholder="¿A dónde vas?" autocomplete="off">
+          <button type="button" class="btn-borrar-direccion" data-borrar="destino" aria-label="Borrar destino">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+          </button>
         </div>
       </div>
+      <div id="mapaCotizar"></div>
 
       <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
         <label class="check-espera">
@@ -980,23 +995,122 @@
   window.alGoogleMapsListo = function () {
     googleMapsListo = true;
     configurarAutocomplete();
+    crearMapaCotizar();
     if (mostrarMapaPendiente) crearMapaConductor();
   };
 
-  function configurarAutocompleteInput(input) {
-    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address"] };
+  // marcador: "origen" | "destino" | null (paradas no llevan marcador propio).
+  function configurarAutocompleteInput(input, marcador) {
+    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry"] };
     var auto = new google.maps.places.Autocomplete(input, opciones);
     auto.addListener("place_changed", function () {
       var lugar = auto.getPlace();
       if (lugar && lugar.formatted_address) input.value = lugar.formatted_address;
+      if (marcador && lugar && lugar.geometry && lugar.geometry.location) {
+        pintarMarcadorCotizar(marcador, { lat: lugar.geometry.location.lat(), lng: lugar.geometry.location.lng() });
+      }
     });
   }
 
   function configurarAutocomplete() {
-    ["origen", "destino"].forEach(function (id) {
-      configurarAutocompleteInput(document.getElementById(id));
+    configurarAutocompleteInput(document.getElementById("origen"), "origen");
+    configurarAutocompleteInput(document.getElementById("destino"), "destino");
+    document.querySelectorAll("#paradasContenedor input").forEach(function (input) {
+      configurarAutocompleteInput(input, null);
     });
-    document.querySelectorAll("#paradasContenedor input").forEach(configurarAutocompleteInput);
+  }
+
+  // Botón "×" de origen/destino: aparece solo con texto escrito, y borra
+  // todo de un toque (en vez de retroceder letra por letra) junto con su
+  // marcador en el mapa y el precio ya calculado, que dejó de ser válido.
+  ["origen", "destino"].forEach(function (id) {
+    var input = document.getElementById(id);
+    var boton = document.querySelector('[data-borrar="' + id + '"]');
+    function refrescar() { boton.classList.toggle("visible", input.value.trim().length > 0); }
+    input.addEventListener("input", refrescar);
+    refrescar();
+    boton.addEventListener("click", function () {
+      input.value = "";
+      refrescar();
+      input.focus();
+      if (marcadoresCotizar[id]) { marcadoresCotizar[id].setMap(null); marcadoresCotizar[id] = null; }
+      if (lineaCotizar) { lineaCotizar.setMap(null); lineaCotizar = null; }
+      rutaActual = null;
+      document.getElementById("tarjetaPrecio").style.display = "none";
+      document.getElementById("btnPedir").disabled = true;
+    });
+  });
+
+  /* ---------------------------------------------------------------
+     Mapa interactivo mientras se coordina el viaje (pantalla "Calcula tu
+     viaje"): muestra dónde estás, y a medida que eliges origen/destino del
+     autocompletado los va marcando. Al calcular el precio se reemplazan
+     esos marcadores por los extremos de la ruta real y se dibuja el
+     trayecto completo (con el mismo trazado que usa Google para cobrar).
+     --------------------------------------------------------------- */
+  var mapaCotizar = null;
+  var marcadoresCotizar = { origen: null, destino: null, yo: null };
+  var lineaCotizar = null;
+
+  function crearMapaCotizar() {
+    var cont = document.getElementById("mapaCotizar");
+    if (!cont || mapaCotizar) return;
+    mapaCotizar = new google.maps.Map(cont, {
+      zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true
+    });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        var yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        marcadoresCotizar.yo = new google.maps.Marker({
+          map: mapaCotizar, position: yo, title: "Tu ubicación",
+          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#1A73E8", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 2 }
+        });
+        if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) mapaCotizar.setCenter(yo);
+      }, function () { /* sin permiso: se queda centrado en Santiago */ }, { maximumAge: 60000, timeout: 8000 });
+    }
+  }
+
+  function pintarMarcadorCotizar(cual, pos) {
+    if (!mapaCotizar) return;
+    if (!marcadoresCotizar[cual]) {
+      marcadoresCotizar[cual] = new google.maps.Marker({
+        map: mapaCotizar, label: cual === "origen" ? "A" : "B"
+      });
+    }
+    marcadoresCotizar[cual].setPosition(pos);
+    ajustarEncuadreCotizar();
+  }
+
+  function ajustarEncuadreCotizar() {
+    var puntos = [marcadoresCotizar.origen, marcadoresCotizar.destino].filter(Boolean).map(function (m) { return m.getPosition(); });
+    if (!puntos.length) return;
+    if (puntos.length === 1) { mapaCotizar.setCenter(puntos[0]); mapaCotizar.setZoom(14); return; }
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (p) { limites.extend(p); });
+    mapaCotizar.fitBounds(limites, 40);
+  }
+
+  // Se llama al calcular el precio: reemplaza los marcadores "sueltos" del
+  // autocompletado por los extremos reales de la ruta y dibuja el trazado.
+  function dibujarRutaCotizar(polilineaCodificada) {
+    if (!mapaCotizar || !polilineaCodificada || !google.maps.geometry) return;
+    var puntos = google.maps.geometry.encoding.decodePath(polilineaCodificada);
+    if (!puntos.length) return;
+    if (lineaCotizar) lineaCotizar.setMap(null);
+    lineaCotizar = new google.maps.Polyline({ map: mapaCotizar, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    pintarMarcadorCotizar("origen", puntos[0]);
+    pintarMarcadorCotizar("destino", puntos[puntos.length - 1]);
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (p) { limites.extend(p); });
+    mapaCotizar.fitBounds(limites, 40);
+  }
+
+  function limpiarMapaCotizar() {
+    if (lineaCotizar) { lineaCotizar.setMap(null); lineaCotizar = null; }
+    ["origen", "destino"].forEach(function (k) {
+      if (marcadoresCotizar[k]) { marcadoresCotizar[k].setMap(null); marcadoresCotizar[k] = null; }
+    });
+    if (mapaCotizar) mapaCotizar.setZoom(12);
   }
 
   // Si el número no es válido se muestra "—", nunca "$0": un precio roto
@@ -1105,7 +1219,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 18;
+  var APP_VERSION = 19;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
@@ -1547,6 +1661,7 @@
         km: res.km, minutos: res.minutos, peaje: res.peaje, fueraDeSantiago: res.fueraDeSantiago,
         cobraRegresoSiempre: res.cobraRegresoSiempre
       };
+      dibujarRutaCotizar(res.polilinea);
       textoEl.textContent = "";
       textoEl.className = "nota";
       calcularTotal();
@@ -1927,6 +2042,7 @@
     document.getElementById("notaPago").style.display = "none";
     pedidoActualId = null;
     rutaActual = null;
+    limpiarMapaCotizar();
     ultimoMensajeEn = "";
     rutaViajeCodificada = "";
     conductorAsignadoPintado = "";
