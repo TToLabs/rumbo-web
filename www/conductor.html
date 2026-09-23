@@ -221,7 +221,7 @@
   .veh-foto-preview {
     /* Las fotos de auto son bien apaisadas (~2.3:1) — con object-fit:cover
        en una caja chica se recortaba el auto. contain la muestra completa. */
-    width: 112px; height: 70px; border-radius: 12px; object-fit: contain;
+    width: 112px; height: 70px; border-radius: 12px; object-fit: contain; object-position: center;
     background: var(--surface-2); border: 1px solid var(--border); flex: none;
   }
   .veh-foto-preview:not([src]), .veh-foto-preview[src=""] { visibility: hidden; }
