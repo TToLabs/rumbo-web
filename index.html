@@ -227,6 +227,20 @@
   .btn-borrar-direccion { display: none; }
   .btn-borrar-direccion.visible { display: flex; }
 
+  /* Botón "usar mi ubicación" en el origen: solo tiene sentido si el viaje
+     es para quien tiene el teléfono en la mano — se oculta si es "para
+     otra persona". Convive con el botón de borrar (×), uno al lado del
+     otro, por eso el input necesita más padding a la derecha. */
+  #origen { padding-right: 72px; }
+  .btn-mi-ubicacion {
+    position: absolute; right: 34px; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px; border: none; background: none; cursor: pointer;
+    color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 8px;
+  }
+  .btn-mi-ubicacion:hover { background: var(--surface-2); color: var(--primary); }
+  .btn-mi-ubicacion.cargando { animation: girar 0.9s linear infinite; }
+  @keyframes girar { to { transform: translateY(-50%) rotate(360deg); } }
+
   .btn-agregar-parada {
     display: flex; align-items: center; gap: 6px; margin-top: 4px;
     border: none; background: none; cursor: pointer; font: inherit;
@@ -649,8 +663,6 @@
     </div>
   </header>
 
-  <div class="card conductor-banner" id="conductorBanner" style="display:none;"></div>
-
   <div class="card" id="cardInstalarApp" style="display:none;">
     <p class="nota" style="margin:0 0 10px;">Para pedir tu viaje con este conductor, instala la app Rumbo Pasajero.</p>
     <button type="button" class="btn btn-primario" id="btnInstalarApp" style="width:100%;">Descargar app</button>
@@ -664,11 +676,27 @@
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
         <span class="card-title">Tu ruta</span>
       </div>
+
+      <div class="campo" style="margin-bottom:14px;">
+        <span class="campo-label">¿Para quién es el viaje?</span>
+        <div class="segmentado" role="group" aria-label="Para quién es el viaje">
+          <button class="seg-btn active" id="paraMi" type="button" data-para="mi">Para mí</button>
+          <button class="seg-btn" id="paraOtro" type="button" data-para="otro">Para otra persona</button>
+        </div>
+      </div>
+      <div class="campo" id="filaNombreTercero" style="display:none;margin-bottom:14px;">
+        <label class="campo-label" for="nombreTercero">Nombre de quien viaja</label>
+        <input type="text" id="nombreTercero" placeholder="Nombre y apellido" autocomplete="off">
+      </div>
+
       <div class="ruta">
         <span class="ruta-marca"><span class="punto-origen"></span></span>
         <div class="ruta-input-wrap">
           <label class="sr-only" for="origen">Dirección de origen</label>
           <input type="text" id="origen" placeholder="¿Desde dónde?" autocomplete="off">
+          <button type="button" class="btn-mi-ubicacion" id="btnMiUbicacion" aria-label="Usar mi ubicación actual">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+          </button>
           <button type="button" class="btn-borrar-direccion" data-borrar="origen" aria-label="Borrar origen">
             <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
           </button>
@@ -698,24 +726,6 @@
         </div>
         <div id="mapaCotizar"></div>
       </div>
-
-      <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
-        <label class="check-espera">
-          <span>¿Necesitas que el conductor espere?</span>
-          <input type="checkbox" id="chkEspera">
-          <span class="switch-track" aria-hidden="true"></span>
-        </label>
-        <div class="fila" id="camposEsperaHM">
-          <div class="campo">
-            <label class="campo-label" for="esperaHoras">Horas</label>
-            <input type="number" id="esperaHoras" inputmode="numeric" min="0" step="1" value="0">
-          </div>
-          <div class="campo">
-            <label class="campo-label" for="esperaMinutos">Minutos</label>
-            <input type="number" id="esperaMinutos" inputmode="numeric" min="0" max="59" step="5" value="0">
-          </div>
-        </div>
-      </div>
     </section>
 
     <section class="card">
@@ -739,6 +749,24 @@
         <div class="segmentado" role="group" aria-label="Tipo de viaje">
           <button class="seg-btn" id="tipoIdaVuelta" type="button" data-vuelta="1">Ida y vuelta</button>
           <button class="seg-btn active" id="tipoSoloIda" type="button" data-vuelta="0">Solo ida</button>
+        </div>
+      </div>
+
+      <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
+        <label class="check-espera">
+          <span>¿Necesitas que el conductor espere?</span>
+          <input type="checkbox" id="chkEspera">
+          <span class="switch-track" aria-hidden="true"></span>
+        </label>
+        <div class="fila" id="camposEsperaHM">
+          <div class="campo">
+            <label class="campo-label" for="esperaHoras">Horas</label>
+            <input type="number" id="esperaHoras" inputmode="numeric" min="0" step="1" value="0">
+          </div>
+          <div class="campo">
+            <label class="campo-label" for="esperaMinutos">Minutos</label>
+            <input type="number" id="esperaMinutos" inputmode="numeric" min="0" max="59" step="5" value="0">
+          </div>
         </div>
       </div>
     </section>
@@ -982,6 +1010,7 @@
 
   var tarifas = null;
   var idaYVuelta = false;
+  var esParaOtro = false;
   var rutaActual = null; // { km, minutos, peaje }
   var pedidoActualId = null;
   var pollTimer = null;
@@ -1271,41 +1300,6 @@
     return localStorage.getItem(CONDUCTOR_KEY);
   }
 
-  function mostrarBannerConductor() {
-    var conductorId = obtenerConductorId();
-    var banner = document.getElementById("conductorBanner");
-    if (!conductorId) return;
-    api({ accion: "conductor_publico", conductor_id: conductorId }).then(function (res) {
-      if (!res.ok) return; // link viejo o conductor dado de baja: sigue funcionando sin mostrar nombre
-      var c = res.conductor;
-      banner.innerHTML = ""; // nunca con string+innerHTML: se arma con DOM para no exponerse a datos con HTML adentro
-
-      if (c.vehiculo_foto_url) {
-        var img = document.createElement("img");
-        img.src = urlFotoDrive(c.vehiculo_foto_url);
-        img.alt = "";
-        banner.appendChild(img);
-      }
-
-      var textos = document.createElement("div");
-      var nombre = document.createElement("div");
-      nombre.className = "nombre";
-      nombre.textContent = "Vas a viajar con " + c.nombre;
-      textos.appendChild(nombre);
-
-      var datosVehiculo = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" · ");
-      if (c.vehiculo_patente) datosVehiculo += (datosVehiculo ? " — " : "") + c.vehiculo_patente;
-      if (datosVehiculo) {
-        var vehiculo = document.createElement("div");
-        vehiculo.className = "vehiculo";
-        vehiculo.textContent = datosVehiculo;
-        textos.appendChild(vehiculo);
-      }
-      banner.appendChild(textos);
-      banner.style.display = "flex";
-    });
-  }
-
   /* ---------------------------------------------------------------
      Sesión del pasajero: se crea una sola vez y no vence. Reemplaza al
      viejo "escribe tu nombre y teléfono en cada viaje" + el checkbox de
@@ -1421,6 +1415,10 @@
       msg.textContent = "";
       document.getElementById("claveCliente").value = "";
       pintarSesionPasajero();
+      // Se pide el permiso de ubicación UNA vez, justo al crear la cuenta
+      // (junto con el check de datos de arriba) — no en cada pantalla que
+      // lo necesite después (mapa, "usar mi ubicación", compartir viaje).
+      if (crear && navigator.geolocation) navigator.geolocation.getCurrentPosition(function () {}, function () {}, { timeout: 8000 });
       // Con la cuenta lista, lo natural es volver a lo que estaba haciendo:
       // pedir el viaje. Si ya tenía la ruta calculada, el botón ya está activo.
       mostrarPestana("cotizar");
@@ -1639,6 +1637,47 @@
     return d;
   }
 
+  // "Para otra persona": el conductor necesita el nombre de quien realmente
+  // viaja (no el del dueño de la cuenta que está pidiendo/pagando el
+  // viaje). El botón de "usar mi ubicación" se oculta en ese caso: no
+  // tiene sentido usar la ubicación de este teléfono si quien viaja es
+  // otra persona que no lo tiene encima.
+  function setParaQuien(otro) {
+    esParaOtro = otro;
+    document.getElementById("paraOtro").classList.toggle("active", otro);
+    document.getElementById("paraMi").classList.toggle("active", !otro);
+    document.getElementById("filaNombreTercero").style.display = otro ? "block" : "none";
+    document.getElementById("btnMiUbicacion").style.display = otro ? "none" : "flex";
+    if (!otro) document.getElementById("nombreTercero").value = "";
+  }
+  document.getElementById("paraMi").addEventListener("click", function () { setParaQuien(false); });
+  document.getElementById("paraOtro").addEventListener("click", function () { setParaQuien(true); });
+
+  // Ubicación actual como origen: toma coordenadas GPS y las convierte en
+  // una dirección legible (geocodificación inversa) para que quede igual
+  // que si la hubiera escrito con el autocompletado.
+  document.getElementById("btnMiUbicacion").addEventListener("click", function () {
+    var boton = this;
+    if (!navigator.geolocation) return;
+    boton.classList.add("cargando");
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      var geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ location: coords }, function (resultados, estado) {
+        boton.classList.remove("cargando");
+        var direccion = (estado === "OK" && resultados[0]) ? resultados[0].formatted_address : (coords.lat.toFixed(5) + ", " + coords.lng.toFixed(5));
+        var input = document.getElementById("origen");
+        input.value = direccion;
+        input.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
+        pintarMarcadorCotizar("origen", coords);
+      });
+    }, function () {
+      boton.classList.remove("cargando");
+      document.getElementById("buscarAutoTexto").textContent = "No se pudo obtener tu ubicación. Revisa el permiso de ubicación del teléfono.";
+      document.getElementById("buscarAutoTexto").className = "nota error";
+    }, { maximumAge: 30000, timeout: 8000 });
+  });
+
   function obtenerHorasEspera() {
     if (!document.getElementById("chkEspera").checked) return 0;
     var h = parseFloat(document.getElementById("esperaHoras").value) || 0;
@@ -1732,6 +1771,12 @@
       (origen ? document.getElementById("destino") : document.getElementById("origen")).focus();
       return;
     }
+    if (esParaOtro && !document.getElementById("nombreTercero").value.trim()) {
+      textoEl.textContent = "Escribe el nombre de quien viaja.";
+      textoEl.className = "nota error";
+      document.getElementById("nombreTercero").focus();
+      return;
+    }
     var fecha = document.getElementById("fechaSalida").value;
     var hora = document.getElementById("horaSalida").value;
     var departureTime = "";
@@ -1804,6 +1849,7 @@
       conductor_id: obtenerConductorId() || "",
       origen: document.getElementById("origen").value.trim(),
       destino: document.getElementById("destino").value.trim(),
+      nombre_pasajero: esParaOtro ? document.getElementById("nombreTercero").value.trim() : "",
       paradas: obtenerParadas().join("|"),
       fecha: document.getElementById("fechaSalida").value,
       hora: document.getElementById("horaSalida").value,
@@ -2220,7 +2266,6 @@
   cargarTarifas();
   if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();
-  mostrarBannerConductor();
   mostrarAvisoInstalarApp();
   pintarSesionPasajero();
 
@@ -2255,7 +2300,6 @@
           var conductorId = url.searchParams.get("c");
           if (conductorId) {
             localStorage.setItem(CONDUCTOR_KEY, conductorId);
-            mostrarBannerConductor();
             mostrarAvisoInstalarApp();
           }
         } catch (e) { /* link con formato raro: no rompe nada */ }
