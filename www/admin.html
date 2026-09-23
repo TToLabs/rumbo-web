@@ -219,7 +219,9 @@
   /* ---------- Vehículo ---------- */
   .veh-foto-fila { display: flex; align-items: center; gap: 16px; }
   .veh-foto-preview {
-    width: 84px; height: 84px; border-radius: 12px; object-fit: cover;
+    /* Las fotos de auto son bien apaisadas (~2.3:1) — con object-fit:cover
+       en una caja chica se recortaba el auto. contain la muestra completa. */
+    width: 112px; height: 70px; border-radius: 12px; object-fit: contain;
     background: var(--surface-2); border: 1px solid var(--border); flex: none;
   }
   .veh-foto-preview:not([src]), .veh-foto-preview[src=""] { visibility: hidden; }
@@ -313,6 +315,19 @@
   .badge-verde { background: var(--accent-soft); color: var(--accent); }
   .badge-azul { background: var(--info-soft); color: var(--info); }
   .badge-gris { background: var(--surface-2); color: var(--text-3); }
+  .badge-rojo { background: var(--danger-soft); color: var(--danger); }
+
+  /* Botón "Disponible ahora / Desconectado": el badge de estado es
+     también el interruptor — tocarlo conecta/desconecta. Sólido y grande
+     (no un badge suave) para que se note que es una acción, no solo info. */
+  .btn-estado-conexion {
+    display: inline-flex; align-items: center; gap: 8px; font: inherit;
+    font-size: 14px; font-weight: 700; padding: 9px 18px; border-radius: 999px;
+    border: none; cursor: pointer; background: var(--accent); color: #fff;
+  }
+  .btn-estado-conexion::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+  .btn-estado-conexion.desconectado { background: var(--danger); }
+  .btn-estado-conexion.bloqueado { background: var(--warn); }
 
   /* ---------- Cuadrícula de perfiles de conductor ---------- */
   #listaConductores {
@@ -642,11 +657,7 @@
       <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
       <strong>No tienes viajes en curso</strong>
       <p>Cuando aceptes un pedido, aparece aquí con el mapa y el chat del pasajero.</p>
-      <div class="tablero-acciones">
-        <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
-        <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
-      </div>
-      <button class="btn btn-chico" data-tablero="pedidos" type="button">Ver pedidos pendientes</button>
+      <button class="btn btn-medio" data-tablero="pedidos" type="button">Ver pedidos pendientes</button>
     </div>
   </div>
 
@@ -655,7 +666,7 @@
          pantalla vacía, resumen del mes, mapa de la zona y accesos rápidos. -->
     <div class="tablero" id="tableroConductor">
       <div class="tablero-estado">
-        <span class="badge badge-verde" id="tabEstadoBadge">Disponible ahora</span>
+        <button type="button" class="btn-estado-conexion" id="tabEstadoBadge">Disponible ahora</button>
         <button class="btn btn-chico" data-tablero="horarios" type="button">Cambiar horarios</button>
       </div>
       <div class="kpi-fila">
@@ -1082,7 +1093,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 22;
+  var APP_VERSION = 23;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1290,7 +1301,7 @@
   });
 
   function entrar(sesion) {
-    document.getElementById("brandSubConductor").textContent = "Hola, " + sesion.conductor.nombre;
+    document.getElementById("brandSubConductor").textContent = "Hola, " + sesion.conductor.nombre + ", organizando tu próximo viaje";
     mostrarPantalla("app");
     aplicarPermisos();
     if (MODO === "admin") {
@@ -1804,6 +1815,7 @@
     if (sondeoTimer) clearInterval(sondeoTimer);
     borrarSesion();
     disponibilidadCargada = false; // para que la próxima sesión recargue SU propia disponibilidad, no la del anterior
+    conexionCargada = false;
     mostrarPantalla("login");
   });
 
@@ -1925,6 +1937,7 @@
       if (sondeoTimer) clearInterval(sondeoTimer);
       borrarSesion();
       disponibilidadCargada = false;
+      conexionCargada = false;
       mostrarPantalla("login");
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
@@ -2611,12 +2624,44 @@
     });
   }
 
+  // Interruptor manual "Disponible ahora / Desconectado": a diferencia del
+  // bloqueo por horario (automático, de Ajustes), esto lo prende/apaga el
+  // conductor tocando el mismo botón — por si abrió la app pero todavía no
+  // quiere recibir viajes. Bloquea TODO pedido nuevo en el backend (ver
+  // estaConectado en Codigo.gs), incluso el de su propia clientela.
+  var conexionCargada = false, conectadoManual = true;
+  function cargarMiConexion() {
+    api({ accion: "mi_conexion" }).then(function (res) {
+      conexionCargada = true;
+      if (res.ok) conectadoManual = res.conectado;
+      pintarEstadoTablero();
+    }).catch(function () {});
+  }
+
   function pintarEstadoTablero() {
     if (!disponibilidadCargada) { cargarDisponibilidad(); return; }
-    var no = estaBloqueadoAhora(), badge = document.getElementById("tabEstadoBadge");
-    badge.className = "badge " + (no ? "badge-ambar" : "badge-verde");
-    badge.textContent = no ? "No disponible ahora" : "Disponible ahora";
+    if (!conexionCargada) { cargarMiConexion(); return; }
+    var badge = document.getElementById("tabEstadoBadge");
+    if (!conectadoManual) {
+      badge.className = "btn-estado-conexion desconectado";
+      badge.textContent = "Desconectado";
+    } else if (estaBloqueadoAhora()) {
+      badge.className = "btn-estado-conexion bloqueado";
+      badge.textContent = "No disponible ahora";
+    } else {
+      badge.className = "btn-estado-conexion";
+      badge.textContent = "Disponible ahora";
+    }
   }
+
+  document.getElementById("tabEstadoBadge").addEventListener("click", function () {
+    var deseado = !conectadoManual;
+    conectadoManual = deseado; // optimista: se nota al toque, sin esperar la red
+    pintarEstadoTablero();
+    apiPost({ accion: "cambiar_mi_conexion", conectado: deseado }).then(function (res) {
+      if (!res || !res.ok) { conectadoManual = !deseado; pintarEstadoTablero(); }
+    }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); });
+  });
 
   function pintarMapaEspera() {
     var lienzo = document.getElementById("tabMapaLienzo");

@@ -412,7 +412,11 @@
 
   .conductor-banner { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
   .conductor-banner img {
-    width: 56px; height: 56px; border-radius: 10px; object-fit: cover;
+    /* Las fotos de auto son bien apaisadas (~2.3:1 típico) — con
+       object-fit:cover en un cuadro chico se recortaba el auto.
+       object-fit:contain muestra la foto completa sin recortar, cada
+       conductor puede subir con distinta proporción. */
+    width: 96px; height: 60px; border-radius: 10px; object-fit: contain;
     background: var(--surface-2); border: 1px solid var(--border); flex: none;
   }
   .conductor-banner .nombre { font-weight: 700; font-size: 16px; }
@@ -1311,7 +1315,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 22;
+  var APP_VERSION = 23;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2245,17 +2249,25 @@
   if (esAppNativa) {
     try {
       var AppPlugin = window.Capacitor.Plugins.App;
+      function aplicarUrlDeLink(urlString) {
+        try {
+          var url = new URL(urlString);
+          var conductorId = url.searchParams.get("c");
+          if (conductorId) {
+            localStorage.setItem(CONDUCTOR_KEY, conductorId);
+            mostrarBannerConductor();
+            mostrarAvisoInstalarApp();
+          }
+        } catch (e) { /* link con formato raro: no rompe nada */ }
+      }
       if (AppPlugin && AppPlugin.addListener) {
-        AppPlugin.addListener("appUrlOpen", function (datos) {
-          try {
-            var url = new URL(datos.url);
-            var conductorId = url.searchParams.get("c");
-            if (conductorId) {
-              localStorage.setItem(CONDUCTOR_KEY, conductorId);
-              mostrarBannerConductor();
-            }
-          } catch (e) { /* link con formato raro: no rompe nada */ }
-        });
+        AppPlugin.addListener("appUrlOpen", function (datos) { aplicarUrlDeLink(datos.url); });
+      }
+      // Arranque en frío (app cerrada, el link la abrió recién): el evento
+      // appUrlOpen puede dispararse antes de que este listener quede
+      // registrado, así que se pregunta también por la URL de lanzamiento.
+      if (AppPlugin && AppPlugin.getLaunchUrl) {
+        AppPlugin.getLaunchUrl().then(function (res) { if (res && res.url) aplicarUrlDeLink(res.url); }).catch(function () {});
       }
     } catch (e) { /* plugin no disponible: no bloquea el arranque */ }
   }
