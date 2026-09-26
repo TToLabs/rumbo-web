@@ -590,10 +590,38 @@
     </div>
     <button class="btn btn-primario" id="btnLogin" type="button" style="width:100%;">Ingresar</button>
     <p class="msg" id="loginMsg" style="margin:12px 2px 0;"></p>
+    <button class="btn btn-chico" id="btnOlvideClave" type="button" style="width:100%;margin-top:10px;">¿Olvidaste tu clave?</button>
     <div id="bloqueCrearCuenta">
       <div class="separador-o"><span>¿Eres conductor nuevo?</span></div>
       <button class="btn btn-secundario" id="btnIrRegistro" type="button" style="width:100%;">Crear cuenta de conductor</button>
     </div>
+  </section>
+
+  <!-- Recuperar clave: paso 1 pide el correo/usuario, paso 2 (una vez
+       llegó el código) pide el código + la clave nueva. -->
+  <section class="card" id="cardRecuperar" style="display:none;">
+    <div class="card-head"><span class="card-title">Recuperar clave</span></div>
+    <div id="recuperarPaso1">
+      <p class="nota" style="margin:0 0 12px;">Escribe tu usuario o tu correo. Si la cuenta existe, te mandamos un código.</p>
+      <div class="campo" style="margin-bottom:14px;">
+        <label class="campo-label" for="recuperarUsuario">Usuario o correo</label>
+        <input type="text" id="recuperarUsuario" autocomplete="username" autocapitalize="none">
+      </div>
+      <button class="btn btn-primario" id="btnPedirCodigo" type="button" style="width:100%;">Enviar código</button>
+    </div>
+    <div id="recuperarPaso2" style="display:none;margin-top:16px;">
+      <div class="campo" style="margin-bottom:14px;">
+        <label class="campo-label" for="recuperarCodigo">Código de 6 dígitos</label>
+        <input type="text" id="recuperarCodigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+      </div>
+      <div class="campo" style="margin-bottom:14px;">
+        <label class="campo-label" for="recuperarClaveNueva">Clave nueva (mínimo 6 caracteres)</label>
+        <input type="password" id="recuperarClaveNueva" autocomplete="new-password">
+      </div>
+      <button class="btn btn-primario" id="btnConfirmarCodigo" type="button" style="width:100%;">Cambiar clave</button>
+    </div>
+    <p class="msg" id="recuperarMsg" style="margin:12px 2px 0;"></p>
+    <button class="btn btn-chico" id="btnVolverLogin" type="button" style="width:100%;margin-top:10px;">Volver a ingresar</button>
   </section>
 
   <!-- Registro: la cuenta queda PENDIENTE hasta que un administrador la
@@ -1016,6 +1044,20 @@
       <button class="btn btn-chico" id="btnCambiarClave" type="button">Cambiar clave</button>
       <p class="msg" id="claveMsg" style="margin:10px 2px 0;"></p>
     </section>
+    <section class="card">
+      <div class="card-head"><span class="card-title">Correo de recuperación</span></div>
+      <p class="nota" style="margin:0 0 12px;">Si olvidas tu clave, el código para recuperarla llega a este correo.</p>
+      <div class="campo" style="margin-bottom:12px;">
+        <label class="campo-label" for="emailActual">Correo actual</label>
+        <input type="email" id="emailActual" autocomplete="email">
+      </div>
+      <div class="campo" style="margin-bottom:16px;">
+        <label class="campo-label" for="emailClaveActual">Tu clave actual (para confirmar)</label>
+        <input type="password" id="emailClaveActual" autocomplete="current-password">
+      </div>
+      <button class="btn btn-chico" id="btnCambiarEmail" type="button">Guardar correo</button>
+      <p class="msg" id="emailMsg" style="margin:10px 2px 0;"></p>
+    </section>
     </div></details>
 
     <details class="acordeon simple" id="acordeonDisponibilidad"><summary>Disponibilidad (cuándo no trabajas)</summary><div class="acordeon-cuerpo">
@@ -1288,8 +1330,22 @@
       if (MODO === "conductor") { cargarEstadoMp(); cargarEstadoRed(); }
       if (MODO === "admin") { cargarConductoresAdmin(); cargarHistorial(); }
     }
+    // El admin ve acá si un conductor se conectó/desconectó, cambió su
+    // en_red, etc. — sin un timer propio, ese cambio recién se notaba si
+    // salía y volvía a entrar a la pestaña. Mismo criterio que el sondeo
+    // del conductor: se corta si la app queda en segundo plano.
+    if (cual === "ajustes" && MODO === "admin") {
+      if (sondeoAdminTimer) clearInterval(sondeoAdminTimer);
+      sondeoAdminTimer = setInterval(function () {
+        if (!document.hidden) cargarConductoresAdmin();
+      }, SONDEO_MS);
+    } else if (sondeoAdminTimer) {
+      clearInterval(sondeoAdminTimer);
+      sondeoAdminTimer = null;
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+  var sondeoAdminTimer = null;
   function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   PESTANAS.forEach(function (p) {
     document.getElementById("tab" + capitalizar(p)).addEventListener("click", function () { mostrarPestana(p); });
@@ -1302,6 +1358,7 @@
 
   function entrar(sesion) {
     document.getElementById("brandSubConductor").textContent = "Hola, " + sesion.conductor.nombre + ", organizando tu próximo viaje";
+    document.getElementById("emailActual").value = sesion.conductor.email || "";
     mostrarPantalla("app");
     aplicarPermisos();
     if (MODO === "admin") {
@@ -1808,11 +1865,59 @@
     });
   });
 
+  // "Olvidé mi clave": paso 1 pide el código por correo, paso 2 lo
+  // confirma junto con la clave nueva. Mismo backend para conductor y
+  // admin — ambos son filas de la misma hoja de Conductores.
+  function mostrarRecuperar(mostrar) {
+    document.getElementById("cardIngreso").style.display = mostrar ? "none" : "block";
+    document.getElementById("cardRecuperar").style.display = mostrar ? "block" : "none";
+    if (mostrar) {
+      document.getElementById("recuperarPaso1").style.display = "block";
+      document.getElementById("recuperarPaso2").style.display = "none";
+      document.getElementById("recuperarUsuario").value = document.getElementById("loginUsuario").value.trim();
+      document.getElementById("recuperarCodigo").value = "";
+      document.getElementById("recuperarClaveNueva").value = "";
+      document.getElementById("recuperarMsg").textContent = "";
+    }
+  }
+  document.getElementById("btnOlvideClave").addEventListener("click", function () { mostrarRecuperar(true); });
+  document.getElementById("btnVolverLogin").addEventListener("click", function () { mostrarRecuperar(false); });
+
+  document.getElementById("btnPedirCodigo").addEventListener("click", function () {
+    var usuario = document.getElementById("recuperarUsuario").value.trim();
+    var msg = document.getElementById("recuperarMsg");
+    if (!usuario) { msg.textContent = "Escribe tu usuario o correo."; msg.className = "msg error"; return; }
+    msg.textContent = "Enviando..."; msg.className = "msg";
+    apiPost({ accion: "recuperar_clave_pedir", usuario: usuario }).then(function (res) {
+      msg.textContent = res.mensaje || res.error || "Listo.";
+      msg.className = "msg " + (res.ok ? "ok" : "error");
+      if (res.ok) document.getElementById("recuperarPaso2").style.display = "block";
+    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
+  });
+
+  document.getElementById("btnConfirmarCodigo").addEventListener("click", function () {
+    var usuario = document.getElementById("recuperarUsuario").value.trim();
+    var codigo = document.getElementById("recuperarCodigo").value.trim();
+    var claveNueva = document.getElementById("recuperarClaveNueva").value;
+    var msg = document.getElementById("recuperarMsg");
+    if (!codigo || !claveNueva) { msg.textContent = "Completa el código y la clave nueva."; msg.className = "msg error"; return; }
+    msg.textContent = "Cambiando clave..."; msg.className = "msg";
+    apiPost({ accion: "recuperar_clave_confirmar", usuario: usuario, codigo: codigo, clave_nueva: claveNueva }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      msg.textContent = "Clave cambiada. Ya puedes ingresar con tu clave nueva.";
+      msg.className = "msg ok";
+      document.getElementById("loginUsuario").value = res.usuario || usuario;
+      document.getElementById("loginClave").value = "";
+      setTimeout(function () { mostrarRecuperar(false); }, 1500);
+    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
+  });
+
   document.getElementById("btnCerrarSesion").addEventListener("click", function () {
     if (!confirm("¿Cerrar sesión en este dispositivo? Tendrás que volver a ingresar con tu usuario y clave.")) return;
     apiPost({ accion: "cerrar_sesion" }).catch(function () {});
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     if (sondeoTimer) clearInterval(sondeoTimer);
+    if (sondeoAdminTimer) { clearInterval(sondeoAdminTimer); sondeoAdminTimer = null; }
     borrarSesion();
     disponibilidadCargada = false; // para que la próxima sesión recargue SU propia disponibilidad, no la del anterior
     conexionCargada = false;
@@ -1939,6 +2044,25 @@
       disponibilidadCargada = false;
       conexionCargada = false;
       mostrarPantalla("login");
+    }).catch(function (err) {
+      msg.textContent = "Error de red: " + err.message;
+      msg.className = "msg error";
+    });
+  });
+
+  document.getElementById("btnCambiarEmail").addEventListener("click", function () {
+    var email = document.getElementById("emailActual").value.trim();
+    var clave = document.getElementById("emailClaveActual").value;
+    var msg = document.getElementById("emailMsg");
+    if (!email || !clave) { msg.textContent = "Completa el correo y tu clave actual."; msg.className = "msg error"; return; }
+    msg.textContent = "Guardando..."; msg.className = "msg";
+    apiPost({ accion: "cambiar_mi_email", clave_actual: clave, email: email }).then(function (res) {
+      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      msg.textContent = "Correo de recuperación actualizado.";
+      msg.className = "msg ok";
+      document.getElementById("emailClaveActual").value = "";
+      var sesion = obtenerSesion();
+      if (sesion) { sesion.conductor.email = res.email; guardarSesion(sesion); }
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
       msg.className = "msg error";
@@ -2308,6 +2432,7 @@
       // el aviso y el conductor lo ubica por la dirección de siempre.
       '<div class="mapa-pasajero" data-mapa="' + escapar(p.pedido_id) + '"></div>' +
       '<p class="nota-mapa" data-mapa-aviso="' + escapar(p.pedido_id) + '">Esperando la ubicación del pasajero...</p>' +
+      '<p class="nota-mapa" data-distancia="' + escapar(p.pedido_id) + '"></p>' +
       '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
       '<div class="chat-entrada">' +
         '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
@@ -2389,6 +2514,47 @@
     m.mapa.fitBounds(limites, 30);
   }
 
+  /* Íconos del seguimiento: auto = conductor, persona = pasajero (mismos
+     trazos en la app del pasajero). Trazos de Material Icons (licencia
+     Apache 2.0), en un lienzo de 24x24 anclado al centro. */
+  var TRAZO_AUTO = "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z";
+  var TRAZO_PERSONA = "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z";
+  function iconoSeguimiento(trazo, color) {
+    return {
+      path: trazo, fillColor: color, fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 1.5,
+      scale: 1.4, anchor: new google.maps.Point(12, 12)
+    };
+  }
+  // Línea recta, no por calles: es para darse una idea de qué tan cerca está.
+  function textoDistancia(a, b) {
+    if (!a || !b || !google.maps.geometry) return "";
+    var metros = google.maps.geometry.spherical.computeDistanceBetween(
+      new google.maps.LatLng(a.lat, a.lng), new google.maps.LatLng(b.lat, b.lng));
+    return metros < 1000 ? Math.round(metros / 10) * 10 + " m" : (metros / 1000).toFixed(1).replace(".", ",") + " km";
+  }
+
+  // Última posición GPS de este conductor (la llena el watchPosition de
+  // actualizar_ubicacion) — para dibujarse él mismo en el mapa del viaje.
+  var miPosicionConductor = null;
+
+  function pintarDistanciaPedido(pedidoId) {
+    var m = mapasPorPedido[pedidoId];
+    var el = document.querySelector('[data-distancia="' + pedidoId + '"]');
+    if (!m || !el) return;
+    var d = textoDistancia(miPosicionConductor, m.posPasajero);
+    el.textContent = d ? "El pasajero está a " + d + " (en línea recta)" : "";
+  }
+
+  function pintarMiAutoEnMapas() {
+    if (!miPosicionConductor || !googleMapsListo) return;
+    Object.keys(mapasPorPedido).forEach(function (pedidoId) {
+      var m = mapasPorPedido[pedidoId];
+      if (!m.marcadorYo) m.marcadorYo = new google.maps.Marker({ map: m.mapa, title: "Tú", icon: iconoSeguimiento(TRAZO_AUTO, "#16333F"), zIndex: 2 });
+      m.marcadorYo.setPosition(miPosicionConductor);
+      pintarDistanciaPedido(pedidoId);
+    });
+  }
+
   function pintarUbicacionPasajero(pedidoId, ubicacion) {
     if (!ubicacion) return;
     var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
@@ -2397,10 +2563,13 @@
     if (!m) return;
     var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
     if (aviso) aviso.classList.add("oculto");
-    if (!m.marcador) m.marcador = new google.maps.Marker({ map: m.mapa, title: "Pasajero" });
+    if (!m.marcador) m.marcador = new google.maps.Marker({ map: m.mapa, title: "Pasajero", icon: iconoSeguimiento(TRAZO_PERSONA, "#1A73E8"), zIndex: 1 });
     m.marcador.setPosition(pos);
+    m.posPasajero = pos;
     // Con ruta dibujada no se recentra: se pierde el encuadre de la ruta.
     if (!m.linea) m.mapa.setCenter(pos);
+    pintarMiAutoEnMapas();
+    pintarDistanciaPedido(pedidoId);
   }
 
   /* ---------------------------------------------------------------
@@ -2752,6 +2921,10 @@
         msg.className = "msg error"; ev.target.checked = false; return;
       }
       watchId = navigator.geolocation.watchPosition(function (pos) {
+        // El auto propio en el mapa se mueve con CADA lectura del GPS; lo
+        // que se limita a una vez cada 15 s es el envío al servidor.
+        miPosicionConductor = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        pintarMiAutoEnMapas();
         var ahora = Date.now();
         if (ahora - ultimoEnvio < UBICACION_MIN_MS) return;
         ultimoEnvio = ahora;

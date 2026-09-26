@@ -248,35 +248,6 @@
   }
   .btn-agregar-parada:hover { text-decoration: underline; }
 
-  .check-espera {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
-    font-size: 15px; font-weight: 500; color: var(--text-2);
-  }
-  /* Interruptor estilizado en vez de checkbox nativo: el input real queda
-     oculto (accesible) y el track/thumb visual reacciona a :checked. */
-  .check-espera input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  .switch-track {
-    width: 44px; height: 26px; border-radius: 999px; background: var(--border-strong);
-    flex: none; position: relative; transition: background-color 0.15s ease;
-  }
-  .switch-track::after {
-    content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
-    border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(16,26,32,0.3);
-    transition: transform 0.18s ease;
-  }
-  .check-espera input:checked ~ .switch-track { background: var(--primary); }
-  .check-espera input:checked ~ .switch-track::after { transform: translateX(18px); }
-  .check-espera input:focus-visible ~ .switch-track { outline: 2px solid var(--primary); outline-offset: 2px; }
-
-  /* Despliegue suave de horas/minutos al activar el interruptor. */
-  #camposEsperaHM {
-    display: grid; grid-template-rows: 0fr; overflow: hidden;
-    transition: grid-template-rows 0.25s ease, margin-top 0.25s ease, opacity 0.2s ease;
-    opacity: 0; margin-top: 0;
-  }
-  #camposEsperaHM.abierta { grid-template-rows: 1fr; opacity: 1; margin-top: 10px; }
-  #camposEsperaHM > * { min-height: 0; }
-
   /* ---------- Campos ---------- */
   .campo { display: flex; flex-direction: column; gap: 6px; }
   .campo-label { font-size: 14px; font-weight: 500; color: var(--text-2); }
@@ -328,6 +299,10 @@
   .seg-btn.active {
     background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600; box-shadow: var(--shadow-sm);
   }
+  /* Botonera de preajustes de espera: 5 opciones no entran cómodas en un
+     grid de 2 columnas fijo como "Ida y vuelta" — se envuelve en filas. */
+  .segmentado-espera { display: flex; flex-wrap: wrap; grid-template-columns: none; }
+  .segmentado-espera .seg-btn { flex: 1 1 auto; padding: 8px 10px; font-size: 13.5px; text-align: center; }
 
   /* ---------- Botones ---------- */
   .btn {
@@ -740,7 +715,9 @@
         </div>
         <div class="campo">
           <label class="campo-label" for="horaSalida">Hora</label>
-          <input type="time" id="horaSalida">
+          <!-- Texto con teclado numérico, no type="time": en Android ese
+               abre un reloj analógico incómodo. El ":" se agrega solo. -->
+          <input type="text" id="horaSalida" inputmode="numeric" placeholder="HH:MM" maxlength="5" autocomplete="off">
         </div>
       </div>
 
@@ -753,21 +730,15 @@
       </div>
 
       <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
-        <label class="check-espera">
-          <span>¿Necesitas que el conductor espere?</span>
-          <input type="checkbox" id="chkEspera">
-          <span class="switch-track" aria-hidden="true"></span>
-        </label>
-        <div class="fila" id="camposEsperaHM">
-          <div class="campo">
-            <label class="campo-label" for="esperaHoras">Horas</label>
-            <input type="number" id="esperaHoras" inputmode="numeric" min="0" step="1" value="0">
-          </div>
-          <div class="campo">
-            <label class="campo-label" for="esperaMinutos">Minutos</label>
-            <input type="number" id="esperaMinutos" inputmode="numeric" min="0" max="59" step="5" value="0">
-          </div>
+        <span class="campo-label">¿Necesitas que el conductor espere?</span>
+        <div class="segmentado segmentado-espera" role="group" aria-label="Tiempo de espera" id="grupoEspera">
+          <button class="seg-btn active" type="button" data-espera-horas="0">No requiere</button>
+          <button class="seg-btn" type="button" data-espera-horas="0.25">15 min</button>
+          <button class="seg-btn" type="button" data-espera-horas="0.5">30 min</button>
+          <button class="seg-btn" type="button" data-espera-horas="1">1 hora</button>
+          <button class="seg-btn" type="button" data-espera-horas="2">2 horas</button>
         </div>
+        <p class="nota" id="esperaExplicacion" style="margin:8px 2px 0;"></p>
       </div>
     </section>
 
@@ -838,6 +809,7 @@
       Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o Mercado Pago, no Rumbo.
     </p>
     <div id="mapaConductor"></div>
+    <p class="nota" id="distanciaConductor" style="margin:6px 2px 12px;"></p>
 
     <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
          en Uber/DiDi — antes de eso no hay conductor asignado con quien
@@ -1377,6 +1349,9 @@
 
   // Crear cuenta o "Ya tengo cuenta": mismo formulario, cambian los campos.
   var modoCuenta = "crear";
+  // true si llegó a "Mi cuenta" porque tocó "Solicitar viaje" sin sesión:
+  // al terminar de crear/ingresar se lo devuelve al viaje con un aviso.
+  var pedidoPendienteTrasCuenta = false;
   function pintarModoCuenta() {
     var crear = modoCuenta === "crear";
     document.getElementById("modoCrear").classList.toggle("active", crear);
@@ -1422,6 +1397,14 @@
       // Con la cuenta lista, lo natural es volver a lo que estaba haciendo:
       // pedir el viaje. Si ya tenía la ruta calculada, el botón ya está activo.
       mostrarPestana("cotizar");
+      if (pedidoPendienteTrasCuenta) {
+        pedidoPendienteTrasCuenta = false;
+        var pedirTexto = document.getElementById("pedirTexto");
+        pedirTexto.textContent = "Listo, ya puedes solicitar tu viaje.";
+        pedirTexto.className = "nota";
+        var btnPedir = document.getElementById("btnPedir");
+        if (btnPedir.offsetParent !== null) btnPedir.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
       msg.className = "nota error";
@@ -1573,6 +1556,8 @@
   function calcularTarifaHoraria() {
     var fechaStr = document.getElementById("fechaSalida").value;
     var horaStr = document.getElementById("horaSalida").value;
+    // Mientras se escribe ("18:3") la hora está a medias: se trata como vacía.
+    if (!horaValida(horaStr)) horaStr = "";
     var fecha = fechaStr ? fechaLocal(fechaStr) : new Date();
     var punta = calcularPunta(fecha, horaStr);
     return { punta: punta, valorHora: punta ? tarifas.valorHoraPunta : tarifas.valorHoraValle };
@@ -1678,33 +1663,79 @@
     }, { maximumAge: 30000, timeout: 8000 });
   });
 
-  function obtenerHorasEspera() {
-    if (!document.getElementById("chkEspera").checked) return 0;
-    var h = parseFloat(document.getElementById("esperaHoras").value) || 0;
-    var m = parseFloat(document.getElementById("esperaMinutos").value) || 0;
-    return h + (m / 60);
+  // Hora escrita con teclado numérico: se deja solo dígitos y se inserta
+  // el ":" después de las horas ("1830" → "18:30"). Borrar funciona normal
+  // porque solo se reformatea cuando hay más de 2 dígitos.
+  function horaValida(v) { return /^([01]\d|2[0-3]):[0-5]\d$/.test(v); }
+
+  // Fecha/hora que el pasajero confirmó al cotizar. Si toca los campos
+  // después, el precio mostrado deja de valer (punta/valle cambia): se
+  // oculta y se le pide recalcular, en vez de pedir con otra hora.
+  var fechaHoraCotizada = null;
+  function invalidarCotizacionPorFecha() {
+    if (!fechaHoraCotizada) return;
+    fechaHoraCotizada = null;
+    document.getElementById("tarjetaPrecio").style.display = "none";
+    document.getElementById("btnPedir").disabled = true;
+    var t = document.getElementById("buscarAutoTexto");
+    t.textContent = "Cambiaste el día o la hora: vuelve a calcular el precio.";
+    t.className = "nota";
   }
-  document.getElementById("chkEspera").addEventListener("change", function (ev) {
-    document.getElementById("camposEsperaHM").classList.toggle("abierta", ev.target.checked);
-    calcularTotal();
+  document.getElementById("fechaSalida").addEventListener("input", invalidarCotizacionPorFecha);
+  document.getElementById("fechaSalida").addEventListener("change", invalidarCotizacionPorFecha);
+  document.getElementById("horaSalida").addEventListener("input", invalidarCotizacionPorFecha);
+  document.getElementById("horaSalida").addEventListener("input", function (ev) {
+    var d = ev.target.value.replace(/\D/g, "");
+    // Una hora que empieza con 3-9 solo puede ser de un dígito ("9" = 09):
+    // así "930" se ve "09:30" mientras se escribe, no "93:0".
+    if (d.length && d.charAt(0) > "2") d = "0" + d;
+    d = d.slice(0, 4);
+    ev.target.value = d.length > 2 ? d.slice(0, 2) + ":" + d.slice(2) : d;
   });
-  document.getElementById("esperaHoras").addEventListener("input", calcularTotal);
-  document.getElementById("esperaMinutos").addEventListener("input", calcularTotal);
+  document.getElementById("horaSalida").addEventListener("blur", function (ev) {
+    // Solo se completa lo que no tiene ":" todavía ("930" → "09:30",
+    // "9" → "09:00"). Si ya tiene ":" (ej. "18:3" tras borrar un dígito)
+    // NO se reinterpreta: quedaría "01:83"; se deja y la validación avisa.
+    var v = ev.target.value;
+    if (v.indexOf(":") !== -1) return;
+    var d = v.replace(/\D/g, "");
+    if (d.length === 3) ev.target.value = "0" + d.slice(0, 1) + ":" + d.slice(1);
+    else if (d.length === 1 || d.length === 2) ev.target.value = d.padStart(2, "0") + ":00";
+  });
+
+  // Preajustes en vez de inputs de horas/minutos sueltos: menos fricción
+  // y sin combinaciones raras (ej. "0 h 0 min" marcado como "necesito
+  // espera"). El valor en horas de cada botón viaja en data-espera-horas.
+  var horasEsperaSeleccionadas = 0;
+  var EXPLICACION_ESPERA = {
+    "0": "El conductor no te espera: solo te lleva al destino.",
+    "0.25": "El conductor te espera 15 minutos en el destino antes de volver.",
+    "0.5": "El conductor te espera 30 minutos en el destino antes de volver.",
+    "1": "El conductor te espera 1 hora en el destino antes de volver.",
+    "2": "El conductor te espera 2 horas en el destino antes de volver."
+  };
+  function obtenerHorasEspera() { return horasEsperaSeleccionadas; }
+  function elegirEspera(horas) {
+    horasEsperaSeleccionadas = horas;
+    document.querySelectorAll("#grupoEspera .seg-btn").forEach(function (b) {
+      b.classList.toggle("active", parseFloat(b.dataset.esperaHoras) === horas);
+    });
+    document.getElementById("esperaExplicacion").textContent = EXPLICACION_ESPERA[String(horas)] || "";
+    calcularTotal();
+  }
+  document.querySelectorAll("#grupoEspera .seg-btn").forEach(function (b) {
+    b.addEventListener("click", function () { elegirEspera(parseFloat(b.dataset.esperaHoras)); });
+  });
 
   function setTipoRegreso(vuelta) {
     idaYVuelta = vuelta;
     document.getElementById("tipoIdaVuelta").classList.toggle("active", vuelta);
     document.getElementById("tipoSoloIda").classList.toggle("active", !vuelta);
-    document.getElementById("filaEspera").style.display = vuelta ? "grid" : "none";
-    if (!vuelta) {
-      // "Solo ida" no tiene espera antes de un regreso que no existe:
-      // se limpia el casillero para que no quede una marca vieja
-      // esperando a que se vuelva a activar "Ida y vuelta".
-      document.getElementById("chkEspera").checked = false;
-      document.getElementById("camposEsperaHM").classList.remove("abierta");
-      document.getElementById("esperaHoras").value = "0";
-      document.getElementById("esperaMinutos").value = "0";
-    }
+    document.getElementById("filaEspera").style.display = vuelta ? "block" : "none";
+    // "Solo ida" no tiene espera antes de un regreso que no existe: se
+    // vuelve a "No requiere" para que no quede una marca vieja esperando
+    // a que se vuelva a activar "Ida y vuelta".
+    if (!vuelta) elegirEspera(0);
     actualizarBotonAgregarParada();
     calcularTotal();
   }
@@ -1716,8 +1747,6 @@
      de dirección entre el origen y el destino.
      --------------------------------------------------------------- */
   var MAX_PARADAS = 4;
-  var contadorParadas = 0;
-
   function obtenerParadas() {
     var valores = [];
     document.querySelectorAll("#paradasContenedor input").forEach(function (input) {
@@ -1730,8 +1759,10 @@
   function agregarFilaParada() {
     var contenedor = document.getElementById("paradasContenedor");
     if (contenedor.querySelectorAll(".parada-fila").length >= MAX_PARADAS) return;
-    contadorParadas++;
-    var id = "parada" + contadorParadas;
+    // Date.now() en vez de un contador secuencial: si se agrega y borra
+    // rápido, dos paradas nunca terminan compartiendo el mismo id aunque
+    // el contador visible ("Parada 1/2/3") se reordene después.
+    var id = "parada" + Date.now();
     var fila = document.createElement("div");
     fila.className = "parada-fila";
     fila.innerHTML =
@@ -1747,10 +1778,26 @@
     fila.querySelector(".btn-quitar-parada").addEventListener("click", function () {
       fila.remove();
       quitarMarcadorCotizar(id);
+      renumerarParadas();
       actualizarBotonAgregarParada();
     });
     if (googleMapsListo) configurarAutocompleteInput(fila.querySelector("input"), id);
+    renumerarParadas();
     actualizarBotonAgregarParada();
+  }
+
+  // Al borrar una parada del medio (ej. la 2 de 3), las que quedan se
+  // renombran "Parada 1/2/3" en orden, sin huecos — el id interno de cada
+  // input NO cambia (sigue siendo su "paradaN" único), solo la etiqueta
+  // visible y el placeholder.
+  function renumerarParadas() {
+    document.querySelectorAll("#paradasContenedor .parada-fila").forEach(function (fila, i) {
+      var numero = i + 1;
+      var input = fila.querySelector("input");
+      var label = fila.querySelector("label");
+      input.placeholder = "Parada intermedia " + numero;
+      if (label) label.textContent = "Parada intermedia " + numero;
+    });
   }
 
   function actualizarBotonAgregarParada() {
@@ -1777,8 +1824,58 @@
       document.getElementById("nombreTercero").focus();
       return;
     }
-    var fecha = document.getElementById("fechaSalida").value;
-    var hora = document.getElementById("horaSalida").value;
+    // Sin fecha u hora se asume "ahora". Y SIEMPRE se le confirma para
+    // cuándo queda el viaje antes de cotizar (decisión de Alberto): el
+    // precio cambia entre punta y valle, así que no puede quedar a la duda.
+    // Componentes LOCALES a mano: toISOString() da la fecha en UTC y de
+    // noche en Chile ya sería "mañana".
+    var inputFecha = document.getElementById("fechaSalida");
+    var inputHora = document.getElementById("horaSalida");
+    var ahora = new Date();
+    var dos = function (n) { return String(n).padStart(2, "0"); };
+    var aFechaStr = function (d) { return d.getFullYear() + "-" + dos(d.getMonth() + 1) + "-" + dos(d.getDate()); };
+    var hoyStr = aFechaStr(ahora);
+    // El conductor necesita al menos 15 min para llegar: esa es la salida
+    // más temprana posible. Se calcula como fecha completa porque a las
+    // 23:50 el mínimo ya cae al día siguiente.
+    var minimo = new Date(ahora.getTime() + 15 * 60 * 1000);
+    if (!inputFecha.value && !inputHora.value) {
+      inputFecha.value = aFechaStr(minimo);
+      inputHora.value = dos(minimo.getHours()) + ":" + dos(minimo.getMinutes());
+    } else if (!inputFecha.value) {
+      inputFecha.value = hoyStr;
+    } else if (!inputHora.value) {
+      inputHora.value = inputFecha.value === aFechaStr(minimo) ? dos(minimo.getHours()) + ":" + dos(minimo.getMinutes()) : "09:00";
+    }
+    if (!horaValida(inputHora.value)) {
+      textoEl.textContent = "Escribe la hora como HH:MM, por ejemplo 08:30 o 18:45.";
+      textoEl.className = "nota error";
+      inputHora.focus();
+      return;
+    }
+    var elegido = new Date(inputFecha.value + "T" + inputHora.value + ":00");
+    // Tolerancia de 1 min: si el mínimo se autocompletó y el pasajero tardó
+    // unos segundos en tocar "Calcular", no se le rechaza por eso.
+    if (elegido.getTime() < minimo.getTime() - 60 * 1000) {
+      inputFecha.value = aFechaStr(minimo);
+      inputHora.value = dos(minimo.getHours()) + ":" + dos(minimo.getMinutes());
+      textoEl.textContent = "La salida más temprana es en 15 minutos: la ajusté a las " + inputHora.value + ". Revísala y vuelve a calcular.";
+      textoEl.className = "nota error";
+      inputHora.focus();
+      return;
+    }
+    var cuando = (inputFecha.value === hoyStr ? "hoy" : "el " + inputFecha.value.split("-").reverse().join("/")) + " a las " + inputHora.value;
+    if (!confirm("Tu viaje quedará para " + cuando + ". ¿Está bien así?")) {
+      textoEl.textContent = "Corrige el día o la hora de tu viaje y vuelve a calcular.";
+      textoEl.className = "nota";
+      inputHora.focus();
+      return;
+    }
+    var fecha = inputFecha.value;
+    var hora = inputHora.value;
+    // Lo que el pasajero confirmó es lo que se pide (ver btnPedir): el
+    // precio depende de punta/valle, así que no puede cambiar después.
+    fechaHoraCotizada = { fecha: fecha, hora: hora };
     var departureTime = "";
     if (fecha && hora) {
       var local = new Date(fecha + "T" + hora + ":00");
@@ -1827,12 +1924,35 @@
     var pedirTexto = document.getElementById("pedirTexto");
     var sesion = obtenerSesionPasajero();
     if (!sesion || !sesion.token) {
-      pedirTexto.textContent = "Necesitas una cuenta para solicitar el viaje — te llevo ahí.";
-      pedirTexto.className = "nota error";
+      // El aviso va en la pestaña de cuenta (la que queda a la vista), no
+      // en la de cotizar que se deja atrás — antes el pasajero no veía
+      // ningún mensaje y no entendía por qué lo mandaban ahí.
+      pedidoPendienteTrasCuenta = true;
       mostrarPestana("cuenta");
+      var cuentaMsg = document.getElementById("cuentaMsg");
+      cuentaMsg.textContent = "Para solicitar tu viaje necesitas completar tus datos. Tu ruta y precio quedan guardados.";
+      cuentaMsg.className = "nota error";
+      var primeroVacio = ["nombreCliente", "telefonoCliente", "correoCliente", "claveCliente"]
+        .map(function (id) { return document.getElementById(id); })
+        .filter(function (el) { return el.offsetParent !== null && !el.value.trim(); })[0];
+      if (primeroVacio) primeroVacio.focus();
       return;
     }
     if (!rutaActual) return;
+    if (!fechaHoraCotizada) {
+      pedirTexto.textContent = "Vuelve a calcular el precio antes de solicitar.";
+      pedirTexto.className = "nota error";
+      return;
+    }
+    // Entre cotizar y pedir pueden pasar minutos: se vuelve a exigir el
+    // mínimo de 15 min desde ahora con la hora que confirmó.
+    var salida = new Date(fechaHoraCotizada.fecha + "T" + fechaHoraCotizada.hora + ":00");
+    if (salida.getTime() < Date.now() + 14 * 60 * 1000) {
+      invalidarCotizacionPorFecha();
+      pedirTexto.textContent = "Esa hora de salida ya quedó muy cerca. Vuelve a calcular el precio.";
+      pedirTexto.className = "nota error";
+      return;
+    }
 
     var btn = document.getElementById("btnPedir");
     btn.disabled = true;
@@ -1851,8 +1971,8 @@
       destino: document.getElementById("destino").value.trim(),
       nombre_pasajero: esParaOtro ? document.getElementById("nombreTercero").value.trim() : "",
       paradas: obtenerParadas().join("|"),
-      fecha: document.getElementById("fechaSalida").value,
-      hora: document.getElementById("horaSalida").value,
+      fecha: fechaHoraCotizada.fecha,
+      hora: fechaHoraCotizada.hora,
       ida_vuelta: idaYVuelta ? "SI" : "NO",
       horas_espera: idaYVuelta ? obtenerHorasEspera() : 0
     }).then(function (res) {
@@ -2013,6 +2133,7 @@
     var nota = document.getElementById("notaPago");
     dejarDeCompartirUbicacion();
     if (mapaTimer) { clearInterval(mapaTimer); mapaTimer = null; }
+    document.getElementById("distanciaConductor").textContent = ""; // ya llegó: la distancia no aplica
     pintarDesgloseFinal(res);
 
     if (res.estado_pago === "PENDIENTE" && res.mp_link) {
@@ -2162,6 +2283,10 @@
   function compartirMiUbicacion() {
     if (!navigator.geolocation || watchIdPasajero !== null) return;
     watchIdPasajero = navigator.geolocation.watchPosition(function (pos) {
+      // Él mismo en el mapa se mueve con cada lectura del GPS; lo que se
+      // limita a una vez cada 15 s es el envío al servidor.
+      miPosicionPasajero = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      pintarmeEnMapa();
       var ahora = Date.now();
       if (ahora - ultimoEnvioUbic < UBIC_MIN_MS) return;
       ultimoEnvioUbic = ahora;
@@ -2192,13 +2317,48 @@
     crearMapaConductor();
   }
 
+  /* Íconos del seguimiento: auto = conductor, persona = pasajero (mismos
+     trazos en la app del conductor). Trazos de Material Icons (licencia
+     Apache 2.0), en un lienzo de 24x24 anclado al centro. */
+  var TRAZO_AUTO = "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z";
+  var TRAZO_PERSONA = "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z";
+  function iconoSeguimiento(trazo, color) {
+    return {
+      path: trazo, fillColor: color, fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 1.5,
+      scale: 1.4, anchor: new google.maps.Point(12, 12)
+    };
+  }
+
+  // Posiciones conocidas del viaje en curso, para dibujar la distancia.
+  var posConductor = null, miPosicionPasajero = null, marcadorYoPasajero = null;
+
+  // Línea recta, no por calles: es para darse una idea de qué tan cerca está.
+  function pintarDistanciaConductor() {
+    var el = document.getElementById("distanciaConductor");
+    if (!el) return;
+    if (!posConductor || !miPosicionPasajero || !window.google || !google.maps.geometry) { el.textContent = ""; return; }
+    var metros = google.maps.geometry.spherical.computeDistanceBetween(
+      new google.maps.LatLng(posConductor.lat, posConductor.lng),
+      new google.maps.LatLng(miPosicionPasajero.lat, miPosicionPasajero.lng));
+    var txt = metros < 1000 ? Math.round(metros / 10) * 10 + " m" : (metros / 1000).toFixed(1).replace(".", ",") + " km";
+    el.textContent = "Tu conductor está a " + txt + " (en línea recta)";
+  }
+
+  function pintarmeEnMapa() {
+    if (!mapa || !miPosicionPasajero) return;
+    if (!marcadorYoPasajero) marcadorYoPasajero = new google.maps.Marker({ map: mapa, title: "Tú", icon: iconoSeguimiento(TRAZO_PERSONA, "#1A73E8"), zIndex: 1 });
+    marcadorYoPasajero.setPosition(miPosicionPasajero);
+    pintarDistanciaConductor();
+  }
+
   function crearMapaConductor() {
     mapa = new google.maps.Map(document.getElementById("mapaConductor"), {
       zoom: 13, center: { lat: -33.45, lng: -70.66 },
       disableDefaultUI: true, zoomControl: true
     });
-    marker = new google.maps.Marker({ map: mapa, title: "Conductor" });
+    marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoSeguimiento(TRAZO_AUTO, "#16333F"), zIndex: 2 });
     dibujarRutaViaje();
+    pintarmeEnMapa();
   }
 
   var lineaRuta = null;
@@ -2218,6 +2378,8 @@
     var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
     if (isNaN(pos.lat) || isNaN(pos.lng)) return;
     marker.setPosition(pos);
+    posConductor = pos;
+    pintarDistanciaConductor();
     if (!lineaRuta) mapa.setCenter(pos);
   }
 
@@ -2226,8 +2388,10 @@
     var sesionUbic = obtenerSesionPasajero();
     api({ accion: "ubicacion_pedido", pedido_id: pedidoActualId, pasajero_token: sesionUbic ? sesionUbic.token : "" }).then(function (res) {
       if (!res.ok || !res.ubicacion) return;
-      var pos = { lat: res.ubicacion.lat, lng: res.ubicacion.lng };
+      var pos = { lat: Number(res.ubicacion.lat), lng: Number(res.ubicacion.lng) };
       marker.setPosition(pos);
+      posConductor = pos;
+      pintarDistanciaConductor();
       mapa.setCenter(pos);
     });
   }
@@ -2241,6 +2405,7 @@
     document.getElementById("notaPago").style.display = "none";
     pedidoActualId = null;
     rutaActual = null;
+    fechaHoraCotizada = null;
     limpiarMapaCotizar();
     ultimoMensajeEn = "";
     rutaViajeCodificada = "";
@@ -2253,6 +2418,13 @@
     document.getElementById("tarjetaPrecio").style.display = "none";
     document.getElementById("buscarAutoTexto").textContent = "";
     document.getElementById("mapaConductor").style.display = "none";
+    // El próximo viaje puede ser con otro conductor: no arrastrar su
+    // posición ni la distancia del viaje anterior.
+    posConductor = null;
+    miPosicionPasajero = null;
+    if (marcadorYoPasajero) marcadorYoPasajero.setPosition(null);
+    if (marker) marker.setPosition(null);
+    document.getElementById("distanciaConductor").textContent = "";
     document.getElementById("cardChat").style.display = "none";
     document.getElementById("chatMensajes").innerHTML = "";
     document.getElementById("cardCalificar").style.display = "none";
@@ -2263,6 +2435,7 @@
   });
 
   actualizarBotonAgregarParada();
+  elegirEspera(0); // pinta el texto explicativo de "No requiere" desde el arranque
   cargarTarifas();
   if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();
