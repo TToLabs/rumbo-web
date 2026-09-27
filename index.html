@@ -1319,7 +1319,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 25;
+  var APP_VERSION = 26;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1855,7 +1855,25 @@
       var geocoder = new google.maps.Geocoder();
       geocoder.geocode({ location: coords }, function (resultados, estado) {
         boton.classList.remove("cargando");
-        var direccion = (estado === "OK" && resultados[0]) ? resultados[0].formatted_address : (coords.lat.toFixed(5) + ", " + coords.lng.toFixed(5));
+        // El primer resultado a veces es un "Plus Code" (ej. "8V6X+2W
+        // Santiago") en vez de la calle, cuando el GPS no cae justo sobre
+        // una dirección — el backend no puede cotizar con eso. Se prefiere
+        // el primer resultado que sea una dirección de calle de verdad;
+        // si ninguno lo es, se usa igual el primero (más específico que
+        // nada), nunca las coordenadas en texto plano — el cotizador
+        // necesita una dirección, no puede geocodificar "lat, lng".
+        var direccion = null;
+        if (estado === "OK" && resultados && resultados.length) {
+          var deCalle = resultados.filter(function (r) {
+            return r.types && (r.types.indexOf("street_address") !== -1 || r.types.indexOf("route") !== -1 || r.types.indexOf("premise") !== -1);
+          })[0];
+          direccion = (deCalle || resultados[0]).formatted_address;
+        }
+        if (!direccion) {
+          document.getElementById("buscarAutoTexto").textContent = "No se pudo reconocer una dirección en tu ubicación. Escribe el origen a mano.";
+          document.getElementById("buscarAutoTexto").className = "nota error";
+          return;
+        }
         var input = document.getElementById("origen");
         input.value = direccion;
         input.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
