@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Seguimiento de viaje — Rumbo</title>
+<!-- Página pública, SIN login: la comparte un pasajero de Rumbo para que
+     alguien sin la app (o sin cuenta) vea el auto en vivo. No vive dentro
+     de la app compilada — se hostea junto al resto del mirror público en
+     GitHub Pages (rumbo-web). Nunca expone datos del pasajero, solo lo
+     necesario para seguir el viaje: ver seguimientoPublico() en el backend. -->
+<style>
+  :root {
+    --bg: #F2F4F5; --surface: #FFFFFF; --surface-2: #F4F8F9;
+    --border: #DCE6E9; --text: #101A20; --text-2: #55666D; --text-3: #859097;
+    --primary: #0A1F44; --primary-ink: #FFFFFF;
+    --accent: #0B7A4B; --accent-soft: #E6F4ED;
+    --warn: #9A6B00; --warn-soft: #FBF1DC;
+    --danger: #B3392B; --danger-soft: #FBEDEB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  header {
+    background: var(--primary); color: var(--primary-ink);
+    padding: 18px 16px; font-size: 17px; font-weight: 700;
+  }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; margin-bottom: 14px;
+  }
+  #mapa { width: 100%; height: 320px; border-radius: 12px; background: var(--surface-2); }
+  .estado {
+    display: inline-block; padding: 5px 12px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; margin-bottom: 10px;
+  }
+  .estado.pendiente { background: var(--warn-soft); color: var(--warn); }
+  .estado.confirmado { background: var(--accent-soft); color: var(--accent); }
+  .estado.completado { background: var(--surface-2); color: var(--text-2); }
+  .estado.error { background: var(--danger-soft); color: var(--danger); }
+  .ruta-linea { font-size: 14.5px; margin: 4px 0; }
+  .ruta-linea b { color: var(--text-3); font-weight: 600; }
+  .conductor { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .conductor-nombre { font-weight: 700; font-size: 15px; }
+  .conductor-auto { font-size: 13.5px; color: var(--text-2); }
+  .nota { font-size: 13px; color: var(--text-3); text-align: center; padding: 24px 8px; }
+</style>
+</head>
+<body>
+  <header>Rumbo — Seguimiento de viaje</header>
+  <main>
+    <div class="card">
+      <span class="estado pendiente" id="estado">Cargando...</span>
+      <div class="ruta-linea"><b>Desde:</b> <span id="origen">—</span></div>
+      <div class="ruta-linea"><b>Hasta:</b> <span id="destino">—</span></div>
+      <div class="conductor" id="conductorInfo" style="display:none;">
+        <div>
+          <div class="conductor-nombre" id="conductorNombre"></div>
+          <div class="conductor-auto" id="conductorAuto"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="cardMapa" style="display:none;">
+      <div id="mapa"></div>
+    </div>
+    <p class="nota" id="notaVacia" style="display:none;">Este link de seguimiento ya no está disponible (el viaje terminó hace tiempo o el link es incorrecto).</p>
+  </main>
+
+<script>
+(function () {
+  var API_URL = "https://script.google.com/macros/s/AKfycbwMr2YGxsGkz2RarJ1kCbAgmQMp10VHXvKjKwXJjEE01Py7tggqN3DK4XibnXpAjEMb/exec";
+  var GOOGLE_MAPS_JS_KEY = "AIzaSyBvkEjQdOsFN7CM2EpRXoY5iuh-OgA6js4";
+  var token = new URLSearchParams(window.location.search).get("t");
+
+  var mapa = null, marcadorAuto = null, linea = null, googleListo = false;
+  var TRAZO_AUTO = "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z";
+
+  function cargarGoogleMaps() {
+    if (window.google && window.google.maps) { googleListo = true; return; }
+    var script = document.createElement("script");
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry&callback=alGoogleMapsListo";
+    document.head.appendChild(script);
+  }
+  window.alGoogleMapsListo = function () {
+    googleListo = true;
+    mapa = new google.maps.Map(document.getElementById("mapa"), {
+      zoom: 13, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true
+    });
+  };
+
+  function dibujarRuta(polilinea) {
+    if (!mapa || linea || !polilinea || !google.maps.geometry) return;
+    var puntos = google.maps.geometry.encoding.decodePath(polilinea);
+    if (!puntos.length) return;
+    linea = new google.maps.Polyline({ map: mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    var limites = new google.maps.LatLngBounds();
+    puntos.forEach(function (p) { limites.extend(p); });
+    mapa.fitBounds(limites, 30);
+  }
+
+  function pintar(res) {
+    if (!res.ok) {
+      document.getElementById("estado").className = "estado error";
+      document.getElementById("estado").textContent = "No disponible";
+      document.getElementById("notaVacia").style.display = "block";
+      document.querySelector(".card").style.display = "none";
+      return;
+    }
+    document.getElementById("origen").textContent = res.origen || "—";
+    document.getElementById("destino").textContent = res.destino || "—";
+    var estadoEl = document.getElementById("estado");
+    var etiquetas = { PENDIENTE: ["Buscando conductor", "pendiente"], CONFIRMADO: ["Viaje en curso", "confirmado"], COMPLETADO: ["Viaje terminado", "completado"], SIN_CONDUCTOR: ["No se pudo asignar un conductor", "error"], CANCELADO: ["Viaje cancelado", "error"] };
+    var e = etiquetas[res.estado] || [res.estado, "pendiente"];
+    estadoEl.textContent = e[0];
+    estadoEl.className = "estado " + e[1];
+
+    if (res.conductor) {
+      document.getElementById("conductorInfo").style.display = "flex";
+      document.getElementById("conductorNombre").textContent = "Conductor: " + res.conductor.nombre;
+      var auto = [res.conductor.vehiculo_marca, res.conductor.vehiculo_modelo, res.conductor.vehiculo_color].filter(Boolean).join(" · ");
+      if (res.conductor.vehiculo_patente) auto += (auto ? " — " : "") + res.conductor.vehiculo_patente;
+      document.getElementById("conductorAuto").textContent = auto;
+    }
+
+    if (res.estado === "CONFIRMADO") {
+      document.getElementById("cardMapa").style.display = "block";
+      cargarGoogleMaps();
+      var intento = function () {
+        if (!googleListo) { setTimeout(intento, 400); return; }
+        dibujarRuta(res.polilinea);
+        if (res.ubicacion) {
+          var pos = { lat: Number(res.ubicacion.lat), lng: Number(res.ubicacion.lng) };
+          if (!marcadorAuto) marcadorAuto = new google.maps.Marker({ map: mapa, icon: { path: TRAZO_AUTO, fillColor: "#16333F", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 1.5, scale: 1.4, anchor: new google.maps.Point(12, 12) } });
+          marcadorAuto.setPosition(pos);
+          if (!linea) mapa.setCenter(pos);
+        }
+      };
+      intento();
+    }
+
+    // Deja de sondear cuando ya no tiene sentido: viaje terminado o no asignado.
+    if (res.estado === "COMPLETADO" || res.estado === "SIN_CONDUCTOR" || res.estado === "CANCELADO") clearInterval(sondeo);
+  }
+
+  function consultar() {
+    fetch(API_URL + "?accion=seguimiento_publico&t=" + encodeURIComponent(token || ""))
+      .then(function (r) { return r.json(); })
+      .then(pintar)
+      .catch(function () { /* reintenta en el próximo sondeo */ });
+  }
+
+  if (!token) {
+    pintar({ ok: false });
+  } else {
+    consultar();
+    var sondeo = setInterval(consultar, 5000);
+  }
+})();
+</script>
+</body>
+</html>

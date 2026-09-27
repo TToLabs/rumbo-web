@@ -832,6 +832,16 @@
       </label>
     </div>
     </div></details>
+    <details class="acordeon simple"><summary>Navegación GPS</summary><div class="acordeon-cuerpo">
+    <div class="campo">
+      <span class="campo-label">Con qué app navegar al iniciar un viaje</span>
+      <div class="segmentado" role="group" aria-label="App de navegación" id="grupoGps">
+        <button class="seg-btn active" type="button" data-gps="WAZE">Waze</button>
+        <button class="seg-btn" type="button" data-gps="GOOGLE_MAPS">Google Maps</button>
+      </div>
+      <p class="msg" style="margin:8px 2px 0;font-size:12.5px;">Al tocar "Iniciar viaje" se abre sola, con la ruta hacia el destino ya cargada.</p>
+    </div>
+    </div></details>
     <details class="acordeon simple"><summary>Cobrar con Mercado Pago</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMercadoPago">
       <div class="card-head"><span class="card-title">Cobrar con Mercado Pago</span></div>
@@ -1135,7 +1145,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 23;
+  var APP_VERSION = 24;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1327,7 +1337,7 @@
     if (cual === "ajustes") {
       var ses = obtenerSesion();
       var c = ses ? ses.conductor : {};
-      if (MODO === "conductor") { cargarEstadoMp(); cargarEstadoRed(); }
+      if (MODO === "conductor") { cargarEstadoMp(); cargarEstadoRed(); cargarPreferenciaGps(); }
       if (MODO === "admin") { cargarConductoresAdmin(); cargarHistorial(); }
     }
     // El admin ve acá si un conductor se conectó/desconectó, cambió su
@@ -1374,6 +1384,9 @@
     cargarGoogleMaps();
     pintarVehiculo(sesion.conductor);
     pintarMiQr(sesion.conductor);
+    // Se carga acá (no solo al abrir Ajustes) para que ya esté lista la
+    // primera vez que toque "Iniciar viaje" en esta sesión.
+    cargarPreferenciaGps();
     pedirPermisoNotificaciones();
     if (sondeoTimer) clearInterval(sondeoTimer);
     sondeoTimer = setInterval(sincronizar, SONDEO_MS);
@@ -1685,6 +1698,29 @@
     }).catch(function (err) {
       ev.target.disabled = false; ev.target.checked = !deseado;
       alert("Error de red: " + err.message);
+    });
+  });
+
+  // Con qué app se navega automático al tocar "Iniciar viaje" (como Uber:
+  // se elige una vez acá, no se pregunta cada viaje). gpsPreferido vive en
+  // este cierre y lo usa el handler de data-iniciar más abajo.
+  var gpsPreferido = "WAZE";
+  function pintarGps(valor) {
+    gpsPreferido = valor === "GOOGLE_MAPS" ? "GOOGLE_MAPS" : "WAZE";
+    document.querySelectorAll("#grupoGps .seg-btn").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.gps === gpsPreferido);
+    });
+  }
+  function cargarPreferenciaGps() {
+    api({ accion: "mi_gps" }).then(function (res) { if (res.ok) pintarGps(res.gps); });
+  }
+  document.querySelectorAll("#grupoGps .seg-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var anterior = gpsPreferido;
+      pintarGps(b.dataset.gps); // optimista: se nota al toque
+      apiPost({ accion: "cambiar_mi_gps", gps: b.dataset.gps }).then(function (res) {
+        if (!res.ok) { pintarGps(anterior); alert("No se pudo cambiar: " + res.error); }
+      }).catch(function (err) { pintarGps(anterior); alert("Error de red: " + err.message); });
     });
   });
 
@@ -2441,7 +2477,7 @@
       // Iniciar viaje: desde ahí el servidor mide el tiempo y los km reales.
       (p.inicio_viaje_en
         ? '<p class="msg ok" style="margin:14px 2px 6px;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>'
-        : '<button class="btn btn-medio" style="width:100%;margin-top:14px;" data-iniciar="' + escapar(p.pedido_id) + '">Iniciar viaje</button>' +
+        : '<button class="btn btn-medio" style="width:100%;margin-top:14px;" data-iniciar="' + escapar(p.pedido_id) + '" data-destino="' + escapar(p.destino) + '">Iniciar viaje</button>' +
           '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">Tócalo cuando el pasajero suba: así se miden el tiempo y los km reales del viaje.</p>') +
       // Finalizar = cobrar: el conductor elige cómo le paga el pasajero.
       '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">' +
@@ -2671,6 +2707,16 @@
         if (!res.ok) { alert("Error: " + res.error); iniciar.disabled = false; return; }
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
+        // Con el pasajero ya arriba, se navega solo hacia el destino (antes
+        // el link manual apuntaba al origen, para ir a buscarlo). Ninguna
+        // de las dos apps acepta más de UN destino por link: si hay
+        // paradas intermedias, no se agregan acá.
+        if (iniciar.dataset.destino) {
+          var urlGps = gpsPreferido === "GOOGLE_MAPS"
+            ? "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(iniciar.dataset.destino) + "&travelmode=driving"
+            : "https://waze.com/ul?q=" + encodeURIComponent(iniciar.dataset.destino) + "&navigate=yes";
+          window.open(urlGps, "_system");
+        }
       }).catch(function (err) { alert("Error de red: " + err.message); iniciar.disabled = false; });
       return;
     }

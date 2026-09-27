@@ -304,6 +304,30 @@
   .segmentado-espera { display: flex; flex-wrap: wrap; grid-template-columns: none; }
   .segmentado-espera .seg-btn { flex: 1 1 auto; padding: 8px 10px; font-size: 13.5px; text-align: center; }
 
+  /* Chips de contactos frecuentes ("Para otra persona"): aparecen con un
+     fade-in suave, uno por contacto ya usado antes, para completar nombre
+     (y WhatsApp si se guardó) con un toque. */
+  .chips-contactos {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+    animation: chips-entrada 0.2s ease;
+  }
+  @keyframes chips-entrada { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .chip-contacto {
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2);
+    font: inherit; font-size: 13.5px; font-weight: 500; padding: 7px 14px;
+    border-radius: 999px; cursor: pointer;
+  }
+  .chip-contacto:hover { background: var(--primary-soft); color: var(--primary-soft-ink); border-color: transparent; }
+
+  /* ---------- Mis viajes (historial) ---------- */
+  .viaje-fila {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .viaje-fila:last-child { border-bottom: none; }
+  .viaje-ruta { font-size: 14.5px; font-weight: 600; color: var(--text); }
+  .viaje-detalle { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
   /* ---------- Botones ---------- */
   .btn {
     width: 100%; border: none; border-radius: var(--r-btn); cursor: pointer;
@@ -660,10 +684,14 @@
         </div>
       </div>
       <div class="campo" id="filaNombreTercero" style="display:none;margin-bottom:14px;">
+        <div class="chips-contactos" id="chipsContactos" style="display:none;"></div>
         <label class="campo-label" for="nombreTercero">Nombre de quien viaja</label>
         <input type="text" id="nombreTercero" placeholder="Nombre y apellido" autocomplete="off">
+        <label class="campo-label" for="telefonoTercero" style="margin-top:10px;">WhatsApp de quien viaja (opcional)</label>
+        <input type="text" id="telefonoTercero" placeholder="56912345678" inputmode="numeric" autocomplete="off">
       </div>
 
+      <div class="chips-contactos" id="chipsDirecciones" style="display:none;"></div>
       <div class="ruta">
         <span class="ruta-marca"><span class="punto-origen"></span></span>
         <div class="ruta-input-wrap">
@@ -790,6 +818,7 @@
   <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <p class="nota" id="estadoDetalle" style="margin:0 2px 16px;"></p>
+    <button type="button" class="btn btn-chico" id="btnCompartirViaje" style="display:none;width:100%;margin-bottom:16px;">Compartir mi viaje en vivo</button>
     <!-- Conductor asignado y su vehículo: aparece al confirmarse el viaje. -->
     <p class="nota" id="avisoDerivado" style="display:none;margin:0 2px 12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);">
       Tu conductor habitual no estaba disponible. Tu viaje lo tomó otro conductor de la red, al mismo precio.
@@ -906,6 +935,14 @@
       <p class="nota" id="cuentaEditMsg" style="margin:10px 2px 0;"></p>
     </section>
 
+    <section class="card" id="cardViajes" style="display:none;">
+      <div class="card-head">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
+        <span class="card-title">Mis viajes</span>
+      </div>
+      <div id="listaViajes"><p class="nota" style="margin:0;">Todavía no tienes viajes terminados.</p></div>
+    </section>
+
     <section class="card" id="cardClavePasajero" style="display:none;" data-enter="btnCambiarClavePasajero">
       <div class="card-head"><span class="card-title">Cambiar clave</span></div>
       <div class="campo" style="margin-bottom:12px;">
@@ -985,6 +1022,7 @@
   var esParaOtro = false;
   var rutaActual = null; // { km, minutos, peaje }
   var pedidoActualId = null;
+  var tokenSeguimientoActual = "";
   var pollTimer = null;
   var mapa = null, marker = null;
   var googleMapsListo = false;
@@ -1281,7 +1319,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 23;
+  var APP_VERSION = 24;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1325,9 +1363,10 @@
     var sesion = obtenerSesionPasajero();
     var hayCuenta = !!(sesion && sesion.token);
     document.getElementById("cardCuenta").style.display = hayCuenta ? "none" : "block";
-    ["cardSesion", "cardClavePasajero", "cardPrivacidad"].forEach(function (id) {
+    ["cardSesion", "cardViajes", "cardClavePasajero", "cardPrivacidad"].forEach(function (id) {
       document.getElementById(id).style.display = hayCuenta ? "block" : "none";
     });
+    if (hayCuenta) cargarMisViajes();
     var brandSub = document.getElementById("brandSubPasajero");
     brandSub.textContent = hayCuenta
       ? "Hola " + (sesion.pasajero.nombre || "").split(" ")[0] + ", programa tu viaje"
@@ -1339,6 +1378,66 @@
       document.getElementById("cuentaEmail").value = sesion.pasajero.email || "";
     }
     actualizarBotonPedir();
+  }
+
+  /* Historial de viajes completados: se consulta cada vez que se entra a
+     "Mi cuenta" (no hay sondeo — no es información que cambie mientras se
+     mira la pantalla). "Repetir viaje" precarga origen/destino y lleva al
+     cotizador; no dispara el pedido solo, el pasajero confirma el precio
+     como cualquier otro viaje (puede haber cambiado desde entonces). */
+  function cargarMisViajes() {
+    var sesion = obtenerSesionPasajero();
+    var cont = document.getElementById("listaViajes");
+    if (!sesion) return;
+    // Se limpia SIEMPRE antes de pintar, no solo cuando hay viajes: si no,
+    // al cerrar sesión y entrar con otra cuenta sin viajes, quedaba visible
+    // la lista de la cuenta anterior (nombres de rutas, montos, fechas
+    // ajenos) hasta que esa segunda cuenta tuviera algún viaje propio.
+    cont.innerHTML = '<p class="nota" style="margin:0;">Todavía no tienes viajes terminados.</p>';
+    api({ accion: "mis_viajes_pasajero", pasajero_token: sesion.token }).then(function (res) {
+      if (!res.ok || !res.viajes.length) return;
+      cont.innerHTML = "";
+      res.viajes.forEach(function (v) {
+        var fila = document.createElement("div");
+        fila.className = "viaje-fila";
+        var fecha = v.fecha ? new Date(v.fecha) : null;
+        var fechaTxt = fecha ? fecha.toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" }) : "";
+        var info = document.createElement("div");
+        info.innerHTML = ""; // se arma con DOM, nunca con datos del viaje directo en el HTML
+        var linea1 = document.createElement("div");
+        linea1.className = "viaje-ruta";
+        linea1.textContent = v.origen + " → " + v.destino;
+        var linea2 = document.createElement("div");
+        linea2.className = "viaje-detalle";
+        linea2.textContent = fechaTxt + " · " + fmt(v.monto);
+        info.appendChild(linea1);
+        info.appendChild(linea2);
+        var boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "btn btn-chico";
+        boton.textContent = "Repetir";
+        boton.addEventListener("click", function () { repetirViaje(v); });
+        fila.appendChild(info);
+        fila.appendChild(boton);
+        cont.appendChild(fila);
+      });
+    }).catch(function () { /* si falla, se queda el mensaje por defecto */ });
+  }
+
+  function repetirViaje(v) {
+    document.getElementById("origen").value = v.origen;
+    document.getElementById("destino").value = v.destino;
+    document.getElementById("origen").dispatchEvent(new Event("input"));
+    document.getElementById("destino").dispatchEvent(new Event("input"));
+    // Sin coordenadas guardadas del viaje viejo: no se puede poner el
+    // marcador en el mapa sin volver a geocodificar. Y cualquier
+    // cotización que hubiera quedado de antes (de otra ruta) deja de
+    // valer: se obliga a recalcular antes de poder pedir.
+    rutaActual = null;
+    fechaHoraCotizada = null;
+    document.getElementById("tarjetaPrecio").style.display = "none";
+    document.getElementById("btnPedir").disabled = true;
+    mostrarPestana("cotizar");
   }
 
   // "Solicitar viaje" necesita las dos cosas: ruta calculada Y cuenta.
@@ -1633,10 +1732,116 @@
     document.getElementById("paraMi").classList.toggle("active", !otro);
     document.getElementById("filaNombreTercero").style.display = otro ? "block" : "none";
     document.getElementById("btnMiUbicacion").style.display = otro ? "none" : "flex";
-    if (!otro) document.getElementById("nombreTercero").value = "";
+    if (!otro) {
+      document.getElementById("nombreTercero").value = "";
+      document.getElementById("telefonoTercero").value = "";
+    } else {
+      pintarChipsContactos();
+    }
   }
   document.getElementById("paraMi").addEventListener("click", function () { setParaQuien(false); });
   document.getElementById("paraOtro").addEventListener("click", function () { setParaQuien(true); });
+
+  /* ---------------------------------------------------------------
+     Contactos frecuentes ("Para otra persona"): se guardan en este
+     teléfono (localStorage, nunca en el servidor) para completar nombre
+     y WhatsApp con un toque la próxima vez. Siempre con try/catch: en
+     algunos WebView restringidos localStorage tira SecurityError, y sin
+     el try/catch eso frena TODO el script desde la primera línea.
+     --------------------------------------------------------------- */
+  var CONTACTOS_KEY = "rumbo_contactos_frecuentes";
+  var MAX_CONTACTOS = 6;
+  function leerContactos() {
+    try {
+      var lista = JSON.parse(localStorage.getItem(CONTACTOS_KEY) || "[]");
+      return Array.isArray(lista) ? lista : [];
+    } catch (e) { return []; }
+  }
+  function guardarContacto(nombre, telefono) {
+    nombre = nombre.trim();
+    if (!nombre) return;
+    try {
+      var lista = leerContactos().filter(function (c) { return c.nombre.toLowerCase() !== nombre.toLowerCase(); });
+      lista.unshift({ nombre: nombre, telefono: telefono || "" });
+      localStorage.setItem(CONTACTOS_KEY, JSON.stringify(lista.slice(0, MAX_CONTACTOS)));
+    } catch (e) { /* sin localStorage no se guarda, pero el viaje igual se pide */ }
+  }
+  function pintarChipsContactos() {
+    var cont = document.getElementById("chipsContactos");
+    var lista = leerContactos();
+    cont.innerHTML = "";
+    if (!lista.length) { cont.style.display = "none"; return; }
+    lista.forEach(function (c) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip-contacto";
+      chip.textContent = c.nombre;
+      chip.addEventListener("click", function () {
+        document.getElementById("nombreTercero").value = c.nombre;
+        document.getElementById("telefonoTercero").value = c.telefono || "";
+      });
+      cont.appendChild(chip);
+    });
+    cont.style.display = "flex";
+  }
+
+  /* ---------------------------------------------------------------
+     Direcciones recientes: se guardan solas (sin que el pasajero tenga
+     que nombrarlas "Casa"/"Trabajo" a mano) cada vez que calcula un
+     precio, y aparecen como chips para no volver a escribirlas. Mismo
+     patrón que los contactos frecuentes: localStorage, siempre con
+     try/catch.
+     --------------------------------------------------------------- */
+  var DIRECCIONES_KEY = "rumbo_direcciones_recientes";
+  var MAX_DIRECCIONES = 5;
+  // Qué input recibe el próximo chip que se toque: se actualiza al enfocar
+  // origen o destino, y por defecto es "origen" si ninguno tiene foco (ej.
+  // apenas se abre la pantalla).
+  var campoDireccionActivo = "origen";
+  ["origen", "destino"].forEach(function (id) {
+    document.getElementById(id).addEventListener("focus", function () { campoDireccionActivo = id; });
+  });
+
+  function leerDirecciones() {
+    try {
+      var lista = JSON.parse(localStorage.getItem(DIRECCIONES_KEY) || "[]");
+      return Array.isArray(lista) ? lista : [];
+    } catch (e) { return []; }
+  }
+  function guardarDireccionReciente(direccion, coords) {
+    direccion = String(direccion || "").trim();
+    if (!direccion || !coords) return;
+    try {
+      var lista = leerDirecciones().filter(function (d) { return d.direccion !== direccion; });
+      lista.unshift({ direccion: direccion, lat: coords.lat, lng: coords.lng });
+      localStorage.setItem(DIRECCIONES_KEY, JSON.stringify(lista.slice(0, MAX_DIRECCIONES)));
+    } catch (e) { /* sin localStorage no se guarda, pero el viaje igual se cotiza */ }
+  }
+  function pintarChipsDirecciones() {
+    var cont = document.getElementById("chipsDirecciones");
+    var lista = leerDirecciones();
+    cont.innerHTML = "";
+    if (!lista.length) { cont.style.display = "none"; return; }
+    lista.forEach(function (d) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip-contacto";
+      // Direcciones largas no entran en un chip: se corta a lo esencial.
+      chip.textContent = d.direccion.length > 28 ? d.direccion.slice(0, 27) + "…" : d.direccion;
+      chip.title = d.direccion;
+      chip.addEventListener("click", function () {
+        // Al campo que tenga foco (o al último enfocado); si ambos ya
+        // tienen texto, se sobreescribe el que se tocó por última vez.
+        var destinoInput = document.getElementById(campoDireccionActivo);
+        destinoInput.value = d.direccion;
+        destinoInput.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
+        pintarMarcadorCotizar(campoDireccionActivo, { lat: d.lat, lng: d.lng });
+      });
+      cont.appendChild(chip);
+    });
+    cont.style.display = "flex";
+  }
+  pintarChipsDirecciones();
 
   // Ubicación actual como origen: toma coordenadas GPS y las convierte en
   // una dirección legible (geocodificación inversa) para que quede igual
@@ -1901,6 +2106,17 @@
         cobraRegresoSiempre: res.cobraRegresoSiempre
       };
       dibujarRutaCotizar(res.polilinea);
+      // Se guardan las que sí vienen con coordenadas (elegidas del
+      // autocompletado, del GPS o de un chip) — texto tipeado sin elegir
+      // sugerencia no tiene marcador y no se guarda, para no guardar una
+      // dirección a medias.
+      ["origen", "destino"].forEach(function (cual) {
+        if (marcadoresCotizar[cual]) {
+          var pos = marcadoresCotizar[cual].getPosition();
+          guardarDireccionReciente(document.getElementById(cual).value, { lat: pos.lat(), lng: pos.lng() });
+        }
+      });
+      pintarChipsDirecciones();
       textoEl.textContent = "";
       textoEl.className = "nota";
       calcularTotal();
@@ -1977,7 +2193,10 @@
       horas_espera: idaYVuelta ? obtenerHorasEspera() : 0
     }).then(function (res) {
       if (!res.ok) throw new Error(res.error || "error desconocido");
+      if (esParaOtro) guardarContacto(document.getElementById("nombreTercero").value, document.getElementById("telefonoTercero").value.trim());
       pedidoActualId = res.pedido_id;
+      tokenSeguimientoActual = res.token_seguimiento || "";
+      document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
       mostrarVistaEstado(res.total);
       iniciarPolling();
     }).catch(function (err) {
@@ -2026,6 +2245,10 @@
           return api({ accion: "estado_pedido", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "" }).then(manejarEstado);
         }
         if (res.polilinea) rutaViajeCodificada = res.polilinea;
+        if (res.token_seguimiento) {
+          tokenSeguimientoActual = res.token_seguimiento;
+          document.getElementById("btnCompartirViaje").style.display = "block";
+        }
         manejarEstado(res.estado);
         (res.mensajes || []).forEach(function (m) { pintarMensaje(m, m.autor === "pasajero"); ultimoMensajeEn = m.creado_en; });
         if (res.ubicacion) moverAutoEnMapa(res.ubicacion);
@@ -2396,6 +2619,22 @@
     });
   }
 
+  // Link público de solo lectura (sin login) para que alguien sin la app
+  // vea el auto en el mapa — útil cuando el viaje es "para otra persona"
+  // y quiere seguirlo, o para avisar a un familiar. No expone datos del
+  // pasajero: ver seguimientoPublico() en el backend.
+  document.getElementById("btnCompartirViaje").addEventListener("click", function () {
+    if (!tokenSeguimientoActual) return;
+    var link = "https://ttolabs.github.io/rumbo-web/seguimiento.html?t=" + encodeURIComponent(tokenSeguimientoActual);
+    if (navigator.share) {
+      navigator.share({ title: "Mi viaje en Rumbo", text: "Podés seguir mi viaje en vivo:", url: link }).catch(function () {});
+      return;
+    }
+    (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () {
+      alert("Link copiado: " + link);
+    }).catch(function () { prompt("Copia este link para compartir tu viaje:", link); });
+  });
+
   document.getElementById("btnNuevoPedido").addEventListener("click", function () {
     if (pollTimer) clearInterval(pollTimer);
     if (mapaTimer) clearInterval(mapaTimer);
@@ -2404,6 +2643,8 @@
     document.getElementById("btnPagarMp").style.display = "none";
     document.getElementById("notaPago").style.display = "none";
     pedidoActualId = null;
+    tokenSeguimientoActual = "";
+    document.getElementById("btnCompartirViaje").style.display = "none";
     rutaActual = null;
     fechaHoraCotizada = null;
     limpiarMapaCotizar();
