@@ -1319,7 +1319,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 24;
+  var APP_VERSION = 25;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2064,7 +2064,7 @@
     if (elegido.getTime() < minimo.getTime() - 60 * 1000) {
       inputFecha.value = aFechaStr(minimo);
       inputHora.value = dos(minimo.getHours()) + ":" + dos(minimo.getMinutes());
-      textoEl.textContent = "La salida más temprana es en 15 minutos: la ajusté a las " + inputHora.value + ". Revísala y vuelve a calcular.";
+      textoEl.textContent = "Le doy tiempo al conductor de llegar: ajusté la hora a las " + inputHora.value + ". Revísala y vuelve a calcular.";
       textoEl.className = "nota error";
       inputHora.focus();
       return;
@@ -2160,15 +2160,18 @@
       pedirTexto.className = "nota error";
       return;
     }
-    // Entre cotizar y pedir pueden pasar minutos: se vuelve a exigir el
-    // mínimo de 15 min desde ahora con la hora que confirmó.
-    var salida = new Date(fechaHoraCotizada.fecha + "T" + fechaHoraCotizada.hora + ":00");
-    if (salida.getTime() < Date.now() + 14 * 60 * 1000) {
-      invalidarCotizacionPorFecha();
-      pedirTexto.textContent = "Esa hora de salida ya quedó muy cerca. Vuelve a calcular el precio.";
+    // "Para otra persona" sin nombre: puede pasar si lo escribió, calculó
+    // el precio, y después lo borró antes de tocar "Solicitar viaje".
+    if (esParaOtro && !document.getElementById("nombreTercero").value.trim()) {
+      pedirTexto.textContent = "Falta el nombre de quien viaja.";
       pedirTexto.className = "nota error";
+      document.getElementById("nombreTercero").focus();
       return;
     }
+    // NO se vuelve a exigir acá el mínimo de 15 min: ya se confirmó al
+    // cotizar (con el diálogo de "¿está bien así?"), y un par de minutos
+    // normales leyendo el precio antes de confirmar no debe bloquear el
+    // pedido — eso pasaba antes y dejaba al pasajero sin poder avanzar.
 
     var btn = document.getElementById("btnPedir");
     btn.disabled = true;
