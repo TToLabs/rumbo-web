@@ -1319,7 +1319,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 26;
+  var APP_VERSION = 27;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2078,14 +2078,15 @@
     }
     var elegido = new Date(inputFecha.value + "T" + inputHora.value + ":00");
     // Tolerancia de 1 min: si el mínimo se autocompletó y el pasajero tardó
-    // unos segundos en tocar "Calcular", no se le rechaza por eso.
+    // unos segundos en tocar "Calcular", no se le rechaza por eso. Si hace
+    // falta ajustar, se sigue en el MISMO toque (no se corta acá) — cortar
+    // obligaba a tocar "Calcular precio" de nuevo, y si entre un toque y el
+    // siguiente pasaba más de un minuto (algo normal: leer, pensar, una
+    // interrupción), el ajuste se repetía sin fin y el pasajero nunca
+    // llegaba a ver un precio.
     if (elegido.getTime() < minimo.getTime() - 60 * 1000) {
       inputFecha.value = aFechaStr(minimo);
       inputHora.value = dos(minimo.getHours()) + ":" + dos(minimo.getMinutes());
-      textoEl.textContent = "Le doy tiempo al conductor de llegar: ajusté la hora a las " + inputHora.value + ". Revísala y vuelve a calcular.";
-      textoEl.className = "nota error";
-      inputHora.focus();
-      return;
     }
     var cuando = (inputFecha.value === hoyStr ? "hoy" : "el " + inputFecha.value.split("-").reverse().join("/")) + " a las " + inputHora.value;
     if (!confirm("Tu viaje quedará para " + cuando + ". ¿Está bien así?")) {
