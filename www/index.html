@@ -248,6 +248,13 @@
   }
   .btn-agregar-parada:hover { text-decoration: underline; }
 
+  .btn-direcciones-recientes {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
+    border: none; background: none; cursor: pointer; font: inherit;
+    font-size: 14px; font-weight: 600; color: var(--text-2); padding: 4px 2px;
+  }
+  .btn-direcciones-recientes:hover { color: var(--primary); }
+
   /* ---------- Campos ---------- */
   .campo { display: flex; flex-direction: column; gap: 6px; }
   .campo-label { font-size: 14px; font-weight: 500; color: var(--text-2); }
@@ -318,6 +325,17 @@
     border-radius: 999px; cursor: pointer;
   }
   .chip-contacto:hover { background: var(--primary-soft); color: var(--primary-soft-ink); border-color: transparent; }
+
+  /* Chip de dirección: además de tocarla para usarla, tiene su propia ×
+     para borrarla de la lista — dos zonas clicables dentro del mismo chip. */
+  .chip-direccion { display: inline-flex; align-items: center; gap: 4px; padding: 0 4px 0 14px; }
+  .chip-direccion button:first-child { border: none; background: none; color: inherit; font: inherit; padding: 7px 0; cursor: pointer; }
+  .chip-direccion:hover button:first-child { color: inherit; }
+  .chip-direccion-borrar {
+    border: none; background: none; color: var(--text-3); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%;
+  }
+  .chip-direccion-borrar:hover { background: rgba(0,0,0,0.08); color: var(--danger); }
 
   /* ---------- Mis viajes (historial) ---------- */
   .viaje-fila {
@@ -673,7 +691,7 @@
     <section class="card">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
-        <span class="card-title">Tu ruta</span>
+        <span class="card-title">Tu Rumbo</span>
       </div>
 
       <div class="campo" style="margin-bottom:14px;">
@@ -691,6 +709,10 @@
         <input type="text" id="telefonoTercero" placeholder="56912345678" inputmode="numeric" autocomplete="off">
       </div>
 
+      <button type="button" class="btn-direcciones-recientes" id="btnDireccionesRecientes" style="display:none;">
+        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
+        Direcciones recientes
+      </button>
       <div class="chips-contactos" id="chipsDirecciones" style="display:none;"></div>
       <div class="ruta">
         <span class="ruta-marca"><span class="punto-origen"></span></span>
@@ -1102,6 +1124,10 @@
     configurarAutocomplete();
     crearMapaCotizar();
     if (mostrarMapaPendiente) crearMapaConductor();
+    // Ya se dio el permiso de ubicación al crear la cuenta: se completa el
+    // origen solo, sin que el pasajero tenga que tocar nada — el botón de
+    // ubicación queda igual, por si la quiere corregir a mano.
+    if (!esParaOtro) usarMiUbicacionComoOrigen(true);
   };
 
   // marcador: "origen" | "destino" | null (paradas no llevan marcador propio).
@@ -1319,7 +1345,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 27;
+  var APP_VERSION = 28;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1817,17 +1843,32 @@
       localStorage.setItem(DIRECCIONES_KEY, JSON.stringify(lista.slice(0, MAX_DIRECCIONES)));
     } catch (e) { /* sin localStorage no se guarda, pero el viaje igual se cotiza */ }
   }
+  function borrarDireccionReciente(direccion) {
+    try {
+      var lista = leerDirecciones().filter(function (d) { return d.direccion !== direccion; });
+      localStorage.setItem(DIRECCIONES_KEY, JSON.stringify(lista));
+    } catch (e) { /* si no se puede borrar, tampoco se pudo guardar antes */ }
+  }
+  // Las direcciones quedan detrás de un botón, no siempre a la vista: si
+  // alguien más toma el teléfono un momento, no ve de entrada a dónde
+  // viajó el pasajero antes — tiene que tocar para desplegarlas.
   function pintarChipsDirecciones() {
+    var boton = document.getElementById("btnDireccionesRecientes");
     var cont = document.getElementById("chipsDirecciones");
     var lista = leerDirecciones();
     cont.innerHTML = "";
-    if (!lista.length) { cont.style.display = "none"; return; }
+    if (!lista.length) {
+      boton.style.display = "none";
+      cont.style.display = "none";
+      return;
+    }
     lista.forEach(function (d) {
+      var envoltorio = document.createElement("span");
+      envoltorio.className = "chip-contacto chip-direccion";
       var chip = document.createElement("button");
       chip.type = "button";
-      chip.className = "chip-contacto";
       // Direcciones largas no entran en un chip: se corta a lo esencial.
-      chip.textContent = d.direccion.length > 28 ? d.direccion.slice(0, 27) + "…" : d.direccion;
+      chip.textContent = d.direccion.length > 24 ? d.direccion.slice(0, 23) + "…" : d.direccion;
       chip.title = d.direccion;
       chip.addEventListener("click", function () {
         // Al campo que tenga foco (o al último enfocado); si ambos ya
@@ -1836,25 +1877,48 @@
         destinoInput.value = d.direccion;
         destinoInput.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
         pintarMarcadorCotizar(campoDireccionActivo, { lat: d.lat, lng: d.lng });
+        cont.style.display = "none"; // se cierran solas al elegir una
       });
-      cont.appendChild(chip);
+      var quitar = document.createElement("button");
+      quitar.type = "button";
+      quitar.className = "chip-direccion-borrar";
+      quitar.setAttribute("aria-label", "Quitar esta dirección de recientes");
+      quitar.innerHTML = '<svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>';
+      quitar.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        borrarDireccionReciente(d.direccion);
+        pintarChipsDirecciones();
+        document.getElementById("chipsDirecciones").style.display = "flex"; // sigue abierto tras borrar
+      });
+      envoltorio.appendChild(chip);
+      envoltorio.appendChild(quitar);
+      cont.appendChild(envoltorio);
     });
-    cont.style.display = "flex";
+    boton.style.display = "flex";
+    cont.style.display = "none"; // colapsadas por defecto, ver botón arriba
   }
+  document.getElementById("btnDireccionesRecientes").addEventListener("click", function () {
+    var cont = document.getElementById("chipsDirecciones");
+    cont.style.display = cont.style.display === "none" ? "flex" : "none";
+  });
   pintarChipsDirecciones();
 
   // Ubicación actual como origen: toma coordenadas GPS y las convierte en
   // una dirección legible (geocodificación inversa) para que quede igual
   // que si la hubiera escrito con el autocompletado.
-  document.getElementById("btnMiUbicacion").addEventListener("click", function () {
-    var boton = this;
+  // silencioso=true: se usa para autocompletar el origen apenas se abre la
+  // pantalla (ya se dio el permiso al crear la cuenta, no hace falta que
+  // el pasajero toque nada) — sin avisos de error, sin animación de carga,
+  // y nunca pisa algo que el pasajero ya haya escrito.
+  function usarMiUbicacionComoOrigen(silencioso, boton) {
     if (!navigator.geolocation) return;
-    boton.classList.add("cargando");
+    if (boton) boton.classList.add("cargando");
     navigator.geolocation.getCurrentPosition(function (pos) {
+      if (silencioso && document.getElementById("origen").value.trim()) return; // ya escribió algo mientras cargaba
       var coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       var geocoder = new google.maps.Geocoder();
       geocoder.geocode({ location: coords }, function (resultados, estado) {
-        boton.classList.remove("cargando");
+        if (boton) boton.classList.remove("cargando");
         // El primer resultado a veces es un "Plus Code" (ej. "8V6X+2W
         // Santiago") en vez de la calle, cuando el GPS no cae justo sobre
         // una dirección — el backend no puede cotizar con eso. Se prefiere
@@ -1870,20 +1934,28 @@
           direccion = (deCalle || resultados[0]).formatted_address;
         }
         if (!direccion) {
-          document.getElementById("buscarAutoTexto").textContent = "No se pudo reconocer una dirección en tu ubicación. Escribe el origen a mano.";
-          document.getElementById("buscarAutoTexto").className = "nota error";
+          if (!silencioso) {
+            document.getElementById("buscarAutoTexto").textContent = "No se pudo reconocer una dirección en tu ubicación. Escribe el origen a mano.";
+            document.getElementById("buscarAutoTexto").className = "nota error";
+          }
           return;
         }
+        if (silencioso && document.getElementById("origen").value.trim()) return; // se adelantó a escribir
         var input = document.getElementById("origen");
         input.value = direccion;
         input.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
         pintarMarcadorCotizar("origen", coords);
       });
     }, function () {
-      boton.classList.remove("cargando");
-      document.getElementById("buscarAutoTexto").textContent = "No se pudo obtener tu ubicación. Revisa el permiso de ubicación del teléfono.";
-      document.getElementById("buscarAutoTexto").className = "nota error";
+      if (boton) boton.classList.remove("cargando");
+      if (!silencioso) {
+        document.getElementById("buscarAutoTexto").textContent = "No se pudo obtener tu ubicación. Revisa el permiso de ubicación del teléfono.";
+        document.getElementById("buscarAutoTexto").className = "nota error";
+      }
     }, { maximumAge: 30000, timeout: 8000 });
+  }
+  document.getElementById("btnMiUbicacion").addEventListener("click", function () {
+    usarMiUbicacionComoOrigen(false, this);
   });
 
   // Hora escrita con teclado numérico: se deja solo dígitos y se inserta
