@@ -1345,7 +1345,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 29;
+  var APP_VERSION = 30;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1385,6 +1385,36 @@
   }
   function guardarSesionPasajero(s) { localStorage.setItem(PERFIL_KEY, JSON.stringify(s)); }
 
+  /* Avisos con la app CERRADA (Firebase Cloud Messaging): viaje confirmado y
+     mensajes del conductor. Se pide el permiso nativo recién con la cuenta
+     creada/iniciada, crea el canal de Android (importancia máxima = ventana
+     emergente con sonido) y manda el token del teléfono al backend. */
+  var pushIniciado = false, pushTokenActual = "", pushEnviadoA = "";
+  function enviarTokenPush() {
+    var sesion = obtenerSesionPasajero();
+    if (!pushTokenActual || !sesion || !sesion.token || pushEnviadoA === sesion.token + pushTokenActual) return;
+    pushEnviadoA = sesion.token + pushTokenActual;
+    apiPost({ accion: "registrar_push_pasajero", pasajero_token: sesion.token, push_token: pushTokenActual }).catch(function () { pushEnviadoA = ""; });
+  }
+  function iniciarPush() {
+    if (pushIniciado) { enviarTokenPush(); return; }
+    var C = window.Capacitor;
+    var PN = C && C.isNativePlatform && C.isNativePlatform() && C.Plugins && C.Plugins.PushNotifications;
+    if (!PN) return;
+    pushIniciado = true;
+    try {
+      PN.addListener("registration", function (t) { pushTokenActual = t.value; enviarTokenPush(); });
+      PN.checkPermissions()
+        .then(function (p) { return p.receive === "granted" ? p : PN.requestPermissions(); })
+        .then(function (p) {
+          if (p.receive !== "granted") return;
+          return PN.createChannel({ id: "chat", name: "Mensajes y estado del viaje", importance: 5, visibility: 1, vibration: true })
+            .catch(function () {}).then(function () { return PN.register(); });
+        })
+        .catch(function () {});
+    } catch (e) {}
+  }
+
   function pintarSesionPasajero() {
     var sesion = obtenerSesionPasajero();
     var hayCuenta = !!(sesion && sesion.token);
@@ -1392,7 +1422,7 @@
     ["cardSesion", "cardViajes", "cardClavePasajero", "cardPrivacidad"].forEach(function (id) {
       document.getElementById(id).style.display = hayCuenta ? "block" : "none";
     });
-    if (hayCuenta) cargarMisViajes();
+    if (hayCuenta) { cargarMisViajes(); iniciarPush(); }
     var brandSub = document.getElementById("brandSubPasajero");
     brandSub.textContent = hayCuenta
       ? "Hola " + (sesion.pasajero.nombre || "").split(" ")[0] + ", programa tu viaje"
