@@ -805,6 +805,24 @@
       </div>
     </details>
 
+    <details class="acordeon" id="acordeonRegistroPedidos">
+      <summary>Registro de pedidos</summary>
+      <div class="acordeon-cuerpo">
+        <div class="hist-cabecera">
+          <div class="hist-filtros">
+            <div class="campo"><label class="campo-label" for="regMes">Mes</label><input type="month" id="regMes"></div>
+          </div>
+        </div>
+        <div id="regResumen" class="msg" style="margin:0 0 10px;"></div>
+        <div style="overflow-x:auto;">
+          <table class="tabla-historial">
+            <thead><tr><th>Fecha</th><th>Pasajero / ruta</th><th>Conductor</th><th>Estado</th></tr></thead>
+            <tbody id="regFilas"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
     <details class="acordeon simple"><summary>Visibilidad en la red</summary><div class="acordeon-cuerpo">
     <div class="estado-conductor" id="estadoRed" style="flex-direction:column;align-items:stretch;gap:8px;">
       <div style="display:flex;align-items:center;gap:10px;">
@@ -1145,7 +1163,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 29;
+  var APP_VERSION = 30;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1561,12 +1579,12 @@
   // Lo que se ve depende del PANEL (MODO), no de la cuenta: aunque una cuenta
   // de conductor tenga permisos de admin, el panel de conductor no muestra
   // administración, y el panel admin no muestra pedidos ni cobros propios.
-  var SECCIONES_ADMIN = ["acordeonConductores", "acordeonHistorial"];
+  var SECCIONES_ADMIN = ["acordeonConductores", "acordeonHistorial", "acordeonRegistroPedidos"];
   var TITULOS_ADMIN = ["Tarifas y costos", "Mi cuenta"];
   function aplicarPermisos() {
     [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
       var titulo = d.querySelector("summary").textContent;
-      var esDeAdmin = d.id === "acordeonConductores";
+      var esDeAdmin = d.id === "acordeonConductores" || d.id === "acordeonRegistroPedidos";
       var visible = MODO === "admin"
         ? (SECCIONES_ADMIN.indexOf(d.id) !== -1 || d.id === "acordeonTarifas" || TITULOS_ADMIN.indexOf(titulo) !== -1)
         : !esDeAdmin;
@@ -1647,6 +1665,56 @@
     var detalle = document.querySelector('[data-detalle-de="' + fila.dataset.detalle + '"]');
     if (!detalle) return;
     detalle.hidden = !detalle.hidden;
+  });
+
+  /* ---------------------------------------------------------------
+     Registro de pedidos (solo admin): TODO pedido del mes con su
+     resultado real — quién lo aceptó, a quién se derivó y quién rechazó
+     en el camino, o si nadie pudo tomarlo. A diferencia del historial de
+     pagos (solo lo cobrado), esto es para auditar la operación completa.
+     --------------------------------------------------------------- */
+  (function () {
+    var hoy = new Date();
+    document.getElementById("regMes").value = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0");
+  })();
+
+  var BADGE_ESTADO_REGISTRO = {
+    "Aceptado": "badge-verde", "Esperando respuesta": "badge-ambar",
+    "Sin conductor disponible": "badge-rojo", "Cancelado por el pasajero": "badge-gris"
+  };
+
+  function cargarRegistroPedidos() {
+    var mes = document.getElementById("regMes").value;
+    var resumen = document.getElementById("regResumen");
+    var filas = document.getElementById("regFilas");
+    if (!mes) return;
+    resumen.textContent = "Cargando...";
+    apiPost({ accion: "registro_pedidos", mes: mes }).then(function (res) {
+      if (!res.ok) { resumen.textContent = res.error; filas.innerHTML = ""; return; }
+      resumen.textContent = res.pedidos.length
+        ? res.pedidos.length + " pedido" + (res.pedidos.length === 1 ? "" : "s") + " en el mes"
+        : "Sin pedidos en este mes.";
+      filas.innerHTML = res.pedidos.map(function (p) {
+        var d = new Date(p.creado_en);
+        var fecha = isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit" }) + " " +
+          d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+        var conductorTexto = p.conductor_asignado || p.conductor_prioritario || "";
+        var detalle = (p.rechazado_por && p.rechazado_por.length)
+          ? '<br><span class="msg" style="font-size:12px;">Rechazó: ' + escapar(p.rechazado_por.join(", ")) + "</span>" : "";
+        return "<tr>" +
+            "<td>" + escapar(fecha) + "</td>" +
+            "<td>" + (p.nombre ? "<strong>" + escapar(p.nombre) + "</strong><br>" : "") +
+              escapar(p.origen || "Origen no disponible") + " → " + escapar(p.destino || "destino no disponible") + "</td>" +
+            "<td>" + escapar(conductorTexto) + detalle + "</td>" +
+            '<td><span class="badge ' + (BADGE_ESTADO_REGISTRO[p.estado] || "badge-gris") + '">' + escapar(p.estado) + "</span></td>" +
+          "</tr>";
+      }).join("");
+    });
+  }
+
+  document.getElementById("regMes").addEventListener("change", cargarRegistroPedidos);
+  document.getElementById("acordeonRegistroPedidos").addEventListener("toggle", function () {
+    if (this.open) cargarRegistroPedidos();
   });
 
   document.getElementById("histMes").addEventListener("change", cargarHistorial);

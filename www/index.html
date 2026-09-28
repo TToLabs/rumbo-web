@@ -1345,7 +1345,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 30;
+  var APP_VERSION = 31;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1496,10 +1496,14 @@
     mostrarPestana("cotizar");
   }
 
-  // "Solicitar viaje" necesita las dos cosas: ruta calculada Y cuenta.
+  // "Solicitar viaje" necesita ruta calculada. La cuenta NO se exige acá:
+  // si el botón queda deshabilitado por falta de sesión, el clic ni
+  // siquiera llega al handler (los botones disabled no disparan click) y
+  // el pasajero no recibe ningún aviso de qué falta — se queda mirando un
+  // botón "roto". Sin cuenta, el propio handler lo manda a "Mi cuenta" con
+  // el mensaje correspondiente (ver más abajo).
   function actualizarBotonPedir() {
-    var sesion = obtenerSesionPasajero();
-    document.getElementById("btnPedir").disabled = !(rutaActual && sesion && sesion.token);
+    document.getElementById("btnPedir").disabled = !rutaActual;
   }
 
   // Crear cuenta o "Ya tengo cuenta": mismo formulario, cambian los campos.
@@ -2275,7 +2279,11 @@
       if (primeroVacio) primeroVacio.focus();
       return;
     }
-    if (!rutaActual) return;
+    if (!rutaActual) {
+      pedirTexto.textContent = "Calcula el precio antes de solicitar el viaje.";
+      pedirTexto.className = "nota error";
+      return;
+    }
     if (!fechaHoraCotizada) {
       pedirTexto.textContent = "Vuelve a calcular el precio antes de solicitar.";
       pedirTexto.className = "nota error";
@@ -2425,6 +2433,17 @@
     tarjeta.style.display = "flex";
   }
 
+  // Reutiliza el mismo reseteo de "Nuevo pedido" (botón que ya existe) y
+  // agrega el aviso en la pantalla de cotizar, que es donde queda el
+  // pasajero después de esto.
+  function volverAInicioSinConductor() {
+    document.getElementById("btnNuevoPedido").click();
+    mostrarPestana("cotizar");
+    var pedirTexto = document.getElementById("pedirTexto");
+    pedirTexto.textContent = "Ningún conductor pudo tomar tu viaje por ahora. Puedes intentar de nuevo.";
+    pedirTexto.className = "nota error";
+  }
+
   function manejarEstado(res) {
     (function () {
         if (!res.ok) return;
@@ -2442,9 +2461,11 @@
           // No se le muestra cada rechazo individual mientras se deriva
           // entre conductores — solo el resultado final, para no generar
           // ansiedad con algo que de todos modos no puede controlar.
-          document.getElementById("estadoBox").className = "estado-box rechazado";
-          document.getElementById("estadoBox").textContent = "Ningún conductor pudo tomar este viaje por ahora";
+          // Pedido explícito: no lo deja esperando en la pantalla de
+          // seguimiento — lo vuelve a la pantalla inicial (cotizar), con el
+          // aviso ahí, para que pueda intentar de nuevo sin quedar varado.
           clearInterval(pollTimer);
+          volverAInicioSinConductor();
         }
     })();
   }
