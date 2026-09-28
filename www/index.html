@@ -249,11 +249,11 @@
   .btn-agregar-parada:hover { text-decoration: underline; }
 
   .btn-direcciones-recientes {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
-    border: none; background: none; cursor: pointer; font: inherit;
-    font-size: 14px; font-weight: 600; color: var(--text-2); padding: 4px 2px;
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 12px;
+    border: 1.5px solid var(--primary); background: var(--surface); cursor: pointer; font: inherit;
+    font-size: 15px; font-weight: 600; color: var(--primary); padding: 12px 14px; border-radius: var(--r-input);
   }
-  .btn-direcciones-recientes:hover { color: var(--primary); }
+  .btn-direcciones-recientes:active { background: var(--border); }
 
   /* ---------- Campos ---------- */
   .campo { display: flex; flex-direction: column; gap: 6px; }
@@ -1345,7 +1345,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 28;
+  var APP_VERSION = 29;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
