@@ -452,15 +452,15 @@
   .eta span { font-size: 14px; opacity: .85; }
 
   /* Avance del viaje en pasos. */
-  .pasos { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .pasos { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
   .pasos li { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 12px; line-height: 1.2; color: var(--text-3); position: relative; }
   .pasos li::before { content: ""; position: absolute; top: 6px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 0; }
   .pasos li:first-child::before { display: none; }
   .paso-punto { width: 15px; height: 15px; border-radius: 50%; background: var(--surface); border: 3px solid var(--border-strong); position: relative; z-index: 1; box-sizing: border-box; }
-  .pasos li.hecho .paso-punto { background: var(--primary); border-color: var(--primary); }
-  .pasos li.hecho::before, .pasos li.actual::before { background: var(--primary); }
+  .pasos li.hecho .paso-punto { background: #F97316; border-color: #F97316; }
+  .pasos li.hecho::before, .pasos li.actual::before { background: #F97316; }
   .pasos li.actual { color: var(--text); font-weight: 700; }
-  .pasos li.actual .paso-punto { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent); }
+  .pasos li.actual .paso-punto { border-color: #F97316; background: var(--surface); box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.22); }
 
   /* Recorrido con paradas. */
   .recorrido { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -505,6 +505,75 @@
   }
   .chat-entrada input:focus { outline: none; border-color: var(--primary); }
   .chat-entrada .btn { padding: 12px 18px; font-size: 15px; }
+
+  /* ---------- Chat flotante: burbuja + ventana propia ----------
+     Visible en cualquier pestaña mientras el viaje está activo, como los
+     "chat heads". La burbuja se arrastra y se pega al borde más cercano. */
+  .burbuja-chat {
+    position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 60;
+    width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; touch-action: none;
+    background: linear-gradient(145deg, #FB923C, #EA580C); color: #FFFFFF;
+    box-shadow: 0 8px 22px rgba(234, 88, 12, 0.38), 0 2px 6px rgba(0, 0, 0, 0.18);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .burbuja-chat svg { width: 28px; height: 28px; }
+  .burbuja-chat:active { transform: scale(0.94); }
+  .burbuja-chat-n {
+    position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 11px; background: #DC2626; color: #FFFFFF; font-size: 12.5px; font-weight: 700;
+    line-height: 18px; text-align: center; border: 2px solid #FFFFFF; box-sizing: border-box;
+  }
+  .burbuja-chat-n[hidden] { display: none; }
+  .burbuja-chat.nuevo { animation: burbujaLatido 1.2s ease-out 2; }
+  @keyframes burbujaLatido {
+    0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.55), 0 8px 22px rgba(234, 88, 12, 0.38); }
+    100% { box-shadow: 0 0 0 18px rgba(249, 115, 22, 0), 0 8px 22px rgba(234, 88, 12, 0.38); }
+  }
+  .chat-vista-previa {
+    position: fixed; z-index: 61; max-width: min(260px, 70vw); padding: 10px 13px; border-radius: 14px;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    box-shadow: 0 10px 24px rgba(16, 26, 32, 0.16); font-size: 14px; line-height: 1.35; cursor: pointer;
+  }
+  .chat-vista-previa[hidden] { display: none; }
+  .chat-vista-previa strong { display: block; font-size: 12px; color: var(--text-3); margin-bottom: 2px; }
+  .ventana-chat {
+    position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 70;
+    width: min(400px, calc(100vw - 24px)); height: min(560px, calc(100vh - 110px));
+    display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    box-shadow: 0 18px 48px rgba(16, 26, 32, 0.28), 0 4px 12px rgba(16, 26, 32, 0.12);
+  }
+  .ventana-chat[hidden] { display: none; }
+  .ventana-chat-cab {
+    display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px;
+    background: linear-gradient(135deg, var(--primary), #24485A); color: #FFFFFF;
+  }
+  .ventana-chat-cab .titulo { flex: 1; min-width: 0; }
+  .ventana-chat-cab .titulo strong, .ventana-chat-cab .titulo span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ventana-chat-cab .titulo strong { font-size: 16px; }
+  .ventana-chat-cab .titulo span { font-size: 12.5px; opacity: 0.8; }
+  .ventana-chat-cab button {
+    width: 40px; height: 40px; flex: none; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; line-height: 1;
+  }
+  .ventana-chat .chat-mensajes { flex: 1; max-height: none; margin: 0; padding: 14px 12px; background: var(--surface-2); }
+  .ventana-chat .chat-burbuja.suya { background: var(--surface); box-shadow: 0 1px 2px rgba(16, 26, 32, 0.08); }
+  .ventana-chat .chat-entrada { padding: 10px; border-top: 1px solid var(--border); align-items: flex-end; background: var(--surface); }
+  .chat-entrada textarea {
+    flex: 1; min-width: 0; resize: none; min-height: 48px; max-height: 140px; box-sizing: border-box;
+    border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+    font: inherit; font-size: 16px; line-height: 1.4; background: var(--surface); color: var(--text);
+  }
+  .chat-entrada textarea:focus { outline: none; border-color: #F97316; }
+  .chat-entrada textarea { scrollbar-width: none; }
+  .chat-entrada textarea::-webkit-scrollbar { display: none; }
+  .btn-enviar-chat {
+    width: 48px; height: 48px; flex: none; border-radius: 50%; border: none; cursor: pointer;
+    background: linear-gradient(145deg, #FB923C, #EA580C); color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-enviar-chat svg { width: 22px; height: 22px; }
+  .btn-enviar-chat:disabled { opacity: 0.5; }
 
   /* ---------- Barra de navegación inferior ---------- */
   /* Fija abajo: cada sección es una pantalla completa, en vez de un solo
@@ -873,9 +942,10 @@
     <!-- Avance del viaje en 4 pasos. -->
     <ol class="pasos" id="pasosViaje" aria-label="Avance del viaje">
       <li data-paso="0"><span class="paso-punto"></span><span class="paso-txt">Solicitado</span></li>
-      <li data-paso="1"><span class="paso-punto"></span><span class="paso-txt">Conductor en camino</span></li>
-      <li data-paso="2"><span class="paso-punto"></span><span class="paso-txt">En viaje</span></li>
-      <li data-paso="3"><span class="paso-punto"></span><span class="paso-txt">Finalizado</span></li>
+      <li data-paso="1"><span class="paso-punto"></span><span class="paso-txt">Confirmado</span></li>
+      <li data-paso="2"><span class="paso-punto"></span><span class="paso-txt">En camino</span></li>
+      <li data-paso="3"><span class="paso-punto"></span><span class="paso-txt">En viaje</span></li>
+      <li data-paso="4"><span class="paso-punto"></span><span class="paso-txt">Finalizado</span></li>
     </ol>
     <p class="nota" id="estadoDetalle" style="margin:0 2px 14px;"></p>
     <div id="mapaConductor"></div>
@@ -907,17 +977,26 @@
     <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
          en Uber/DiDi — antes de eso no hay conductor asignado con quien
          hablar. -->
-    <section class="card" id="cardChat" style="display:none;">
-      <div class="card-head">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
-        <span class="card-title">Chat con tu conductor</span>
-      </div>
-      <div class="chat-mensajes" id="chatMensajes"></div>
-      <div class="chat-entrada" data-enter="btnEnviarChat">
-        <input type="text" id="chatTexto" placeholder="Escribe un mensaje..." maxlength="500">
-        <button class="btn btn-medio" id="btnEnviarChat" type="button">Enviar</button>
-      </div>
-    </section>
+    <div id="cardChat" style="display:none;">
+      <button type="button" class="burbuja-chat" id="burbujaChat" aria-label="Abrir el chat con tu conductor">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.9 3 3 6.6 3 11c0 2.2 1 4.2 2.6 5.6L5 21l4.3-2.2c.9.2 1.8.3 2.7.3 5.1 0 9-3.6 9-8s-3.9-8-9-8z"/></svg>
+        <span class="burbuja-chat-n" id="burbujaChatN" hidden>0</span>
+      </button>
+      <div class="chat-vista-previa" id="chatVistaPrevia" hidden></div>
+      <section class="ventana-chat" id="ventanaChat" hidden role="dialog" aria-labelledby="ventanaChatTitulo">
+        <div class="ventana-chat-cab">
+          <div class="titulo"><strong id="ventanaChatTitulo">Tu conductor</strong><span id="ventanaChatSub">Chat del viaje</span></div>
+          <button type="button" id="btnMinimizarChat" aria-label="Minimizar el chat">&#8211;</button>
+        </div>
+        <div class="chat-mensajes" id="chatMensajes"><p class="chat-vacio">Escríbele a tu conductor si necesitas coordinar algo.</p></div>
+        <div class="chat-entrada">
+          <textarea id="chatTexto" rows="1" placeholder="Escribe un mensaje..." maxlength="500"></textarea>
+          <button class="btn-enviar-chat" id="btnEnviarChat" type="button" aria-label="Enviar mensaje">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6V10l12.6 2-12.6 2z"/></svg>
+          </button>
+        </div>
+      </section>
+    </div>
 
     <!-- Calificación: aparece cuando el viaje terminó y se cobró (no antes,
          para no calificar algo que todavía puede cambiar), y solo si el
@@ -1261,7 +1340,7 @@
     var cont = document.getElementById("mapaCotizar");
     if (!cont || mapaCotizar) return;
     mapaCotizar = new google.maps.Map(cont, {
-      zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true
+      zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA
     });
     mostrarMiUbicacionCotizar();
   }
@@ -1273,10 +1352,7 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       var yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       if (marcadoresCotizar.yo) marcadoresCotizar.yo.setPosition(yo);
-      else marcadoresCotizar.yo = new google.maps.Marker({
-        map: mapaCotizar, position: yo, title: "Tu ubicación",
-        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#1A73E8", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 2 }
-      });
+      else marcadoresCotizar.yo = new google.maps.Marker({ map: mapaCotizar, position: yo, title: "Tu ubicación", icon: iconoPersona() });
       if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) { mapaCotizar.setCenter(yo); mapaCotizar.setZoom(15); }
     }, function () { /* sin permiso: se queda centrado en Santiago */ }, { maximumAge: 30000, timeout: 8000 });
   }
@@ -1326,7 +1402,7 @@
     var puntos = google.maps.geometry.encoding.decodePath(polilineaCodificada);
     if (!puntos.length) return;
     if (lineaCotizar) lineaCotizar.setMap(null);
-    lineaCotizar = new google.maps.Polyline({ map: mapaCotizar, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    lineaCotizar = dibujarRutaNaranja(mapaCotizar, puntos);
     pintarMarcadorCotizar("origen", puntos[0]);
     pintarMarcadorCotizar("destino", puntos[puntos.length - 1]);
     var limites = new google.maps.LatLngBounds();
@@ -1399,14 +1475,38 @@
 
   var PERFIL_KEY = "rumbo_mi_perfil";
 
-  // El link viejo "uc?export=view" de Drive fallaba intermitente al
-  // cargar en un <img> (Drive no está pensado para eso a escala); se
-  // convierte acá a "thumbnail", que carga desde el CDN de imágenes de
-  // Google. Los links nuevos ya se guardan así (ver subirFotoVehiculoConductor).
-  function urlFotoDrive(url) {
-    if (!url) return url;
+  /* Foto del vehículo sin depender de Google en cada apertura: Google corta
+     con "429 demasiadas solicitudes" cuando el teléfono la pide varias veces
+     seguidas, y la foto no aparecía. Orden: 1) la copia guardada en este
+     teléfono; 2) el servidor de Rumbo (la lee una vez y la guarda en caché);
+     3) solo si falla, una única vez directo a Google y sin enviar el origen. */
+  function ponerFotoVehiculo(img, url, conductorId) {
+    img.onerror = null;
+    if (!url) { img.removeAttribute("src"); return; }
     var m = /[?&]id=([^&]+)/.exec(url);
-    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1000" : url;
+    if (!m) { img.src = url; return; }
+    var id = m[1], guardada = null;
+    img.dataset.fotoId = id;   // la última foto pedida: una respuesta vieja que llegue tarde no la pisa
+    try { guardada = localStorage.getItem("rumbo_foto_" + id); } catch (e) {}
+    if (guardada) { img.src = guardada; return; }
+    img.style.visibility = "hidden";
+    img.onload = function () { img.style.visibility = "visible"; };
+    api({ accion: "foto_conductor", conductor_id: conductorId || "" }).then(function (res) {
+      if (img.dataset.fotoId !== id) return;
+      if (!res || !res.ok || !res.data_url || res.id !== id) throw new Error("sin foto");
+      img.src = res.data_url;
+      try {
+        Object.keys(localStorage).forEach(function (k) {
+          if (k.indexOf("rumbo_foto_") === 0 && k !== "rumbo_foto_" + id) localStorage.removeItem(k);
+        });
+        localStorage.setItem("rumbo_foto_" + id, res.data_url);
+      } catch (e) {}
+    }).catch(function () {
+      if (img.dataset.fotoId !== id) return;
+      img.referrerPolicy = "no-referrer";
+      img.onerror = function () { img.onerror = null; img.style.visibility = "visible"; img.alt = "Foto no disponible"; };
+      img.src = "https://drive.google.com/thumbnail?id=" + id + "&sz=w640";
+    });
   }
 
   function obtenerConductorId() {
@@ -1425,7 +1525,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 33;
+  var APP_VERSION = 34;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2514,6 +2614,12 @@
   var viajeIniciadoActual = false;  // el conductor ya tocó "Iniciar viaje"
   var ultimosMetros = null;         // distancia conductor→pasajero, en línea recta
   var etaReal = null;               // {minutos, km} por calles, lo calcula el servidor
+  // Viaje agendado: hasta 1 hora antes se muestra "confirmado para…", no
+  // "en camino" (decisión de Alberto). Lo informa el servidor en cada sondeo.
+  var viajeMsActual = 0, paraAhoraActual = true, viajeFechaActual = "", viajeHoraActual = "";
+  function esperaProgramada() {
+    return !paraAhoraActual && viajeMsActual > 0 && viajeMsActual - Date.now() > 60 * 60 * 1000;
+  }
   var puntosRutaActuales = [];      // [{lat,lng}] origen, paradas, destino
   var puntosPintados = "";
   var marcadoresPuntos = [];
@@ -2546,9 +2652,18 @@
   // no se muestra: ahí el tiempo depende de la ruta, no de la distancia a ti.
   function pintarEta() {
     var el = document.getElementById("etaConductor");
+    var titulo, detalle;
+    if (!viajeIniciadoActual && esperaProgramada()) {
+      var cuando = textoCuando(viajeFechaActual, viajeHoraActual);
+      el.innerHTML = "";
+      var s0 = document.createElement("strong"); s0.textContent = "Viaje confirmado" + (cuando ? " · " + cuando : "");
+      var d0 = document.createElement("span"); d0.textContent = "Te avisaremos cuando tu conductor salga a buscarte.";
+      el.appendChild(s0); el.appendChild(d0);
+      el.style.display = "block";
+      return;
+    }
     if (viajeIniciadoActual || ultimosMetros === null) { el.style.display = "none"; return; }
     var metros = ultimosMetros;
-    var titulo, detalle;
     if (metros < 150) { titulo = "Tu conductor está llegando"; detalle = "Sal a su encuentro"; }
     else if (etaReal && etaReal.minutos > 0) {
       // Tiempo REAL por calles y con tráfico, calculado por el servidor.
@@ -2573,10 +2688,13 @@
     caja.className = "estado-box confirmado";
     if (viajeIniciadoActual) {
       caja.textContent = "En viaje";
-      pintarPasos(2);
+      pintarPasos(3);
+    } else if (esperaProgramada()) {
+      caja.textContent = "Viaje confirmado";
+      pintarPasos(1);
     } else {
       caja.textContent = (ultimosMetros !== null && ultimosMetros < 150) ? "Tu conductor está llegando" : "Tu conductor va hacia ti";
-      pintarPasos(1);
+      pintarPasos(2);
     }
     pintarEta();
   }
@@ -2637,6 +2755,7 @@
   // Deja el seguimiento limpio para un viaje nuevo.
   function limpiarSeguimientoVisual() {
     viajeIniciadoActual = false; ultimosMetros = null; etaReal = null; puntosRutaActuales = []; puntosPintados = ""; ultimoAjusteVista = 0;
+    viajeMsActual = 0; paraAhoraActual = true; viajeFechaActual = ""; viajeHoraActual = "";
     marcadoresPuntos.forEach(function (m) { m.setMap(null); });
     marcadoresPuntos = [];
     document.getElementById("etaConductor").style.display = "none";
@@ -2652,7 +2771,8 @@
     tarjeta.innerHTML = "";
     if (c.vehiculo_foto_url) {
       var img = document.createElement("img");
-      img.src = urlFotoDrive(c.vehiculo_foto_url); img.alt = "Foto del vehículo";
+      img.alt = "Foto del vehículo";
+      ponerFotoVehiculo(img, c.vehiculo_foto_url, c.conductor_id);
       tarjeta.appendChild(img);
     }
     var textos = document.createElement("div");
@@ -2680,6 +2800,10 @@
     }
     tarjeta.appendChild(textos);
     tarjeta.style.display = "flex";
+    // La ventana del chat muestra con quién se habla y en qué auto viene.
+    document.getElementById("ventanaChatTitulo").textContent = c.nombre || "Tu conductor";
+    document.getElementById("ventanaChatSub").textContent =
+      [auto, c.vehiculo_patente ? "Patente " + c.vehiculo_patente : ""].filter(Boolean).join(" · ") || "Chat del viaje";
   }
 
   // Reutiliza el mismo reseteo de "Nuevo pedido" (botón que ya existe) y
@@ -2700,6 +2824,9 @@
           // En cada sondeo: pasa de "va hacia ti" a "en viaje" cuando el
           // conductor toca "Iniciar viaje".
           viajeIniciadoActual = !!res.viaje_iniciado;
+          viajeMsActual = Number(res.viaje_ms) || 0;
+          paraAhoraActual = res.para_ahora !== false;
+          viajeFechaActual = res.viaje_fecha || ""; viajeHoraActual = res.viaje_hora || "";
           actualizarEtapaViaje();
           if (viajeConfirmadoMostrado) return;
           viajeConfirmadoMostrado = true;
@@ -2707,7 +2834,7 @@
           abrirChat();
           compartirMiUbicacion();
         } else if (res.estado === "COMPLETADO") {
-          pintarPasos(3);
+          pintarPasos(4);
           document.getElementById("etaConductor").style.display = "none";
           mostrarCierreDeViaje(res);
         } else if (res.estado === "SIN_CONDUCTOR") {
@@ -2833,10 +2960,149 @@
   var chatTimer = null;
   var ultimoMensajeEn = "";
 
+  /* Burbuja flotante + ventana propia. El contenedor se saca de la pestaña
+     de seguimiento y se cuelga del <body>: así se ve en CUALQUIER pestaña
+     mientras dura el viaje (una pestaña oculta ocultaría también lo fijo). */
+  document.body.appendChild(document.getElementById("cardChat"));
+  var mensajesPintados = {};   // mensaje_id → true: un mensaje nunca se dibuja dos veces
+  var noLeidosChat = 0, vistaPreviaTimer = null;
+  var esTactil = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+
+  function ventanaChatAbierta() { return !document.getElementById("ventanaChat").hidden; }
+
+  function pintarNoLeidos() {
+    var n = document.getElementById("burbujaChatN");
+    n.textContent = noLeidosChat > 9 ? "9+" : String(noLeidosChat);
+    n.hidden = !noLeidosChat;
+  }
+
+  function abrirVentanaChat() {
+    document.getElementById("ventanaChat").hidden = false;
+    document.getElementById("burbujaChat").style.display = "none";
+    ocultarVistaPrevia();
+    noLeidosChat = 0;
+    pintarNoLeidos();
+    var cont = document.getElementById("chatMensajes");
+    cont.scrollTop = cont.scrollHeight;
+  }
+
+  function cerrarVentanaChat() {
+    document.getElementById("ventanaChat").hidden = true;
+    document.getElementById("burbujaChat").style.display = "";
+  }
+
+  function ocultarVistaPrevia() {
+    if (vistaPreviaTimer) { clearTimeout(vistaPreviaTimer); vistaPreviaTimer = null; }
+    document.getElementById("chatVistaPrevia").hidden = true;
+  }
+
+  // Mensaje nuevo con la ventana cerrada: contador, latido, vibración, un
+  // sonido corto y una vista previa junto a la burbuja durante 5 s.
+  function avisarMensajeNuevo(texto) {
+    noLeidosChat++;
+    pintarNoLeidos();
+    var b = document.getElementById("burbujaChat");
+    b.classList.remove("nuevo"); void b.offsetWidth; b.classList.add("nuevo");
+    try { if (navigator.vibrate) navigator.vibrate([90, 60, 90]); } catch (e) {}
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.16].forEach(function (t, i) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = i ? 1046 : 784;
+        g.gain.setValueAtTime(0.14, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.22);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.22);
+      });
+    } catch (e) {}
+    var vista = document.getElementById("chatVistaPrevia");
+    var r = b.getBoundingClientRect();
+    vista.innerHTML = "";
+    var quien = document.createElement("strong");
+    quien.textContent = document.getElementById("ventanaChatTitulo").textContent;
+    var cuerpo = document.createElement("span");
+    cuerpo.textContent = texto.length > 90 ? texto.slice(0, 87) + "…" : texto;
+    vista.appendChild(quien); vista.appendChild(cuerpo);
+    vista.hidden = false;
+    var ancho = vista.offsetWidth;
+    var izquierda = r.left + r.width / 2 < window.innerWidth / 2 ? r.right + 10 : r.left - ancho - 10;
+    vista.style.left = Math.max(8, Math.min(izquierda, window.innerWidth - ancho - 8)) + "px";
+    vista.style.top = Math.max(8, r.top + 6) + "px";
+    if (vistaPreviaTimer) clearTimeout(vistaPreviaTimer);
+    vistaPreviaTimer = setTimeout(ocultarVistaPrevia, 5000);
+  }
+
+  // Burbuja arrastrable: se suelta y se pega al borde más cercano; un toque
+  // sin arrastrar abre la ventana. La posición se recuerda en el teléfono.
+  (function () {
+    var b = document.getElementById("burbujaChat");
+    var inicio = null, movio = false;
+    function aplicar(p) {
+      if (!p) return;
+      b.style.left = Math.min(Math.max(8, p.x), window.innerWidth - 68) + "px";
+      b.style.top = Math.min(Math.max(8, p.y), window.innerHeight - 140) + "px";
+      b.style.right = "auto"; b.style.bottom = "auto";
+    }
+    try { aplicar(JSON.parse(localStorage.getItem("rumbo_burbuja_chat") || "null")); } catch (e) {}
+    b.addEventListener("pointerdown", function (ev) {
+      var r = b.getBoundingClientRect();
+      inicio = { x: ev.clientX, y: ev.clientY, bx: r.left, by: r.top };
+      movio = false;
+      try { b.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    b.addEventListener("pointermove", function (ev) {
+      if (!inicio) return;
+      var dx = ev.clientX - inicio.x, dy = ev.clientY - inicio.y;
+      if (!movio && Math.abs(dx) + Math.abs(dy) < 8) return;
+      movio = true;
+      ocultarVistaPrevia();
+      aplicar({ x: inicio.bx + dx, y: inicio.by + dy });
+    });
+    function soltar() {
+      if (!inicio) return;
+      inicio = null;
+      if (!movio) return;
+      var r = b.getBoundingClientRect();
+      var p = { x: r.left + r.width / 2 < window.innerWidth / 2 ? 12 : window.innerWidth - 72, y: r.top };
+      aplicar(p);
+      try { localStorage.setItem("rumbo_burbuja_chat", JSON.stringify(p)); } catch (e) {}
+    }
+    b.addEventListener("pointerup", soltar);
+    b.addEventListener("pointercancel", soltar);   // gesto interrumpido (llamada, gesto del sistema)
+    // Al rotar el teléfono la burbuja no debe quedar fuera de la pantalla.
+    window.addEventListener("resize", function () {
+      if (b.style.left) aplicar({ x: parseFloat(b.style.left), y: parseFloat(b.style.top) });
+    });
+    b.addEventListener("click", function (ev) {
+      if (movio) { ev.preventDefault(); movio = false; return; }
+      abrirVentanaChat();
+    });
+  })();
+  document.getElementById("btnMinimizarChat").addEventListener("click", cerrarVentanaChat);
+  document.getElementById("chatVistaPrevia").addEventListener("click", abrirVentanaChat);
+
+  // Campo de texto amplio: crece con lo que se escribe (hasta ~5 líneas).
+  function ajustarAltoChat() {
+    var ta = document.getElementById("chatTexto");
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
+  }
+  document.getElementById("chatTexto").addEventListener("input", ajustarAltoChat);
+
   function abrirChat() {
     document.getElementById("cardChat").style.display = "block";
     // Los mensajes nuevos llegan con sincronizarViaje (sin temporizador aparte).
     if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+  }
+
+  // Deja el chat limpio para el viaje siguiente.
+  function reiniciarChat() {
+    cerrarVentanaChat();
+    ocultarVistaPrevia();
+    mensajesPintados = {};
+    noLeidosChat = 0;
+    pintarNoLeidos();
+    document.getElementById("chatMensajes").innerHTML = '<p class="chat-vacio">Escríbele a tu conductor si necesitas coordinar algo.</p>';
   }
 
   function cargarMensajes() {
@@ -2855,6 +3121,12 @@
   }
 
   function pintarMensaje(m, esMio) {
+    // El mismo mensaje puede llegar dos veces (la respuesta al enviarlo y el
+    // sondeo que ya venía en camino): se dibuja una sola.
+    if (m.mensaje_id) {
+      if (mensajesPintados[m.mensaje_id]) return;
+      mensajesPintados[m.mensaje_id] = true;
+    }
     var cont = document.getElementById("chatMensajes");
     var vacio = cont.querySelector(".chat-vacio");
     if (vacio) vacio.remove();
@@ -2868,27 +3140,35 @@
     burbuja.appendChild(hora);
     cont.appendChild(burbuja);
     cont.scrollTop = cont.scrollHeight;
+    if (!esMio && !ventanaChatAbierta()) avisarMensajeNuevo(m.texto);
   }
 
+  var enviandoChat = false;
   function enviarMensajeChat() {
     var input = document.getElementById("chatTexto");
+    var boton = document.getElementById("btnEnviarChat");
     var texto = input.value.trim();
     var sesion = obtenerSesionPasajero();
-    if (!texto || !sesion || !pedidoActualId) return;
-    input.value = "";
+    // Un solo envío a la vez: un doble toque mandaba el mismo texto dos veces.
+    if (enviandoChat || !texto || !sesion || !pedidoActualId) return;
+    enviandoChat = true; boton.disabled = true;
+    input.value = ""; ajustarAltoChat();
     apiPost({
       accion: "enviar_mensaje_pasajero", pasajero_token: sesion.token,
       pedido_id: pedidoActualId, texto: texto
     }).then(function (res) {
-      if (!res.ok) { input.value = texto; alert("No se pudo enviar: " + res.error); return; }
+      if (!res.ok) { input.value = texto; ajustarAltoChat(); alert("No se pudo enviar: " + res.error); return; }
       pintarMensaje(res.mensaje, true);
       ultimoMensajeEn = res.mensaje.creado_en;
-    }).catch(function () { input.value = texto; });
+    }).catch(function () { input.value = texto; ajustarAltoChat(); })
+      .then(function () { enviandoChat = false; boton.disabled = false; });
   }
 
   document.getElementById("btnEnviarChat").addEventListener("click", enviarMensajeChat);
+  // En el teléfono Enter hace salto de línea (campo amplio) y se envía con el
+  // botón; con teclado físico, Enter envía y Mayús+Enter salta de línea.
   document.getElementById("chatTexto").addEventListener("keydown", function (ev) {
-    if (ev.key === "Enter") { ev.preventDefault(); enviarMensajeChat(); }
+    if (ev.key === "Enter" && !ev.shiftKey && !esTactil && !ev.isComposing) { ev.preventDefault(); enviarMensajeChat(); }
   });
 
   /* ---------------------------------------------------------------
@@ -2938,16 +3218,61 @@
     crearMapaConductor();
   }
 
-  /* Íconos del seguimiento: auto = conductor, persona = pasajero (mismos
-     trazos en la app del conductor). Trazos de Material Icons (licencia
-     Apache 2.0), en un lienzo de 24x24 anclado al centro. */
-  var TRAZO_AUTO = "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z";
-  var TRAZO_PERSONA = "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z";
-  function iconoSeguimiento(trazo, color) {
-    return {
-      path: trazo, fillColor: color, fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 1.5,
-      scale: 1.4, anchor: new google.maps.Point(12, 12)
-    };
+  /* ---------------------------------------------------------------
+     Piezas visuales del mapa (iguales en la app del conductor y en la
+     página pública de seguimiento): mapa limpio, ruta naranja con borde,
+     auto visto desde arriba que gira hacia donde avanza, y tu posición
+     como punto azul con halo.
+     --------------------------------------------------------------- */
+  var ESTILO_MAPA = [
+    { featureType: "poi", stylers: [{ visibility: "off" }] },
+    { featureType: "transit", stylers: [{ visibility: "off" }] },
+    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+  ];
+  var NARANJO = "#F97316", NARANJO_BORDE = "#9A3412";
+
+  // Devuelve un objeto con setMap(), igual que una Polyline: el resto del
+  // código lo borra con lineaRuta.setMap(null) como antes.
+  function dibujarRutaNaranja(mapaDestino, puntos) {
+    var borde = new google.maps.Polyline({ map: mapaDestino, path: puntos, strokeColor: NARANJO_BORDE, strokeOpacity: 0.45, strokeWeight: 10, zIndex: 1 });
+    var linea = new google.maps.Polyline({ map: mapaDestino, path: puntos, strokeColor: NARANJO, strokeOpacity: 1, strokeWeight: 6, zIndex: 2 });
+    return { setMap: function (m) { borde.setMap(m); linea.setMap(m); } };
+  }
+
+  // Auto visto desde arriba (frente hacia arriba = norte), girado 'rumbo'
+  // grados. Como imagen SVG para poder tener sombra, vidrios y focos.
+  function iconoAuto(rumbo) {
+    var r = Math.round((rumbo || 0) / 5) * 5;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+      '<g transform="rotate(' + r + ' 28 28)">' +
+      '<ellipse cx="29" cy="30" rx="12" ry="21" fill="rgba(0,0,0,0.22)"/>' +
+      '<rect x="17" y="7" width="22" height="42" rx="9" fill="#16333F" stroke="#FFFFFF" stroke-width="2.5"/>' +
+      '<path d="M20.5 17 Q28 12.5 35.5 17 L34 23 Q28 21 22 23 Z" fill="#9BD4F5"/>' +
+      '<rect x="21.5" y="24.5" width="13" height="12" rx="3" fill="#2B5468"/>' +
+      '<path d="M22 38.5 Q28 40.5 34 38.5 L35.2 43 Q28 45.5 20.8 43 Z" fill="#9BD4F5"/>' +
+      '<circle cx="21" cy="10" r="1.7" fill="#FFE29A"/><circle cx="35" cy="10" r="1.7" fill="#FFE29A"/>' +
+      '<rect x="19" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/><rect x="33" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/>' +
+      '</g></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(56, 56), anchor: new google.maps.Point(28, 28) };
+  }
+
+  function iconoPersona() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
+      '<circle cx="20" cy="20" r="18" fill="#1A73E8" fill-opacity="0.18"/>' +
+      '<circle cx="20" cy="20" r="9" fill="#1A73E8" stroke="#FFFFFF" stroke-width="3"/></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(40, 40), anchor: new google.maps.Point(20, 20) };
+  }
+
+  // Mueve el auto y lo gira hacia donde avanzó (si se movió más de 4 m).
+  function moverAuto(marcador, pos) {
+    var antes = marcador.getPosition();
+    if (antes && google.maps.geometry) {
+      var ahora = new google.maps.LatLng(pos.lat, pos.lng);
+      if (google.maps.geometry.spherical.computeDistanceBetween(antes, ahora) > 4) {
+        marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora)));
+      }
+    }
+    marcador.setPosition(pos);
   }
 
   // Posiciones conocidas del viaje en curso, para dibujar la distancia.
@@ -2970,7 +3295,7 @@
 
   function pintarmeEnMapa() {
     if (!mapa || !miPosicionPasajero) return;
-    if (!marcadorYoPasajero) marcadorYoPasajero = new google.maps.Marker({ map: mapa, title: "Tú", icon: iconoSeguimiento(TRAZO_PERSONA, "#1A73E8"), zIndex: 1 });
+    if (!marcadorYoPasajero) marcadorYoPasajero = new google.maps.Marker({ map: mapa, title: "Tú", icon: iconoPersona(), zIndex: 1 });
     marcadorYoPasajero.setPosition(miPosicionPasajero);
     pintarDistanciaConductor();
   }
@@ -2978,9 +3303,9 @@
   function crearMapaConductor() {
     mapa = new google.maps.Map(document.getElementById("mapaConductor"), {
       zoom: 13, center: { lat: -33.45, lng: -70.66 },
-      disableDefaultUI: true, zoomControl: true
+      disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA
     });
-    marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoSeguimiento(TRAZO_AUTO, "#16333F"), zIndex: 2 });
+    marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoAuto(0), zIndex: 3 });
     dibujarRutaViaje();
     pintarPuntosRuta();
     pintarmeEnMapa();
@@ -2991,10 +3316,10 @@
     if (!mapa || lineaRuta || !rutaViajeCodificada || !google.maps.geometry) return;
     var puntos = google.maps.geometry.encoding.decodePath(rutaViajeCodificada);
     if (!puntos.length) return;
-    lineaRuta = new google.maps.Polyline({ map: mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    lineaRuta = dibujarRutaNaranja(mapa, puntos);
     var limites = new google.maps.LatLngBounds();
     puntos.forEach(function (pt) { limites.extend(pt); });
-    mapa.fitBounds(limites, 30);
+    mapa.fitBounds(limites, 40);
   }
 
   function moverAutoEnMapa(ubicacion) {
@@ -3002,7 +3327,7 @@
     dibujarRutaViaje();
     var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
     if (isNaN(pos.lat) || isNaN(pos.lng)) return;
-    marker.setPosition(pos);
+    moverAuto(marker, pos);
     posConductor = pos;
     pintarDistanciaConductor();
     if (!lineaRuta) mapa.setCenter(pos);
@@ -3014,7 +3339,7 @@
     api({ accion: "ubicacion_pedido", pedido_id: pedidoActualId, pasajero_token: sesionUbic ? sesionUbic.token : "" }).then(function (res) {
       if (!res.ok || !res.ubicacion) return;
       var pos = { lat: Number(res.ubicacion.lat), lng: Number(res.ubicacion.lng) };
-      marker.setPosition(pos);
+      moverAuto(marker, pos);
       posConductor = pos;
       pintarDistanciaConductor();
       mapa.setCenter(pos);
@@ -3073,7 +3398,7 @@
     if (marker) marker.setPosition(null);
     document.getElementById("distanciaConductor").textContent = "";
     document.getElementById("cardChat").style.display = "none";
-    document.getElementById("chatMensajes").innerHTML = "";
+    reiniciarChat();
     document.getElementById("cardCalificar").style.display = "none";
     document.getElementById("calificacionEnviada").style.display = "none";
     document.getElementById("badgeSeguimiento").classList.remove("activo");

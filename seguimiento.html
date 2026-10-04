@@ -76,7 +76,6 @@
   var token = new URLSearchParams(window.location.search).get("t");
 
   var mapa = null, marcadorAuto = null, linea = null, googleListo = false;
-  var TRAZO_AUTO = "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z";
 
   function cargarGoogleMaps() {
     if (window.google && window.google.maps) { googleListo = true; return; }
@@ -84,10 +83,42 @@
     script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry&callback=alGoogleMapsListo";
     document.head.appendChild(script);
   }
+  // Mismas piezas visuales que las apps: mapa limpio, ruta naranja con borde
+  // y auto visto desde arriba que gira hacia donde avanza.
+  var ESTILO_MAPA = [
+    { featureType: "poi", stylers: [{ visibility: "off" }] },
+    { featureType: "transit", stylers: [{ visibility: "off" }] },
+    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+  ];
+  function iconoAuto(rumbo) {
+    var r = Math.round((rumbo || 0) / 5) * 5;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+      '<g transform="rotate(' + r + ' 28 28)">' +
+      '<ellipse cx="29" cy="30" rx="12" ry="21" fill="rgba(0,0,0,0.22)"/>' +
+      '<rect x="17" y="7" width="22" height="42" rx="9" fill="#16333F" stroke="#FFFFFF" stroke-width="2.5"/>' +
+      '<path d="M20.5 17 Q28 12.5 35.5 17 L34 23 Q28 21 22 23 Z" fill="#9BD4F5"/>' +
+      '<rect x="21.5" y="24.5" width="13" height="12" rx="3" fill="#2B5468"/>' +
+      '<path d="M22 38.5 Q28 40.5 34 38.5 L35.2 43 Q28 45.5 20.8 43 Z" fill="#9BD4F5"/>' +
+      '<circle cx="21" cy="10" r="1.7" fill="#FFE29A"/><circle cx="35" cy="10" r="1.7" fill="#FFE29A"/>' +
+      '<rect x="19" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/><rect x="33" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/>' +
+      '</g></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(56, 56), anchor: new google.maps.Point(28, 28) };
+  }
+  function moverAuto(marcador, pos) {
+    var antes = marcador.getPosition();
+    if (antes && google.maps.geometry) {
+      var ahora = new google.maps.LatLng(pos.lat, pos.lng);
+      if (google.maps.geometry.spherical.computeDistanceBetween(antes, ahora) > 4) {
+        marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora)));
+      }
+    }
+    marcador.setPosition(pos);
+  }
+
   window.alGoogleMapsListo = function () {
     googleListo = true;
     mapa = new google.maps.Map(document.getElementById("mapa"), {
-      zoom: 13, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true
+      zoom: 13, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA
     });
   };
 
@@ -95,7 +126,8 @@
     if (!mapa || linea || !polilinea || !google.maps.geometry) return;
     var puntos = google.maps.geometry.encoding.decodePath(polilinea);
     if (!puntos.length) return;
-    linea = new google.maps.Polyline({ map: mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    new google.maps.Polyline({ map: mapa, path: puntos, strokeColor: "#9A3412", strokeOpacity: 0.45, strokeWeight: 10, zIndex: 1 });
+    linea = new google.maps.Polyline({ map: mapa, path: puntos, strokeColor: "#F97316", strokeOpacity: 1, strokeWeight: 6, zIndex: 2 });
     var limites = new google.maps.LatLngBounds();
     puntos.forEach(function (p) { limites.extend(p); });
     mapa.fitBounds(limites, 30);
@@ -137,7 +169,17 @@
     var etiquetas = { PENDIENTE: ["Buscando conductor", "pendiente"], CONFIRMADO: ["Viaje en curso", "confirmado"], COMPLETADO: ["Viaje terminado", "completado"], SIN_CONDUCTOR: ["No se pudo asignar un conductor", "error"], CANCELADO: ["Viaje cancelado", "error"] };
     var e = etiquetas[res.estado] || [res.estado, "pendiente"];
     // Diferencia "va a buscar al pasajero" de "ya van en viaje".
-    if (res.estado === "CONFIRMADO") e = [res.viaje_iniciado ? "En viaje" : "El conductor va a buscar al pasajero", "confirmado"];
+    if (res.estado === "CONFIRMADO") {
+      // Viaje agendado: hasta 1 hora antes es "confirmado", no "va a buscarlo".
+      var agendadoLejos = !res.viaje_iniciado && res.para_ahora === false && Number(res.viaje_ms) - Date.now() > 60 * 60 * 1000;
+      var cuando = "";
+      if (agendadoLejos) {
+        var dv = new Date(Number(res.viaje_ms));
+        cuando = dv.toLocaleDateString("es-CL", { weekday: "short", day: "2-digit", month: "2-digit" }) + " " +
+          dv.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+      }
+      e = [res.viaje_iniciado ? "En viaje" : agendadoLejos ? "Viaje confirmado para " + cuando : "El conductor va a buscar al pasajero", "confirmado"];
+    }
     estadoEl.textContent = e[0];
     estadoEl.className = "estado " + e[1];
 
@@ -158,8 +200,8 @@
         dibujarPuntos(res.puntos);
         if (res.ubicacion) {
           var pos = { lat: Number(res.ubicacion.lat), lng: Number(res.ubicacion.lng) };
-          if (!marcadorAuto) marcadorAuto = new google.maps.Marker({ map: mapa, icon: { path: TRAZO_AUTO, fillColor: "#16333F", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 1.5, scale: 1.4, anchor: new google.maps.Point(12, 12) } });
-          marcadorAuto.setPosition(pos);
+          if (!marcadorAuto) marcadorAuto = new google.maps.Marker({ map: mapa, icon: iconoAuto(0), zIndex: 3 });
+          moverAuto(marcadorAuto, pos);
           if (!linea) mapa.setCenter(pos);
         }
       };

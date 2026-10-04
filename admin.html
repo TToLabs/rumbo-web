@@ -444,6 +444,86 @@
   .chat-entrada input:focus { outline: none; border-color: var(--primary); }
   .chat-entrada .btn { padding: 11px 16px; font-size: 15px; }
 
+  /* ---------- Chat flotante: burbuja + ventana propia ----------
+     Visible en cualquier pestaña mientras haya viajes en curso. Con más de
+     un viaje, una pestaña por pasajero arriba de la ventana. */
+  .burbuja-chat {
+    position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 60;
+    width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; touch-action: none;
+    background: linear-gradient(145deg, #FB923C, #EA580C); color: #FFFFFF;
+    box-shadow: 0 8px 22px rgba(234, 88, 12, 0.38), 0 2px 6px rgba(0, 0, 0, 0.18);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .burbuja-chat[hidden] { display: none; }
+  .burbuja-chat svg { width: 28px; height: 28px; }
+  .burbuja-chat:active { transform: scale(0.94); }
+  .burbuja-chat-n {
+    position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 11px; background: #DC2626; color: #FFFFFF; font-size: 12.5px; font-weight: 700;
+    line-height: 18px; text-align: center; border: 2px solid #FFFFFF; box-sizing: border-box;
+  }
+  .burbuja-chat-n[hidden] { display: none; }
+  .burbuja-chat.nuevo { animation: burbujaLatido 1.2s ease-out 2; }
+  @keyframes burbujaLatido {
+    0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.55), 0 8px 22px rgba(234, 88, 12, 0.38); }
+    100% { box-shadow: 0 0 0 18px rgba(249, 115, 22, 0), 0 8px 22px rgba(234, 88, 12, 0.38); }
+  }
+  .chat-vista-previa {
+    position: fixed; z-index: 61; max-width: min(260px, 70vw); padding: 10px 13px; border-radius: 14px;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    box-shadow: 0 10px 24px rgba(16, 26, 32, 0.16); font-size: 14px; line-height: 1.35; cursor: pointer;
+  }
+  .chat-vista-previa[hidden] { display: none; }
+  .chat-vista-previa strong { display: block; font-size: 12px; color: var(--text-3); margin-bottom: 2px; }
+  .ventana-chat {
+    position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 70;
+    width: min(400px, calc(100vw - 24px)); height: min(560px, calc(100vh - 110px));
+    display: flex; flex-direction: column; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    box-shadow: 0 18px 48px rgba(16, 26, 32, 0.28), 0 4px 12px rgba(16, 26, 32, 0.12);
+  }
+  .ventana-chat[hidden] { display: none; }
+  .ventana-chat-cab {
+    display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px;
+    background: linear-gradient(135deg, var(--primary), #24485A); color: #FFFFFF;
+  }
+  .ventana-chat-cab .titulo { flex: 1; min-width: 0; }
+  .ventana-chat-cab .titulo strong, .ventana-chat-cab .titulo span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ventana-chat-cab .titulo strong { font-size: 16px; }
+  .ventana-chat-cab .titulo span { font-size: 12.5px; opacity: 0.8; }
+  .ventana-chat-cab button {
+    width: 40px; height: 40px; flex: none; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; line-height: 1;
+  }
+  .ventana-chat-tabs { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .ventana-chat-tabs[hidden] { display: none; }
+  .chat-tab {
+    flex: none; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; position: relative;
+  }
+  .chat-tab.activo { background: #FFF1E6; border-color: #F97316; color: #9A3412; }
+  .chat-tab .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #DC2626; margin-left: 6px; vertical-align: middle; }
+  .chat-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .chat-panel[hidden] { display: none; }
+  .ventana-chat .chat-mensajes { flex: 1; max-height: none; margin: 0; padding: 14px 12px; background: var(--surface-2); }
+  .ventana-chat .chat-burbuja.suya { background: var(--surface); box-shadow: 0 1px 2px rgba(16, 26, 32, 0.08); }
+  .ventana-chat .chat-entrada { padding: 10px; border-top: 1px solid var(--border); align-items: flex-end; background: var(--surface); }
+  .chat-entrada textarea {
+    flex: 1; min-width: 0; resize: none; min-height: 48px; max-height: 140px; box-sizing: border-box;
+    border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+    font: inherit; font-size: 16px; line-height: 1.4; background: var(--surface); color: var(--text);
+  }
+  .chat-entrada textarea:focus { outline: none; border-color: #F97316; }
+  .chat-entrada textarea { scrollbar-width: none; }
+  .chat-entrada textarea::-webkit-scrollbar { display: none; }
+  .btn-enviar-chat {
+    width: 48px; height: 48px; flex: none; border-radius: 50%; border: none; cursor: pointer;
+    background: linear-gradient(145deg, #FB923C, #EA580C); color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-enviar-chat svg { width: 22px; height: 22px; }
+  .btn-enviar-chat:disabled { opacity: 0.5; }
+
   /* ---------- Sección plegable (lo poco usado, escondido) ---------- */
   .plegable { border-top: 1px solid var(--border); margin-top: 4px; }
   .plegable-btn {
@@ -1161,6 +1241,40 @@
   </div>
 </div>
 
+<!-- Chat con los pasajeros: burbuja flotante + ventana propia, fuera de las
+     pestañas para que se vea en cualquiera. Una pestaña por viaje en curso. -->
+<button type="button" class="burbuja-chat" id="burbujaChat" aria-label="Abrir el chat con tus pasajeros" hidden>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.9 3 3 6.6 3 11c0 2.2 1 4.2 2.6 5.6L5 21l4.3-2.2c.9.2 1.8.3 2.7.3 5.1 0 9-3.6 9-8s-3.9-8-9-8z"/></svg>
+  <span class="burbuja-chat-n" id="burbujaChatN" hidden>0</span>
+</button>
+<div class="chat-vista-previa" id="chatVistaPrevia" hidden></div>
+<section class="ventana-chat" id="ventanaChat" hidden role="dialog" aria-labelledby="ventanaChatTitulo">
+  <div class="ventana-chat-cab">
+    <div class="titulo"><strong id="ventanaChatTitulo">Pasajero</strong><span id="ventanaChatSub">Chat del viaje</span></div>
+    <button type="button" id="btnMinimizarChat" aria-label="Minimizar el chat">&#8211;</button>
+  </div>
+  <div class="ventana-chat-tabs" id="ventanaChatTabs" hidden></div>
+  <div class="chat-panel" id="chatPaneles" style="flex:1;min-height:0;"></div>
+</section>
+
+<!-- Jueves: recordatorio de actualizar el precio del combustible (admin y
+     conductores con tarifa propia), una vez por jueves al abrir la app. -->
+<div class="modal-fondo" id="modalCombustible" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 4px;font-size:19px;">Es jueves: actualiza el combustible</h2>
+    <p class="nota" id="combustibleTexto" style="margin:0 0 14px;">Los precios de los combustibles cambian los jueves. Revisa el valor por litro para que las cotizaciones queden al día.</p>
+    <div class="campo" style="margin-bottom:14px;">
+      <label class="campo-label" for="combustibleNuevo">Precio por litro (CLP)</label>
+      <input type="number" id="combustibleNuevo" inputmode="numeric" step="1" min="1">
+    </div>
+    <p class="msg" id="combustibleMsg" style="margin:0 0 10px;"></p>
+    <div class="btn-row">
+      <button class="btn btn-chico" id="btnCombustibleLuego" type="button">Más tarde</button>
+      <button class="btn btn-primario" id="btnCombustibleGuardar" type="button">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   // Poner acá la URL /exec de tu Apps Script (ver INSTRUCCIONES.md).
@@ -1178,7 +1292,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 31;
+  var APP_VERSION = 32;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1422,6 +1536,7 @@
     cargarPreferenciaGps();
     pedirPermisoNotificaciones();
     iniciarUbicacionLocal();
+    compartirUbicacionPorDefecto();
     if (sondeoTimer) clearInterval(sondeoTimer);
     sondeoTimer = setInterval(sincronizar, SONDEO_MS);
   }
@@ -1443,6 +1558,11 @@
         pintarPedidos({ ok: true, pedidos: res.pendientes });
         pintarViajesEnCurso({ ok: true, pedidos: res.en_curso, cobro_real: res.cobro_real }, res.ubicaciones || {});
         Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
+        // En esta respuesta ya vino el historial completo de cada viaje en
+        // curso: lo que llegue desde ahora es nuevo. Solo se limpian ESTOS
+        // viajes (un panel creado por el camino de respaldo espera su propia
+        // respuesta y no debe perder la marca).
+        (res.en_curso || []).forEach(function (p) { delete historialPendiente[p.pedido_id]; });
       })
       .catch(function () {})
       .then(function () { sincronizando = false; });
@@ -1892,32 +2012,45 @@
     cargarFotoVehiculo(c.vehiculo_foto_url || "");
   }
 
-  // Justo después de subir una foto, Drive a veces tarda 1-3 s en dejar el
-  // link público listo para verse — el primer intento devuelve "No se pudo
-  // abrir el archivo" aunque el archivo ya existe. Reintenta solo, sin que
-  // el conductor tenga que recargar la app pensando que la subida falló.
-  // El link viejo "uc?export=view" de Drive fallaba intermitente al
-  // cargar en un <img> (Drive no está pensado para eso a escala); se
-  // convierte acá a "thumbnail", que carga desde el CDN de imágenes de
-  // Google. Los links nuevos ya se guardan así (ver subirFotoVehiculoConductor).
-  function urlFotoDrive(url) {
-    if (!url) return url;
+
+  /* Foto del vehículo sin depender de Google en cada apertura: antes se
+     pedía directo y con hasta 5 reintentos seguidos (cada uno con otra
+     dirección), y Google cortaba con "429 demasiadas solicitudes" — la foto no
+     aparecía ni aquí ni en el pasajero. Orden: 1) copia guardada en este
+     teléfono; 2) el servidor de Rumbo (la lee una vez, caché de 6 h);
+     3) solo si eso falla, UNA vez directo a Google y sin enviar el origen. */
+  function ponerFotoVehiculo(img, url, conductorId) {
+    img.onerror = null;
+    if (!url) { img.removeAttribute("src"); return; }
     var m = /[?&]id=([^&]+)/.exec(url);
-    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1000" : url;
+    if (!m) { img.src = url; return; }
+    var id = m[1], guardada = null;
+    img.dataset.fotoId = id;   // la última foto pedida: una respuesta vieja que llegue tarde no la pisa
+    try { guardada = localStorage.getItem("rumbo_foto_" + id); } catch (e) {}
+    if (guardada) { img.src = guardada; img.style.visibility = "visible"; return; }
+    img.style.visibility = "hidden";
+    img.onload = function () { img.style.visibility = "visible"; };
+    api({ accion: "foto_conductor", conductor_id: conductorId || "" }).then(function (res) {
+      if (img.dataset.fotoId !== id) return;
+      if (!res || !res.ok || !res.data_url || res.id !== id) throw new Error("sin foto");
+      img.src = res.data_url;
+      try {
+        Object.keys(localStorage).forEach(function (k) {
+          if (k.indexOf("rumbo_foto_") === 0 && k !== "rumbo_foto_" + id) localStorage.removeItem(k);
+        });
+        localStorage.setItem("rumbo_foto_" + id, res.data_url);
+      } catch (e) {}
+    }).catch(function () {
+      if (img.dataset.fotoId !== id) return;
+      img.referrerPolicy = "no-referrer";
+      img.onerror = function () { img.onerror = null; img.style.visibility = "visible"; img.alt = "Foto no disponible"; };
+      img.src = "https://drive.google.com/thumbnail?id=" + id + "&sz=w640";
+    });
   }
 
-  function cargarFotoVehiculo(url, intento) {
-    var img = document.getElementById("vehFotoPreview");
-    intento = intento || 0;
-    if (!url) { img.src = ""; img.onerror = null; return; }
-    url = urlFotoDrive(url);
-    if (intento === 0) img.style.visibility = "hidden"; // oculta el ícono roto durante los reintentos
-    img.onload = function () { img.style.visibility = "visible"; };
-    img.onerror = function () {
-      if (intento >= 4) { img.onerror = null; img.style.visibility = "visible"; return; }
-      setTimeout(function () { cargarFotoVehiculo(url, intento + 1); }, 1000 * (intento + 1));
-    };
-    img.src = url + (url.indexOf("?") === -1 ? "?" : "&") + "r=" + intento;
+  function cargarFotoVehiculo(url) {
+    var sesion = obtenerSesion();
+    ponerFotoVehiculo(document.getElementById("vehFotoPreview"), url, sesion && sesion.conductor ? sesion.conductor.conductor_id : "");
   }
 
   document.getElementById("btnGuardarVehiculo").addEventListener("click", function () {
@@ -2119,31 +2252,90 @@
       });
       if (Array.isArray(res.tarifas.diasPuntaTodoElDia)) diasPuntaSeleccionados = res.tarifas.diasPuntaTodoElDia;
       pintarDias();
+      revisarCombustibleDelJueves();   // con el formulario ya cargado
     });
   }
 
-  document.getElementById("btnGuardarTarifas").addEventListener("click", function () {
+  // Guarda TODO el formulario de tarifas tal como está en pantalla (admin:
+  // las de la red; conductor: las de su vehículo). Lo usan el botón Guardar y
+  // el aviso del combustible de los jueves — mandar solo un campo borraría los
+  // demás valores propios del conductor en el servidor.
+  function guardarTarifasDelFormulario() {
     var tarifas = {};
     CAMPOS_TARIFA.forEach(function (c) {
       var el = document.getElementById(c);
       tarifas[c] = el.type === "number" ? parseFloat(el.value) || 0 : el.value;
     });
     tarifas.diasPuntaTodoElDia = diasPuntaSeleccionados;
-    var msg = document.getElementById("tarifasMsg");
-    msg.textContent = "Guardando...";
-    msg.className = "msg";
     var cuerpo = { accion: "guardar_tarifas", tarifas: tarifas };
     if (MODO !== "admin") {
       cuerpo = { accion: "guardar_mis_tarifas", tipo_combustible: document.getElementById("tipoCombustible").value };
       CAMPOS_MI_VEHICULO.forEach(function (c) { cuerpo[c] = tarifas[c]; });
     }
-    apiPost(cuerpo).then(function (res) {
+    return apiPost(cuerpo);
+  }
+
+  document.getElementById("btnGuardarTarifas").addEventListener("click", function () {
+    var msg = document.getElementById("tarifasMsg");
+    msg.textContent = "Guardando...";
+    msg.className = "msg";
+    guardarTarifasDelFormulario().then(function (res) {
       msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
       msg.className = "msg " + (res.ok ? "ok" : "error");
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
       msg.className = "msg error";
     });
+  });
+
+  /* Jueves: en Chile el precio de los combustibles cambia los jueves. Al
+     abrir la app ese día, una ventana pide actualizar el valor por litro —
+     al admin (tarifa de la red) y a cada conductor con tarifa propia (con la
+     general no puede editarla, así que no se le pregunta). Una vez guardado,
+     no vuelve a preguntar ese jueves; "Más tarde" vuelve a preguntar la
+     próxima vez que abra la app. */
+  function claveCombustibleHoy() {
+    var d = new Date();
+    return "rumbo_combustible_" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+  }
+
+  var combustiblePreguntadoEnSesion = false;   // "Más tarde" no vuelve a molestar dentro de la misma apertura
+  function revisarCombustibleDelJueves() {
+    if (new Date().getDay() !== 4 || combustiblePreguntadoEnSesion) return;   // 4 = jueves
+    try { if (localStorage.getItem(claveCombustibleHoy())) return; } catch (e) {}
+    var actual = document.getElementById("precioComb");
+    if (!actual || actual.disabled) return;
+    document.getElementById("combustibleNuevo").value = actual.value || "";
+    document.getElementById("combustibleTexto").textContent = MODO === "admin"
+      ? "Los combustibles cambian de precio los jueves. Actualiza el valor por litro de la red para que las cotizaciones queden al día."
+      : "Los combustibles cambian de precio los jueves. Actualiza el valor por litro de tu vehículo para que tus cotizaciones queden al día.";
+    document.getElementById("combustibleMsg").textContent = "";
+    document.getElementById("modalCombustible").hidden = false;
+    combustiblePreguntadoEnSesion = true;
+  }
+
+  document.getElementById("btnCombustibleLuego").addEventListener("click", function () {
+    document.getElementById("modalCombustible").hidden = true;
+  });
+
+  document.getElementById("btnCombustibleGuardar").addEventListener("click", function () {
+    var valor = parseFloat(document.getElementById("combustibleNuevo").value);
+    var msg = document.getElementById("combustibleMsg");
+    if (!(valor > 0)) { msg.textContent = "Escribe el precio por litro, por ejemplo 1459."; msg.className = "msg error"; return; }
+    var boton = this;
+    boton.disabled = true;
+    msg.textContent = "Guardando..."; msg.className = "msg";
+    var campo = document.getElementById("precioComb");
+    var anterior = campo.value;
+    campo.value = valor;
+    guardarTarifasDelFormulario().then(function (res) {
+      if (!res.ok) { campo.value = anterior; msg.textContent = "Error: " + res.error; msg.className = "msg error"; return; }
+      try { localStorage.setItem(claveCombustibleHoy(), "1"); } catch (e) {}
+      document.getElementById("modalCombustible").hidden = true;
+    }).catch(function (err) {
+      campo.value = anterior;
+      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+    }).then(function () { boton.disabled = false; });
   });
 
   document.getElementById("btnCambiarClave").addEventListener("click", function () {
@@ -2668,7 +2860,6 @@
   }
 
   var rutasPorPedido = {};      // pedido_id -> polilinea codificada
-  var ubicacionAutoActivada = false;
 
   // ubicaciones: {pedido_id: {lat,lng}} cuando viene de la sincronización;
   // null si viene de la consulta suelta (entonces se piden aparte).
@@ -2682,6 +2873,7 @@
       var vacio = document.getElementById("sinViajesEnCurso");
       if (!res.pedidos.length) {
         avisarPagosRecibidos([]);
+        sincronizarPanelesChat([]);
         grupo.style.display = "none";
         vacio.style.display = "flex";
         lista.innerHTML = "";
@@ -2691,6 +2883,11 @@
       grupo.style.display = "block";
       vacio.style.display = "none";
       avisarPagosRecibidos(res.pedidos);
+      // Chat: un panel por viaje en la ventana flotante. Solo los paneles
+      // NUEVOS piden su historial completo (y en silencio, ya fue leído).
+      var nuevosChat = sincronizarPanelesChat(res.pedidos);
+      nuevosChat.forEach(function (id) { ultimoMensajePorPedido[id] = ""; historialPendiente[id] = true; });
+      if (!ubicaciones) nuevosChat.forEach(cargarMensajesConductor);
       // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
       // curso → esperando pago), para no borrar los mensajes ya pintados ni
       // lo que el conductor está tipeando.
@@ -2699,10 +2896,6 @@
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
         res.pedidos.forEach(function (p) { lista.appendChild(tarjetaEnCurso(p)); });
-        // Tarjetas nuevas = chat vacío: se vuelve a pedir el historial
-        // completo (antes quedaba vacío porque se pedía solo "lo nuevo").
-        res.pedidos.forEach(function (p) { ultimoMensajePorPedido[p.pedido_id] = ""; });
-        if (!ubicaciones) res.pedidos.forEach(function (p) { cargarMensajesConductor(p.pedido_id); });
         // Los mapas viejos dejan de existir cuando cambia la lista (viaje
         // finalizado), si no quedarían referencias a nodos ya borrados.
         mapasPorPedido = {};
@@ -2716,15 +2909,6 @@
         Object.keys(ubicaciones).forEach(function (id) { pintarUbicacionPasajero(id, ubicaciones[id]); });
       } else {
         res.pedidos.forEach(function (p) { actualizarUbicacionPasajero(p.pedido_id); });
-      }
-      // Con un viaje confirmado, el pasajero necesita ver el auto: se activa
-      // compartir ubicación una vez por sesión (el conductor puede apagarlo).
-      var hayActivo = res.pedidos.some(function (p) { return p.estado === "CONFIRMADO"; });
-      var chk = document.getElementById("chkUbicacion");
-      if (hayActivo && !chk.checked && !ubicacionAutoActivada) {
-        ubicacionAutoActivada = true;
-        chk.checked = true;
-        chk.dispatchEvent(new Event("change"));
       }
     })();
   }
@@ -2779,11 +2963,8 @@
       '<div class="mapa-pasajero" data-mapa="' + escapar(p.pedido_id) + '"></div>' +
       '<p class="nota-mapa" data-mapa-aviso="' + escapar(p.pedido_id) + '">Esperando la ubicación del pasajero...</p>' +
       '<p class="nota-mapa" data-distancia="' + escapar(p.pedido_id) + '"></p>' +
-      '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
-      '<div class="chat-entrada">' +
-        '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
-        '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
-      '</div>' +
+      // El chat vive en la ventana flotante (burbuja), no dentro de la tarjeta.
+      '<button class="btn btn-chico" style="width:100%;margin-top:10px;" data-abrir-chat="' + escapar(p.pedido_id) + '">Chat con el pasajero</button>' +
       // Iniciar viaje: desde ahí el servidor mide el tiempo y los km reales.
       (p.inicio_viaje_en
         ? '<p class="msg ok" style="margin:14px 2px 6px;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>'
@@ -2817,11 +2998,7 @@
         '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' +
         '<button class="btn btn-chico" data-efectivo="' + escapar(p.pedido_id) + '">Me pagó en efectivo</button>' +
       '</div>' +
-      '<div class="chat-mensajes" data-chat="' + escapar(p.pedido_id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
-      '<div class="chat-entrada">' +
-        '<input type="text" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(p.pedido_id) + '">' +
-        '<button class="btn btn-medio" data-chat-enviar="' + escapar(p.pedido_id) + '">Enviar</button>' +
-      '</div>';
+      '<button class="btn btn-chico" style="width:100%;" data-abrir-chat="' + escapar(p.pedido_id) + '">Chat con el pasajero</button>';
     return div;
   }
 
@@ -2841,7 +3018,7 @@
     var m = mapasPorPedido[pedidoId];
     if (!m) {
       cont.classList.add("activo");
-      var mapa = new google.maps.Map(cont, { zoom: 14, center: centro, disableDefaultUI: true, zoomControl: true });
+      var mapa = new google.maps.Map(cont, { zoom: 14, center: centro, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA });
       m = { mapa: mapa, marcador: null, linea: null };
       mapasPorPedido[pedidoId] = m;
     }
@@ -2855,22 +3032,63 @@
     if (!puntos.length) return;
     var m = mapaDelPedido(pedidoId, puntos[0]);
     if (!m || m.linea) return;
-    m.linea = new google.maps.Polyline({ map: m.mapa, path: puntos, strokeColor: "#16333F", strokeOpacity: 0.85, strokeWeight: 5 });
+    m.linea = dibujarRutaNaranja(m.mapa, puntos);
     var limites = new google.maps.LatLngBounds();
     puntos.forEach(function (pt) { limites.extend(pt); });
     m.mapa.fitBounds(limites, 30);
   }
 
-  /* Íconos del seguimiento: auto = conductor, persona = pasajero (mismos
-     trazos en la app del pasajero). Trazos de Material Icons (licencia
-     Apache 2.0), en un lienzo de 24x24 anclado al centro. */
-  var TRAZO_AUTO = "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z";
-  var TRAZO_PERSONA = "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z";
-  function iconoSeguimiento(trazo, color) {
-    return {
-      path: trazo, fillColor: color, fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 1.5,
-      scale: 1.4, anchor: new google.maps.Point(12, 12)
-    };
+  /* ---------------------------------------------------------------
+     Piezas visuales del mapa (iguales en la app del pasajero y en la
+     página pública de seguimiento): mapa limpio, ruta naranja con borde,
+     auto visto desde arriba que gira hacia donde avanza, y el pasajero
+     como punto azul con halo.
+     --------------------------------------------------------------- */
+  var ESTILO_MAPA = [
+    { featureType: "poi", stylers: [{ visibility: "off" }] },
+    { featureType: "transit", stylers: [{ visibility: "off" }] },
+    { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
+  ];
+  var NARANJO = "#F97316", NARANJO_BORDE = "#9A3412";
+
+  function dibujarRutaNaranja(mapaDestino, puntos) {
+    var borde = new google.maps.Polyline({ map: mapaDestino, path: puntos, strokeColor: NARANJO_BORDE, strokeOpacity: 0.45, strokeWeight: 10, zIndex: 1 });
+    var linea = new google.maps.Polyline({ map: mapaDestino, path: puntos, strokeColor: NARANJO, strokeOpacity: 1, strokeWeight: 6, zIndex: 2 });
+    return { setMap: function (m) { borde.setMap(m); linea.setMap(m); } };
+  }
+
+  function iconoAuto(rumbo) {
+    var r = Math.round((rumbo || 0) / 5) * 5;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+      '<g transform="rotate(' + r + ' 28 28)">' +
+      '<ellipse cx="29" cy="30" rx="12" ry="21" fill="rgba(0,0,0,0.22)"/>' +
+      '<rect x="17" y="7" width="22" height="42" rx="9" fill="#16333F" stroke="#FFFFFF" stroke-width="2.5"/>' +
+      '<path d="M20.5 17 Q28 12.5 35.5 17 L34 23 Q28 21 22 23 Z" fill="#9BD4F5"/>' +
+      '<rect x="21.5" y="24.5" width="13" height="12" rx="3" fill="#2B5468"/>' +
+      '<path d="M22 38.5 Q28 40.5 34 38.5 L35.2 43 Q28 45.5 20.8 43 Z" fill="#9BD4F5"/>' +
+      '<circle cx="21" cy="10" r="1.7" fill="#FFE29A"/><circle cx="35" cy="10" r="1.7" fill="#FFE29A"/>' +
+      '<rect x="19" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/><rect x="33" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/>' +
+      '</g></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(56, 56), anchor: new google.maps.Point(28, 28) };
+  }
+
+  function iconoPersona() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
+      '<circle cx="20" cy="20" r="18" fill="#1A73E8" fill-opacity="0.18"/>' +
+      '<circle cx="20" cy="20" r="9" fill="#1A73E8" stroke="#FFFFFF" stroke-width="3"/></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(40, 40), anchor: new google.maps.Point(20, 20) };
+  }
+
+  // Mueve el auto y lo gira hacia donde avanzó (si se movió más de 4 m).
+  function moverAuto(marcador, pos) {
+    var antes = marcador.getPosition();
+    if (antes && google.maps.geometry) {
+      var ahora = new google.maps.LatLng(pos.lat, pos.lng);
+      if (google.maps.geometry.spherical.computeDistanceBetween(antes, ahora) > 4) {
+        marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora)));
+      }
+    }
+    marcador.setPosition(pos);
   }
   // Línea recta, no por calles: es para darse una idea de qué tan cerca está.
   function textoDistancia(a, b) {
@@ -2896,8 +3114,8 @@
     if (!miPosicionConductor || !googleMapsListo) return;
     Object.keys(mapasPorPedido).forEach(function (pedidoId) {
       var m = mapasPorPedido[pedidoId];
-      if (!m.marcadorYo) m.marcadorYo = new google.maps.Marker({ map: m.mapa, title: "Tú", icon: iconoSeguimiento(TRAZO_AUTO, "#16333F"), zIndex: 2 });
-      m.marcadorYo.setPosition(miPosicionConductor);
+      if (!m.marcadorYo) m.marcadorYo = new google.maps.Marker({ map: m.mapa, title: "Tú", icon: iconoAuto(0), zIndex: 3 });
+      moverAuto(m.marcadorYo, miPosicionConductor);
       pintarDistanciaPedido(pedidoId);
     });
   }
@@ -2910,7 +3128,7 @@
     if (!m) return;
     var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
     if (aviso) aviso.classList.add("oculto");
-    if (!m.marcador) m.marcador = new google.maps.Marker({ map: m.mapa, title: "Pasajero", icon: iconoSeguimiento(TRAZO_PERSONA, "#1A73E8"), zIndex: 1 });
+    if (!m.marcador) m.marcador = new google.maps.Marker({ map: m.mapa, title: "Pasajero", icon: iconoPersona(), zIndex: 1 });
     m.marcador.setPosition(pos);
     m.posPasajero = pos;
     // Con ruta dibujada no se recentra: se pierde el encuadre de la ruta.
@@ -2968,19 +3186,268 @@
 
   function cargarMensajesConductor(pedidoId) {
     api({ accion: "mensajes_conductor", pedido_id: pedidoId, desde: ultimoMensajePorPedido[pedidoId] || "" })
-      .then(function (res) { if (res.ok) pintarMensajesDe(pedidoId, res.mensajes); });
+      .then(function (res) { if (res.ok) pintarMensajesDe(pedidoId, res.mensajes); delete historialPendiente[pedidoId]; });
   }
 
+  // Paneles recién creados: su primer lote de mensajes es historial (ya
+  // leído antes de reabrir la app) y no debe sonar ni contar como nuevo.
+  var historialPendiente = {};
+
   function pintarMensajesDe(pedidoId, mensajes) {
+    var silencioso = !!historialPendiente[pedidoId];
+    delete historialPendiente[pedidoId];
     (mensajes || []).forEach(function (m) {
-      pintarMensajeConductor(pedidoId, m, m.autor === "conductor");
+      pintarMensajeConductor(pedidoId, m, m.autor === "conductor", silencioso);
       ultimoMensajePorPedido[pedidoId] = m.creado_en;
     });
   }
 
-  function pintarMensajeConductor(pedidoId, m, esMio) {
+  /* ---------------------------------------------------------------
+     Chat flotante con los pasajeros: burbuja arrastrable + ventana propia,
+     una pestaña por viaje en curso. Los paneles NO se borran al redibujar
+     las tarjetas (antes cada redibujo vaciaba el chat y lo volvía a pedir).
+     --------------------------------------------------------------- */
+  var chatActivo = "";              // pedido_id del panel visible
+  var chatNoLeidos = {};            // pedido_id → mensajes sin leer
+  var mensajesPintados = {};        // pedido_id → { mensaje_id: true }
+  var nombresChat = {};             // pedido_id → nombre del pasajero
+  var vistaPreviaTimer = null;
+  var esTactil = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  var ICONO_ENVIAR = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6V10l12.6 2-12.6 2z"/></svg>';
+
+  function ventanaChatAbierta() { return !document.getElementById("ventanaChat").hidden; }
+
+  function pintarNoLeidosChat() {
+    var total = 0;
+    Object.keys(chatNoLeidos).forEach(function (id) { total += chatNoLeidos[id] || 0; });
+    var n = document.getElementById("burbujaChatN");
+    n.textContent = total > 9 ? "9+" : String(total);
+    n.hidden = !total;
+    [].forEach.call(document.querySelectorAll(".chat-tab"), function (t) {
+      var punto = t.querySelector(".punto");
+      if (chatNoLeidos[t.dataset.tab] && !punto) { punto = document.createElement("span"); punto.className = "punto"; t.appendChild(punto); }
+      if (!chatNoLeidos[t.dataset.tab] && punto) punto.remove();
+    });
+  }
+
+  function mostrarPanelChat(id) {
+    chatActivo = id;
+    [].forEach.call(document.querySelectorAll("#chatPaneles [data-panel]"), function (el) { el.hidden = el.dataset.panel !== id; });
+    [].forEach.call(document.querySelectorAll(".chat-tab"), function (t) { t.classList.toggle("activo", t.dataset.tab === id); });
+    document.getElementById("ventanaChatTitulo").textContent = nombresChat[id] || "Pasajero";
+    document.getElementById("ventanaChatSub").textContent = "Chat del viaje";
+    if (ventanaChatAbierta() && chatNoLeidos[id]) { chatNoLeidos[id] = 0; pintarNoLeidosChat(); }
+    var cont = document.querySelector('[data-chat="' + id + '"]');
+    if (cont) cont.scrollTop = cont.scrollHeight;
+  }
+
+  // Crea los paneles de los viajes nuevos y quita los terminados. Devuelve
+  // los pedido_id recién creados (para pedir su historial completo).
+  function sincronizarPanelesChat(pedidos) {
+    var cont = document.getElementById("chatPaneles");
+    var vigentes = {}, nuevos = [];
+    (pedidos || []).forEach(function (p) {
+      var id = p.pedido_id;
+      vigentes[id] = true;
+      nombresChat[id] = String(p.nombre || "Pasajero");
+      if (cont.querySelector('[data-panel="' + id + '"]')) return;
+      var panel = document.createElement("div");
+      panel.className = "chat-panel";
+      panel.dataset.panel = id;
+      panel.hidden = true;
+      panel.innerHTML =
+        '<div class="chat-mensajes" data-chat="' + escapar(id) + '"><p class="chat-vacio">Aún no hay mensajes.</p></div>' +
+        '<div class="chat-entrada">' +
+          '<textarea rows="1" maxlength="500" placeholder="Escribe al pasajero..." data-chat-input="' + escapar(id) + '"></textarea>' +
+          '<button class="btn-enviar-chat" type="button" data-chat-enviar="' + escapar(id) + '" aria-label="Enviar mensaje">' + ICONO_ENVIAR + '</button>' +
+        '</div>';
+      cont.appendChild(panel);
+      nuevos.push(id);
+    });
+    [].forEach.call(cont.querySelectorAll("[data-panel]"), function (el) {
+      var id = el.dataset.panel;
+      if (vigentes[id]) return;
+      el.remove();
+      delete chatNoLeidos[id]; delete mensajesPintados[id]; delete nombresChat[id];
+    });
+    var ids = Object.keys(vigentes);
+    // Se redibuja solo si cambió la lista: esto corre en cada sondeo (5 s) y
+    // no debe hacer parpadear las pestañas ni bajar el chat que se está leyendo.
+    var tabs = document.getElementById("ventanaChatTabs");
+    var clave = ids.map(function (id) { return id + ":" + nombresChat[id]; }).join("|");
+    if (tabs.dataset.clave !== clave) {
+      tabs.dataset.clave = clave;
+      tabs.innerHTML = ids.map(function (id) {
+        return '<button type="button" class="chat-tab" data-tab="' + escapar(id) + '">' + escapar(nombresChat[id].split(" ")[0]) + '</button>';
+      }).join("");
+      tabs.hidden = ids.length < 2;
+      if (!vigentes[chatActivo]) chatActivo = ids[0] || "";
+      if (chatActivo) mostrarPanelChat(chatActivo);
+    }
+    pintarNoLeidosChat();
+    if (!ids.length) cerrarVentanaChat();
+    document.getElementById("burbujaChat").hidden = !ids.length || ventanaChatAbierta();
+    return nuevos;
+  }
+
+  function abrirVentanaChat(id) {
+    if (id) mostrarPanelChat(id);
+    if (!chatActivo) return;
+    document.getElementById("ventanaChat").hidden = false;
+    document.getElementById("burbujaChat").hidden = true;
+    ocultarVistaPrevia();
+    chatNoLeidos[chatActivo] = 0;
+    pintarNoLeidosChat();
+    mostrarPanelChat(chatActivo);
+  }
+
+  function cerrarVentanaChat() {
+    document.getElementById("ventanaChat").hidden = true;
+    document.getElementById("burbujaChat").hidden = !document.querySelector("#chatPaneles [data-panel]");
+  }
+
+  function ocultarVistaPrevia() {
+    if (vistaPreviaTimer) { clearTimeout(vistaPreviaTimer); vistaPreviaTimer = null; }
+    document.getElementById("chatVistaPrevia").hidden = true;
+  }
+
+  // Mensaje nuevo que no está a la vista: contador, latido, vibración,
+  // sonido corto y vista previa junto a la burbuja durante 5 s.
+  function avisarMensajeNuevo(pedidoId, texto) {
+    chatNoLeidos[pedidoId] = (chatNoLeidos[pedidoId] || 0) + 1;
+    pintarNoLeidosChat();
+    var b = document.getElementById("burbujaChat");
+    b.classList.remove("nuevo"); void b.offsetWidth; b.classList.add("nuevo");
+    try { if (navigator.vibrate) navigator.vibrate([90, 60, 90]); } catch (e) {}
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.16].forEach(function (t, i) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = i ? 1046 : 784;
+        g.gain.setValueAtTime(0.14, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.22);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.22);
+      });
+    } catch (e) {}
+    if (ventanaChatAbierta()) return;   // abierta en otra pestaña: basta el punto rojo
+    var vista = document.getElementById("chatVistaPrevia");
+    var r = b.getBoundingClientRect();
+    vista.innerHTML = "";
+    var quien = document.createElement("strong"); quien.textContent = nombresChat[pedidoId] || "Pasajero";
+    var cuerpo = document.createElement("span"); cuerpo.textContent = texto.length > 90 ? texto.slice(0, 87) + "…" : texto;
+    vista.appendChild(quien); vista.appendChild(cuerpo);
+    vista.dataset.pedido = pedidoId;
+    vista.hidden = false;
+    var ancho = vista.offsetWidth;
+    var izquierda = r.left + r.width / 2 < window.innerWidth / 2 ? r.right + 10 : r.left - ancho - 10;
+    vista.style.left = Math.max(8, Math.min(izquierda, window.innerWidth - ancho - 8)) + "px";
+    vista.style.top = Math.max(8, r.top + 6) + "px";
+    if (vistaPreviaTimer) clearTimeout(vistaPreviaTimer);
+    vistaPreviaTimer = setTimeout(ocultarVistaPrevia, 5000);
+  }
+
+  // Burbuja arrastrable: se suelta y se pega al borde más cercano; un toque
+  // sin arrastrar abre la ventana. La posición se recuerda en el teléfono.
+  (function () {
+    var b = document.getElementById("burbujaChat");
+    var inicio = null, movio = false;
+    function aplicar(p) {
+      if (!p) return;
+      b.style.left = Math.min(Math.max(8, p.x), window.innerWidth - 68) + "px";
+      b.style.top = Math.min(Math.max(8, p.y), window.innerHeight - 140) + "px";
+      b.style.right = "auto"; b.style.bottom = "auto";
+    }
+    try { aplicar(JSON.parse(localStorage.getItem("rumbo_burbuja_chat") || "null")); } catch (e) {}
+    b.addEventListener("pointerdown", function (ev) {
+      var r = b.getBoundingClientRect();
+      inicio = { x: ev.clientX, y: ev.clientY, bx: r.left, by: r.top };
+      movio = false;
+      try { b.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    b.addEventListener("pointermove", function (ev) {
+      if (!inicio) return;
+      var dx = ev.clientX - inicio.x, dy = ev.clientY - inicio.y;
+      if (!movio && Math.abs(dx) + Math.abs(dy) < 8) return;
+      movio = true;
+      ocultarVistaPrevia();
+      aplicar({ x: inicio.bx + dx, y: inicio.by + dy });
+    });
+    function soltar() {
+      if (!inicio) return;
+      inicio = null;
+      if (!movio) return;
+      var r = b.getBoundingClientRect();
+      var p = { x: r.left + r.width / 2 < window.innerWidth / 2 ? 12 : window.innerWidth - 72, y: r.top };
+      aplicar(p);
+      try { localStorage.setItem("rumbo_burbuja_chat", JSON.stringify(p)); } catch (e) {}
+    }
+    b.addEventListener("pointerup", soltar);
+    b.addEventListener("pointercancel", soltar);   // gesto interrumpido (llamada, gesto del sistema)
+    // Al rotar el teléfono la burbuja no debe quedar fuera de la pantalla.
+    window.addEventListener("resize", function () {
+      if (b.style.left) aplicar({ x: parseFloat(b.style.left), y: parseFloat(b.style.top) });
+    });
+    b.addEventListener("click", function (ev) {
+      if (movio) { ev.preventDefault(); movio = false; return; }
+      abrirVentanaChat();
+    });
+  })();
+  document.getElementById("btnMinimizarChat").addEventListener("click", cerrarVentanaChat);
+  document.getElementById("chatVistaPrevia").addEventListener("click", function () { abrirVentanaChat(this.dataset.pedido); });
+  document.getElementById("ventanaChatTabs").addEventListener("click", function (ev) {
+    var t = ev.target.closest(".chat-tab");
+    if (t) mostrarPanelChat(t.dataset.tab);
+  });
+
+  var enviandoChat = {};
+  function enviarChatConductor(pedidoId) {
+    var input = document.querySelector('[data-chat-input="' + pedidoId + '"]');
+    var boton = document.querySelector('[data-chat-enviar="' + pedidoId + '"]');
+    if (!input) return;
+    var texto = input.value.trim();
+    // Un solo envío a la vez por viaje: un doble toque mandaba el texto dos veces.
+    if (!texto || enviandoChat[pedidoId]) return;
+    enviandoChat[pedidoId] = true;
+    if (boton) boton.disabled = true;
+    input.value = ""; input.style.height = "auto";
+    apiPost({ accion: "enviar_mensaje_conductor", pedido_id: pedidoId, texto: texto }).then(function (res) {
+      if (!res.ok) { input.value = texto; alert("No se pudo enviar: " + res.error); return; }
+      pintarMensajeConductor(pedidoId, res.mensaje, true);
+      ultimoMensajePorPedido[pedidoId] = res.mensaje.creado_en;
+    }).catch(function () { input.value = texto; })
+      .then(function () { enviandoChat[pedidoId] = false; if (boton) boton.disabled = false; });
+  }
+
+  document.getElementById("ventanaChat").addEventListener("click", function (ev) {
+    var enviar = ev.target.closest("[data-chat-enviar]");
+    if (enviar) enviarChatConductor(enviar.dataset.chatEnviar);
+  });
+  // Campo amplio: crece con el texto; en el teléfono Enter salta de línea y se
+  // envía con el botón; con teclado físico, Enter envía (Mayús+Enter salta).
+  document.getElementById("ventanaChat").addEventListener("input", function (ev) {
+    var ta = ev.target;
+    if (!ta.matches || !ta.matches("textarea[data-chat-input]")) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
+  });
+  document.getElementById("ventanaChat").addEventListener("keydown", function (ev) {
+    var ta = ev.target;
+    if (!ta.matches || !ta.matches("textarea[data-chat-input]")) return;
+    if (ev.key === "Enter" && !ev.shiftKey && !esTactil && !ev.isComposing) { ev.preventDefault(); enviarChatConductor(ta.getAttribute("data-chat-input")); }
+  });
+
+  function pintarMensajeConductor(pedidoId, m, esMio, silencioso) {
     var cont = document.querySelector('[data-chat="' + pedidoId + '"]');
     if (!cont) return;
+    // El mismo mensaje puede llegar dos veces (respuesta al enviar + sondeo
+    // que ya venía en camino): se dibuja una sola.
+    if (m.mensaje_id) {
+      var vistos = mensajesPintados[pedidoId] || (mensajesPintados[pedidoId] = {});
+      if (vistos[m.mensaje_id]) return;
+      vistos[m.mensaje_id] = true;
+    }
+    if (!esMio && !silencioso && !(ventanaChatAbierta() && chatActivo === pedidoId)) avisarMensajeNuevo(pedidoId, m.texto);
     var vacio = cont.querySelector(".chat-vacio");
     if (vacio) vacio.remove();
     var burbuja = document.createElement("div");
@@ -2996,20 +3463,8 @@
   }
 
   document.getElementById("listaEnCurso").addEventListener("click", function (ev) {
-    var enviar = ev.target.closest("[data-chat-enviar]");
-    if (enviar) {
-      var pedidoId = enviar.dataset.chatEnviar;
-      var input = document.querySelector('[data-chat-input="' + pedidoId + '"]');
-      var texto = input.value.trim();
-      if (!texto) return;
-      input.value = "";
-      apiPost({ accion: "enviar_mensaje_conductor", pedido_id: pedidoId, texto: texto }).then(function (res) {
-        if (!res.ok) { input.value = texto; alert("No se pudo enviar: " + res.error); return; }
-        pintarMensajeConductor(pedidoId, res.mensaje, true);
-        ultimoMensajePorPedido[pedidoId] = res.mensaje.creado_en;
-      });
-      return;
-    }
+    var abrirChatBtn = ev.target.closest("[data-abrir-chat]");
+    if (abrirChatBtn) { abrirVentanaChat(abrirChatBtn.dataset.abrirChat); return; }
     var llegue = ev.target.closest("[data-llegue]");
     if (llegue) {
       // "Llegué a la parada": pasa al tramo siguiente y abre su navegación.
@@ -3150,8 +3605,8 @@
 
   function pintarMiPosicionEspera() {
     if (!mapaEspera || !miPosicionConductor || !googleMapsListo) return;
-    if (!marcadorEspera) marcadorEspera = new google.maps.Marker({ map: mapaEspera, title: "Tú", icon: iconoSeguimiento(TRAZO_AUTO, "#16333F"), zIndex: 2 });
-    marcadorEspera.setPosition(miPosicionConductor);
+    if (!marcadorEspera) marcadorEspera = new google.maps.Marker({ map: mapaEspera, title: "Tú", icon: iconoAuto(0), zIndex: 2 });
+    moverAuto(marcadorEspera, miPosicionConductor);
     if (!centradoEsperaInicial) {
       centradoEsperaInicial = true;
       mapaEspera.setCenter(miPosicionConductor);
@@ -3244,7 +3699,7 @@
         else texto.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
         return;
       }
-      mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true });
+      mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA });
       aviso.classList.add("oculto");
       pintarMiPosicionEspera();   // si ya hay posición, se ve de inmediato
       centrarMapaEspera(false);
@@ -3321,6 +3776,10 @@
         msg.textContent = "Tu navegador no soporta geolocalización.";
         msg.className = "msg error"; ev.target.checked = false; return;
       }
+      ubicacionApagadaAMano = false;
+      // Nunca dos vigilantes a la vez: uno anterior que quedó vivo duplicaba
+      // los envíos al servidor.
+      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
       watchId = navigator.geolocation.watchPosition(function (pos) {
         // El auto propio en el mapa se mueve con CADA lectura del GPS; lo
         // que se limita a una vez cada 15 s es el envío al servidor.
@@ -3339,18 +3798,42 @@
         msg.className = "msg error";
         ev.target.checked = false;
         caja.classList.remove("activo");
+        if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+        // Un corte pasajero (sin señal, tiempo agotado) se reintenta solo; un
+        // permiso denegado (código 1) no: ahí hay que habilitarlo en Android.
+        if (err && err.code !== 1) setTimeout(compartirUbicacionPorDefecto, 20000);
       }, { enableHighAccuracy: true });
       msg.textContent = "Activando...";
       msg.className = "msg";
       caja.classList.add("activo");
     } else {
+      // Encendido por defecto (decisión de Alberto): se pregunta solo al
+      // APAGARLO, porque sin ubicación el pasajero no ve el auto, no recibe
+      // el aviso "tu vehículo está llegando" ni el tiempo real de llegada.
+      if (!confirm("¿Dejar de compartir tu ubicación?\n\nTus pasajeros no verán dónde vienes ni recibirán el aviso de que estás llegando.")) {
+        ev.target.checked = true;
+        return;
+      }
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
       watchId = null;
-      msg.textContent = "Actívalo cuando salgas a un viaje confirmado.";
+      ubicacionApagadaAMano = true;   // lo apagó él: no se vuelve a encender solo
+      msg.textContent = "Ubicación apagada. Tus pasajeros no ven dónde vienes.";
       msg.className = "msg";
       caja.classList.remove("activo");
     }
   });
+
+  // Al entrar a la app de conductor se enciende solo, sin preguntar, y se
+  // vuelve a encender sola si el GPS se cortó — salvo que el propio conductor
+  // la haya apagado a mano.
+  var ubicacionApagadaAMano = false;
+  function compartirUbicacionPorDefecto() {
+    var chk = document.getElementById("chkUbicacion");
+    if (chk.checked || ubicacionApagadaAMano || !obtenerSesion() || MODO === "admin") return;
+    chk.checked = true;
+    chk.dispatchEvent(new Event("change"));
+  }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) compartirUbicacionPorDefecto(); });
 
   // Dentro de la app instalada (Capacitor) no se ofrece descargar la app.
   if (window.Capacitor) {
