@@ -217,6 +217,13 @@
   .parada-fila .ruta-marca { display: flex; align-items: center; justify-content: center; }
   .parada-quitar-celda { display: flex; }
   .parada-input-wrap, .ruta-input-wrap { position: relative; }
+  /* Escribir una dirección: el teclado del teléfono ocupa media pantalla y
+     tapaba el campo y las sugerencias. Mientras se escribe, la página gana
+     espacio abajo para poder subir el campo al borde superior, y el
+     desplegable de Google queda por encima de todo. */
+  body.escribiendo-direccion { padding-bottom: 60vh; }
+  .ruta-input-wrap input, .parada-input-wrap input { scroll-margin-top: 14px; }
+  .pac-container { z-index: 100000 !important; max-height: 45vh; overflow-y: auto; }
   .parada-input-wrap input, .ruta-input-wrap input { padding-right: 40px; }
   .btn-quitar-parada, .btn-borrar-direccion {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
@@ -434,10 +441,31 @@
   }
 
   #mapaConductor {
-    width: 100%; height: 240px; border-radius: var(--r-card);
+    width: 100%; height: 320px; border-radius: var(--r-card);
     border: 1px solid var(--border); margin-bottom: 12px; display: none;
     background: var(--surface-2);
   }
+
+  /* Tiempo de llegada: lo primero que mira el pasajero esperando. */
+  .eta { margin: 0 0 12px; padding: 14px 18px; border-radius: var(--r-card); background: var(--primary-soft); color: var(--primary-soft-ink); }
+  .eta strong { display: block; font-size: 26px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .eta span { font-size: 14px; opacity: .85; }
+
+  /* Avance del viaje en pasos. */
+  .pasos { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .pasos li { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; font-size: 12px; line-height: 1.2; color: var(--text-3); position: relative; }
+  .pasos li::before { content: ""; position: absolute; top: 6px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 0; }
+  .pasos li:first-child::before { display: none; }
+  .paso-punto { width: 15px; height: 15px; border-radius: 50%; background: var(--surface); border: 3px solid var(--border-strong); position: relative; z-index: 1; box-sizing: border-box; }
+  .pasos li.hecho .paso-punto { background: var(--primary); border-color: var(--primary); }
+  .pasos li.hecho::before, .pasos li.actual::before { background: var(--primary); }
+  .pasos li.actual { color: var(--text); font-weight: 700; }
+  .pasos li.actual .paso-punto { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent); }
+
+  /* Recorrido con paradas. */
+  .recorrido { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .recorrido li { display: flex; gap: 10px; align-items: baseline; font-size: 15px; overflow-wrap: anywhere; }
+  .recorrido .rec-etiqueta { flex: none; min-width: 66px; font-size: 12px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--text-3); }
 
   .pie { text-align: center; color: var(--text-3); font-size: 13.5px; margin-top: 24px; line-height: 1.5; }
 
@@ -839,13 +867,30 @@
 
   <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
-    <p class="nota" id="estadoDetalle" style="margin:0 2px 16px;"></p>
-    <button type="button" class="btn btn-chico" id="btnCompartirViaje" style="display:none;width:100%;margin-bottom:16px;">Compartir mi viaje en vivo</button>
+    <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
+         mientras el conductor va a buscarte. -->
+    <div class="eta" id="etaConductor" style="display:none;" aria-live="polite"></div>
+    <!-- Avance del viaje en 4 pasos. -->
+    <ol class="pasos" id="pasosViaje" aria-label="Avance del viaje">
+      <li data-paso="0"><span class="paso-punto"></span><span class="paso-txt">Solicitado</span></li>
+      <li data-paso="1"><span class="paso-punto"></span><span class="paso-txt">Conductor en camino</span></li>
+      <li data-paso="2"><span class="paso-punto"></span><span class="paso-txt">En viaje</span></li>
+      <li data-paso="3"><span class="paso-punto"></span><span class="paso-txt">Finalizado</span></li>
+    </ol>
+    <p class="nota" id="estadoDetalle" style="margin:0 2px 14px;"></p>
+    <div id="mapaConductor"></div>
+    <p class="nota" id="distanciaConductor" style="margin:6px 2px 12px;"></p>
     <!-- Conductor asignado y su vehículo: aparece al confirmarse el viaje. -->
     <p class="nota" id="avisoDerivado" style="display:none;margin:0 2px 12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);">
       Tu conductor habitual no estaba disponible. Tu viaje lo tomó otro conductor de la red, al mismo precio.
     </p>
     <div class="card conductor-banner" id="tarjetaConductorAsignado" style="display:none;"></div>
+    <!-- Recorrido del viaje: salida, paradas en orden y destino. -->
+    <section class="card" id="cardRecorrido" style="display:none;">
+      <div class="card-head"><span class="card-title">Recorrido</span></div>
+      <ol class="recorrido" id="listaRecorrido"></ol>
+    </section>
+    <button type="button" class="btn btn-chico" id="btnCompartirViaje" style="display:none;width:100%;margin-bottom:16px;">Compartir mi viaje en vivo</button>
     <!-- Al terminar el viaje: si el monto final es mayor que lo cotizado
          (el conductor midió más tiempo o distancia reales), se explica acá. -->
     <div class="card" id="cardDesgloseFinal" style="display:none;">
@@ -859,9 +904,6 @@
     <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
       Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o Mercado Pago, no Rumbo.
     </p>
-    <div id="mapaConductor"></div>
-    <p class="nota" id="distanciaConductor" style="margin:6px 2px 12px;"></p>
-
     <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
          en Uber/DiDi — antes de eso no hay conductor asignado con quien
          hablar. -->
@@ -1134,6 +1176,27 @@
   function configurarAutocompleteInput(input, marcador) {
     var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry"] };
     var auto = new google.maps.places.Autocomplete(input, opciones);
+    // Sube el campo al borde de arriba cuando aparece el teclado, así quedan
+    // visibles lo que se escribe y las sugerencias que Google despliega debajo.
+    // El teclado tarda unos 300 ms en subir: se reintenta una vez más después.
+    input.addEventListener("focus", function () {
+      document.body.classList.add("escribiendo-direccion");
+      [350, 800].forEach(function (ms) {
+        setTimeout(function () {
+          if (document.activeElement === input) input.scrollIntoView({ block: "start", behavior: "smooth" });
+        }, ms);
+      });
+    });
+    input.addEventListener("blur", function () {
+      // Pequeña demora: tocar una sugerencia quita el foco un instante antes
+      // de elegirla, y no hay que encoger la página en ese momento.
+      setTimeout(function () {
+        var activo = document.activeElement;
+        if (!activo || !activo.closest || !activo.closest(".ruta-input-wrap, .parada-input-wrap")) {
+          document.body.classList.remove("escribiendo-direccion");
+        }
+      }, 300);
+    });
     auto.addListener("place_changed", function () {
       var lugar = auto.getPlace();
       if (lugar && lugar.formatted_address) input.value = lugar.formatted_address;
@@ -1142,6 +1205,17 @@
       }
     });
   }
+
+  // El botón "Atrás" de Android cierra el teclado pero deja el foco en el
+  // campo: sin esto el espacio extra de abajo quedaba. Si la ventana vuelve a
+  // su altura completa, el teclado ya no está.
+  var alturaVentanaMax = window.innerHeight;
+  window.addEventListener("resize", function () {
+    alturaVentanaMax = Math.max(alturaVentanaMax, window.innerHeight);
+    if (document.body.classList.contains("escribiendo-direccion") && window.innerHeight >= alturaVentanaMax - 80) {
+      document.body.classList.remove("escribiendo-direccion");
+    }
+  });
 
   function configurarAutocomplete() {
     configurarAutocompleteInput(document.getElementById("origen"), "origen");
@@ -1189,16 +1263,22 @@
     mapaCotizar = new google.maps.Map(cont, {
       zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true
     });
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function (pos) {
-        var yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        marcadoresCotizar.yo = new google.maps.Marker({
-          map: mapaCotizar, position: yo, title: "Tu ubicación",
-          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#1A73E8", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 2 }
-        });
-        if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) mapaCotizar.setCenter(yo);
-      }, function () { /* sin permiso: se queda centrado en Santiago */ }, { maximumAge: 60000, timeout: 8000 });
-    }
+    mostrarMiUbicacionCotizar();
+  }
+
+  // Tu punto azul y el mapa centrado en ti. Se repite en cada viaje nuevo,
+  // porque la persona pudo moverse desde el anterior.
+  function mostrarMiUbicacionCotizar() {
+    if (!mapaCotizar || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (marcadoresCotizar.yo) marcadoresCotizar.yo.setPosition(yo);
+      else marcadoresCotizar.yo = new google.maps.Marker({
+        map: mapaCotizar, position: yo, title: "Tu ubicación",
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#1A73E8", fillOpacity: 1, strokeColor: "#FFFFFF", strokeWeight: 2 }
+      });
+      if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) { mapaCotizar.setCenter(yo); mapaCotizar.setZoom(15); }
+    }, function () { /* sin permiso: se queda centrado en Santiago */ }, { maximumAge: 30000, timeout: 8000 });
   }
 
   // cual: "origen", "destino", o el id de una parada ("parada1", "parada2"...).
@@ -1345,7 +1425,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 31;
+  var APP_VERSION = 32;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2164,17 +2244,18 @@
     var dos = function (n) { return String(n).padStart(2, "0"); };
     var aFechaStr = function (d) { return d.getFullYear() + "-" + dos(d.getMonth() + 1) + "-" + dos(d.getDate()); };
     var hoyStr = aFechaStr(ahora);
-    // El conductor necesita al menos 15 min para llegar: esa es la salida
-    // más temprana posible. Se calcula como fecha completa porque a las
-    // 23:50 el mínimo ya cae al día siguiente.
-    var minimo = new Date(ahora.getTime() + 15 * 60 * 1000);
-    if (!inputFecha.value && !inputHora.value) {
-      inputFecha.value = aFechaStr(minimo);
-      inputHora.value = dos(minimo.getHours()) + ":" + dos(minimo.getMinutes());
+    var horaAhora = dos(ahora.getHours()) + ":" + dos(ahora.getMinutes());
+    // Sin día ni hora = el viaje es para AHORA. No se inventa ningún margen:
+    // cuánto demora el conductor en llegar lo ve él, calculado con su
+    // ubicación real, y el pasajero lo ve en el seguimiento.
+    var paraAhora = !inputFecha.value && !inputHora.value;
+    if (paraAhora) {
+      inputFecha.value = hoyStr;
+      inputHora.value = horaAhora;
     } else if (!inputFecha.value) {
       inputFecha.value = hoyStr;
     } else if (!inputHora.value) {
-      inputHora.value = inputFecha.value === aFechaStr(minimo) ? dos(minimo.getHours()) + ":" + dos(minimo.getMinutes()) : "09:00";
+      inputHora.value = inputFecha.value === hoyStr ? horaAhora : "09:00";
     }
     if (!horaValida(inputHora.value)) {
       textoEl.textContent = "Escribe la hora como HH:MM, por ejemplo 08:30 o 18:45.";
@@ -2183,19 +2264,19 @@
       return;
     }
     var elegido = new Date(inputFecha.value + "T" + inputHora.value + ":00");
-    // Tolerancia de 1 min: si el mínimo se autocompletó y el pasajero tardó
-    // unos segundos en tocar "Calcular", no se le rechaza por eso. Si hace
-    // falta ajustar, se sigue en el MISMO toque (no se corta acá) — cortar
-    // obligaba a tocar "Calcular precio" de nuevo, y si entre un toque y el
-    // siguiente pasaba más de un minuto (algo normal: leer, pensar, una
-    // interrupción), el ajuste se repetía sin fin y el pasajero nunca
-    // llegaba a ver un precio.
-    if (elegido.getTime() < minimo.getTime() - 60 * 1000) {
-      inputFecha.value = aFechaStr(minimo);
-      inputHora.value = dos(minimo.getHours()) + ":" + dos(minimo.getMinutes());
+    // Un día u hora que ya pasó se toma como "ahora", en el MISMO toque (no
+    // se corta acá: cortar obligaba a tocar "Calcular precio" de nuevo, y el
+    // ajuste podía repetirse sin fin). Con 1 min de tolerancia por si el
+    // pasajero tardó unos segundos en tocar "Calcular".
+    if (elegido.getTime() < ahora.getTime() - 60 * 1000) {
+      inputFecha.value = hoyStr;
+      inputHora.value = horaAhora;
+      paraAhora = true;
     }
+    if (Math.abs(new Date(inputFecha.value + "T" + inputHora.value + ":00").getTime() - ahora.getTime()) <= 2 * 60 * 1000) paraAhora = true;
     var cuando = (inputFecha.value === hoyStr ? "hoy" : "el " + inputFecha.value.split("-").reverse().join("/")) + " a las " + inputHora.value;
-    if (!confirm("Tu viaje quedará para " + cuando + ". ¿Está bien así?")) {
+    var pregunta = paraAhora ? "Tu viaje es para ahora. ¿Está bien así?" : "Tu viaje quedará para " + cuando + ". ¿Está bien así?";
+    if (!confirm(pregunta)) {
       textoEl.textContent = "Corrige el día o la hora de tu viaje y vuelve a calcular.";
       textoEl.className = "nota";
       inputHora.focus();
@@ -2329,6 +2410,10 @@
       pedidoActualId = res.pedido_id;
       tokenSeguimientoActual = res.token_seguimiento || "";
       document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
+      viajeActualInfo = {
+        origen: document.getElementById("origen").value.trim(), destino: document.getElementById("destino").value.trim(),
+        paradas: obtenerParadas(), fecha: fechaHoraCotizada.fecha, hora: fechaHoraCotizada.hora
+      };
       mostrarVistaEstado(res.total);
       iniciarPolling();
     }).catch(function (err) {
@@ -2345,9 +2430,16 @@
     document.getElementById("tabSeguimiento").disabled = false;
     document.getElementById("badgeSeguimiento").classList.add("activo");
     mostrarPestana("seguimiento");
+    limpiarSeguimientoVisual();
     document.getElementById("estadoBox").className = "estado-box pendiente";
     document.getElementById("estadoBox").textContent = "Esperando confirmación del conductor";
-    document.getElementById("estadoDetalle").textContent = "Total " + fmt(totalConfirmado) + " · Código " + pedidoActualId;
+    var cuando = viajeActualInfo ? textoCuando(viajeActualInfo.fecha, viajeActualInfo.hora) : "";
+    // Un viaje pedido para dentro de pocos minutos es "ahora": no se muestra
+    // una hora, que daría la impresión de un mínimo de espera.
+    if (viajeActualInfo && Math.abs(new Date(viajeActualInfo.fecha + "T" + viajeActualInfo.hora + ":00").getTime() - Date.now()) <= 25 * 60 * 1000) cuando = "ahora";
+    document.getElementById("estadoDetalle").textContent = "Total " + fmt(totalConfirmado) +
+      (cuando ? (cuando === "ahora" ? " · Viaje para ahora" : " · Viaje para " + cuando) : "") + " · Código " + pedidoActualId;
+    pintarRecorrido();
   }
 
   // El sondeo sigue vivo después de confirmar: ahora también espera que el
@@ -2377,6 +2469,8 @@
           return api({ accion: "estado_pedido", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "" }).then(manejarEstado);
         }
         if (res.polilinea) rutaViajeCodificada = res.polilinea;
+        if (Array.isArray(res.puntos) && res.puntos.length >= 2) { puntosRutaActuales = res.puntos; pintarPuntosRuta(); }
+        etaReal = res.eta || null;
         if (res.token_seguimiento) {
           tokenSeguimientoActual = res.token_seguimiento;
           document.getElementById("btnCompartirViaje").style.display = "block";
@@ -2393,6 +2487,143 @@
   document.addEventListener("visibilitychange", function () { if (!document.hidden) sincronizarViaje(); });
 
   var rutaViajeCodificada = "";
+
+  /* ---------------------------------------------------------------
+     Seguimiento del viaje: pasos, tiempo de llegada, recorrido y paradas
+     en el mapa (como Uber y DiDi).
+     --------------------------------------------------------------- */
+  var viajeActualInfo = null;       // lo que se pidió: origen, paradas, destino, fecha y hora
+  var viajeIniciadoActual = false;  // el conductor ya tocó "Iniciar viaje"
+  var ultimosMetros = null;         // distancia conductor→pasajero, en línea recta
+  var etaReal = null;               // {minutos, km} por calles, lo calcula el servidor
+  var puntosRutaActuales = [];      // [{lat,lng}] origen, paradas, destino
+  var puntosPintados = "";
+  var marcadoresPuntos = [];
+  var ultimoAjusteVista = 0;
+  var DIAS_SEMANA = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+  // "Hoy 14:30", "Mañana 09:00" o "vie 09/10 18:30".
+  function textoCuando(fecha, hora) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha || "") || !/^\d{2}:\d{2}$/.test(hora || "")) return "";
+    var d = new Date(fecha + "T" + hora + ":00");
+    if (isNaN(d.getTime())) return "";
+    var ahora = new Date();
+    var dias = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate())) / 86400000);
+    var dos = function (n) { return (n < 10 ? "0" : "") + n; };
+    var cuando = dias === 0 ? "Hoy" : dias === 1 ? "Mañana" : DIAS_SEMANA[d.getDay()] + " " + dos(d.getDate()) + "/" + dos(d.getMonth() + 1);
+    return cuando + " " + hora;
+  }
+
+  // 0 solicitado · 1 conductor en camino · 2 en viaje · 3 finalizado
+  function pintarPasos(n) {
+    [].forEach.call(document.querySelectorAll("#pasosViaje li"), function (li) {
+      var i = Number(li.dataset.paso);
+      li.classList.toggle("hecho", i < n);
+      li.classList.toggle("actual", i === n);
+    });
+  }
+
+  // Aproximación: línea recta × 1,4 (las calles no son rectas) a ~27 km/h
+  // urbanos. Es una estimación, por eso va con "≈". Con el viaje ya iniciado
+  // no se muestra: ahí el tiempo depende de la ruta, no de la distancia a ti.
+  function pintarEta() {
+    var el = document.getElementById("etaConductor");
+    if (viajeIniciadoActual || ultimosMetros === null) { el.style.display = "none"; return; }
+    var metros = ultimosMetros;
+    var titulo, detalle;
+    if (metros < 150) { titulo = "Tu conductor está llegando"; detalle = "Sal a su encuentro"; }
+    else if (etaReal && etaReal.minutos > 0) {
+      // Tiempo REAL por calles y con tráfico, calculado por el servidor.
+      titulo = "Llega en " + (etaReal.minutos >= 60 ? Math.floor(etaReal.minutos / 60) + " h " + (etaReal.minutos % 60) + " min" : etaReal.minutos + " min");
+      detalle = "A " + String(etaReal.km).replace(".", ",") + " km de ti, por calles";
+    }
+    else {
+      var min = Math.max(1, Math.round(metros * 1.4 / 450));
+      titulo = "Llega en ≈ " + min + " min";
+      detalle = "A " + (metros < 1000 ? Math.round(metros / 10) * 10 + " m" : (metros / 1000).toFixed(1).replace(".", ",") + " km") + " de ti, en línea recta";
+    }
+    el.innerHTML = "";
+    var s = document.createElement("strong"); s.textContent = titulo;
+    var d = document.createElement("span"); d.textContent = detalle;
+    el.appendChild(s); el.appendChild(d);
+    el.style.display = "block";
+  }
+
+  // Texto del recuadro de estado y pasos según en qué va el viaje.
+  function actualizarEtapaViaje() {
+    var caja = document.getElementById("estadoBox");
+    caja.className = "estado-box confirmado";
+    if (viajeIniciadoActual) {
+      caja.textContent = "En viaje";
+      pintarPasos(2);
+    } else {
+      caja.textContent = (ultimosMetros !== null && ultimosMetros < 150) ? "Tu conductor está llegando" : "Tu conductor va hacia ti";
+      pintarPasos(1);
+    }
+    pintarEta();
+  }
+
+  function pintarRecorrido() {
+    var tarjeta = document.getElementById("cardRecorrido");
+    var lista = document.getElementById("listaRecorrido");
+    lista.innerHTML = "";
+    if (!viajeActualInfo) { tarjeta.style.display = "none"; return; }
+    var filas = [["Salida", viajeActualInfo.origen]];
+    viajeActualInfo.paradas.forEach(function (dir, i) { filas.push(["Parada " + (i + 1), dir]); });
+    filas.push(["Destino", viajeActualInfo.destino]);
+    filas.forEach(function (f) {
+      var li = document.createElement("li");
+      var et = document.createElement("span"); et.className = "rec-etiqueta"; et.textContent = f[0];
+      var tx = document.createElement("span"); tx.textContent = f[1];
+      li.appendChild(et); li.appendChild(tx); lista.appendChild(li);
+    });
+    tarjeta.style.display = "block";
+  }
+
+  // Origen (verde), paradas numeradas (ámbar) y destino (oscuro) en el mapa.
+  function pintarPuntosRuta() {
+    if (!mapa || !window.google || !puntosRutaActuales.length) return;
+    var clave = JSON.stringify(puntosRutaActuales);
+    if (clave === puntosPintados) return;
+    puntosPintados = clave;
+    marcadoresPuntos.forEach(function (m) { m.setMap(null); });
+    marcadoresPuntos = [];
+    var ultimo = puntosRutaActuales.length - 1;
+    puntosRutaActuales.forEach(function (pt, i) {
+      var esOrigen = i === 0, esDestino = i === ultimo;
+      var icono = {
+        path: google.maps.SymbolPath.CIRCLE, scale: esOrigen || esDestino ? 8 : 11,
+        fillColor: esOrigen ? "#16A34A" : esDestino ? "#16333F" : "#B45309", fillOpacity: 1,
+        strokeColor: "#FFFFFF", strokeWeight: 2.5
+      };
+      var opciones = { map: mapa, position: { lat: pt.lat, lng: pt.lng }, icon: icono, zIndex: 0,
+        title: esOrigen ? "Salida" : esDestino ? "Destino" : "Parada " + i };
+      if (!esOrigen && !esDestino) opciones.label = { text: String(i), color: "#FFFFFF", fontWeight: "700", fontSize: "12px" };
+      marcadoresPuntos.push(new google.maps.Marker(opciones));
+    });
+  }
+
+  // Antes de iniciar el viaje el mapa encuadra al auto y al pasajero; al
+  // iniciar, la ruta completa. Cada 15 s como máximo para no pelear con el
+  // dedo si el pasajero movió el mapa a mano.
+  function ajustarVistaSeguimiento() {
+    if (!mapa || viajeIniciadoActual || !posConductor || !miPosicionPasajero) return;
+    if (Date.now() - ultimoAjusteVista < 15000) return;
+    ultimoAjusteVista = Date.now();
+    var limites = new google.maps.LatLngBounds();
+    limites.extend(posConductor); limites.extend(miPosicionPasajero);
+    mapa.fitBounds(limites, 70);
+    google.maps.event.addListenerOnce(mapa, "idle", function () { if (mapa.getZoom() > 17) mapa.setZoom(17); });
+  }
+
+  // Deja el seguimiento limpio para un viaje nuevo.
+  function limpiarSeguimientoVisual() {
+    viajeIniciadoActual = false; ultimosMetros = null; etaReal = null; puntosRutaActuales = []; puntosPintados = ""; ultimoAjusteVista = 0;
+    marcadoresPuntos.forEach(function (m) { m.setMap(null); });
+    marcadoresPuntos = [];
+    document.getElementById("etaConductor").style.display = "none";
+    pintarPasos(0);
+  }
 
   var conductorAsignadoPintado = "";
   function pintarConductorAsignado(c) {
@@ -2448,14 +2679,18 @@
     (function () {
         if (!res.ok) return;
         if (res.estado === "CONFIRMADO") {
+          // En cada sondeo: pasa de "va hacia ti" a "en viaje" cuando el
+          // conductor toca "Iniciar viaje".
+          viajeIniciadoActual = !!res.viaje_iniciado;
+          actualizarEtapaViaje();
           if (viajeConfirmadoMostrado) return;
           viajeConfirmadoMostrado = true;
-          document.getElementById("estadoBox").className = "estado-box confirmado";
-          document.getElementById("estadoBox").textContent = "Viaje confirmado";
           mostrarMapaConductor();
           abrirChat();
           compartirMiUbicacion();
         } else if (res.estado === "COMPLETADO") {
+          pintarPasos(3);
+          document.getElementById("etaConductor").style.display = "none";
           mostrarCierreDeViaje(res);
         } else if (res.estado === "SIN_CONDUCTOR") {
           // No se le muestra cada rechazo individual mientras se deriva
@@ -2710,6 +2945,9 @@
       new google.maps.LatLng(miPosicionPasajero.lat, miPosicionPasajero.lng));
     var txt = metros < 1000 ? Math.round(metros / 10) * 10 + " m" : (metros / 1000).toFixed(1).replace(".", ",") + " km";
     el.textContent = "Tu conductor está a " + txt + " (en línea recta)";
+    ultimosMetros = metros;
+    if (document.getElementById("estadoBox").classList.contains("confirmado")) actualizarEtapaViaje();
+    ajustarVistaSeguimiento();
   }
 
   function pintarmeEnMapa() {
@@ -2726,6 +2964,7 @@
     });
     marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoSeguimiento(TRAZO_AUTO, "#16333F"), zIndex: 2 });
     dibujarRutaViaje();
+    pintarPuntosRuta();
     pintarmeEnMapa();
   }
 
@@ -2799,6 +3038,10 @@
     document.getElementById("tarjetaConductorAsignado").style.display = "none";
     document.getElementById("avisoDerivado").style.display = "none";
     if (lineaRuta) { lineaRuta.setMap(null); lineaRuta = null; }
+    limpiarSeguimientoVisual();
+    viajeActualInfo = null;
+    document.getElementById("cardRecorrido").style.display = "none";
+    mostrarMiUbicacionCotizar();
     document.getElementById("btnPedir").disabled = true;
     document.getElementById("pedirTexto").textContent = "";
     document.getElementById("tarjetaPrecio").style.display = "none";
