@@ -1425,7 +1425,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 32;
+  var APP_VERSION = 33;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1835,11 +1835,14 @@
     };
   }
 
+  var totalCotizadoActual = 0;
+
   function calcularTotal() {
     if (!rutaActual || !tarifas) return;
     var d = cotizarViaje(rutaActual.km, rutaActual.minutos, rutaActual.peaje);
     var peaje = d.peaje;
     var total = d.total;
+    totalCotizadoActual = total;   // es el que se le muestra: se manda al pedir para detectar cambios
 
     document.getElementById("outTipoTarifa").textContent = (d.fueraDeSantiago ? "Fuera de Santiago" : "En ciudad") + " · " + (d.punta ? "Punta" : "Valle");
     document.getElementById("total").textContent = fmt(total);
@@ -2391,8 +2394,11 @@
     // El total que se ve acá arriba es una vista previa. El servidor
     // vuelve a calcular todo desde cero con la ruta y las tarifas
     // guardadas — el número que manda de vuelta es el que realmente
-    // queda registrado, no este.
-    apiPost({
+    // queda registrado, no este. Por eso se le manda el que se vio: si el
+    // servidor llega a otro monto, avisa y el pasajero decide (no se crea el
+    // pedido con un precio distinto sin que se entere).
+    function enviarPedido(aceptaNuevoPrecio) {
+    return apiPost({
       accion: "crear_pedido",
       pasajero_token: sesion.token,
       conductor_id: obtenerConductorId() || "",
@@ -2403,8 +2409,18 @@
       fecha: fechaHoraCotizada.fecha,
       hora: fechaHoraCotizada.hora,
       ida_vuelta: idaYVuelta ? "SI" : "NO",
-      horas_espera: idaYVuelta ? obtenerHorasEspera() : 0
+      horas_espera: idaYVuelta ? obtenerHorasEspera() : 0,
+      total_cotizado: Math.round(totalCotizadoActual) || 0,
+      acepta_nuevo_precio: aceptaNuevoPrecio ? "SI" : "NO"
     }).then(function (res) {
+      if (res.precio_cambio) {
+        var seguir = confirm("El precio cambió: ahora es " + fmt(res.total) + " (antes " + fmt(res.total_cotizado) + "). ¿Quieres solicitar el viaje igual?");
+        if (seguir) return enviarPedido(true);
+        pedirTexto.textContent = "No se solicitó el viaje. Vuelve a calcular el precio para ver el valor actualizado.";
+        pedirTexto.className = "nota";
+        btn.disabled = false;
+        return;
+      }
       if (!res.ok) throw new Error(res.error || "error desconocido");
       if (esParaOtro) guardarContacto(document.getElementById("nombreTercero").value, document.getElementById("telefonoTercero").value.trim());
       pedidoActualId = res.pedido_id;
@@ -2421,6 +2437,8 @@
       pedirTexto.className = "nota error";
       btn.disabled = false;
     });
+    }
+    enviarPedido(false);
   });
 
   function mostrarVistaEstado(totalConfirmado) {
