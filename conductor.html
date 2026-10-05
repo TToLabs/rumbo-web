@@ -25,9 +25,9 @@
     --surface: #FFFFFF; --surface-2: #F4F6F8;
     --border: #E2E6EA; --border-strong: #C9D0D7;
     --text: #101828; --text-2: #56606D; --text-3: #8A94A0;
-    --primary: #0A1F44; --primary-hover: #071531; --primary-ink: #FFFFFF;
-    --primary-soft: #E7EAF1; --primary-soft-hover: #D9DEEA; --primary-soft-ink: #0A1F44;
-    --primary-mid: #142B57; --primary-mid-hover: #0E2045;
+    --primary: #0F2D4F; --primary-hover: #0C233C; --primary-ink: #FFFFFF;
+    --primary-soft: #E6EDF3; --primary-soft-hover: #D6E0EA; --primary-soft-ink: #0F2D4F;
+    --primary-mid: #1A3B66; --primary-mid-hover: #142F54;
     --accent: #0B7A4B; --accent-soft: #E6F4ED;
     --danger: #B3392B; --danger-soft: #FBEDEB;
     --warn: #966A11; --warn-soft: #FBF3DC; --warn-border: #EFD99A;
@@ -596,7 +596,7 @@
   .nav-banner[hidden], .nav-pie[hidden] { display: none !important; }
   .nav-banner {
     position: absolute; left: 8px; right: 8px; top: calc(var(--topbar-h, 60px) + 8px); z-index: 4; display: flex; align-items: center; gap: 12px;
-    padding: 10px 14px; border-radius: 14px; background: #0A1F44; color: #fff; box-shadow: var(--shadow-md);
+    padding: 10px 14px; border-radius: 14px; background: #0F2D4F; color: #fff; box-shadow: var(--shadow-md);
   }
   .nav-flecha { font-size: 40px; line-height: 1; flex: none; width: 46px; text-align: center; }
   .nav-textos { min-width: 0; }
@@ -1620,7 +1620,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 47;
+  var APP_VERSION = 48;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -5044,7 +5044,7 @@
     var col = COLOR_ESTADO_PAS[estado] || "#EAB308";
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">' +
       '<circle cx="22" cy="22" r="19.5" fill="#FFFFFF" stroke="' + col + '" stroke-width="3.5"/>' +
-      '<circle cx="22" cy="22" r="15.5" fill="#0A1F44"/>' +
+      '<circle cx="22" cy="22" r="15.5" fill="#0F2D4F"/>' +
       '<circle cx="22" cy="17" r="4.6" fill="#FFFFFF"/><path d="M12.6 31.4c.9-5 4.7-7.4 9.4-7.4s8.5 2.4 9.4 7.4z" fill="#FFFFFF"/></svg>';
     return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(44, 44), anchor: new google.maps.Point(22, 22) };
   }
