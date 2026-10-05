@@ -487,7 +487,20 @@
   .flota-quien span { font-size: 13px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .flota-estado { flex: none; text-align: right; font-size: 13.5px; font-weight: 700; display: flex; flex-direction: column; gap: 1px; }
   .flota-estado span { font-size: 12px; font-weight: 500; color: var(--text-3); }
-  body.cond-pantalla.hoja-medio .flota-fila:nth-child(n+4) { display: none; }
+  .flota-ver { display: flex; gap: 8px; margin: 0 0 8px; }
+  .flota-ver-btn { flex: 1; min-height: 44px; border: 2px solid var(--border-strong); border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .flota-ver-btn b { font-weight: 800; margin-left: 4px; }
+  .flota-ver-btn.activo { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+  body.cond-pantalla.hoja-medio .flota-resumen { display: none; }   /* los botones ya muestran los totales */
+  .flota-titulo { margin: 10px 0 2px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .flota-fila.sel { background: var(--surface-2); border-radius: 10px; }
+  .flota-detalle { margin: 0 0 8px; padding: 12px; border-radius: 14px; background: var(--surface-2); font-size: 14px; line-height: 1.45; }
+  .flota-detalle[hidden] { display: none; }
+  .flota-detalle h3 { margin: 0 0 4px; font-size: 16px; }
+  .flota-detalle p { margin: 2px 0; color: var(--text-2); }
+  .flota-detalle .flota-malo { color: #B42318; font-weight: 700; }
+  .flota-detalle .flota-bueno { color: #0B7A4B; font-weight: 700; }
+  .flota-detalle .btn { margin-top: 8px; }
   /* Pedido emergente: pantalla completa con lo esencial para decidir al instante. */
   .pedido-emergente {
     position: fixed; inset: 0; z-index: 80; background: rgba(10, 20, 40, 0.62);
@@ -1004,7 +1017,12 @@
     <!-- Solo administrador: la flota. En el mapa, el vehículo de cada conductor con su
          estado (disponible / en viaje); acá abajo, el resumen y la lista. -->
     <div class="flota" id="flotaAdmin" hidden>
+      <div class="flota-ver" id="flotaVer">
+        <button type="button" class="flota-ver-btn activo" data-ver="conductores" aria-pressed="true">Conductores <b id="flotaNC">0</b></button>
+        <button type="button" class="flota-ver-btn activo" data-ver="pasajeros" aria-pressed="true">Pasajeros <b id="flotaNP">0</b></button>
+      </div>
       <div class="flota-resumen" id="flotaResumen"></div>
+      <div class="flota-detalle" id="flotaDetalle" hidden></div>
       <div id="flotaLista"><p class="vacio">Cargando conductores...</p></div>
       <p class="nota" id="flotaNota"></p>
     </div>
@@ -1570,7 +1588,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 45;
+  var APP_VERSION = 46;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -4849,20 +4867,39 @@
   }
 
   /* ---------------------------------------------------------------
-     Administrador: flota en el mapa. Cada conductor con su vehículo real (color y
-     tipo) y un punto de estado: verde = disponible, naranja = en viaje, gris = sin
-     conexión / sin señal. Los datos vienen de flota_admin (cada 15 s mientras se ve).
+     Administrador: flota en el mapa. Dos botones: Conductores y Pasajeros (se pueden prender
+     y apagar por separado). Conductor = su vehículo real (color y tipo) con un punto de
+     estado: verde disponible, naranja en viaje. Pasajero = pin con la persona, amarillo si
+     busca conductor, naranja si ya viene su auto. Privacidad: el servidor solo ubica al
+     conductor en su horario activo y al pasajero mientras tiene una solicitud activa.
+     Al tocar un auto o un pasajero en viaje / en busca del pasajero se ven AMBOS (más el
+     destino y la línea entre ellos) y, del conductor, la evaluación de sus llegadas.
      --------------------------------------------------------------- */
   var COLOR_ESTADO_FLOTA = { DISPONIBLE: "#16A34A", EN_VIAJE: "#F97316", DESCONECTADO: "#8A949E", SIN_SENAL: "#8A949E" };
   var NOMBRE_ESTADO_FLOTA = { DISPONIBLE: "Disponible", EN_VIAJE: "En viaje", DESCONECTADO: "Desconectado", SIN_SENAL: "Sin señal" };
   var ORDEN_ESTADO_FLOTA = { EN_VIAJE: 0, DISPONIBLE: 1, DESCONECTADO: 2, SIN_SENAL: 3 };
-  var flotaDatos = [], flotaMarcas = {}, flotaTimer = null, flotaEncuadrada = false, flotaInfo = null, flotaCargando = false;
+  var COLOR_ESTADO_PAS = { BUSCANDO: "#EAB308", A_RECOGER: "#F97316", CON_PASAJERO: "#2563EB" };
+  var NOMBRE_ESTADO_PAS = { BUSCANDO: "Buscando conductor", A_RECOGER: "Esperando su auto", CON_PASAJERO: "En viaje" };
+  var flotaDatos = [], flotaPas = [], flotaMarcas = {}, flotaMarcasPas = {}, flotaTimer = null, flotaEncuadrada = false, flotaCargando = false;
+  var flotaVer = { conductores: true, pasajeros: true }, flotaSel = null, flotaDestino = null, flotaLinea = null;
 
   function iconoFlota(c, rumbo) {
     var svg = svgAuto(rumbo, colorDeAuto(c.vehiculo_color), tipoDeAuto(c.vehiculo_marca, c.vehiculo_modelo));
     var col = COLOR_ESTADO_FLOTA[c.estado] || "#8A949E", i = svg.lastIndexOf("</svg>");
     svg = svg.slice(0, i) + '<circle cx="46" cy="10" r="7.5" fill="' + col + '" stroke="#FFFFFF" stroke-width="2.4"/></svg>';
     return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(54, 54), anchor: new google.maps.Point(27, 27) };
+  }
+  function iconoPasajero(estado) {
+    var col = COLOR_ESTADO_PAS[estado] || "#EAB308";
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">' +
+      '<circle cx="22" cy="22" r="19.5" fill="#FFFFFF" stroke="' + col + '" stroke-width="3.5"/>' +
+      '<circle cx="22" cy="22" r="15.5" fill="#0A1F44"/>' +
+      '<circle cx="22" cy="17" r="4.6" fill="#FFFFFF"/><path d="M12.6 31.4c.9-5 4.7-7.4 9.4-7.4s8.5 2.4 9.4 7.4z" fill="#FFFFFF"/></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(44, 44), anchor: new google.maps.Point(22, 22) };
+  }
+  function iconoDestinoFlota() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="#16333F" stroke="#FFFFFF" stroke-width="3"/><rect x="10.5" y="10.5" width="9" height="9" rx="1.5" fill="#FFFFFF"/></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(30, 30), anchor: new google.maps.Point(15, 15) };
   }
   function textoHaceFlota(iso) {
     var t = new Date(iso).getTime();
@@ -4874,35 +4911,112 @@
     if (c.estado === "EN_VIAJE") return c.fase === "A_RECOGER" ? "Yendo a recoger" : "Con pasajero";
     return textoHaceFlota(c.actualizado_en);
   }
+  function conductorDeFlota(id) { return flotaDatos.filter(function (x) { return x.conductor_id === id; })[0] || null; }
+  function pasajeroDeFlota(pedidoId) { return flotaPas.filter(function (x) { return x.pedido_id === pedidoId; })[0] || null; }
+  // Con un conductor elegido: su pasajero (si viene a buscarlo o va con él). Con un pasajero: su conductor.
+  function parFlota() {
+    if (!flotaSel) return null;
+    var c = null, p = null;
+    if (flotaSel.tipo === "c") {
+      c = conductorDeFlota(flotaSel.id);
+      p = flotaPas.filter(function (x) { return x.conductor_id === flotaSel.id; })[0] || null;
+    } else {
+      p = pasajeroDeFlota(flotaSel.id);
+      c = p && p.conductor_id ? conductorDeFlota(p.conductor_id) : null;
+    }
+    return (c || p) ? { c: c, p: p } : null;
+  }
+  function conPosicionFlota(x) { return x && x.lat !== null && x.lng !== null && !isNaN(x.lat) && !isNaN(x.lng); }
+
+  // Evaluación de las llegadas del conductor (últimos 30 días), en texto.
+  function lineasEvaluacion(ev) {
+    if (!ev) return [];
+    var out = [];
+    if (ev.programados) {
+      var pct = Math.round(ev.a_tiempo * 100 / ev.programados);
+      out.push('Puntualidad: <span class="' + (pct >= 80 ? "flota-bueno" : "flota-malo") + '">' + ev.a_tiempo + " de " + ev.programados + " a tiempo (" + pct + "%)</span>" +
+        " · atraso medio " + ev.atraso_prom + " min (tolerancia " + ev.tolerancia + " min)");
+    }
+    if (ev.ahora_viajes) out.push("Viajes para ahora: " + ev.ahora_viajes + " · tardó " + ev.espera_prom + " min en iniciar el viaje, en promedio");
+    if (ev.calificaciones) out.push("Calificación de los pasajeros: ★ " + ev.calificacion + " (" + ev.calificaciones + ")");
+    if (!out.length) out.push("Sin viajes completados en los últimos " + ev.dias + " días.");
+    return out;
+  }
+
+  function pintarFlotaDetalle() {
+    var caja = document.getElementById("flotaDetalle"), par = parFlota();
+    if (!par) { caja.hidden = true; caja.innerHTML = ""; return; }
+    var h = "";
+    if (par.c) {
+      var veh = [par.c.vehiculo_marca, par.c.vehiculo_modelo, par.c.vehiculo_color].filter(Boolean).join(" ") + (par.c.vehiculo_patente ? " · " + par.c.vehiculo_patente : "");
+      h += "<h3>" + escapar(par.c.nombre) + "</h3><p>" + escapar(veh || "Sin datos del vehículo") + " · <strong>" + NOMBRE_ESTADO_FLOTA[par.c.estado] + "</strong> · " + escapar(detalleEstadoFlota(par.c)) + "</p>";
+      h += lineasEvaluacion(par.c.evaluacion).map(function (t) { return "<p>" + t + "</p>"; }).join("");
+    }
+    if (par.p) {
+      h += '<p style="margin-top:8px;"><strong>Pasajero: ' + escapar(par.p.nombre) + "</strong> · " + escapar(par.p.telefono || "") + " · " + NOMBRE_ESTADO_PAS[par.p.estado] +
+        (par.p.en_vivo ? " (ubicación en vivo)" : " (punto de recogida)") + "</p>" +
+        "<p>" + escapar(par.p.origen || "") + " → " + escapar(par.p.destino || "") + "</p>";
+      if (par.p.atraso_min > 0) h += '<p class="flota-malo">Lleva ' + par.p.atraso_min + " min de atraso sobre la hora pactada.</p>";
+    } else if (par.c && par.c.estado !== "EN_VIAJE") {
+      h += "<p>Sin viaje en curso.</p>";
+    }
+    h += '<button type="button" class="btn btn-chico" id="btnFlotaTodos">Ver todos</button>';
+    caja.innerHTML = h; caja.hidden = false;
+    document.getElementById("btnFlotaTodos").addEventListener("click", function () { seleccionarFlota(null, null); });
+  }
 
   function pintarFlotaLista() {
     var cuenta = { EN_VIAJE: 0, DISPONIBLE: 0, DESCONECTADO: 0, SIN_SENAL: 0 };
     flotaDatos.forEach(function (c) { cuenta[c.estado] = (cuenta[c.estado] || 0) + 1; });
+    document.getElementById("flotaNC").textContent = String(cuenta.EN_VIAJE + cuenta.DISPONIBLE);
+    document.getElementById("flotaNP").textContent = String(flotaPas.length);
+    [].forEach.call(document.querySelectorAll("#flotaVer [data-ver]"), function (b) {
+      var on = !!flotaVer[b.dataset.ver];
+      b.classList.toggle("activo", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
     document.getElementById("flotaResumen").innerHTML =
       '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.DISPONIBLE + '"></i>Disponibles ' + cuenta.DISPONIBLE + '</span>' +
       '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.EN_VIAJE + '"></i>En viaje ' + cuenta.EN_VIAJE + '</span>' +
       '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.SIN_SENAL + '"></i>Sin conexión ' + (cuenta.DESCONECTADO + cuenta.SIN_SENAL) + '</span>';
-    var lista = document.getElementById("flotaLista");
-    if (!flotaDatos.length) { lista.innerHTML = '<p class="vacio">No hay conductores activos en la red.</p>'; return; }
-    var orden = flotaDatos.slice().sort(function (a, b) {
-      return (ORDEN_ESTADO_FLOTA[a.estado] - ORDEN_ESTADO_FLOTA[b.estado]) || String(a.nombre).localeCompare(String(b.nombre));
-    });
-    lista.innerHTML = orden.map(function (c) {
-      var veh = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" ") + (c.vehiculo_patente ? " · " + c.vehiculo_patente : "");
-      return '<button type="button" class="flota-fila" data-flota="' + escapar(c.conductor_id) + '">' +
-        '<span class="flota-punto" style="background:' + (COLOR_ESTADO_FLOTA[c.estado] || "#8A949E") + '"></span>' +
-        '<span class="flota-quien"><strong>' + escapar(c.nombre) + '</strong><span>' + escapar(veh || "Sin datos del vehículo") + '</span></span>' +
-        '<span class="flota-estado">' + NOMBRE_ESTADO_FLOTA[c.estado] + '<span>' + escapar(detalleEstadoFlota(c)) + '</span></span></button>';
-    }).join("");
+    var html = "";
+    if (flotaVer.conductores) {
+      var orden = flotaDatos.slice().sort(function (a, b) {
+        return (ORDEN_ESTADO_FLOTA[a.estado] - ORDEN_ESTADO_FLOTA[b.estado]) || String(a.nombre).localeCompare(String(b.nombre));
+      });
+      html += '<div class="flota-titulo">Conductores</div>' + (orden.length ? orden.map(function (c) {
+        var veh = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" ") + (c.vehiculo_patente ? " · " + c.vehiculo_patente : "");
+        var sel = flotaSel && flotaSel.tipo === "c" && flotaSel.id === c.conductor_id;
+        return '<button type="button" class="flota-fila' + (sel ? " sel" : "") + '" data-flota-c="' + escapar(c.conductor_id) + '">' +
+          '<span class="flota-punto" style="background:' + (COLOR_ESTADO_FLOTA[c.estado] || "#8A949E") + '"></span>' +
+          '<span class="flota-quien"><strong>' + escapar(c.nombre) + '</strong><span>' + escapar(veh || "Sin datos del vehículo") + '</span></span>' +
+          '<span class="flota-estado">' + NOMBRE_ESTADO_FLOTA[c.estado] + '<span>' + escapar(detalleEstadoFlota(c)) + '</span></span></button>';
+      }).join("") : '<p class="vacio">No hay conductores activos en la red.</p>');
+    }
+    if (flotaVer.pasajeros) {
+      html += '<div class="flota-titulo">Pasajeros con solicitud</div>' + (flotaPas.length ? flotaPas.map(function (p) {
+        var sel = flotaSel && flotaSel.tipo === "p" && flotaSel.id === p.pedido_id;
+        return '<button type="button" class="flota-fila' + (sel ? " sel" : "") + '" data-flota-p="' + escapar(p.pedido_id) + '">' +
+          '<span class="flota-punto" style="background:' + (COLOR_ESTADO_PAS[p.estado] || "#EAB308") + '"></span>' +
+          '<span class="flota-quien"><strong>' + escapar(p.nombre) + '</strong><span>' + escapar(p.destino || "") + '</span></span>' +
+          '<span class="flota-estado">' + NOMBRE_ESTADO_PAS[p.estado] + (p.atraso_min > 0 ? '<span class="flota-malo">' + p.atraso_min + ' min de atraso</span>' : "") + '</span></button>';
+      }).join("") : '<p class="vacio">No hay pasajeros con solicitud activa.</p>');
+    }
+    document.getElementById("flotaLista").innerHTML = html;
+    pintarFlotaDetalle();
   }
 
   function pintarFlota() {
     if (MODO !== "admin" || !mapaEspera || !googleMapsListo) return;
-    var vistos = {}, limites = new google.maps.LatLngBounds(), n = 0;
+    var par = parFlota(), enPar = {}, limites = new google.maps.LatLngBounds(), n = 0;
+    if (par && par.c) enPar["c" + par.c.conductor_id] = true;
+    if (par && par.p) enPar["p" + par.p.pedido_id] = true;
+    var vistosC = {}, vistosP = {};
     flotaDatos.forEach(function (c) {
-      if (c.lat === null || c.lng === null || isNaN(c.lat) || isNaN(c.lng)) return;
+      if (!conPosicionFlota(c)) return;
+      if (!flotaVer.conductores && !enPar["c" + c.conductor_id]) return;
       var pos = new google.maps.LatLng(c.lat, c.lng), m = flotaMarcas[c.conductor_id];
-      vistos[c.conductor_id] = true; limites.extend(pos); n++;
+      vistosC[c.conductor_id] = true;
+      if (!par || enPar["c" + c.conductor_id]) { limites.extend(pos); n++; }
       var rumbo = m ? m.rumbo : 0;
       if (m && google.maps.geometry && google.maps.geometry.spherical.computeDistanceBetween(m.marker.getPosition(), pos) > 15) {
         rumbo = google.maps.geometry.spherical.computeHeading(m.marker.getPosition(), pos);   // hacia donde se movió
@@ -4910,7 +5024,7 @@
       var firma = c.estado + "|" + c.vehiculo_color + "|" + c.vehiculo_marca + "|" + c.vehiculo_modelo + "|" + Math.round(rumbo / 5);
       if (!m) {
         m = flotaMarcas[c.conductor_id] = { marker: new google.maps.Marker({ map: mapaEspera, position: pos, title: c.nombre, zIndex: 3 }), rumbo: rumbo, firma: "" };
-        m.marker.addListener("click", function () { abrirInfoFlota(c.conductor_id); });
+        m.marker.addListener("click", function () { seleccionarFlota("c", c.conductor_id); });
       } else {
         m.marker.setPosition(pos);
       }
@@ -4918,27 +5032,62 @@
       if (m.firma !== firma) { m.firma = firma; m.marker.setIcon(iconoFlota(c, rumbo)); }
       m.marker.setZIndex(c.estado === "EN_VIAJE" ? 4 : 3);
     });
-    Object.keys(flotaMarcas).forEach(function (id) {
-      if (!vistos[id]) { flotaMarcas[id].marker.setMap(null); delete flotaMarcas[id]; }
+    flotaPas.forEach(function (p) {
+      if (!conPosicionFlota(p)) return;
+      if (!flotaVer.pasajeros && !enPar["p" + p.pedido_id]) return;
+      // Con el pasajero ya a bordo no se dibuja salvo que sea parte de lo elegido (iría encima del auto).
+      if (p.estado === "CON_PASAJERO" && !enPar["p" + p.pedido_id]) return;
+      var pos = new google.maps.LatLng(p.lat, p.lng), m = flotaMarcasPas[p.pedido_id];
+      vistosP[p.pedido_id] = true;
+      if (!par || enPar["p" + p.pedido_id]) { limites.extend(pos); n++; }
+      var firma = p.estado;
+      if (!m) {
+        m = flotaMarcasPas[p.pedido_id] = { marker: new google.maps.Marker({ map: mapaEspera, position: pos, title: p.nombre, zIndex: 5 }), firma: "" };
+        m.marker.addListener("click", function () { seleccionarFlota("p", p.pedido_id); });
+      } else {
+        m.marker.setPosition(pos);
+      }
+      if (m.firma !== firma) { m.firma = firma; m.marker.setIcon(iconoPasajero(p.estado)); }
     });
-    if (n && !flotaEncuadrada) {   // primera vez: encuadra la flota en la parte visible (entre la barra y la ventana)
+    Object.keys(flotaMarcas).forEach(function (id) { if (!vistosC[id]) { flotaMarcas[id].marker.setMap(null); delete flotaMarcas[id]; } });
+    Object.keys(flotaMarcasPas).forEach(function (id) { if (!vistosP[id]) { flotaMarcasPas[id].marker.setMap(null); delete flotaMarcasPas[id]; } });
+
+    // Destino y línea entre el auto y su pasajero (o su destino) solo del viaje elegido.
+    if (flotaLinea) { flotaLinea.setMap(null); flotaLinea = null; }
+    if (flotaDestino) { flotaDestino.setMap(null); flotaDestino = null; }
+    if (par && par.p && par.p.destino_lat !== null && par.p.destino_lng !== null) {
+      var dest = new google.maps.LatLng(par.p.destino_lat, par.p.destino_lng);
+      flotaDestino = new google.maps.Marker({ map: mapaEspera, position: dest, title: "Destino", icon: iconoDestinoFlota(), zIndex: 2 });
+      if (par.p.estado === "CON_PASAJERO") limites.extend(dest);
+      if (par.c && conPosicionFlota(par.c)) {
+        var aPasajero = par.p.estado !== "CON_PASAJERO" && conPosicionFlota(par.p);
+        var hasta = aPasajero ? new google.maps.LatLng(par.p.lat, par.p.lng) : dest;
+        flotaLinea = new google.maps.Polyline({
+          map: mapaEspera, path: [new google.maps.LatLng(par.c.lat, par.c.lng), hasta], geodesic: true, strokeColor: "#F97316", strokeOpacity: 0, zIndex: 1,
+          icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 0.95, strokeWeight: 3, scale: 3 }, offset: "0", repeat: "12px" }]
+        });
+      }
+    }
+
+    var cs = getComputedStyle(document.body);
+    var abajo = (parseFloat(cs.getPropertyValue("--hoja-vis")) || 0) + 24, arriba = (parseFloat(cs.getPropertyValue("--topbar-h")) || 0) + 24;
+    var encuadrar = (n && !flotaEncuadrada) || flotaSel && flotaSel.pendienteEncuadre;
+    if (encuadrar) {
       flotaEncuadrada = true;
-      var cs = getComputedStyle(document.body);
-      var abajo = (parseFloat(cs.getPropertyValue("--hoja-vis")) || 0) + 24, arriba = (parseFloat(cs.getPropertyValue("--topbar-h")) || 0) + 24;
-      if (n === 1) { mapaEspera.setZoom(14); mapaEspera.setCenter(limites.getCenter()); }
-      else mapaEspera.fitBounds(limites, { top: arriba, bottom: abajo, left: 32, right: 32 });
+      if (flotaSel) flotaSel.pendienteEncuadre = false;
+      if (n === 1) { mapaEspera.setZoom(15); mapaEspera.setCenter(limites.getCenter()); }
+      else if (n > 1) mapaEspera.fitBounds(limites, { top: arriba, bottom: abajo, left: 40, right: 40 });
     }
   }
 
-  function abrirInfoFlota(id) {
-    var c = flotaDatos.filter(function (x) { return x.conductor_id === id; })[0], m = flotaMarcas[id];
-    if (!c || !m || !mapaEspera) return;
-    if (!flotaInfo) flotaInfo = new google.maps.InfoWindow();
-    var veh = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" ") + (c.vehiculo_patente ? " · " + c.vehiculo_patente : "");
-    flotaInfo.setContent('<div style="font-family:sans-serif;font-size:14px;color:#101A20;min-width:150px;"><strong>' + escapar(c.nombre) + '</strong><br>' +
-      escapar(veh || "Sin datos del vehículo") + '<br><span style="color:' + (COLOR_ESTADO_FLOTA[c.estado] || "#8A949E") + ';font-weight:700;">' +
-      NOMBRE_ESTADO_FLOTA[c.estado] + '</span> · ' + escapar(detalleEstadoFlota(c)) + '</div>');
-    flotaInfo.open(mapaEspera, m.marker);
+  function seleccionarFlota(tipo, id) {
+    if (!tipo || (flotaSel && flotaSel.tipo === tipo && flotaSel.id === id)) flotaSel = null;
+    else flotaSel = { tipo: tipo, id: id, pendienteEncuadre: true };
+    if (flotaSel && !parFlota()) flotaSel = null;
+    if (!flotaSel) flotaEncuadrada = false;   // "Ver todos": vuelve a encuadrar la flota completa
+    pintarFlotaLista();
+    pintarFlota();
+    if (flotaSel) { if (hojaEstado === "alto") ponerHoja("medio"); }
   }
 
   function cargarFlota() {
@@ -4950,6 +5099,8 @@
       if (!res || !res.ok) { nota.textContent = "No se pudo cargar la flota" + (res && res.error ? ": " + res.error : "") + "."; return; }
       nota.textContent = "";
       flotaDatos = res.flota || [];
+      flotaPas = res.pasajeros || [];
+      if (flotaSel && !parFlota()) flotaSel = null;   // el viaje elegido ya terminó
       pintarFlotaLista();
       pintarFlota();
     }).catch(function () { flotaCargando = false; document.getElementById("flotaNota").textContent = "Sin conexión. Reintentando…"; });
@@ -4962,20 +5113,31 @@
   }
   function detenerFlota() {
     if (flotaTimer) { clearInterval(flotaTimer); flotaTimer = null; }
-    flotaEncuadrada = false; flotaDatos = [];
+    flotaEncuadrada = false; flotaDatos = []; flotaPas = []; flotaSel = null;
     Object.keys(flotaMarcas).forEach(function (id) { flotaMarcas[id].marker.setMap(null); });
-    flotaMarcas = {};
+    Object.keys(flotaMarcasPas).forEach(function (id) { flotaMarcasPas[id].marker.setMap(null); });
+    flotaMarcas = {}; flotaMarcasPas = {};
+    if (flotaLinea) { flotaLinea.setMap(null); flotaLinea = null; }
+    if (flotaDestino) { flotaDestino.setMap(null); flotaDestino = null; }
   }
+  document.getElementById("flotaVer").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-ver]");
+    if (!b) return;
+    flotaVer[b.dataset.ver] = !flotaVer[b.dataset.ver];
+    pintarFlotaLista();
+    pintarFlota();
+  });
   document.getElementById("flotaLista").addEventListener("click", function (ev) {
-    var f = ev.target.closest("[data-flota]");
-    if (!f) return;
-    var m = flotaMarcas[f.dataset.flota];
-    if (!m) { document.getElementById("flotaNota").textContent = "Ese conductor no tiene ubicación reciente."; return; }
+    var fc = ev.target.closest("[data-flota-c]"), fp = ev.target.closest("[data-flota-p]");
+    if (!fc && !fp) return;
+    var tipo = fc ? "c" : "p", id = fc ? fc.dataset.flotaC : fp.dataset.flotaP;
+    var x = fc ? conductorDeFlota(id) : pasajeroDeFlota(id);
     document.getElementById("flotaNota").textContent = "";
-    var p = m.marker.getPosition();
-    if (mapaEspera.getZoom() < 15) mapaEspera.setZoom(15);
-    centrarEnZonaVisible({ lat: p.lat(), lng: p.lng() }, true);
-    abrirInfoFlota(f.dataset.flota);
+    if (x && !conPosicionFlota(x) && !(fc && x.estado === "EN_VIAJE")) {
+      // Sin ubicación visible (fuera de horario o sin señal): se muestra el detalle igual, sin mover el mapa.
+      document.getElementById("flotaNota").textContent = fc ? "Fuera de su horario activo o sin señal: no se ubica en el mapa." : "";
+    }
+    seleccionarFlota(tipo, id);
   });
 
   // Sin permiso de ubicación se queda en Santiago y ofrece un botón; el
