@@ -429,6 +429,163 @@
   .tablero-mapa .btn-centrar { position: absolute; left: 10px; top: 10px; z-index: 2; min-height: 44px; box-shadow: var(--shadow-md); }
   .tablero-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14.5px; white-space: nowrap; }
+  /* ---------- Conductor: mapa grande + hoja inferior (como Uber/DiDi) ---------- */
+  /* Solo en Pedidos y En Rumbo del conductor (body.cond-pantalla); Ajustes y el
+     admin siguen como antes. Alturas las fija ajustarCond() para llenar la pantalla. */
+  .cond-mapa { display: none; }
+  body.cond-pantalla { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  body.cond-pantalla .topbar { padding-top: calc(10px + env(safe-area-inset-top)); padding-bottom: 10px; margin-bottom: 8px; }
+  body.cond-pantalla .brand-mark { width: 40px; height: 40px; }
+  body.cond-pantalla .brand-texto { min-height: 0; }
+  body.cond-pantalla .brand-wordmark { height: 20px; }
+  body.cond-pantalla .brand-sub { display: none; }
+  /* "Usar mi ubicación" solo aparece si el GPS no se pudo detectar: con la clase .btn
+     el atributo hidden no ocultaba el botón y se veía siempre. */
+  .tablero-mapa .btn-centrar[hidden] { display: none !important; }
+  /* Como DiDi: el MAPA ocupa toda la pantalla de fondo y la información va en una
+     ventana inferior que se arrastra (3 alturas: baja, media y alta). Lo fija
+     aplicarHoja(): --nav-h (barra de abajo), --topbar-h, --ty (cuánto está bajada). */
+  body.mapa-noche .tablero-mapa, body.mapa-noche .mapa-pasajero { background: #17212B; border-color: #2E3F52; }
+  body.cond-pantalla { overflow: hidden; }
+  body.cond-pantalla .topbar { position: relative; z-index: 30; }
+  body.cond-pantalla .cond-mapa {
+    display: block; position: fixed; left: 0; right: 0; top: 0; bottom: var(--nav-h, 72px); z-index: 1; margin: 0;
+  }
+  body.cond-pantalla .cond-mapa .tablero-mapa { position: absolute; inset: 0; height: 100%; margin: 0; border: none; border-radius: 0; }
+  body.cond-pantalla #panelPedidos, body.cond-pantalla #panelEnCurso {
+    position: fixed; left: 50%; bottom: var(--nav-h, 72px); width: 100%; max-width: 448px; z-index: 20;
+    transform: translateX(-50%); transition: height .28s cubic-bezier(.2, .8, .2, 1);
+    background: var(--surface); border: 1px solid var(--border); border-bottom: none; border-radius: 20px 20px 0 0;
+    padding: 0 14px 12px; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 -6px 24px rgba(10, 20, 40, 0.18);
+  }
+  body.cond-pantalla.arrastrando #panelPedidos, body.cond-pantalla.arrastrando #panelEnCurso { transition: none; }
+  /* Asa para arrastrar la ventana (queda fija arriba al desplazar el contenido). */
+  .hoja-asa { display: none; }
+  body.cond-pantalla .hoja-asa {
+    display: flex; justify-content: center; align-items: center; height: 30px; margin: 0 -14px 4px;
+    position: sticky; top: 0; z-index: 6; background: var(--surface); border-radius: 20px 20px 0 0;
+    touch-action: none; cursor: grab;
+  }
+  .hoja-asa span { width: 56px; height: 6px; border-radius: 3px; background: var(--border-strong); }
+  body.cond-pantalla .hoja-asa { height: 44px; margin-bottom: 0; }
+  /* Sin desplazarse: en la altura MEDIA solo lo esencial (quién, cuánto, a dónde y el botón
+     principal); la ALTA muestra toda la información; la BAJA deja solo el asa. */
+  body.cond-pantalla.hoja-medio .pedido-meta,
+  body.cond-pantalla.hoja-medio .pedido-aviso,
+  body.cond-pantalla.hoja-medio .nota-mapa,
+  body.cond-pantalla.hoja-medio .mapa-pasajero,
+  body.cond-pantalla.hoja-medio .ayuda,
+  body.cond-pantalla.hoja-medio .tablero .kpi-fila { display: none; }
+  body.cond-pantalla.hoja-bajo #panelPedidos, body.cond-pantalla.hoja-bajo #panelEnCurso { padding-bottom: 0; overflow: hidden; }
+  /* Pedido emergente: pantalla completa con lo esencial para decidir al instante. */
+  .pedido-emergente {
+    position: fixed; inset: 0; z-index: 80; background: rgba(10, 20, 40, 0.62);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .pedido-emergente[hidden] { display: none; }
+  .pe-hoja {
+    width: 100%; max-width: 448px; background: var(--surface); border-radius: 22px 22px 0 0;
+    padding: 16px 18px calc(18px + env(safe-area-inset-bottom)); animation: peSube .3s cubic-bezier(.2, .8, .2, 1);
+  }
+  @keyframes peSube { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .pe-cuenta { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .pe-barra { flex: 1; height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+  .pe-barra span { display: block; height: 100%; width: 100%; background: var(--accent); transition: width 1s linear; }
+  .pe-barra.poco span { background: var(--danger); }
+  .pe-tiempo { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 48px; text-align: right; }
+  .pe-etiqueta { font-size: 14px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
+  .pe-precio { font-size: 46px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 2px 0 6px; }
+  .pe-cuando { margin-bottom: 10px; }
+  .pe-cuando .pedido-programacion, .pe-cuando > div { margin: 0; }
+  .pe-ruta { display: grid; gap: 8px; margin-bottom: 10px; }
+  .pe-linea { display: flex; align-items: baseline; gap: 10px; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }
+  .pe-pto { flex: none; width: 10px; height: 10px; border: 3px solid var(--text); border-radius: 50%; position: relative; top: 1px; }
+  .pe-pto-d { border-radius: 2px; background: var(--text); }
+  .pe-eta { font-size: 15px; color: var(--text-2); margin-bottom: 14px; min-height: 22px; }
+  .pe-aceptar { width: 100%; min-height: 68px; font-size: 22px; font-weight: 700; background: var(--accent); color: #fff; border-radius: 16px; }
+  .pe-segundo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .pe-segundo .btn { min-height: 52px; font-size: 16px; }
+  .ajustes-cab { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
+  .ajustes-cab h2 { margin: 0; font-size: 22px; }
+  .ajustes-cab button { width: 44px; height: 44px; border: none; background: var(--surface-2); border-radius: 12px; font-size: 28px; line-height: 1; color: var(--text); cursor: pointer; }
+  /* Menú lateral del conductor (3 rayas arriba a la derecha, como DiDi). */
+  .btn-menu-cond {
+    width: 46px; height: 46px; flex: none; border: none; border-radius: 12px; cursor: pointer;
+    background: rgba(255, 255, 255, 0.14); color: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-menu-cond:active { background: rgba(255, 255, 255, 0.26); }
+  .menu-lateral-fondo { position: fixed; inset: 0; z-index: 55; background: rgba(10, 20, 40, 0.5); }
+  .menu-lateral-fondo[hidden] { display: none; }
+  .menu-lateral {
+    position: fixed; top: 0; bottom: 0; right: 0; z-index: 60; width: min(82vw, 330px);
+    background: var(--surface); box-shadow: -8px 0 28px rgba(10, 20, 40, 0.25);
+    transform: translateX(105%); transition: transform .26s cubic-bezier(.2, .8, .2, 1);
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); overflow-y: auto;
+  }
+  .menu-lateral.abierto { transform: none; }
+  .menu-lateral-cab { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .menu-lateral-avatar {
+    width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: #fff; flex: none;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 19px;
+  }
+  .menu-lateral-quien { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .menu-lateral-quien strong { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-lateral-quien span { font-size: 13px; color: var(--text-3); }
+  .menu-lateral-cerrar { width: 40px; height: 40px; border: none; background: none; font-size: 30px; line-height: 1; color: var(--text-2); cursor: pointer; }
+  .menu-lateral-item {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 8px; border: none; background: none;
+    font: inherit; font-size: 17px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
+  }
+  .menu-lateral-item:active { background: var(--surface-2); }
+  .menu-lateral-item .ico { color: var(--primary); width: 24px; height: 24px; }
+  /* Solo la app de navegación elegida en Ajustes (Waze o Google Maps). */
+  body[data-gps="WAZE"] .ir-maps, body[data-gps="GOOGLE_MAPS"] .ir-waze { display: none; }
+  .btn-row.una { display: flex; }
+  .btn-row.una .btn { flex: 1; }
+  /* Navegación dentro de Rumbo: el mapa crece y muestra el próximo giro y lo que queda. */
+  .nav-banner[hidden], .nav-pie[hidden] { display: none !important; }
+  .nav-banner {
+    position: absolute; left: 8px; right: 8px; top: calc(var(--topbar-h, 60px) + 8px); z-index: 4; display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 14px; background: #0A1F44; color: #fff; box-shadow: var(--shadow-md);
+  }
+  .nav-flecha { font-size: 40px; line-height: 1; flex: none; width: 46px; text-align: center; }
+  .nav-textos { min-width: 0; }
+  .nav-dist { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .nav-instr { font-size: 15px; line-height: 1.25; opacity: .92; overflow-wrap: anywhere; }
+  .nav-pie {
+    position: absolute; left: 8px; right: 8px; bottom: calc(var(--hoja-vis, 150px) + 8px); z-index: 4; display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-md);
+  }
+  .nav-resumen { flex: 1; min-width: 0; font-size: 15px; color: var(--text-2); }
+  .nav-resumen strong { font-size: 22px; color: var(--text); font-weight: 700; }
+  .nav-pie .btn { width: auto; min-height: 44px; padding: 8px 14px; font-size: 14px; }
+  /* Dentro de la hoja las tarjetas no se anidan en otra tarjeta. */
+  body.cond-pantalla #panelPedidos .card, body.cond-pantalla #panelEnCurso .card {
+    border: none; box-shadow: none; padding: 0; margin: 0; background: transparent;
+  }
+  /* La lista se actualiza sola (sondeo): el título y "Actualizar" no hacen falta en la hoja. */
+  body.cond-pantalla #grupoPedidos .card-head { display: none; }
+  body.cond-pantalla .vacio-bloque { padding: 10px 8px; }
+  body.cond-pantalla .btn-estado-conexion { font-size: 14px; padding: 8px 12px; white-space: nowrap; }
+  body.cond-pantalla .tablero-estado { margin-bottom: 8px; min-height: 40px; }
+  body.cond-pantalla .tablero { margin-bottom: 8px; }
+  body.cond-pantalla .tablero .kpi-card { padding: 10px 12px; }
+  body.cond-pantalla .tablero .kpi-valor { font-size: 19px; }
+  body.cond-pantalla .tablero-acciones { margin-bottom: 8px; }
+  body.cond-pantalla .tablero-acciones .btn { min-height: 46px; }
+  /* El pedido nuevo: sus botones Confirmar / Rechazar quedan siempre a mano. */
+  body.cond-pantalla .pedido-card > .btn-row:last-child {
+    position: sticky; bottom: -12px; background: var(--surface-2); padding: 10px 0 4px; margin-top: 6px;
+  }
+  body.cond-pantalla .pedido-card > .btn-row:last-child .btn { min-height: 52px; font-size: 16px; }
+  /* Viaje en curso: "Iniciar viaje" y "Finalizar viaje" siempre visibles abajo de la hoja. */
+  body.cond-pantalla #listaEnCurso .pedido-card > .ayuda { display: none; }
+  body.cond-pantalla #listaEnCurso .pedido-card > button[data-cerrar],
+  body.cond-pantalla #listaEnCurso .pedido-card > button[data-iniciar] {
+    position: sticky; z-index: 3; min-height: 52px; font-size: 16px; margin-top: 8px;
+  }
+  body.cond-pantalla #listaEnCurso .pedido-card > button[data-cerrar] { bottom: -12px; }
+  body.cond-pantalla #listaEnCurso .pedido-card > button[data-iniciar] { bottom: 56px; }
   .vacio-bloque {
     display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
     padding: 22px 16px; color: var(--text-2);
@@ -785,10 +942,38 @@
       </span>
     </div>
     <div class="topbar-spacer"></div>
+    <!-- Menú lateral (como DiDi): Ajustes y accesos rápidos, arriba a la derecha. -->
+    <button type="button" class="btn-menu-cond solo-conductor" id="btnMenuCond" aria-label="Abrir el menú" aria-haspopup="true" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
   </header>
 
 
+  <!-- Mapa grande fijo arriba (solo conductor, en Pedidos y En Rumbo), como Uber/DiDi:
+       mi auto en vivo; las hojas de abajo (pedidos / viaje en curso) suben sobre él. -->
+  <div class="cond-mapa solo-conductor" id="condMapa">
+    <div class="tablero-mapa">
+      <div id="tabMapaLienzo" style="position:absolute;inset:0;"></div>
+      <div class="tablero-mapa-aviso" id="tabMapaAviso">
+        <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+        <span id="tabMapaTexto">Cargando mapa...</span>
+      </div>
+      <button class="btn btn-chico btn-centrar" id="tabBtnCentrar" data-tablero="centrar" type="button" hidden>Usar mi ubicación</button>
+      <!-- Navegación dentro de Rumbo: próximo giro arriba, tiempo y distancia restantes abajo. -->
+      <div class="nav-banner" id="navBanner" hidden aria-live="polite">
+        <span class="nav-flecha" id="navFlecha" aria-hidden="true">↑</span>
+        <div class="nav-textos"><div class="nav-dist" id="navDist"></div><div class="nav-instr" id="navInstr"></div></div>
+      </div>
+      <div class="nav-pie" id="navPie" hidden>
+        <div class="nav-resumen"><strong id="navEta">—</strong><span id="navResto"></span></div>
+        <button type="button" class="btn btn-chico" id="btnNavVoz">Voz: sí</button>
+        <button type="button" class="btn btn-danger" id="btnNavSalir">Salir</button>
+      </div>
+    </div>
+  </div>
+
   <div id="panelEnCurso" role="tabpanel" aria-labelledby="tabEnCurso" style="display:none;">
+    <div class="hoja-asa solo-conductor" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
     <section class="card" id="grupoEnCurso" style="display:none;">
       <div class="card-head">
         <span class="card-title">Viaje en curso</span>
@@ -804,6 +989,7 @@
   </div>
 
   <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
+    <div class="hoja-asa solo-conductor" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
     <!-- Solo conductor y solo cuando no hay pedidos pendientes: en vez de una
          pantalla vacía, resumen del mes, mapa de la zona y accesos rápidos. -->
     <div class="tablero" id="tableroConductor">
@@ -829,14 +1015,6 @@
           <div class="kpi-nota">Mes en curso</div>
         </div>
       </div>
-      <div class="tablero-mapa">
-        <div id="tabMapaLienzo" style="position:absolute;inset:0;"></div>
-        <div class="tablero-mapa-aviso" id="tabMapaAviso">
-          <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
-          <span id="tabMapaTexto">Cargando mapa...</span>
-        </div>
-        <button class="btn btn-chico btn-centrar" id="tabBtnCentrar" data-tablero="centrar" type="button" hidden>Usar mi ubicación</button>
-      </div>
       <div class="tablero-acciones">
         <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
         <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
@@ -857,6 +1035,11 @@
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
+    <!-- Ajustes abre como pantalla completa (desde el menú lateral); flecha para volver. -->
+    <div class="ajustes-cab solo-conductor">
+      <button type="button" id="btnVolverAjustes" aria-label="Volver">&#8249;</button>
+      <h2>Ajustes</h2>
+    </div>
     <!-- Centro de control: solo tiene sentido para el administrador, así
          que reutiliza la clase "solo-red" que ya oculta/muestra bloques
          según MODO === "admin" (ver aplicarPermisos en el script). -->
@@ -1224,6 +1407,48 @@
   </div>
 </div>
 
+<!-- Pedido nuevo EMERGENTE (como Uber/DiDi): ocupa la pantalla con lo esencial, un cronómetro
+     para responder y dos botones grandes, para decidir sin buscar nada mientras se maneja. -->
+<div class="pedido-emergente solo-conductor" id="pedidoEmergente" hidden role="alertdialog" aria-live="assertive" aria-labelledby="peTitulo">
+  <div class="pe-hoja">
+    <div class="pe-cuenta"><div class="pe-barra"><span id="peBarra"></span></div><div class="pe-tiempo" id="peTiempo">5:00</div></div>
+    <div class="pe-etiqueta" id="peTitulo">Pedido nuevo</div>
+    <div class="pe-precio" id="pePrecio">$0</div>
+    <div class="pe-cuando" id="peCuando"></div>
+    <div class="pe-ruta">
+      <div class="pe-linea"><span class="pe-pto pe-pto-o"></span><span id="peOrigen"></span></div>
+      <div class="pe-linea"><span class="pe-pto pe-pto-d"></span><span id="peDestino"></span></div>
+    </div>
+    <div class="pe-eta" id="peEta" data-eta=""><span class="faltan"></span></div>
+    <button type="button" class="btn pe-aceptar" id="peAceptar">Aceptar viaje</button>
+    <div class="pe-segundo">
+      <button type="button" class="btn btn-danger" id="peRechazar">Rechazar</button>
+      <button type="button" class="btn btn-chico" id="peDetalle">Ver detalle</button>
+    </div>
+  </div>
+</div>
+
+<div class="menu-lateral-fondo" id="menuLateralFondo" hidden></div>
+<aside class="menu-lateral solo-conductor" id="menuLateral" aria-hidden="true" aria-label="Menú">
+  <div class="menu-lateral-cab">
+    <span class="menu-lateral-avatar" id="menuAvatar" aria-hidden="true">C</span>
+    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span>Rumbo Conductor</span></div>
+    <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuCond" aria-label="Cerrar el menú">&times;</button>
+  </div>
+  <button type="button" class="menu-lateral-item" data-menu="ajustes">
+    <svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>Ajustes
+  </button>
+  <button type="button" class="menu-lateral-item" data-tablero="tarifas">
+    <svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>Ajustar tarifas
+  </button>
+  <button type="button" class="menu-lateral-item" data-tablero="horarios">
+    <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Cambiar horarios
+  </button>
+  <button type="button" class="menu-lateral-item" data-tablero="qr">
+    <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Compartir mi QR
+  </button>
+</aside>
+
 <nav class="nav-inferior" role="tablist" aria-label="Secciones" id="navConductor" style="display:none;">
   <button class="nav-item activo" id="tabPedidos" type="button" role="tab" aria-selected="true" aria-controls="panelPedidos">
     <span class="nav-badge" id="burbujaPedidos"></span>
@@ -1327,7 +1552,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 34;
+  var APP_VERSION = 39;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1491,6 +1716,7 @@
   }
 
   function mostrarPantalla(cual) {
+    if (cual !== "app") { document.body.classList.remove("cond-pantalla"); document.body.style.paddingBottom = ""; if (typeof cerrarEmergente === "function") cerrarEmergente(); }
     document.getElementById("pantallaLogin").style.display = cual === "login" ? "block" : "none";
     if (cual === "login" && typeof pintarBotonHuella === "function") pintarBotonHuella();
     document.getElementById("pantallaApp").style.display = cual === "app" ? "block" : "none";
@@ -1513,6 +1739,11 @@
       tab.setAttribute("aria-selected", esEsta ? "true" : "false");
       tab.classList.toggle("activo", esEsta);
     });
+    // Conductor: Pedidos y En Rumbo = mapa grande + hoja inferior; Ajustes como antes.
+    var enCond = MODO === "conductor" && (cual === "pedidos" || cual === "enCurso");
+    document.body.classList.toggle("cond-pantalla", enCond);
+    if (!enCond) document.body.style.paddingBottom = "";
+    if (enCond) { ajustarCond(); pintarMapaEspera(); }
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
     if (cual === "pedidos" && MODO === "conductor") { pintarEstadoTablero(); pintarMapaEspera(); }
     // Siempre al entrar: el conductor vuelve de vincular en el navegador y
@@ -1538,6 +1769,116 @@
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+  /* Ventana inferior arrastrable del conductor (como DiDi). El MAPA ocupa toda la
+     pantalla de fondo; la ventana tiene 3 alturas: baja (solo el título), media y
+     alta (casi toda la pantalla). Se arrastra desde el asa de arriba, o se toca
+     el asa para pasar a la siguiente altura. Las medidas son puras (se prueban). */
+  var HOJA_ESTADOS = ["bajo", "medio", "alto"];
+  var hojaEstado = "medio";
+  function medidasHoja(altoVentana, altoBarra, altoTopbar) {
+    var libre = Math.max(200, altoVentana - altoBarra - altoTopbar);
+    var H = Math.round(libre * 0.94);
+    // bajo = bajada del todo (solo queda el asa para volver a subirla); medio = lo esencial
+    // sin desplazarse; alto = toda la información.
+    return { H: H, bajo: Math.min(44, H), medio: Math.min(H, Math.round(libre * 0.52)), alto: H };
+  }
+  // A qué altura queda al soltar: un empujón rápido salta a la siguiente; si no, la más cercana.
+  function destinoHoja(m, estado, visActual, dy, velocidad) {
+    var i = HOJA_ESTADOS.indexOf(estado);
+    if (Math.abs(velocidad) > 0.6 && Math.abs(dy) > 12) {
+      var sube = dy < 0;
+      return HOJA_ESTADOS[Math.max(0, Math.min(2, i + (sube ? 1 : -1)))];
+    }
+    var mejor = HOJA_ESTADOS[0], dist = Infinity;
+    HOJA_ESTADOS.forEach(function (e) {
+      var d = Math.abs(m[e] - visActual);
+      if (d < dist) { dist = d; mejor = e; }
+    });
+    return mejor;
+  }
+  function aplicarHoja() {
+    if (MODO !== "conductor" || !document.body.classList.contains("cond-pantalla")) return;
+    var barra = document.getElementById("navConductor").offsetHeight || 64;
+    var tb = document.querySelector("#pantallaApp .topbar");
+    var arriba = tb ? tb.offsetHeight : 60;
+    var m = medidasHoja(window.innerHeight, barra, arriba);
+    var vis = m[hojaEstado], b = document.body;
+    HOJA_ESTADOS.forEach(function (e) { b.classList.toggle("hoja-" + e, e === hojaEstado); });   // qué se muestra en cada altura
+    b.style.setProperty("--nav-h", barra + "px");
+    b.style.setProperty("--topbar-h", arriba + "px");
+    fijarAlturaHoja(vis);
+    try { if (mapaEspera && googleMapsListo) google.maps.event.trigger(mapaEspera, "resize"); } catch (e) {}
+  }
+  // La ventana es tan alta como lo que se ve (se anima la altura): así el contenido
+  // y los botones fijos de abajo siempre quedan dentro de lo visible.
+  function fijarAlturaHoja(vis) {
+    document.body.style.setProperty("--hoja-vis", vis + "px");
+    ["panelPedidos", "panelEnCurso"].forEach(function (id) { document.getElementById(id).style.height = vis + "px"; });
+  }
+  function ponerHoja(estado) {
+    hojaEstado = estado; aplicarHoja();
+    // Al subir o bajar la ventana, el auto vuelve a quedar en la zona visible del mapa.
+    setTimeout(function () { if (miPosicionConductor && mapaEspera) centrarEnZonaVisible(miPosicionConductor, true); }, 320);
+  }
+  var ajustarCond = aplicarHoja;   // nombre que ya usaban el resto de llamadas
+
+  [].forEach.call(document.querySelectorAll("[data-asa]"), function (asa) {
+    var y0 = 0, t0 = 0, vis0 = 0, m = null, activo = false, movio = false;
+    asa.addEventListener("pointerdown", function (ev) {
+      activo = true; movio = false; y0 = ev.clientY; t0 = Date.now();
+      var barra = document.getElementById("navConductor").offsetHeight || 64;
+      var tb = document.querySelector("#pantallaApp .topbar");
+      m = medidasHoja(window.innerHeight, barra, tb ? tb.offsetHeight : 60);
+      vis0 = m[hojaEstado];
+      document.body.classList.add("arrastrando");
+      try { asa.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    asa.addEventListener("pointermove", function (ev) {
+      if (!activo) return;
+      var dy = ev.clientY - y0;
+      if (Math.abs(dy) > 4) movio = true;
+      fijarAlturaHoja(Math.min(m.H, Math.max(m.bajo, vis0 - dy)));   // arrastrar hacia arriba = más alta
+    });
+    function soltar(ev) {
+      if (!activo) return;
+      activo = false;
+      document.body.classList.remove("arrastrando");
+      var dy = ev.clientY - y0, dt = Math.max(1, Date.now() - t0);
+      if (!movio) {   // un toque: pasa a la siguiente altura (y de la más alta vuelve a la media)
+        ponerHoja(hojaEstado === "bajo" ? "medio" : hojaEstado === "medio" ? "alto" : "medio");
+        return;
+      }
+      var vis = Math.min(m.H, Math.max(m.bajo, vis0 - dy));
+      ponerHoja(destinoHoja(m, hojaEstado, vis, dy, dy / dt));
+    }
+    asa.addEventListener("pointerup", soltar);
+    asa.addEventListener("pointercancel", soltar);
+    asa.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ponerHoja(hojaEstado === "bajo" ? "medio" : hojaEstado === "medio" ? "alto" : "bajo"); }
+    });
+  });
+  window.addEventListener("resize", ajustarCond);
+  window.addEventListener("load", function () { ajustarCond(); setTimeout(ajustarCond, 400); });
+  /* Menú lateral del conductor: Ajustes y accesos rápidos. Ajustes ya no es una
+     pestaña de abajo (la barra queda solo con Pedidos y En Rumbo). */
+  function abrirMenuCond(si) {
+    var m = document.getElementById("menuLateral"), f = document.getElementById("menuLateralFondo");
+    m.classList.toggle("abierto", si);
+    m.setAttribute("aria-hidden", si ? "false" : "true");
+    f.hidden = !si;
+    document.getElementById("btnMenuCond").setAttribute("aria-expanded", si ? "true" : "false");
+  }
+  document.getElementById("btnMenuCond").addEventListener("click", function () { abrirMenuCond(true); });
+  document.getElementById("btnCerrarMenuCond").addEventListener("click", function () { abrirMenuCond(false); });
+  document.getElementById("menuLateralFondo").addEventListener("click", function () { abrirMenuCond(false); });
+  [].forEach.call(document.querySelectorAll("#menuLateral .menu-lateral-item"), function (b) {
+    b.addEventListener("click", function () {
+      abrirMenuCond(false);
+      if (b.getAttribute("data-menu") === "ajustes") mostrarPestana("ajustes");   // los data-tablero los atiende el manejador general
+    });
+  });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuCond(false); });
+
   var sondeoAdminTimer = null;
   function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
   PESTANAS.forEach(function (p) {
@@ -1561,6 +1902,12 @@
       return;
     }
     cargarTarifas();
+    // Ajustes se abre desde el menú lateral (arriba a la derecha), no desde la barra de abajo.
+    document.getElementById("tabAjustes").style.display = "none";
+    document.getElementById("navConductor").style.gridTemplateColumns = "1fr 1fr";
+    document.getElementById("menuNombre").textContent = sesion.conductor.nombre || "Conductor";
+    document.getElementById("menuAvatar").textContent = String(sesion.conductor.nombre || "C").trim().charAt(0).toUpperCase() || "C";
+    mostrarPestana("pedidos");   // pantalla de inicio del conductor: mapa grande + hoja
     ultimoResumenMes = 0;
     cargarPedidos();
     cargarViajesEnCurso();
@@ -1945,8 +2292,10 @@
   // se elige una vez acá, no se pregunta cada viaje). gpsPreferido vive en
   // este cierre y lo usa el handler de data-iniciar más abajo.
   var gpsPreferido = "WAZE";
+  document.body.setAttribute("data-gps", "WAZE");
   function pintarGps(valor) {
     gpsPreferido = valor === "GOOGLE_MAPS" ? "GOOGLE_MAPS" : "WAZE";
+    document.body.setAttribute("data-gps", gpsPreferido);   // las tarjetas muestran solo esa app
     document.querySelectorAll("#grupoGps .seg-btn").forEach(function (b) {
       b.classList.toggle("active", b.dataset.gps === gpsPreferido);
     });
@@ -2045,6 +2394,7 @@
     document.getElementById("vehMarca").value = c.vehiculo_marca || "";
     document.getElementById("vehModelo").value = c.vehiculo_modelo || "";
     document.getElementById("vehColor").value = c.vehiculo_color || "";
+    fijarAspectoMiAuto(c.vehiculo_color || "", c.vehiculo_marca || "", c.vehiculo_modelo || "");   // mi auto en el mapa: su color y tipo
     cargarFotoVehiculo(c.vehiculo_foto_url || "");
   }
 
@@ -2089,6 +2439,56 @@
     ponerFotoVehiculo(document.getElementById("vehFotoPreview"), url, sesion && sesion.conductor ? sesion.conductor.conductor_id : "");
   }
 
+  /* Mi auto en el mapa: el AUTO mismo, visto desde arriba y del color real de mi
+     vehículo (el que escribí en Ajustes → Mi auto), que gira hacia donde avanzo.
+     Sin foto ni recuadro. Si el color no se reconoce queda el azul de siempre. */
+  var COLORES_AUTO = [
+    ["blanc", "#F4F4F2"], ["negro", "#1F1F22"], ["plat", "#C3C7CC"], ["gris", "#8E949B"], ["plom", "#6F757C"],
+    ["rojo", "#C62828"], ["burde", "#7A1F3D"], ["vino", "#7A1F3D"], ["granate", "#7A1F3D"], ["naranja", "#EF6C00"],
+    ["amarill", "#F6B511"], ["dorad", "#C9A227"], ["verde", "#2E7D32"], ["celest", "#58B4E8"], ["azul", "#1E5FB8"],
+    ["morad", "#6A3FA0"], ["violet", "#6A3FA0"], ["rosa", "#E57BA4"], ["caf", "#6D4C41"], ["marr", "#6D4C41"],
+    ["beige", "#D6C5A1"], ["champ", "#CDB892"], ["crema", "#E9DDBF"]
+  ];
+  function colorDeAuto(texto) {
+    var t = String(texto || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    for (var i = 0; i < COLORES_AUTO.length; i++) if (t.indexOf(COLORES_AUTO[i][0]) !== -1) return COLORES_AUTO[i][1];
+    return "";
+  }
+  // Más oscuro (factor < 0) o más claro (> 0) un color #RRGGBB.
+  function tonoDeColor(hex, factor) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var f = function (c) { return Math.max(0, Math.min(255, Math.round(factor < 0 ? c * (1 + factor) : c + (255 - c) * factor))); };
+    return "#" + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+  }
+  // Tipo de carrocería según marca y modelo escritos (los más comunes en Chile). Sin coincidencia, sedán.
+  var TIPOS_AUTO = [
+    ["pickup", ["hilux", "ranger", "d-max", "dmax", "np300", "navara", "saveiro", "l200", "amarok", "frontier", "f-150", "f150", "bt-50", "tunland", "t6", "triton", "hunter", "ram ", "colorado", "s10", "strada", "toro", "montana"]],
+    ["van", ["hiace", "h1", "staria", "carnival", "sprinter", "transit", "kangoo", "partner", "berlingo", "expert", "vito", "multivan", "sienna", "odyssey", "starex", "v80", "transporter", "caddy"]],
+    ["suv", ["tucson", "sportage", "creta", "kicks", "cx-5", "cx5", "cx-3", "cx-30", "rav4", "rav 4", "x-trail", "xtrail", "captiva", "tiguan", "duster", "mg zs", "mg hs", "haval", "seltos", "outlander", "santa fe", "sorento", "forester", "cr-v", "crv", "hr-v", "hrv", "t-cross", "t-roc", "tracker", "kona", "venga", "pajero", "montero", "land cruiser", "prado", "4runner", "fortuner", "terios", "qashqai", "juke", "tivoli", "korando", "rexton", "jimny", "vitara", "grand vitara", "s-cross", "scross", "jolion", "bronco", "explorer", "edge", "x3", "x5", "q3", "q5", "glc", "gla", "territory", "patrol", "palisade", "stonic", "sonet", "venue", "bayon", "arkana", "captur", "koleos", "5008", "3008", "2008", "c3 aircross", "pulse", "t-cross", "taos", "atlas", "yeti", "kodiaq", "karoq", "kamiq", "ecosport", "escape", "trax", "equinox", "groove", "suv"]],
+    ["hatch", ["yaris", "i10", "i20", "i30", "spark", "picanto", "rio", "swift", "celerio", "kwid", "mg3", "fit", "sail", "polo", "up!", "golf", "ibiza", "mazda2", "mazda 2", "mazda3", "mazda 3", "morning", "ignis", "alto", "a1", "208", "207", "206", "c3", "clio", "sandero", "logan hatch", "fiesta", "ka ", "onix", "tiida", "versa hatch", "note", "march", "baleno", "dzire", "i10", "grand i10", "accent hb", "elantra hb", "cerato hb", "soul", "hatchback", "hatch", "city hatch", "mirage", "attrage hatch", "etios", "a-class"]]
+  ];
+  function tipoDeAuto(marca, modelo) {
+    var t = (" " + String(marca || "") + " " + String(modelo || "") + " ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    for (var i = 0; i < TIPOS_AUTO.length; i++) {
+      for (var j = 0; j < TIPOS_AUTO[i][1].length; j++) if (t.indexOf(TIPOS_AUTO[i][1][j]) !== -1) return TIPOS_AUTO[i][0];
+    }
+    return "sedan";
+  }
+  var colorMiAuto = "", tipoMiAuto = "sedan";
+  function fijarAspectoMiAuto(colorTexto, marca, modelo) {
+    colorMiAuto = colorDeAuto(colorTexto);
+    tipoMiAuto = tipoDeAuto(marca, modelo);
+    refrescarIconosPropios();
+  }
+  function iconoMio(rumbo) { return iconoAuto(rumbo, colorMiAuto, tipoMiAuto); }
+  function refrescarIconosPropios() {
+    if (!window.google || !googleMapsListo) return;
+    try {
+      if (typeof marcadorEspera !== "undefined" && marcadorEspera) marcadorEspera.setIcon(iconoMio(0));
+      Object.keys(mapasPorPedido).forEach(function (id) { if (mapasPorPedido[id].marcadorYo) mapasPorPedido[id].marcadorYo.setIcon(iconoMio(0)); });
+    } catch (e) {}
+  }
+
   document.getElementById("btnGuardarVehiculo").addEventListener("click", function () {
     var msg = document.getElementById("vehiculoMsg");
     msg.textContent = "Guardando..."; msg.className = "msg";
@@ -2101,6 +2501,7 @@
     }).then(function (res) {
       msg.textContent = res.ok ? "Vehículo guardado." : ("Error: " + res.error);
       msg.className = "msg " + (res.ok ? "ok" : "error");
+      if (res.ok) fijarAspectoMiAuto(document.getElementById("vehColor").value, document.getElementById("vehMarca").value, document.getElementById("vehModelo").value);
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message;
       msg.className = "msg error";
@@ -2804,6 +3205,224 @@
   }
 
   /* ---------------------------------------------------------------
+     Navegación dentro de Rumbo (indicaciones paso a paso, como DiDi): la
+     ruta se pide UNA vez al servidor y se sigue con el GPS del teléfono
+     (cuál es el paso actual, cuánto falta para el giro, cuánto queda en
+     total). Solo se vuelve a pedir si el conductor se sale de la ruta.
+     Las funciones de cálculo son puras (se prueban aparte).
+     --------------------------------------------------------------- */
+  function distM(a, b) {
+    var rad = Math.PI / 180, dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * 6371000 * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+  // Distancia (m) de un punto a la línea de la ruta.
+  function distAPolilinea(pos, pts) {
+    if (!pts || !pts.length) return Infinity;
+    if (pts.length === 1) return distM(pos, pts[0]);
+    var kx = Math.cos(pos.lat * Math.PI / 180) * 111320, ky = 110540, mejor = Infinity;
+    for (var i = 0; i < pts.length - 1; i++) {
+      var ax = (pts[i].lng - pos.lng) * kx, ay = (pts[i].lat - pos.lat) * ky;
+      var bx = (pts[i + 1].lng - pos.lng) * kx, by = (pts[i + 1].lat - pos.lat) * ky;
+      var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+      var t = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+      var px = ax + t * dx, py = ay + t * dy, d = Math.sqrt(px * px + py * py);
+      if (d < mejor) mejor = d;
+    }
+    return mejor;
+  }
+  // Largo acumulado de la ruta en cada punto (m). cum[i] = metros desde el inicio hasta el punto i.
+  function largosRuta(pts) {
+    var cum = [0];
+    for (var i = 0; i < pts.length - 1; i++) cum.push(cum[i] + distM(pts[i], pts[i + 1]));
+    return cum;
+  }
+  // Cuántos metros de la ruta lleva recorridos: se proyecta la posición sobre la línea.
+  // Así el avance no depende de pasar por un punto exacto (con el GPS a velocidad de
+  // carretera, entre dos lecturas se pueden saltar más de 50 m).
+  function progresoRuta(pts, cum, pos) {
+    if (!pts || pts.length < 2) return 0;
+    var kx = Math.cos(pos.lat * Math.PI / 180) * 111320, ky = 110540, mejorD = Infinity, mejorS = 0;
+    for (var i = 0; i < pts.length - 1; i++) {
+      var ax = (pts[i].lng - pos.lng) * kx, ay = (pts[i].lat - pos.lat) * ky;
+      var bx = (pts[i + 1].lng - pos.lng) * kx, by = (pts[i + 1].lat - pos.lat) * ky;
+      var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+      var t = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+      var px = ax + t * dx, py = ay + t * dy, d = Math.sqrt(px * px + py * py);
+      if (d < mejorD) { mejorD = d; mejorS = cum[i] + t * (cum[i + 1] - cum[i]); }
+    }
+    return mejorS;
+  }
+  // Fin de cada paso, en metros desde el inicio de la ruta.
+  function acumPasos(pasos) {
+    var s = 0;
+    return pasos.map(function (p) { s += p.metros; return s; });
+  }
+  // Paso en el que va: el primero que todavía no terminó (se da 20 m de margen
+  // para el final). Nunca retrocede (minIdx).
+  function pasoPorProgreso(acum, s, minIdx) {
+    for (var i = 0; i < acum.length; i++) if (acum[i] - 20 > s) return Math.max(i, minIdx || 0);
+    return acum.length - 1;
+  }
+  function textoDistNav(m) {
+    if (m < 1000) return (Math.max(10, Math.round(m / 10) * 10)) + " m";
+    return (m / 1000).toFixed(1).replace(".", ",") + " km";
+  }
+  // Lo que falta del viaje, medido sobre la ruta: metros y segundos (cada paso en proporción).
+  function restanteNav(pasos, acum, s) {
+    var metros = Math.max(0, acum[acum.length - 1] - s), seg = 0;
+    for (var i = 0; i < pasos.length; i++) {
+      var ini = acum[i] - pasos[i].metros, falta = Math.max(0, Math.min(pasos[i].metros, acum[i] - Math.max(s, ini)));
+      seg += pasos[i].metros > 0 ? pasos[i].seg * falta / pasos[i].metros : (acum[i] > s ? pasos[i].seg : 0);
+    }
+    return { metros: metros, seg: seg };
+  }
+  function flechaManiobra(m) {
+    var mapa = {
+      TURN_LEFT: "↰", TURN_RIGHT: "↱", TURN_SLIGHT_LEFT: "↖", TURN_SLIGHT_RIGHT: "↗",
+      TURN_SHARP_LEFT: "↰", TURN_SHARP_RIGHT: "↱", UTURN_LEFT: "↶", UTURN_RIGHT: "↷",
+      ROUNDABOUT_LEFT: "⟲", ROUNDABOUT_RIGHT: "⟳", MERGE: "↑", FORK_LEFT: "↖", FORK_RIGHT: "↗",
+      RAMP_LEFT: "↖", RAMP_RIGHT: "↗", STRAIGHT: "↑", DEPART: "↑", NAME_CHANGE: "↑"
+    };
+    return mapa[m] || "↑";
+  }
+
+  var nav = null;          // { dest, pasos, pts, idx, linea, ultimaConsulta, fuera, anunciado, voz, fin }
+  var NAV_FUERA_M = 70;    // más lejos que esto de la ruta = se salió
+
+  function navActiva() { return !!nav; }
+
+  function iniciarNavegacion(dest) {
+    if (!miPosicionConductor) { alert("Todavía no tengo tu ubicación. Revisa que el GPS esté encendido y vuelve a intentar."); return; }
+    detenerNavegacion(true);
+    nav = { dest: dest, pasos: [], pts: [], cum: [], acum: [], idx: 0, linea: null, ultimaConsulta: 0, fuera: 0, anunciado: {}, voz: true, fin: false, pidiendo: false };
+    document.body.classList.add("cond-navegando");
+    document.getElementById("navBanner").hidden = false;
+    document.getElementById("navPie").hidden = false;
+    document.getElementById("navInstr").textContent = "Calculando la ruta…";
+    document.getElementById("navDist").textContent = "";
+    document.getElementById("navFlecha").textContent = "↑";
+    ponerHoja("bajo");   // la ventana baja para dejar ver el mapa
+    pedirRutaNav();
+  }
+
+  function pedirRutaNav() {
+    if (!nav || nav.pidiendo || !miPosicionConductor) return;
+    if (Date.now() - nav.ultimaConsulta < 10000) return;
+    nav.pidiendo = true; nav.ultimaConsulta = Date.now();
+    var q = { accion: "ruta_navegacion", lat: miPosicionConductor.lat, lng: miPosicionConductor.lng };
+    if (nav.dest.coord) { q.dlat = nav.dest.coord.lat; q.dlng = nav.dest.coord.lng; } else q.destino = nav.dest.dir;
+    api(q).then(function (res) {
+      if (!nav) return;
+      nav.pidiendo = false;
+      if (!res || !res.ok) {
+        document.getElementById("navInstr").textContent = res && res.reintentar ? "Calculando la ruta…" : "No pude calcular la ruta. Usa Waze o Maps.";
+        if (res && res.reintentar) setTimeout(pedirRutaNav, 9000);
+        return;
+      }
+      nav.pasos = res.pasos; nav.idx = 0; nav.fuera = 0; nav.anunciado = {};
+      nav.pts = (res.polilinea && window.google && google.maps.geometry) ? google.maps.geometry.encoding.decodePath(res.polilinea).map(function (p) { return { lat: p.lat(), lng: p.lng() }; }) : [];
+      if (nav.pts.length < 2) {   // sin el trazado no se puede medir el avance
+        nav.pasos = [];
+        document.getElementById("navInstr").textContent = "No pude trazar la ruta. Usa Waze o Maps.";
+        return;
+      }
+      nav.cum = largosRuta(nav.pts); nav.acum = acumPasos(nav.pasos);
+      if (nav.linea) nav.linea.setMap(null);
+      if (mapaEspera && nav.pts.length) nav.linea = dibujarRutaNaranja(mapaEspera, nav.pts);
+      pintarNav();
+      if (nav.voz) hablarNav(nav.pasos[0].texto);
+    }).catch(function () { if (nav) { nav.pidiendo = false; document.getElementById("navInstr").textContent = "Sin conexión para calcular la ruta."; } });
+  }
+
+  function pintarNav() {
+    if (!nav || !nav.pasos.length || !miPosicionConductor) return;
+    var pos = miPosicionConductor;
+    // Avance medido sobre la ruta (no por radios alrededor de los giros).
+    var s = progresoRuta(nav.pts, nav.cum, pos);
+    nav.idx = pasoPorProgreso(nav.acum, s, nav.idx);
+    var paso = nav.pasos[nav.idx], rest = restanteNav(nav.pasos, nav.acum, s);
+    var aGiro = Math.max(0, nav.acum[nav.idx] - s);
+    var ultimo = nav.idx === nav.pasos.length - 1;
+    if (ultimo && aGiro < 40 && !nav.fin) {
+      nav.fin = true;
+      document.getElementById("navFlecha").textContent = "●";
+      document.getElementById("navDist").textContent = "";
+      document.getElementById("navInstr").textContent = "Llegaste a tu destino";
+      if (nav.voz) hablarNav("Llegaste a tu destino");
+      setTimeout(function () { detenerNavegacion(); }, 6000);
+      return;
+    }
+    // La instrucción de un paso es la maniobra que se hace AL FINAL del paso anterior:
+    // para el paso actual se muestra la del siguiente (el próximo giro).
+    var proximo = nav.pasos[Math.min(nav.idx + 1, nav.pasos.length - 1)];
+    var instr = ultimo ? "Destino: " + (nav.dest.dir || "") : (proximo.texto || paso.texto);
+    var maniobra = ultimo ? "STRAIGHT" : proximo.maniobra;
+    document.getElementById("navFlecha").textContent = flechaManiobra(maniobra);
+    document.getElementById("navDist").textContent = "En " + textoDistNav(aGiro);
+    document.getElementById("navInstr").textContent = instr;
+    var min = Math.max(1, Math.round(rest.seg / 60));
+    document.getElementById("navEta").textContent = min + " min";
+    document.getElementById("navResto").textContent = " · " + textoDistNav(rest.metros);
+    // Anuncia por voz cada giro a 250 m y otra vez a 60 m (una vez cada uno).
+    if (nav.voz && !ultimo && proximo.texto) {
+      var k250 = nav.idx + ":250", k60 = nav.idx + ":60";
+      if (aGiro < 250 && !nav.anunciado[k250] && aGiro >= 90) { nav.anunciado[k250] = true; hablarNav("En " + (Math.round(aGiro / 50) * 50) + " metros, " + proximo.texto); }
+      else if (aGiro < 90 && !nav.anunciado[k60]) { nav.anunciado[k60] = true; hablarNav(proximo.texto); }
+    }
+  }
+
+  // Cada posición nueva del GPS: seguir el paso, mover el mapa y revisar si se salió de la ruta.
+  function navPosicion(pos) {
+    if (!nav || !pos) return;
+    if (nav.pasos.length) {
+      if (nav.pts.length && distAPolilinea(pos, nav.pts) > NAV_FUERA_M) {
+        nav.fuera++;
+        if (nav.fuera >= 3) { nav.fuera = 0; document.getElementById("navInstr").textContent = "Recalculando la ruta…"; pedirRutaNav(); }
+      } else nav.fuera = 0;
+      pintarNav();
+    }
+    if (mapaEspera) { if (mapaEspera.getZoom() < 16) mapaEspera.setZoom(17); centrarEnZonaVisible(pos, true); }
+  }
+
+  function hablarNav(texto) {
+    try {
+      if (!texto || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(texto);
+      u.lang = "es-CL"; u.rate = 1;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function detenerNavegacion(silencioso) {
+    if (nav && nav.linea) nav.linea.setMap(null);
+    nav = null;
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    document.body.classList.remove("cond-navegando");
+    var b = document.getElementById("navBanner"), p = document.getElementById("navPie");
+    if (b) b.hidden = true;
+    if (p) p.hidden = true;
+    if (!silencioso) ponerHoja("medio");
+  }
+
+  document.getElementById("btnNavSalir").addEventListener("click", function () { detenerNavegacion(); });
+  document.getElementById("btnNavVoz").addEventListener("click", function () {
+    if (!nav) return;
+    nav.voz = !nav.voz;
+    this.textContent = nav.voz ? "Voz: sí" : "Voz: no";
+    if (!nav.voz) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  });
+  // "Navegar en Rumbo" de cada punto del viaje.
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-nav-rumbo]");
+    if (!b) return;
+    var lat = parseFloat(b.dataset.navLat), lng = parseFloat(b.dataset.navLng);
+    iniciarNavegacion({ coord: isFinite(lat) && isFinite(lng) ? { lat: lat, lng: lng } : null, dir: b.dataset.navDir || "" });
+  });
+
+  /* ---------------------------------------------------------------
      Etapas del viaje. Solo ida:  recoger → ida → finalizar.
      Ida y vuelta:  recoger → ida → [Llegué al destino] → espera →
      [Iniciar regreso] → regreso → finalizar. La espera que contrató el
@@ -2875,8 +3494,9 @@
       var acciones = "";
       if (i === actual && etapa !== "espera") {
         acciones = '<div class="ruta-pto-acciones">' +
-          '<a class="btn btn-chico" target="_blank" rel="noopener" href="' + escapar(urlWazePunto(pt)) + '">Ir con Waze</a>' +
-          '<a class="btn btn-chico" target="_blank" rel="noopener" href="' + escapar(urlMapsPunto(pt)) + '">Ir con Maps</a>' +
+          '<button class="btn btn-medio" type="button" data-nav-rumbo data-nav-lat="' + (pt.coord ? escapar(pt.coord.lat) : "") + '" data-nav-lng="' + (pt.coord ? escapar(pt.coord.lng) : "") + '" data-nav-dir="' + escapar(pt.dir) + '">Navegar en Rumbo</button>' +
+          '<a class="btn btn-chico ir-waze" target="_blank" rel="noopener" href="' + escapar(urlWazePunto(pt)) + '">Ir con Waze</a>' +
+          '<a class="btn btn-chico ir-maps" target="_blank" rel="noopener" href="' + escapar(urlMapsPunto(pt)) + '">Ir con Maps</a>' +
           (etapa === "ida" && pt.rol === "parada"
             ? '<button class="btn btn-ok" data-llegue="' + escapar(p.pedido_id) + '" data-siguiente="' + (i + 1) + '">Llegué a la parada</button>' : "") +
           (etapa === "ida" && pt.rol === "destino" && esIdaYVuelta(p)
@@ -3016,10 +3636,10 @@
       // Navegar hasta el ORIGEN (donde hay que ir a buscar al pasajero) —
       // se abre la app instalada si existe, si no cae a la web de cada
       // servicio. No navega al destino: eso lo decide el pasajero arriba.
-      '<div class="btn-row" style="margin-bottom:8px;">' +
-        '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
+      '<div class="btn-row una" style="margin-bottom:8px;">' +
+        '<a class="btn btn-chico ir-waze" target="_blank" rel="noopener" ' +
           'href="' + escapar(urlWazePunto(puntosCard[0])) + '">Ir con Waze</a>' +
-        '<a class="btn btn-chico" target="_blank" rel="noopener" ' +
+        '<a class="btn btn-chico ir-maps" target="_blank" rel="noopener" ' +
           'href="' + escapar(urlMapsPunto(puntosCard[0])) + '">Ir con Maps</a>' +
       '</div>' +
       '<div class="btn-row">' +
@@ -3091,6 +3711,80 @@
       });
     } catch (e) {}
   }
+
+  /* Pedido emergente (como Uber/DiDi): al llegar un pedido sin responder, se abre una
+     pantalla con lo esencial (precio, cuándo, de dónde a dónde, cuánto demoras), un
+     cronómetro y dos botones grandes. Suena y vibra cada pocos segundos hasta que
+     se responde. "Ver detalle" lo cierra y abre la ventana con toda la información. */
+  var emergenteId = "", emergenteVence = NaN, emergenteTotal = 0, emergenteReloj = null, emergenteRepite = null;
+  var emergenteDescartado = {};
+  function mmssCorto(ms) { var s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ":" + dosDig(s % 60); }
+  function tickEmergente() {
+    var resto = emergenteVence - Date.now();
+    var tiempo = document.getElementById("peTiempo"), barra = document.getElementById("peBarra");
+    if (!isFinite(resto)) { tiempo.textContent = ""; return; }
+    if (resto > emergenteTotal) emergenteTotal = resto;
+    barra.style.width = Math.max(0, Math.min(100, resto / emergenteTotal * 100)) + "%";
+    barra.parentNode.classList.toggle("poco", resto < 60000);
+    tiempo.textContent = mmssCorto(resto);
+    if (resto <= 0) { emergenteDescartado[emergenteId] = true; cerrarEmergente(); }   // venció: el servidor lo deriva
+  }
+  function cerrarEmergente() {
+    var el = document.getElementById("pedidoEmergente");
+    if (!el) return;
+    el.hidden = true; emergenteId = "";
+    if (emergenteReloj) { clearInterval(emergenteReloj); emergenteReloj = null; }
+    if (emergenteRepite) { clearInterval(emergenteRepite); emergenteRepite = null; }
+  }
+  function llenarEmergente(p) {
+    emergenteId = p.pedido_id;
+    emergenteVence = Date.parse(p.vence_en); emergenteTotal = 0;
+    var paradas = String(p.paradas || "").split("|").filter(function (s) { return s.trim(); }).length;
+    document.getElementById("peTitulo").textContent = p.solicitante ? "Pedido nuevo · viaja " + p.nombre : "Pedido nuevo";
+    document.getElementById("pePrecio").textContent = fmt(p.total);
+    document.getElementById("peCuando").innerHTML = htmlProgramacion(p, true);
+    document.getElementById("peOrigen").textContent = p.origen;
+    document.getElementById("peDestino").textContent = p.destino + (paradas ? " (+" + paradas + (paradas === 1 ? " parada)" : " paradas)") : "");
+    document.getElementById("peEta").dataset.eta = p.pedido_id;
+    pintarEtas(); pedirEtas();
+    tickEmergente();
+  }
+  function actualizarEmergente(pedidos) {
+    if (MODO !== "conductor") return;
+    var p = null;
+    for (var i = 0; i < pedidos.length; i++) if (!emergenteDescartado[pedidos[i].pedido_id]) { p = pedidos[i]; break; }
+    if (!p) { cerrarEmergente(); return; }
+    var el = document.getElementById("pedidoEmergente");
+    var nuevo = emergenteId !== p.pedido_id;
+    if (nuevo) llenarEmergente(p);
+    el.hidden = false;
+    if (!emergenteReloj) emergenteReloj = setInterval(tickEmergente, 1000);
+    if (!emergenteRepite) emergenteRepite = setInterval(function () {
+      sonarAviso();
+      if ("vibrate" in navigator) navigator.vibrate([250, 120, 250]);
+    }, 8000);
+  }
+  function responderEmergente(accion, boton) {
+    var id = emergenteId;
+    if (!id) return;
+    boton.disabled = true;
+    apiPost({ accion: accion, pedido_id: id }).then(function (res) {
+      boton.disabled = false;
+      if (!res || !res.ok) { alert("Error: " + ((res && res.error) || "no se pudo")); return; }
+      emergenteDescartado[id] = true;
+      cerrarEmergente();
+      cargarPedidos(); cargarViajesEnCurso();
+      if (accion === "confirmar_pedido") { mostrarPestana("enCurso"); ponerHoja("medio"); }
+    }).catch(function (err) { boton.disabled = false; alert("Error de red: " + err.message); });
+  }
+  document.getElementById("peAceptar").addEventListener("click", function () { responderEmergente("confirmar_pedido", this); });
+  document.getElementById("peRechazar").addEventListener("click", function () { responderEmergente("rechazar_pedido", this); });
+  document.getElementById("peDetalle").addEventListener("click", function () {
+    emergenteDescartado[emergenteId] = true;
+    cerrarEmergente();
+    mostrarPestana("pedidos"); ponerHoja("alto");
+  });
+  document.getElementById("btnVolverAjustes").addEventListener("click", function () { mostrarPestana("pedidos"); });
 
   function avisarPedidoNuevo(p) {
     sonarAviso();
@@ -3297,7 +3991,7 @@
     var m = mapasPorPedido[pedidoId];
     if (!m) {
       cont.classList.add("activo");
-      var mapa = new google.maps.Map(cont, { zoom: 14, center: centro, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA });
+      var mapa = new google.maps.Map(cont, { zoom: 14, center: centro, disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual() });
       m = { mapa: mapa, marcador: null, linea: null };
       mapasPorPedido[pedidoId] = m;
     }
@@ -3328,6 +4022,45 @@
     { featureType: "transit", stylers: [{ visibility: "off" }] },
     { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
   ];
+  /* Mapa de DÍA y de NOCHE según la hora real: se mide la altura del sol en el lugar
+     (no una hora fija: en Chile anochece distinto en verano y en invierno). Con el sol
+     más de 3° bajo el horizonte (pasado el crepúsculo) el mapa pasa a oscuro. */
+  var ESTILO_MAPA_NOCHE = ESTILO_MAPA.concat([
+    { elementType: "geometry", stylers: [{ color: "#17212B" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#9FB3C8" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#0F1720" }] },
+    { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#34495C" }] },
+    { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#1B2733" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#2E3F52" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#A9BACB" }] },
+    { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#385068" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#4A6B8A" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#0B1824" }] },
+    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#5C7C99" }] }
+  ]);
+  function alturaDelSol(fecha, lat, lng) {
+    var rad = Math.PI / 180;
+    var dia = (fecha.getTime() - Date.UTC(fecha.getUTCFullYear(), 0, 1)) / 86400000;   // día del año, con fracción
+    var g = 2 * Math.PI / 365 * (dia - 0.5);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var minutosUTC = fecha.getUTCHours() * 60 + fecha.getUTCMinutes() + fecha.getUTCSeconds() / 60;
+    var angulo = ((minutosUTC + eq + 4 * lng) / 4 - 180) * rad;   // ángulo horario del sol
+    var cz = Math.sin(lat * rad) * Math.sin(decl) + Math.cos(lat * rad) * Math.cos(decl) * Math.cos(angulo);
+    return 90 - Math.acos(Math.max(-1, Math.min(1, cz))) / rad;
+  }
+  function esDeNoche(fecha, lat, lng) { return alturaDelSol(fecha, lat, lng) < -3; }
+  function estiloMapaActual() { return esDeNoche(new Date(), -33.45, -70.66) ? ESTILO_MAPA_NOCHE : ESTILO_MAPA; }
+  function refrescarEstiloMapas() {
+    var noche = esDeNoche(new Date(), -33.45, -70.66), est = noche ? ESTILO_MAPA_NOCHE : ESTILO_MAPA;
+    document.body.classList.toggle("mapa-noche", noche);
+    try {
+      if (typeof mapaEspera !== "undefined" && mapaEspera) mapaEspera.setOptions({ styles: est });
+      Object.keys(mapasPorPedido).forEach(function (id) { if (mapasPorPedido[id].mapa) mapasPorPedido[id].mapa.setOptions({ styles: est }); });
+    } catch (e) {}
+  }
+  refrescarEstiloMapas();   // deja la marca de día/noche desde el arranque
+  setInterval(refrescarEstiloMapas, 120000);
   var NARANJO = "#F97316", NARANJO_BORDE = "#9A3412";
 
   function dibujarRutaNaranja(mapaDestino, puntos) {
@@ -3336,18 +4069,63 @@
     return { setMap: function (m) { borde.setMap(m); linea.setMap(m); } };
   }
 
-  function iconoAuto(rumbo) {
+  // 'color' (#RRGGBB) pinta la carrocería; sin color, el azul de siempre.
+  function svgAuto(rumbo, color, tipo) {
     var r = Math.round((rumbo || 0) / 5) * 5;
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+    var c = color || "#16333F", techo = tonoDeColor(c, -0.16), brillo = tonoDeColor(c, 0.38), sombra = tonoDeColor(c, -0.28);
+    var vidrio = "#1E2A35", brilloVidrio = "#5C7A91";
+    // Medidas por tipo de carrocería: x, y, ancho, alto, radio; luego ventanas (de adelante hacia atrás).
+    var F = {
+      sedan:  { x: 16.5, y: 5,  w: 23, h: 46, rx: 10.5, cap: [15, 18.2], par: [18.2, 25.2], techo: [25.2, 37], luneta: [37.8, 42.6], faro: 8.2, trasera: 46.8 },
+      hatch:  { x: 17,   y: 8,  w: 22, h: 41, rx: 9.5,  cap: [13.5, 16.8], par: [16.8, 23.2], techo: [23.2, 38], luneta: [38.6, 43], faro: 11, trasera: 43.4 },
+      suv:    { x: 15.5, y: 5,  w: 25, h: 46, rx: 9,    cap: [13, 16.4], par: [16.4, 23], techo: [23, 40], luneta: [40.6, 44.8], faro: 8.2, trasera: 46.6 },
+      van:    { x: 15,   y: 3,  w: 26, h: 50, rx: 8,    cap: [8.5, 11], par: [11, 16.5], techo: [16.5, 44], luneta: [44.6, 48.4], faro: 6, trasera: 49.4 },
+      pickup: { x: 16,   y: 4,  w: 24, h: 48, rx: 9,    cap: [12, 14.8], par: [14.8, 20.4], techo: [20.4, 27], luneta: [27.4, 31], faro: 7, trasera: 49.6 }
+    }[tipo] || null;
+    if (!F) F = { x: 16.5, y: 5, w: 23, h: 46, rx: 10.5, cap: [15, 18.2], par: [18.2, 25.2], techo: [25.2, 37], luneta: [37.8, 42.6], faro: 8.2, trasera: 46.8 };
+    var x0 = F.x, x1 = F.x + F.w, cx = 28;
+    var i0 = x0 + 3.4, i1 = x1 - 3.4;                       // ancho de los vidrios
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+      '<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="0">' +
+        '<stop offset="0" stop-color="' + sombra + '"/><stop offset=".3" stop-color="' + brillo + '"/>' +
+        '<stop offset=".62" stop-color="' + c + '"/><stop offset="1" stop-color="' + sombra + '"/></linearGradient></defs>' +
       '<g transform="rotate(' + r + ' 28 28)">' +
-      '<ellipse cx="29" cy="30" rx="12" ry="21" fill="rgba(0,0,0,0.22)"/>' +
-      '<rect x="17" y="7" width="22" height="42" rx="9" fill="#16333F" stroke="#FFFFFF" stroke-width="2.5"/>' +
-      '<path d="M20.5 17 Q28 12.5 35.5 17 L34 23 Q28 21 22 23 Z" fill="#9BD4F5"/>' +
-      '<rect x="21.5" y="24.5" width="13" height="12" rx="3" fill="#2B5468"/>' +
-      '<path d="M22 38.5 Q28 40.5 34 38.5 L35.2 43 Q28 45.5 20.8 43 Z" fill="#9BD4F5"/>' +
-      '<circle cx="21" cy="10" r="1.7" fill="#FFE29A"/><circle cx="35" cy="10" r="1.7" fill="#FFE29A"/>' +
-      '<rect x="19" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/><rect x="33" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/>' +
+      '<ellipse cx="29.5" cy="30" rx="' + (F.w / 2 + 2) + '" ry="' + (F.h / 2 + 1.5) + '" fill="rgba(0,0,0,0.26)"/>' +
+      // ruedas asomando a los lados
+      '<rect x="' + (x0 - 1.6) + '" y="' + (F.y + 6.5) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      '<rect x="' + (x1 - 1.8) + '" y="' + (F.y + 6.5) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      '<rect x="' + (x0 - 1.6) + '" y="' + (F.y + F.h - 15) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      '<rect x="' + (x1 - 1.8) + '" y="' + (F.y + F.h - 15) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      // espejos
+      '<rect x="' + (x0 - 3.6) + '" y="' + (F.par[0] + 1) + '" width="5" height="3.4" rx="1.5" fill="' + c + '" stroke="#FFFFFF" stroke-width="1.1"/>' +
+      '<rect x="' + (x1 - 1.4) + '" y="' + (F.par[0] + 1) + '" width="5" height="3.4" rx="1.5" fill="' + c + '" stroke="#FFFFFF" stroke-width="1.1"/>' +
+      // carrocería con volumen
+      '<rect x="' + x0 + '" y="' + F.y + '" width="' + F.w + '" height="' + F.h + '" rx="' + F.rx + '" fill="url(#g)" stroke="#FFFFFF" stroke-width="2.2"/>' +
+      // luz sobre el capó
+      '<path d="M' + (x0 + 2.4) + ' ' + F.cap[1] + ' Q' + cx + ' ' + (F.cap[0] - 3) + ' ' + (x1 - 2.4) + ' ' + F.cap[1] + ' L' + (x1 - 2.4) + ' ' + (F.cap[1] + 0.6) + ' Q' + cx + ' ' + (F.cap[0] + 0.5) + ' ' + (x0 + 2.4) + ' ' + (F.cap[1] + 0.6) + ' Z" fill="#FFFFFF" opacity=".35"/>' +
+      // parabrisas
+      '<path d="M' + i0 + ' ' + F.par[1] + ' Q' + cx + ' ' + (F.par[0] - 1.6) + ' ' + i1 + ' ' + F.par[1] + ' L' + (i1 - 1.4) + ' ' + F.techo[0] + ' Q' + cx + ' ' + (F.techo[0] - 2.2) + ' ' + (i0 + 1.4) + ' ' + F.techo[0] + ' Z" fill="' + vidrio + '"/>' +
+      '<path d="M' + (i0 + 2) + ' ' + (F.par[1] + 1.2) + ' L' + (i0 + 6) + ' ' + (F.par[0] + 1.6) + ' L' + (i0 + 8) + ' ' + (F.par[0] + 1.6) + ' L' + (i0 + 4) + ' ' + (F.par[1] + 1.2) + ' Z" fill="' + brilloVidrio + '" opacity=".55"/>' +
+      // techo
+      '<rect x="' + (i0 + 0.6) + '" y="' + F.techo[0] + '" width="' + (i1 - i0 - 1.2) + '" height="' + (F.techo[1] - F.techo[0]) + '" rx="3.4" fill="' + techo + '"/>' +
+      // luneta trasera
+      '<path d="M' + (i0 + 1.4) + ' ' + F.luneta[0] + ' Q' + cx + ' ' + (F.luneta[0] + 2.2) + ' ' + (i1 - 1.4) + ' ' + F.luneta[0] + ' L' + (i1 + 0.4) + ' ' + F.luneta[1] + ' Q' + cx + ' ' + (F.luneta[1] + 2.4) + ' ' + (i0 - 0.4) + ' ' + F.luneta[1] + ' Z" fill="' + vidrio + '"/>';
+    if (tipo === "suv") {   // barras del techo
+      s += '<rect x="' + (i0 + 1.8) + '" y="' + (F.techo[0] + 1) + '" width="1.1" height="' + (F.techo[1] - F.techo[0] - 2) + '" rx=".5" fill="#202225"/>' +
+           '<rect x="' + (i1 - 2.9) + '" y="' + (F.techo[0] + 1) + '" width="1.1" height="' + (F.techo[1] - F.techo[0] - 2) + '" rx=".5" fill="#202225"/>';
+    }
+    if (tipo === "pickup") {   // tolva abierta
+      s += '<rect x="' + (x0 + 2.4) + '" y="' + (F.luneta[1] + 2.4) + '" width="' + (F.w - 4.8) + '" height="' + (F.y + F.h - F.luneta[1] - 5.4) + '" rx="2.4" fill="#2A2F35" stroke="' + sombra + '" stroke-width=".8"/>' +
+           '<path d="M' + (x0 + 4.4) + ' ' + (F.luneta[1] + 5) + ' H' + (x1 - 4.4) + ' M' + (x0 + 4.4) + ' ' + (F.luneta[1] + 9) + ' H' + (x1 - 4.4) + ' M' + (x0 + 4.4) + ' ' + (F.luneta[1] + 13) + ' H' + (x1 - 4.4) + '" stroke="#3B424A" stroke-width=".9"/>';
+    }
+    // focos y luces traseras
+    s += '<ellipse cx="' + (x0 + 5.4) + '" cy="' + F.faro + '" rx="2.3" ry="1.5" fill="#FFF3C4"/><ellipse cx="' + (x1 - 5.4) + '" cy="' + F.faro + '" rx="2.3" ry="1.5" fill="#FFF3C4"/>' +
+      '<rect x="' + (x0 + 2.6) + '" y="' + F.trasera + '" width="5" height="1.9" rx=".95" fill="#EF4444"/><rect x="' + (x1 - 7.6) + '" y="' + F.trasera + '" width="5" height="1.9" rx=".95" fill="#EF4444"/>' +
       '</g></svg>';
+    return s;
+  }
+  function iconoAuto(rumbo, color, tipo) {
+    var svg = svgAuto(rumbo, color, tipo);
     return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(56, 56), anchor: new google.maps.Point(28, 28) };
   }
 
@@ -3364,7 +4142,7 @@
     if (antes && google.maps.geometry) {
       var ahora = new google.maps.LatLng(pos.lat, pos.lng);
       if (google.maps.geometry.spherical.computeDistanceBetween(antes, ahora) > 4) {
-        marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora)));
+        marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora), colorMiAuto, tipoMiAuto));
       }
     }
     marcador.setPosition(pos);
@@ -3393,7 +4171,7 @@
     if (!miPosicionConductor || !googleMapsListo) return;
     Object.keys(mapasPorPedido).forEach(function (pedidoId) {
       var m = mapasPorPedido[pedidoId];
-      if (!m.marcadorYo) m.marcadorYo = new google.maps.Marker({ map: m.mapa, title: "Tú", icon: iconoAuto(0), zIndex: 3 });
+      if (!m.marcadorYo) m.marcadorYo = new google.maps.Marker({ map: m.mapa, title: "Tú", icon: iconoMio(0), zIndex: 3 });
       moverAuto(m.marcadorYo, miPosicionConductor);
       pintarDistanciaPedido(pedidoId);
     });
@@ -3838,6 +4616,9 @@
       if (!res.ok) { lista.innerHTML = '<p class="vacio">Error: ' + escapar(res.error) + '</p>'; return; }
 
       actualizarBurbuja(res.pedidos.length);
+      var habiaPedido = document.body.classList.contains("cond-pedido");
+      document.body.classList.toggle("cond-pedido", res.pedidos.length > 0);
+      if (habiaPedido !== res.pedidos.length > 0) ponerHoja("medio");   // llegó (o se fue) un pedido: ventana a media altura
 
       res.pedidos.forEach(function (p) {
         if (!idsYaAvisados[p.pedido_id]) {
@@ -3853,12 +4634,14 @@
         lista.innerHTML = '<div class="vacio-bloque"><strong>Sin pedidos por ahora</strong>' +
           '<p>Apenas llegue uno, te avisamos y aparece aquí.</p></div>';
         mostrarTablero(true);
+        actualizarEmergente([]);
         return;
       }
       mostrarTablero(false);
       lista.innerHTML = "";
       res.pedidos.forEach(function (p) { lista.appendChild(pedidoCard(p)); });
       pedirEtas();
+      actualizarEmergente(res.pedidos);
     })();
   }
 
@@ -3884,6 +4667,7 @@
         miPosicionConductor = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         pintarMiPosicionEspera();
         pintarMiAutoEnMapas();
+        navPosicion(miPosicionConductor);   // si está navegando en Rumbo, sigue el avance
         pedirEtas();
       }, function () {
         // Sin permiso o sin señal: queda el botón "Usar mi ubicación".
@@ -3893,14 +4677,30 @@
     } catch (e) { watchLocalId = null; }
   }
 
+  /* El mapa ocupa toda la pantalla, pero arriba lo tapa la barra y abajo la ventana: el auto
+     se centra en la parte que SÍ se ve (entre ambas), no en el centro del mapa. */
+  function centrarEnZonaVisible(pos, suave) {
+    if (!mapaEspera || !window.google) return;
+    var cs = getComputedStyle(document.body);
+    var vis = parseFloat(cs.getPropertyValue("--hoja-vis")) || 0, top = parseFloat(cs.getPropertyValue("--topbar-h")) || 0;
+    var desvio = (vis - top) / 2;   // px que hay que correr el centro del mapa hacia abajo para subir el auto
+    var proy = mapaEspera.getProjection && mapaEspera.getProjection();
+    var destino = new google.maps.LatLng(pos.lat, pos.lng);
+    if (proy && desvio) {
+      var p = proy.fromLatLngToPoint(destino), escala = Math.pow(2, mapaEspera.getZoom());
+      destino = proy.fromPointToLatLng(new google.maps.Point(p.x, p.y + desvio / escala));
+    }
+    if (suave) mapaEspera.panTo(destino); else mapaEspera.setCenter(destino);
+  }
+
   function pintarMiPosicionEspera() {
     if (!mapaEspera || !miPosicionConductor || !googleMapsListo) return;
-    if (!marcadorEspera) marcadorEspera = new google.maps.Marker({ map: mapaEspera, title: "Tú", icon: iconoAuto(0), zIndex: 2 });
+    if (!marcadorEspera) marcadorEspera = new google.maps.Marker({ map: mapaEspera, title: "Tú", icon: iconoMio(0), zIndex: 2 });
     moverAuto(marcadorEspera, miPosicionConductor);
     if (!centradoEsperaInicial) {
       centradoEsperaInicial = true;
-      mapaEspera.setCenter(miPosicionConductor);
       mapaEspera.setZoom(14);
+      centrarEnZonaVisible(miPosicionConductor, false);
     }
     document.getElementById("tabBtnCentrar").hidden = true;
   }
@@ -3908,7 +4708,8 @@
   function mostrarTablero(si) {
     if (MODO !== "conductor") return;
     document.getElementById("tableroConductor").classList.toggle("visible", si);
-    if (!si) return;
+    // El mapa ahora es permanente (arriba de la hoja): se mantiene aunque haya pedidos.
+    if (!si) { pintarMapaEspera(); return; }
     cargarResumenMes();
     pintarEstadoTablero();
     pintarMapaEspera();
@@ -3989,7 +4790,7 @@
         else texto.textContent = "No se pudo cargar el mapa. Revisa tu conexión.";
         return;
       }
-      mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA });
+      mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual() });
       aviso.classList.add("oculto");
       pintarMiPosicionEspera();   // si ya hay posición, se ve de inmediato
       centrarMapaEspera(false);

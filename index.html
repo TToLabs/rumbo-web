@@ -221,7 +221,9 @@
      tapaba el campo y las sugerencias. Mientras se escribe, la página gana
      espacio abajo para poder subir el campo al borde superior, y el
      desplegable de Google queda por encima de todo. */
-  body.escribiendo-direccion { padding-bottom: 60vh; }
+  /* Ya no hace falta el espacio extra: la pantalla de pedir (.wiz) se ajusta sola
+     al teclado y oculta el mapa mientras se escribe. */
+  body.escribiendo-direccion { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
   .ruta-input-wrap input, .parada-input-wrap input { scroll-margin-top: 14px; }
   .pac-container { z-index: 100000 !important; max-height: 45vh; overflow-y: auto; }
   .parada-input-wrap input, .ruta-input-wrap input { padding-right: 40px; }
@@ -435,15 +437,119 @@
   }
   .mapa-cotizar-cabecera svg { color: var(--primary); }
   #mapaCotizar {
-    width: 100%; height: 200px; border-radius: var(--r-card);
+    width: 100%; height: 100%; min-height: 110px; border-radius: var(--r-card);
     border: 1px solid var(--border);
     background: var(--surface-2);
   }
 
+  /* ---------- Pedir un viaje en 2 pantallas, sin scroll ---------- */
+  /* El alto de .wiz lo fija el script (ajustarWiz) para que mapa + hoja ocupen
+     justo la pantalla, entre la barra superior y la de navegación. */
+  .wiz { display: flex; flex-direction: column; gap: 10px; min-height: 320px; }
+  .wiz-mapa { flex: 1 1 120px; min-height: 0; }
+  .wiz.paso2 #mapaCotizar { min-height: 70px; }
+  .wiz.paso2 .wiz-mapa { flex-basis: 70px; }
+  .wiz-hoja { padding: 12px 14px; }
+  .wiz-hoja {
+    flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+    padding: 14px; box-shadow: var(--shadow-md);
+  }
+  .wiz-titulo { font-size: 19px; font-weight: 600; margin: 0 0 10px; color: var(--primary); }
+  .wiz-cabeza { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .wiz-atras {
+    border: none; background: var(--primary-soft); color: var(--primary-soft-ink); border-radius: 999px;
+    padding: 8px 14px; min-height: 40px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .wiz-cuerpo { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .wiz-pie { flex: none; padding-top: 10px; }
+  .wiz-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip-opc {
+    display: inline-flex; align-items: center; gap: 5px; min-height: 44px; max-width: 100%;
+    padding: 8px 11px; border-radius: 999px; border: 1px solid var(--border-strong);
+    background: var(--surface-2); color: var(--primary); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  /* Como la maqueta: encabezado y pie chicos para dejar el mapa grande, filas de
+     dirección compactas, y los chips siempre a la vista (fuera del área con scroll). */
+  body.en-cotizar .topbar { padding-top: calc(10px + env(safe-area-inset-top)); padding-bottom: 10px; margin-bottom: 8px; }
+  body.en-cotizar .brand-mark { width: 40px; height: 40px; }
+  body.en-cotizar .brand-texto { min-height: 0; }
+  body.en-cotizar .brand-wordmark { height: 20px; }
+  body.en-cotizar .brand-sub { display: none; }
+  body.en-cotizar .app > .pie { display: none; }
+  .wiz-hoja { gap: 0; }
+  .wiz-hoja .ruta { padding: 8px 10px; margin: 0; border-radius: 12px; }
+  .wiz-hoja .ruta-input-wrap input { padding: 9px 40px 9px 12px; font-size: 16px; }
+  .wiz-hoja .ruta-linea { min-height: 4px; }
+  .wiz-hoja .ruta-linea-celda { padding: 1px 0; }
+  .wiz-hoja .btn-direcciones-recientes {
+    width: auto; margin: 0 0 6px; padding: 2px 0; border: none; background: none;
+    justify-content: flex-start; font-size: 13px; color: var(--text-2);
+  }
+  .wiz-hoja .btn-agregar-parada { font-size: 14px; margin-top: 2px; padding: 4px 2px; }
+  .wiz-chips-fijos { margin: 0 0 10px; flex: none; }
+  /* Tarjeta de precio compacta para que la hoja 2 quepa sin scroll. */
+  .wiz-hoja .precio-card { padding: 10px 14px; margin-bottom: 0; box-shadow: none; border: 1px solid var(--border); }
+  .wiz-hoja .precio-label { margin: 0; font-size: 13px; }
+  .wiz-hoja .precio-valor { margin: 0; font-size: 28px; line-height: 1.1; }
+  .wiz-hoja .precio-detalle { margin-top: 6px; padding-top: 6px; gap: 2px 16px; grid-template-columns: 1fr 1fr; }
+  .wiz-hoja .detalle-fila { font-size: 13px; flex-direction: column; align-items: flex-start; gap: 0; }
+  .wiz-hoja .precio-nota { font-size: 12px; line-height: 1.35; margin: 6px 0 0; padding-top: 6px; }
+  .wiz-cuerpo { scrollbar-width: none; }
+  .wiz-cuerpo::-webkit-scrollbar { display: none; }
+  .chip-opc span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wiz-resumen { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px; font-size: 14px; line-height: 1.35; }
+  .wiz-resumen li { display: flex; gap: 8px; color: var(--text-2); }
+  .wiz-resumen strong { color: var(--text); font-weight: 600; }
+  /* Con el teclado abierto el mapa estorba: se oculta mientras se escribe. */
+  .wiz.teclado .wiz-mapa { display: none; }
+  .modal-opc {
+    position: fixed; inset: 0; z-index: 60; background: rgba(16,26,32,0.45);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-opc[hidden] { display: none; }
+  .modal-opc-hoja {
+    width: 100%; max-width: 448px; background: var(--surface); border-radius: 18px 18px 0 0;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); max-height: 85vh; overflow-y: auto;
+  }
+  .modal-opc-hoja h3 { margin: 0 0 12px; font-size: 18px; color: var(--primary); }
+
   #mapaConductor {
-    width: 100%; height: 320px; border-radius: var(--r-card);
-    border: 1px solid var(--border); margin-bottom: 12px; display: none;
+    width: 100%; height: 100%; min-height: 130px; border-radius: var(--r-card);
+    border: 1px solid var(--border); display: none; position: relative; z-index: 1;
     background: var(--surface-2);
+  }
+
+  /* De noche el fondo del mapa también es oscuro (mientras cargan las baldosas). */
+  body.mapa-noche #mapaCotizar, body.mapa-noche #mapaConductor, body.mapa-noche .radar-buscando { background: #17212B; border-color: #2E3F52; }
+
+  /* ---------- Seguimiento: mapa grande + hoja (como Uber/DiDi) ---------- */
+  .wiz-mapa { position: relative; }
+  .radar-buscando {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--r-card); background: var(--surface-2); border: 1px solid var(--border); overflow: hidden;
+  }
+  .radar-buscando span {
+    position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid #F97316;
+    opacity: 0; animation: radar 2.4s ease-out infinite;
+  }
+  .radar-buscando span:nth-child(2) { animation-delay: .8s; }
+  .radar-buscando span:nth-child(3) { animation-delay: 1.6s; }
+  .radar-buscando i {
+    width: 18px; height: 18px; border-radius: 50%; background: #1A73E8; border: 3px solid #fff;
+    box-shadow: 0 0 0 4px rgba(26,115,232,.25);
+  }
+  @keyframes radar { 0% { transform: scale(.4); opacity: .7; } 100% { transform: scale(4.5); opacity: 0; } }
+  .seg-hoja { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: block; }
+  #segHoja .card:not(.conductor-banner) { border: none; box-shadow: none; padding: 0; background: transparent; margin-bottom: 12px; }
+  #segHoja .estado-box { padding: 12px 14px; font-size: 16px; margin-bottom: 10px; }
+  #segHoja .pasos { margin-bottom: 10px; }
+  /* Lo que va apareciendo (conductor, tiempo, cobro) sube suave, no salta. */
+  @keyframes subirTarjeta { from { transform: translateY(22px); opacity: 0; } to { transform: none; opacity: 1; } }
+  #tarjetaConductorAsignado, #etaConductor, #btnPagarMp, #cardDesgloseFinal, #cardCalificar { animation: subirTarjeta .35s ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    .radar-buscando span { animation: none; opacity: .25; transform: scale(2); }
+    #tarjetaConductorAsignado, #etaConductor, #btnPagarMp, #cardDesgloseFinal, #cardCalificar { animation: none; }
   }
 
   /* Tiempo de llegada: lo primero que mira el pasajero esperando. */
@@ -581,11 +687,15 @@
      último elemento de cada pantalla no quede tapado. */
   .nav-inferior {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    display: flex; gap: 4px;
     background: var(--surface); border-top: 1px solid var(--border);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     box-shadow: 0 -2px 12px rgba(16,26,32,0.06);
   }
+  .nav-inferior .nav-item { flex: 1 1 0; }
+  /* "En Rumbo" no aparece (ni bloqueada) mientras no haya un viaje: se muestra
+     recién cuando se pide uno. */
+  .nav-inferior .nav-item:disabled { display: none; }
   .nav-item {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
     border: none; background: none; cursor: pointer; font: inherit;
@@ -784,157 +894,182 @@
   </div>
 
   <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
+   <!-- Pedir un viaje en 2 pantallas, sin scroll (como Uber/DiDi): el mapa queda
+        arriba y abajo una hoja que cambia. Paso 1 "¿A dónde vas?"; paso 2 "Confirma
+        tu viaje". Cuándo / tipo de viaje / para quién se eligen en mini-ventanas
+        que reutilizan los mismos campos de siempre (mismos id). -->
+   <div class="wiz" id="wiz">
 
-    <section class="card">
-      <div class="card-head">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg>
-        <span class="card-title">Tu Rumbo</span>
-      </div>
+    <div class="wiz-mapa"><div id="mapaCotizar"></div></div>
 
-      <div class="campo" style="margin-bottom:14px;">
-        <span class="campo-label">¿Para quién es el viaje?</span>
-        <div class="segmentado" role="group" aria-label="Para quién es el viaje">
-          <button class="seg-btn active" id="paraMi" type="button" data-para="mi">Para mí</button>
-          <button class="seg-btn" id="paraOtro" type="button" data-para="otro">Para otra persona</button>
+    <div class="wiz-hoja" id="hojaPaso1">
+      <h2 class="wiz-titulo">¿A dónde vas?</h2>
+      <div class="wiz-cuerpo">
+        <button type="button" class="btn-direcciones-recientes" id="btnDireccionesRecientes" style="display:none;">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
+          Direcciones recientes
+        </button>
+        <div class="chips-contactos" id="chipsDirecciones" style="display:none;"></div>
+        <div class="ruta">
+          <span class="ruta-marca"><span class="punto-origen"></span></span>
+          <div class="ruta-input-wrap">
+            <label class="sr-only" for="origen">Dirección de origen</label>
+            <input type="text" id="origen" placeholder="¿Desde dónde?" autocomplete="off">
+            <button type="button" class="btn-mi-ubicacion" id="btnMiUbicacion" aria-label="Usar mi ubicación actual">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+            </button>
+            <button type="button" class="btn-borrar-direccion" data-borrar="origen" aria-label="Borrar origen">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+            </button>
+          </div>
+          <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
+          <span></span>
+          <div id="paradasContenedor"></div>
+          <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
+          <span></span>
+          <span class="ruta-marca"><span class="punto-destino"></span></span>
+          <div class="ruta-input-wrap">
+            <label class="sr-only" for="destino">Dirección de destino</label>
+            <input type="text" id="destino" placeholder="¿A dónde vas?" autocomplete="off">
+            <button type="button" class="btn-borrar-direccion" data-borrar="destino" aria-label="Borrar destino">
+              <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+            </button>
+          </div>
         </div>
+        <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
+          Agregar parada
+        </button>
       </div>
-      <div class="campo" id="filaNombreTercero" style="display:none;margin-bottom:14px;">
-        <div class="chips-contactos" id="chipsContactos" style="display:none;"></div>
-        <label class="campo-label" for="nombreTercero">Nombre de quien viaja</label>
-        <input type="text" id="nombreTercero" placeholder="Nombre y apellido" autocomplete="off">
-        <label class="campo-label" for="telefonoTercero" style="margin-top:10px;">WhatsApp de quien viaja (opcional)</label>
-        <input type="text" id="telefonoTercero" placeholder="56912345678" inputmode="numeric" autocomplete="off">
-      </div>
-
-      <button type="button" class="btn-direcciones-recientes" id="btnDireccionesRecientes" style="display:none;">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
-        Direcciones recientes
-      </button>
-      <div class="chips-contactos" id="chipsDirecciones" style="display:none;"></div>
-      <div class="ruta">
-        <span class="ruta-marca"><span class="punto-origen"></span></span>
-        <div class="ruta-input-wrap">
-          <label class="sr-only" for="origen">Dirección de origen</label>
-          <input type="text" id="origen" placeholder="¿Desde dónde?" autocomplete="off">
-          <button type="button" class="btn-mi-ubicacion" id="btnMiUbicacion" aria-label="Usar mi ubicación actual">
-            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
+      <div class="wiz-pie">
+        <div class="wiz-chips wiz-chips-fijos" role="group" aria-label="Opciones del viaje">
+          <button type="button" class="chip-opc" id="chipCuando" data-abre="modalCuando">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg><span id="chipCuandoTxt">Ahora</span>
           </button>
-          <button type="button" class="btn-borrar-direccion" data-borrar="origen" aria-label="Borrar origen">
-            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
+          <button type="button" class="chip-opc" id="chipTipo" data-abre="modalTipo">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg><span id="chipTipoTxt">Solo ida</span>
+          </button>
+          <button type="button" class="chip-opc" id="chipPara" data-abre="modalPara">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-persona"/></svg><span id="chipParaTxt">Para mí</span>
           </button>
         </div>
-        <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
-        <span></span>
-        <div id="paradasContenedor"></div>
-        <span class="ruta-linea-celda"><span class="ruta-linea"></span></span>
-        <span></span>
-        <span class="ruta-marca"><span class="punto-destino"></span></span>
-        <div class="ruta-input-wrap">
-          <label class="sr-only" for="destino">Dirección de destino</label>
-          <input type="text" id="destino" placeholder="¿A dónde vas?" autocomplete="off">
-          <button type="button" class="btn-borrar-direccion" data-borrar="destino" aria-label="Borrar destino">
-            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>
-          </button>
-        </div>
-      </div>
-      <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
-        Agregar parada
-      </button>
-      <div class="mapa-cotizar-wrap">
-        <div class="mapa-cotizar-cabecera">
-          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
-          <span>Ubicación y ruta</span>
-        </div>
-        <div id="mapaCotizar"></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
-        <span class="card-title">Cuándo</span>
-      </div>
-      <div class="fila" style="margin-bottom:16px;">
-        <div class="campo">
-          <label class="campo-label" for="fechaSalida">Día</label>
-          <input type="date" id="fechaSalida">
-        </div>
-        <div class="campo">
-          <label class="campo-label" for="horaSalida">Hora</label>
-          <!-- Texto con teclado numérico, no type="time": en Android ese
-               abre un reloj analógico incómodo. El ":" se agrega solo. -->
-          <input type="text" id="horaSalida" inputmode="numeric" placeholder="HH:MM" maxlength="5" autocomplete="off">
-        </div>
-      </div>
-
-      <div class="campo">
-        <span class="campo-label">Tipo de viaje</span>
-        <div class="segmentado" role="group" aria-label="Tipo de viaje">
-          <button class="seg-btn" id="tipoIdaVuelta" type="button" data-vuelta="1">Ida y vuelta</button>
-          <button class="seg-btn active" id="tipoSoloIda" type="button" data-vuelta="0">Solo ida</button>
-        </div>
-      </div>
-
-      <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
-        <span class="campo-label">¿Necesitas que el conductor espere?</span>
-        <div class="segmentado segmentado-espera" role="group" aria-label="Tiempo de espera" id="grupoEspera">
-          <button class="seg-btn active" type="button" data-espera-horas="0">No requiere</button>
-          <button class="seg-btn" type="button" data-espera-horas="0.25">15 min</button>
-          <button class="seg-btn" type="button" data-espera-horas="0.5">30 min</button>
-          <button class="seg-btn" type="button" data-espera-horas="1">1 hora</button>
-          <button class="seg-btn" type="button" data-espera-horas="2">2 horas</button>
-        </div>
-        <p class="nota" id="esperaExplicacion" style="margin:8px 2px 0;"></p>
-      </div>
-    </section>
-
-    <div class="btn-sticky-wrap">
-      <button class="btn btn-medio" id="buscarAuto" type="button">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-buscar"/></svg>
-        Calcular precio
-      </button>
-    </div>
-    <p class="nota" id="buscarAutoTexto" style="margin:0 2px 12px;"></p>
-
-    <section class="card precio-card" id="tarjetaPrecio" aria-live="polite" style="display:none;">
-      <p class="precio-label">Precio estimado</p>
-      <p class="precio-valor" id="total">—</p>
-      <dl class="precio-detalle">
-        <div class="detalle-fila"><dt id="lblKm">Distancia</dt><dd id="outKm">—</dd></div>
-        <div class="detalle-fila"><dt id="lblMin">Tiempo</dt><dd id="outMin">—</dd></div>
-        <div class="detalle-fila"><dt id="lblPeaje">Peajes</dt><dd id="outPeaje">—</dd></div>
-        <div class="detalle-fila"><dt>Tarifa aplicada</dt><dd id="outTipoTarifa">—</dd></div>
-      </dl>
-      <p class="precio-nota">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
-        <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
-      </p>
-    </section>
-
-    <button class="btn btn-primario" id="btnPedir" type="button" disabled>
-      Solicitar viaje
-      <svg class="ico ico-sm" aria-hidden="true"><use href="#i-flecha"/></svg>
-    </button>
-    <p class="nota" id="pedirTexto" style="margin:10px 2px 0;"></p>
-
-    <div class="confianza">
-      <div class="confianza-item">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
-        Ves la tarifa estimada antes de pedir el viaje
-      </div>
-      <div class="confianza-item">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
-        Conductor identificado y seguimiento en vivo del trayecto
-      </div>
-      <div class="confianza-item">
-        <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
-        Cobertura dentro y fuera de Santiago
+        <p class="nota" id="buscarAutoTexto" style="margin:0 2px 8px;"></p>
+        <button class="btn btn-primario" id="buscarAuto" type="button">
+          Calcular precio
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-flecha"/></svg>
+        </button>
       </div>
     </div>
+
+    <div class="wiz-hoja" id="hojaPaso2" style="display:none;">
+      <div class="wiz-cabeza">
+        <button type="button" class="wiz-atras" id="btnPasoAtras" aria-label="Volver a editar el viaje">‹ Editar</button>
+        <h2 class="wiz-titulo" style="margin:0;">Confirma tu viaje</h2>
+      </div>
+      <div class="wiz-cuerpo">
+        <ul class="wiz-resumen" id="wizResumen" aria-label="Resumen del viaje"></ul>
+        <section class="card precio-card" id="tarjetaPrecio" aria-live="polite" style="display:none;">
+          <p class="precio-label">Precio estimado</p>
+          <p class="precio-valor" id="total">—</p>
+          <dl class="precio-detalle">
+            <div class="detalle-fila"><dt id="lblKm">Distancia</dt><dd id="outKm">—</dd></div>
+            <div class="detalle-fila"><dt id="lblMin">Tiempo</dt><dd id="outMin">—</dd></div>
+            <div class="detalle-fila"><dt id="lblPeaje">Peajes</dt><dd id="outPeaje">—</dd></div>
+            <div class="detalle-fila"><dt>Tarifa aplicada</dt><dd id="outTipoTarifa">—</dd></div>
+          </dl>
+          <p class="precio-nota">
+            <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
+            <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
+          </p>
+        </section>
+      </div>
+      <div class="wiz-pie">
+        <p class="nota" id="pedirTexto" style="margin:0 2px 8px;"></p>
+        <button class="btn btn-primario" id="btnPedir" type="button" disabled>
+          Solicitar viaje
+          <svg class="ico ico-sm" aria-hidden="true"><use href="#i-flecha"/></svg>
+        </button>
+      </div>
+    </div>
+
+   </div>
+
+   <!-- Mini-ventanas: mismos campos de antes (mismos id), ahora en hojas que suben desde abajo. -->
+   <div class="modal-opc" id="modalPara" hidden role="dialog" aria-labelledby="modalParaTit">
+     <div class="modal-opc-hoja">
+       <h3 id="modalParaTit">¿Para quién es el viaje?</h3>
+       <div class="campo" style="margin-bottom:14px;">
+         <div class="segmentado" role="group" aria-label="Para quién es el viaje">
+           <button class="seg-btn active" id="paraMi" type="button" data-para="mi">Para mí</button>
+           <button class="seg-btn" id="paraOtro" type="button" data-para="otro">Para otra persona</button>
+         </div>
+       </div>
+       <div class="campo" id="filaNombreTercero" style="display:none;margin-bottom:14px;">
+         <div class="chips-contactos" id="chipsContactos" style="display:none;"></div>
+         <label class="campo-label" for="nombreTercero">Nombre de quien viaja</label>
+         <input type="text" id="nombreTercero" placeholder="Nombre y apellido" autocomplete="off">
+         <label class="campo-label" for="telefonoTercero" style="margin-top:10px;">WhatsApp de quien viaja (opcional)</label>
+         <input type="text" id="telefonoTercero" placeholder="56912345678" inputmode="numeric" autocomplete="off">
+       </div>
+       <button type="button" class="btn btn-primario" data-cierra="modalPara">Listo</button>
+     </div>
+   </div>
+
+   <div class="modal-opc" id="modalCuando" hidden role="dialog" aria-labelledby="modalCuandoTit">
+     <div class="modal-opc-hoja">
+       <h3 id="modalCuandoTit">¿Cuándo?</h3>
+       <button type="button" class="btn btn-secundario" id="btnCuandoAhora" style="margin-bottom:14px;">Ahora</button>
+       <p class="nota" style="margin:0 0 8px;">O elige un día y una hora:</p>
+       <div class="fila" style="margin-bottom:16px;">
+         <div class="campo">
+           <label class="campo-label" for="fechaSalida">Día</label>
+           <input type="date" id="fechaSalida">
+         </div>
+         <div class="campo">
+           <label class="campo-label" for="horaSalida">Hora</label>
+           <!-- Texto con teclado numérico, no type="time": en Android ese
+                abre un reloj analógico incómodo. El ":" se agrega solo. -->
+           <input type="text" id="horaSalida" inputmode="numeric" placeholder="HH:MM" maxlength="5" autocomplete="off">
+         </div>
+       </div>
+       <button type="button" class="btn btn-primario" data-cierra="modalCuando">Listo</button>
+     </div>
+   </div>
+
+   <div class="modal-opc" id="modalTipo" hidden role="dialog" aria-labelledby="modalTipoTit">
+     <div class="modal-opc-hoja">
+       <h3 id="modalTipoTit">Tipo de viaje</h3>
+       <div class="campo">
+         <div class="segmentado" role="group" aria-label="Tipo de viaje">
+           <button class="seg-btn" id="tipoIdaVuelta" type="button" data-vuelta="1">Ida y vuelta</button>
+           <button class="seg-btn active" id="tipoSoloIda" type="button" data-vuelta="0">Solo ida</button>
+         </div>
+       </div>
+       <div class="campo" id="filaEspera" style="display:none; margin-top:12px;">
+         <span class="campo-label">¿Necesitas que el conductor espere?</span>
+         <div class="segmentado segmentado-espera" role="group" aria-label="Tiempo de espera" id="grupoEspera">
+           <button class="seg-btn active" type="button" data-espera-horas="0">No requiere</button>
+           <button class="seg-btn" type="button" data-espera-horas="0.25">15 min</button>
+           <button class="seg-btn" type="button" data-espera-horas="0.5">30 min</button>
+           <button class="seg-btn" type="button" data-espera-horas="1">1 hora</button>
+           <button class="seg-btn" type="button" data-espera-horas="2">2 horas</button>
+         </div>
+         <p class="nota" id="esperaExplicacion" style="margin:8px 2px 0;"></p>
+       </div>
+       <button type="button" class="btn btn-primario" data-cierra="modalTipo" style="margin-top:14px;">Listo</button>
+     </div>
+   </div>
   </div>
 
   <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
+   <!-- Seguimiento como Uber/DiDi: mapa grande arriba (con un radar mientras se
+        busca conductor) y una hoja que sube con el estado, el conductor y el cobro. -->
+   <div class="wiz seg" id="seg">
+    <div class="wiz-mapa">
+      <div class="radar-buscando" id="radarBuscando" aria-hidden="true"><span></span><span></span><span></span><i></i></div>
+      <div id="mapaConductor"></div>
+    </div>
+    <div class="wiz-hoja seg-hoja" id="segHoja">
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
          mientras el conductor va a buscarte. -->
@@ -948,7 +1083,6 @@
       <li data-paso="4"><span class="paso-punto"></span><span class="paso-txt">Finalizado</span></li>
     </ol>
     <p class="nota" id="estadoDetalle" style="margin:0 2px 14px;"></p>
-    <div id="mapaConductor"></div>
     <p class="nota" id="distanciaConductor" style="margin:6px 2px 12px;"></p>
     <!-- Conductor asignado y su vehículo: aparece al confirmarse el viaje. -->
     <p class="nota" id="avisoDerivado" style="display:none;margin:0 2px 12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);">
@@ -1017,6 +1151,8 @@
     <p class="nota" id="calificacionEnviada" style="display:none;text-align:center;">¡Gracias por tu calificación!</p>
 
     <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
+    </div>
+   </div>
   </div>
 
   <div id="vistaCuenta" role="tabpanel" aria-labelledby="tabCuenta" style="display:none;">
@@ -1194,6 +1330,12 @@
       tab.classList.toggle("activo", esEsta);
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
+    document.body.classList.toggle("en-cotizar", cual === "cotizar" || cual === "seguimiento");   // encabezado y pie compactos
+    if (cual === "seguimiento") ajustarWiz();
+    if (cual === "cotizar") {
+      // Sin una cotización vigente no hay nada que confirmar: se vuelve a la hoja 1.
+      if (!rutaActual && pasoPedir === 2) irAPaso(1); else { pintarChipsViaje(); ajustarWiz(); }
+    }
   }
 
   Object.keys(SECCIONES).forEach(function (nombre) {
@@ -1341,7 +1483,7 @@
     var cont = document.getElementById("mapaCotizar");
     if (!cont || mapaCotizar) return;
     mapaCotizar = new google.maps.Map(cont, {
-      zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA
+      zoom: 12, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual()
     });
     mostrarMiUbicacionCotizar();
   }
@@ -1526,7 +1668,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 37;
+  var APP_VERSION = 41;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2448,7 +2590,7 @@
     if (esParaOtro && !document.getElementById("nombreTercero").value.trim()) {
       textoEl.textContent = "Escribe el nombre de quien viaja.";
       textoEl.className = "nota error";
-      document.getElementById("nombreTercero").focus();
+      enfocarEn("modalPara", document.getElementById("nombreTercero"));
       return;
     }
     // Sin fecha u hora se asume "ahora". Y SIEMPRE se le confirma para
@@ -2478,7 +2620,7 @@
     if (!horaValida(inputHora.value)) {
       textoEl.textContent = "Escribe la hora como HH:MM, por ejemplo 08:30 o 18:45.";
       textoEl.className = "nota error";
-      inputHora.focus();
+      enfocarEn("modalCuando", inputHora);
       return;
     }
     var elegido = new Date(inputFecha.value + "T" + inputHora.value + ":00");
@@ -2497,7 +2639,7 @@
     if (!confirm(pregunta)) {
       textoEl.textContent = "Corrige el día o la hora de tu viaje y vuelve a calcular.";
       textoEl.className = "nota";
-      inputHora.focus();
+      enfocarEn("modalCuando", inputHora);
       return;
     }
     var fecha = inputFecha.value;
@@ -2505,6 +2647,7 @@
     // Lo que el pasajero confirmó es lo que se pide (ver btnPedir): el
     // precio depende de punta/valle, así que no puede cambiar después.
     fechaHoraCotizada = { fecha: fecha, hora: hora };
+    cotizadoParaAhora = paraAhora;
     var departureTime = "";
     if (fecha && hora) {
       var local = new Date(fecha + "T" + hora + ":00");
@@ -2546,7 +2689,7 @@
       calcularTotal();
       var tarjeta = document.getElementById("tarjetaPrecio");
       tarjeta.style.display = "block";
-      tarjeta.scrollIntoView({ behavior: "smooth", block: "center" });
+      irAPaso(2);
       actualizarBotonPedir();
     }).catch(function (err) {
       textoEl.textContent = "No se pudo calcular la ruta (" + err.message + "). Revisa las direcciones.";
@@ -2593,7 +2736,8 @@
     if (esParaOtro && !document.getElementById("nombreTercero").value.trim()) {
       pedirTexto.textContent = "Falta el nombre de quien viaja.";
       pedirTexto.className = "nota error";
-      document.getElementById("nombreTercero").focus();
+      irAPaso(1);
+      enfocarEn("modalPara", document.getElementById("nombreTercero"));
       return;
     }
     // NO se vuelve a exigir acá el mínimo de 15 min: ya se confirmó al
@@ -2943,9 +3087,10 @@
   function volverAInicioSinConductor() {
     document.getElementById("btnNuevoPedido").click();
     mostrarPestana("cotizar");
-    var pedirTexto = document.getElementById("pedirTexto");
-    pedirTexto.textContent = "Ningún conductor pudo tomar tu viaje por ahora. Puedes intentar de nuevo.";
-    pedirTexto.className = "nota error";
+    // El aviso va en la hoja 1 (donde queda el pasajero), no en la 2.
+    var aviso = document.getElementById("buscarAutoTexto");
+    aviso.textContent = "Ningún conductor pudo tomar tu viaje por ahora. Puedes intentar de nuevo.";
+    aviso.className = "nota error";
   }
 
   function manejarEstado(res) {
@@ -3375,6 +3520,45 @@
     { featureType: "transit", stylers: [{ visibility: "off" }] },
     { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
   ];
+  /* Mapa de DÍA y de NOCHE según la hora real: se mide la altura del sol en el lugar
+     (no una hora fija: en Chile anochece distinto en verano y en invierno). Con el sol
+     más de 3° bajo el horizonte (pasado el crepúsculo) el mapa pasa a oscuro. */
+  var ESTILO_MAPA_NOCHE = ESTILO_MAPA.concat([
+    { elementType: "geometry", stylers: [{ color: "#17212B" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#9FB3C8" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#0F1720" }] },
+    { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#34495C" }] },
+    { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#1B2733" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#2E3F52" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#A9BACB" }] },
+    { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#385068" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#4A6B8A" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#0B1824" }] },
+    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#5C7C99" }] }
+  ]);
+  function alturaDelSol(fecha, lat, lng) {
+    var rad = Math.PI / 180;
+    var dia = (fecha.getTime() - Date.UTC(fecha.getUTCFullYear(), 0, 1)) / 86400000;   // día del año, con fracción
+    var g = 2 * Math.PI / 365 * (dia - 0.5);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var minutosUTC = fecha.getUTCHours() * 60 + fecha.getUTCMinutes() + fecha.getUTCSeconds() / 60;
+    var angulo = ((minutosUTC + eq + 4 * lng) / 4 - 180) * rad;   // ángulo horario del sol
+    var cz = Math.sin(lat * rad) * Math.sin(decl) + Math.cos(lat * rad) * Math.cos(decl) * Math.cos(angulo);
+    return 90 - Math.acos(Math.max(-1, Math.min(1, cz))) / rad;
+  }
+  function esDeNoche(fecha, lat, lng) { return alturaDelSol(fecha, lat, lng) < -3; }
+  function estiloMapaActual() { return esDeNoche(new Date(), -33.45, -70.66) ? ESTILO_MAPA_NOCHE : ESTILO_MAPA; }
+  function refrescarEstiloMapas() {
+    var noche = esDeNoche(new Date(), -33.45, -70.66), est = noche ? ESTILO_MAPA_NOCHE : ESTILO_MAPA;
+    document.body.classList.toggle("mapa-noche", noche);
+    try {
+      if (typeof mapaCotizar !== "undefined" && mapaCotizar) mapaCotizar.setOptions({ styles: est });
+      if (typeof mapa !== "undefined" && mapa) mapa.setOptions({ styles: est });
+    } catch (e) {}
+  }
+  refrescarEstiloMapas();   // deja la marca de día/noche desde el arranque
+  setInterval(refrescarEstiloMapas, 120000);
   var NARANJO = "#F97316", NARANJO_BORDE = "#9A3412";
 
   // Devuelve un objeto con setMap(), igual que una Polyline: el resto del
@@ -3418,7 +3602,17 @@
         marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora)));
       }
     }
-    marcador.setPosition(pos);
+    if (!antes) { marcador.setPosition(pos); return; }
+    // Desliza el auto de donde estaba a donde llegó, en vez de saltar: la
+    // posición llega cada ~5 s y el deslizamiento dura casi lo mismo.
+    var desde = { lat: antes.lat(), lng: antes.lng() }, t0 = null, dur = 4000;
+    if (marcador.__anim) cancelAnimationFrame(marcador.__anim);
+    (function paso(t) {
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / dur);
+      marcador.setPosition({ lat: desde.lat + (pos.lat - desde.lat) * k, lng: desde.lng + (pos.lng - desde.lng) * k });
+      if (k < 1) marcador.__anim = requestAnimationFrame(paso);
+    })(performance.now());
   }
 
   // Posiciones conocidas del viaje en curso, para dibujar la distancia.
@@ -3449,7 +3643,7 @@
   function crearMapaConductor() {
     mapa = new google.maps.Map(document.getElementById("mapaConductor"), {
       zoom: 13, center: { lat: -33.45, lng: -70.66 },
-      disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA
+      disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual()
     });
     marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoAuto(0), zIndex: 3 });
     dibujarRutaViaje();
@@ -3488,7 +3682,7 @@
       moverAuto(marker, pos);
       posConductor = pos;
       pintarDistanciaConductor();
-      mapa.setCenter(pos);
+      mapa.panTo(pos);
     });
   }
 
@@ -3554,6 +3748,140 @@
 
   actualizarBotonAgregarParada();
   elegirEspera(0); // pinta el texto explicativo de "No requiere" desde el arranque
+  /* ---------------------------------------------------------------
+     Pedir un viaje en 2 pantallas, sin scroll: mapa arriba y una hoja que
+     cambia (1 "¿A dónde vas?" → 2 "Confirma tu viaje"). Cuándo / tipo de
+     viaje / para quién se eligen en mini-ventanas que usan los mismos campos
+     de siempre; los chips de la hoja 1 resumen lo elegido.
+     --------------------------------------------------------------- */
+  var pasoPedir = 1;
+  var cotizadoParaAhora = false;   // el viaje que se cotizó era "para ahora"
+
+  // El alto de mapa + hoja se ajusta para llenar justo la pantalla (entre la
+  // barra superior y la de navegación). Con el teclado abierto se reduce solo.
+  function ajustarWiz() {
+    ["wiz", "seg"].forEach(function (id) {
+      var w = document.getElementById(id);
+      if (!w || w.offsetParent === null) return;   // vista oculta
+      var arriba = w.getBoundingClientRect().top + window.scrollY;
+      var abajo = parseFloat(getComputedStyle(document.body).paddingBottom) || 96;
+      // Lo que va debajo de las vistas (texto de pie) también cuenta, para no pasarse de la pantalla.
+      var pie = document.querySelector(".app > .pie");
+      if (pie && pie.offsetParent !== null) { var ep = getComputedStyle(pie); abajo += pie.offsetHeight + (parseFloat(ep.marginTop) || 0) + (parseFloat(ep.marginBottom) || 0); }
+      var minimo = w.classList.contains("teclado") ? 200 : 320;
+      w.style.height = Math.max(minimo, Math.floor(window.innerHeight - arriba - abajo)) + "px";
+    });
+    try {
+      if (window.google && google.maps) {
+        if (mapaCotizar) google.maps.event.trigger(mapaCotizar, "resize");
+        if (mapa) google.maps.event.trigger(mapa, "resize");
+      }
+    } catch (e) {}
+  }
+
+  function textoOpcionesViaje() {
+    var f = document.getElementById("fechaSalida").value, h = document.getElementById("horaSalida").value;
+    var cuando;
+    if (!f && !h) cuando = "Ahora";
+    else if (cotizadoParaAhora && fechaHoraCotizada && f === fechaHoraCotizada.fecha && h === fechaHoraCotizada.hora) cuando = "Ahora";
+    else if (f && h) cuando = textoCuando(f, h) || (f.split("-").reverse().join("/") + " " + h);
+    else if (h) cuando = "Hoy " + h;
+    else cuando = f.split("-").reverse().join("/");
+    var iv = document.getElementById("tipoIdaVuelta").classList.contains("active");
+    var tipo = "Solo ida";
+    if (iv) {
+      tipo = "Ida y vuelta";
+      var b = document.querySelector("#grupoEspera .seg-btn.active");
+      var hrs = b ? Number(b.getAttribute("data-espera-horas")) || 0 : 0;
+      if (hrs > 0) tipo += " · espera " + (hrs < 1 ? Math.round(hrs * 60) + " min" : hrs + " h");
+    }
+    var nombre = document.getElementById("nombreTercero").value.trim();
+    var para = esParaOtro ? "Para " + (nombre.split(/\s+/)[0] || "otra persona") : "Para mí";
+    return { cuando: cuando, tipo: tipo, para: para };
+  }
+
+  function pintarChipsViaje() {
+    var o = textoOpcionesViaje();
+    document.getElementById("chipCuandoTxt").textContent = o.cuando;
+    document.getElementById("chipTipoTxt").textContent = o.tipo;
+    document.getElementById("chipParaTxt").textContent = o.para;
+  }
+
+  function pintarResumenPaso2() {
+    var o = textoOpcionesViaje();
+    var nParadas = obtenerParadas().length;
+    var filas = [
+      ["Ruta", document.getElementById("origen").value.trim() + " → " + document.getElementById("destino").value.trim() +
+        (nParadas ? " (" + nParadas + (nParadas === 1 ? " parada)" : " paradas)") : "")],
+      ["Viaje", [o.cuando, o.tipo, o.para].join(" · ")]
+    ];
+    var ul = document.getElementById("wizResumen");
+    ul.innerHTML = "";
+    filas.forEach(function (f) {
+      var li = document.createElement("li");
+      var a = document.createElement("strong"); a.textContent = f[0] + ":";
+      var b = document.createElement("span"); b.textContent = f[1];
+      li.appendChild(a); li.appendChild(b);
+      ul.appendChild(li);
+    });
+  }
+
+  function irAPaso(n) {
+    pasoPedir = n;
+    document.getElementById("hojaPaso1").style.display = n === 1 ? "flex" : "none";
+    document.getElementById("hojaPaso2").style.display = n === 2 ? "flex" : "none";
+    document.getElementById("wiz").classList.remove("teclado");
+    document.getElementById("wiz").classList.toggle("paso2", n === 2);
+    if (n === 2) pintarResumenPaso2(); else pintarChipsViaje();
+    ajustarWiz();
+  }
+
+  function abrirModalOpc(id) { document.getElementById(id).hidden = false; }
+  function cerrarModalOpc(id) { document.getElementById(id).hidden = true; pintarChipsViaje(); }
+  // Abre la mini-ventana de un campo y le da el foco (el campo vive dentro de ella).
+  function enfocarEn(modalId, campo) {
+    abrirModalOpc(modalId);
+    if (campo) setTimeout(function () { try { campo.focus(); } catch (e) {} }, 50);
+  }
+
+  [].forEach.call(document.querySelectorAll("[data-abre]"), function (b) {
+    b.addEventListener("click", function () { abrirModalOpc(b.getAttribute("data-abre")); });
+  });
+  [].forEach.call(document.querySelectorAll("[data-cierra]"), function (b) {
+    b.addEventListener("click", function () { cerrarModalOpc(b.getAttribute("data-cierra")); });
+  });
+  [].forEach.call(document.querySelectorAll(".modal-opc"), function (m) {
+    m.addEventListener("click", function (ev) { if (ev.target === m) cerrarModalOpc(m.id); });
+  });
+  document.getElementById("btnCuandoAhora").addEventListener("click", function () {
+    document.getElementById("fechaSalida").value = "";
+    document.getElementById("horaSalida").value = "";
+    cotizadoParaAhora = false;
+    cerrarModalOpc("modalCuando");
+  });
+  ["fechaSalida", "horaSalida"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () { cotizadoParaAhora = false; });
+  });
+  document.getElementById("btnPasoAtras").addEventListener("click", function () { irAPaso(1); });
+
+  // Con el teclado abierto el mapa se oculta mientras se escribe en la hoja 1.
+  (function () {
+    var hoja = document.getElementById("hojaPaso1"), w = document.getElementById("wiz");
+    hoja.addEventListener("focusin", function (ev) {
+      if (ev.target.tagName === "INPUT") { w.classList.add("teclado"); ajustarWiz(); }
+    });
+    hoja.addEventListener("focusout", function () {
+      setTimeout(function () {
+        var a = document.activeElement;
+        if (!a || a.tagName !== "INPUT" || !hoja.contains(a)) { w.classList.remove("teclado"); ajustarWiz(); }
+      }, 200);
+    });
+  })();
+  document.body.classList.add("en-cotizar");   // la app abre en esta pantalla
+  window.addEventListener("resize", ajustarWiz);
+  window.addEventListener("load", function () { ajustarWiz(); setTimeout(ajustarWiz, 400); });
+  pintarChipsViaje();
+
   cargarTarifas();
   if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();

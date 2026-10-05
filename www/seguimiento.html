@@ -90,6 +90,34 @@
     { featureType: "transit", stylers: [{ visibility: "off" }] },
     { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] }
   ];
+  /* Mapa de DÍA y de NOCHE según la hora real (altura del sol en el lugar). */
+  var ESTILO_MAPA_NOCHE = ESTILO_MAPA.concat([
+    { elementType: "geometry", stylers: [{ color: "#17212B" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#9FB3C8" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#0F1720" }] },
+    { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#34495C" }] },
+    { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#1B2733" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#2E3F52" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#A9BACB" }] },
+    { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#385068" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#4A6B8A" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#0B1824" }] },
+    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#5C7C99" }] }
+  ]);
+  function alturaDelSol(fecha, lat, lng) {
+    var rad = Math.PI / 180;
+    var dia = (fecha.getTime() - Date.UTC(fecha.getUTCFullYear(), 0, 1)) / 86400000;
+    var g = 2 * Math.PI / 365 * (dia - 0.5);
+    var eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    var decl = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    var minutosUTC = fecha.getUTCHours() * 60 + fecha.getUTCMinutes() + fecha.getUTCSeconds() / 60;
+    var angulo = ((minutosUTC + eq + 4 * lng) / 4 - 180) * rad;
+    var cz = Math.sin(lat * rad) * Math.sin(decl) + Math.cos(lat * rad) * Math.cos(decl) * Math.cos(angulo);
+    return 90 - Math.acos(Math.max(-1, Math.min(1, cz))) / rad;
+  }
+  function esDeNoche(fecha, lat, lng) { return alturaDelSol(fecha, lat, lng) < -3; }
+  function estiloMapaActual() { return esDeNoche(new Date(), -33.45, -70.66) ? ESTILO_MAPA_NOCHE : ESTILO_MAPA; }
+  setInterval(function () { try { if (mapa) mapa.setOptions({ styles: estiloMapaActual() }); } catch (e) {} }, 120000);
   function iconoAuto(rumbo) {
     var r = Math.round((rumbo || 0) / 5) * 5;
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
@@ -118,7 +146,7 @@
   window.alGoogleMapsListo = function () {
     googleListo = true;
     mapa = new google.maps.Map(document.getElementById("mapa"), {
-      zoom: 13, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true, styles: ESTILO_MAPA
+      zoom: 13, center: { lat: -33.45, lng: -70.66 }, disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual()
     });
   };
 
