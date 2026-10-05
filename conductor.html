@@ -472,6 +472,22 @@
   body.cond-pantalla.hoja-medio .ayuda,
   body.cond-pantalla.hoja-medio .tablero .kpi-fila { display: none; }
   body.cond-pantalla.hoja-bajo #panelPedidos, body.cond-pantalla.hoja-bajo #panelEnCurso { padding-bottom: 0; overflow: hidden; }
+  /* Administrador: mismo formato (mapa completo + ventana arrastrable + menú lateral), sin barra
+     de abajo. En el mapa va la flota; en la ventana, el resumen y la lista de conductores. */
+  body.modo-admin.cond-pantalla { padding-bottom: 0; }
+  .flota[hidden] { display: none; }
+  .flota-resumen { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+  .flota-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; background: var(--surface-2); font-size: 14px; font-weight: 600; color: var(--text); }
+  .flota-chip i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border-strong); }
+  .flota-fila { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 2px; border: none; border-bottom: 1px solid var(--border); background: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+  .flota-fila:active { background: var(--surface-2); }
+  .flota-punto { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border-strong); }
+  .flota-quien { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .flota-quien strong { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flota-quien span { font-size: 13px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flota-estado { flex: none; text-align: right; font-size: 13.5px; font-weight: 700; display: flex; flex-direction: column; gap: 1px; }
+  .flota-estado span { font-size: 12px; font-weight: 500; color: var(--text-3); }
+  body.cond-pantalla.hoja-medio .flota-fila:nth-child(n+4) { display: none; }
   /* Pedido emergente: pantalla completa con lo esencial para decidir al instante. */
   .pedido-emergente {
     position: fixed; inset: 0; z-index: 80; background: rgba(10, 20, 40, 0.62);
@@ -938,7 +954,7 @@
     </div>
     <div class="topbar-spacer"></div>
     <!-- Menú lateral (como DiDi): Ajustes y accesos rápidos, arriba a la derecha. -->
-    <button type="button" class="btn-menu-cond solo-conductor" id="btnMenuCond" aria-label="Abrir el menú" aria-haspopup="true" aria-expanded="false">
+    <button type="button" class="btn-menu-cond" id="btnMenuCond" aria-label="Abrir el menú" aria-haspopup="true" aria-expanded="false">
       <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
   </header>
@@ -946,7 +962,7 @@
 
   <!-- Mapa grande fijo arriba (solo conductor, en Pedidos y En Rumbo), como Uber/DiDi:
        mi auto en vivo; las hojas de abajo (pedidos / viaje en curso) suben sobre él. -->
-  <div class="cond-mapa solo-conductor" id="condMapa">
+  <div class="cond-mapa" id="condMapa">
     <div class="tablero-mapa">
       <div id="tabMapaLienzo" style="position:absolute;inset:0;"></div>
       <div class="tablero-mapa-aviso" id="tabMapaAviso">
@@ -984,10 +1000,17 @@
   </div>
 
   <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
-    <div class="hoja-asa solo-conductor" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
+    <div class="hoja-asa" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
+    <!-- Solo administrador: la flota. En el mapa, el vehículo de cada conductor con su
+         estado (disponible / en viaje); acá abajo, el resumen y la lista. -->
+    <div class="flota" id="flotaAdmin" hidden>
+      <div class="flota-resumen" id="flotaResumen"></div>
+      <div id="flotaLista"><p class="vacio">Cargando conductores...</p></div>
+      <p class="nota" id="flotaNota"></p>
+    </div>
     <!-- Solo conductor y solo cuando no hay pedidos pendientes: en vez de una
          pantalla vacía, resumen del mes, mapa de la zona y accesos rápidos. -->
-    <div class="tablero" id="tableroConductor">
+    <div class="tablero solo-conductor" id="tableroConductor">
       <div class="tablero-estado">
         <button type="button" class="btn-estado-conexion" id="tabEstadoBadge">Disponible ahora</button>
         <button class="btn btn-chico" data-tablero="horarios" type="button">Cambiar horarios</button>
@@ -1016,7 +1039,7 @@
       </div>
     </div>
 
-    <section class="card" id="grupoPedidos">
+    <section class="card solo-conductor" id="grupoPedidos">
       <div class="card-head">
         <span class="card-title">Pedidos pendientes</span>
         <span class="card-head-spacer"></span>
@@ -1031,7 +1054,7 @@
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
     <!-- Ajustes abre como pantalla completa (desde el menú lateral); flecha para volver. -->
-    <div class="ajustes-cab solo-conductor">
+    <div class="ajustes-cab">
       <button type="button" id="btnVolverAjustes" aria-label="Volver">&#8249;</button>
       <h2>Ajustes</h2>
     </div>
@@ -1424,10 +1447,10 @@
 </div>
 
 <div class="menu-lateral-fondo" id="menuLateralFondo" hidden></div>
-<aside class="menu-lateral solo-conductor" id="menuLateral" aria-hidden="true" aria-label="Menú">
+<aside class="menu-lateral" id="menuLateral" aria-hidden="true" aria-label="Menú">
   <div class="menu-lateral-cab">
     <span class="menu-lateral-avatar" id="menuAvatar" aria-hidden="true">C</span>
-    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span>Rumbo Conductor</span></div>
+    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span id="menuPlataforma">Rumbo Conductor</span></div>
     <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuCond" aria-label="Cerrar el menú">&times;</button>
   </div>
   <button type="button" class="menu-lateral-item" data-menu="ajustes">
@@ -1436,10 +1459,10 @@
   <button type="button" class="menu-lateral-item" data-tablero="tarifas">
     <svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>Ajustar tarifas
   </button>
-  <button type="button" class="menu-lateral-item" data-tablero="horarios">
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="horarios">
     <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Cambiar horarios
   </button>
-  <button type="button" class="menu-lateral-item" data-tablero="qr">
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="qr">
     <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Compartir mi QR
   </button>
 </aside>
@@ -1547,7 +1570,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 44;
+  var APP_VERSION = 45;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1716,7 +1739,8 @@
     if (cual === "login" && typeof pintarBotonHuella === "function") pintarBotonHuella();
     document.getElementById("pantallaApp").style.display = cual === "app" ? "block" : "none";
     // La barra de secciones no tiene sentido en la pantalla de login.
-    document.getElementById("navConductor").style.display = cual === "app" ? "grid" : "none";
+    document.getElementById("navConductor").style.display = cual === "app" && MODO !== "admin" ? "grid" : "none";
+    if (cual !== "app" && typeof detenerFlota === "function") detenerFlota();
   }
 
   /* ---------------------------------------------------------------
@@ -1735,10 +1759,12 @@
       tab.classList.toggle("activo", esEsta);
     });
     // Conductor: Pedidos y En Rumbo = mapa grande + hoja inferior; Ajustes como antes.
-    var enCond = MODO === "conductor" && (cual === "pedidos" || cual === "enCurso");
+    // Administrador: mismo formato, pero solo "pedidos" (la pantalla de la flota).
+    var enCond = (MODO === "conductor" && (cual === "pedidos" || cual === "enCurso")) || (MODO === "admin" && cual === "pedidos");
     document.body.classList.toggle("cond-pantalla", enCond);
     if (!enCond) document.body.style.paddingBottom = "";
     if (enCond) { ajustarCond(); pintarMapaEspera(); }
+    if (enCond && MODO === "admin") cargarFlota();
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
     if (cual === "pedidos" && MODO === "conductor") { pintarEstadoTablero(); pintarMapaEspera(); }
     // Siempre al entrar: el conductor vuelve de vincular en el navegador y
@@ -1791,9 +1817,11 @@
     });
     return mejor;
   }
+  // Alto de la barra de abajo (el administrador no tiene: todo va por el menú lateral).
+  function altoBarraInferior() { return MODO === "admin" ? 0 : (document.getElementById("navConductor").offsetHeight || 64); }
   function aplicarHoja() {
-    if (MODO !== "conductor" || !document.body.classList.contains("cond-pantalla")) return;
-    var barra = document.getElementById("navConductor").offsetHeight || 64;
+    if (!document.body.classList.contains("cond-pantalla")) return;
+    var barra = altoBarraInferior();
     var tb = document.querySelector("#pantallaApp .topbar");
     var arriba = tb ? tb.offsetHeight : 60;
     var m = medidasHoja(window.innerHeight, barra, arriba);
@@ -1821,7 +1849,7 @@
     var y0 = 0, t0 = 0, vis0 = 0, m = null, activo = false, movio = false;
     asa.addEventListener("pointerdown", function (ev) {
       activo = true; movio = false; y0 = ev.clientY; t0 = Date.now();
-      var barra = document.getElementById("navConductor").offsetHeight || 64;
+      var barra = altoBarraInferior();
       var tb = document.querySelector("#pantallaApp .topbar");
       m = medidasHoja(window.innerHeight, barra, tb ? tb.offsetHeight : 60);
       vis0 = m[hojaEstado];
@@ -1892,9 +1920,14 @@
     // Junto al logo: la plataforma y el saludo (después de aplicarPermisos, que pone el texto genérico).
     document.getElementById("brandSubConductor").textContent = (MODO === "admin" ? "Admin" : "Conductor") + " · Hola " + String(sesion.conductor.nombre || "").split(" ")[0];
     if (MODO === "admin") {
-      // Panel de administración: sin pedidos, sin sondeo, sin mapa.
+      // Pantalla de inicio del administrador: el mapa con toda la flota. La administración
+      // (conductores, tarifas, historial) abre desde el menú lateral. Sin pedidos propios.
+      document.getElementById("menuNombre").textContent = sesion.conductor.nombre || "Administrador";
+      document.getElementById("menuAvatar").textContent = String(sesion.conductor.nombre || "A").trim().charAt(0).toUpperCase() || "A";
       cargarTarifas();
-      mostrarPestana("ajustes");
+      cargarGoogleMaps();
+      mostrarPestana("pedidos");
+      iniciarFlota();
       return;
     }
     cargarTarifas();
@@ -2109,10 +2142,15 @@
     [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
     [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { el.style.display = MODO === "admin" ? "none" : ""; });
     if (MODO === "admin") {
+      // Mismo formato que las otras dos apps: mapa completo + ventana + menú lateral (sin barra de abajo).
+      document.body.classList.add("modo-admin");
       document.getElementById("tabPedidos").style.display = "none";
       document.getElementById("tabEnCurso").style.display = "none";
-      document.getElementById("navConductor").style.gridTemplateColumns = "1fr";
-      document.getElementById("tabAjustes").lastChild.textContent = " Administración";
+      document.getElementById("tabAjustes").style.display = "none";
+      document.getElementById("flotaAdmin").hidden = false;
+      document.getElementById("menuPlataforma").textContent = "Rumbo Admin";
+      document.querySelector('#menuLateral [data-menu="ajustes"]').lastChild.textContent = "Administración";
+      document.querySelector("#panelAjustes .ajustes-cab h2").textContent = "Administración";
     }
   }
 
@@ -4801,6 +4839,7 @@
       }
       mapaEspera = new google.maps.Map(lienzo, { zoom: 12, center: SANTIAGO_CENTRO, disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual() });
       aviso.classList.add("oculto");
+      if (MODO === "admin") { pintarFlota(); return; }   // el administrador ve la flota, no su propio auto
       pintarMiPosicionEspera();   // si ya hay posición, se ve de inmediato
       centrarMapaEspera(false);
     } catch (e) {
@@ -4808,6 +4847,136 @@
       aviso.classList.remove("oculto");
     }
   }
+
+  /* ---------------------------------------------------------------
+     Administrador: flota en el mapa. Cada conductor con su vehículo real (color y
+     tipo) y un punto de estado: verde = disponible, naranja = en viaje, gris = sin
+     conexión / sin señal. Los datos vienen de flota_admin (cada 15 s mientras se ve).
+     --------------------------------------------------------------- */
+  var COLOR_ESTADO_FLOTA = { DISPONIBLE: "#16A34A", EN_VIAJE: "#F97316", DESCONECTADO: "#8A949E", SIN_SENAL: "#8A949E" };
+  var NOMBRE_ESTADO_FLOTA = { DISPONIBLE: "Disponible", EN_VIAJE: "En viaje", DESCONECTADO: "Desconectado", SIN_SENAL: "Sin señal" };
+  var ORDEN_ESTADO_FLOTA = { EN_VIAJE: 0, DISPONIBLE: 1, DESCONECTADO: 2, SIN_SENAL: 3 };
+  var flotaDatos = [], flotaMarcas = {}, flotaTimer = null, flotaEncuadrada = false, flotaInfo = null, flotaCargando = false;
+
+  function iconoFlota(c, rumbo) {
+    var svg = svgAuto(rumbo, colorDeAuto(c.vehiculo_color), tipoDeAuto(c.vehiculo_marca, c.vehiculo_modelo));
+    var col = COLOR_ESTADO_FLOTA[c.estado] || "#8A949E", i = svg.lastIndexOf("</svg>");
+    svg = svg.slice(0, i) + '<circle cx="46" cy="10" r="7.5" fill="' + col + '" stroke="#FFFFFF" stroke-width="2.4"/></svg>';
+    return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(54, 54), anchor: new google.maps.Point(27, 27) };
+  }
+  function textoHaceFlota(iso) {
+    var t = new Date(iso).getTime();
+    if (isNaN(t)) return "sin señal";
+    var min = Math.max(0, Math.round((Date.now() - t) / 60000));
+    return min < 1 ? "ahora" : min < 60 ? "hace " + min + " min" : "hace más de 1 h";
+  }
+  function detalleEstadoFlota(c) {
+    if (c.estado === "EN_VIAJE") return c.fase === "A_RECOGER" ? "Yendo a recoger" : "Con pasajero";
+    return textoHaceFlota(c.actualizado_en);
+  }
+
+  function pintarFlotaLista() {
+    var cuenta = { EN_VIAJE: 0, DISPONIBLE: 0, DESCONECTADO: 0, SIN_SENAL: 0 };
+    flotaDatos.forEach(function (c) { cuenta[c.estado] = (cuenta[c.estado] || 0) + 1; });
+    document.getElementById("flotaResumen").innerHTML =
+      '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.DISPONIBLE + '"></i>Disponibles ' + cuenta.DISPONIBLE + '</span>' +
+      '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.EN_VIAJE + '"></i>En viaje ' + cuenta.EN_VIAJE + '</span>' +
+      '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.SIN_SENAL + '"></i>Sin conexión ' + (cuenta.DESCONECTADO + cuenta.SIN_SENAL) + '</span>';
+    var lista = document.getElementById("flotaLista");
+    if (!flotaDatos.length) { lista.innerHTML = '<p class="vacio">No hay conductores activos en la red.</p>'; return; }
+    var orden = flotaDatos.slice().sort(function (a, b) {
+      return (ORDEN_ESTADO_FLOTA[a.estado] - ORDEN_ESTADO_FLOTA[b.estado]) || String(a.nombre).localeCompare(String(b.nombre));
+    });
+    lista.innerHTML = orden.map(function (c) {
+      var veh = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" ") + (c.vehiculo_patente ? " · " + c.vehiculo_patente : "");
+      return '<button type="button" class="flota-fila" data-flota="' + escapar(c.conductor_id) + '">' +
+        '<span class="flota-punto" style="background:' + (COLOR_ESTADO_FLOTA[c.estado] || "#8A949E") + '"></span>' +
+        '<span class="flota-quien"><strong>' + escapar(c.nombre) + '</strong><span>' + escapar(veh || "Sin datos del vehículo") + '</span></span>' +
+        '<span class="flota-estado">' + NOMBRE_ESTADO_FLOTA[c.estado] + '<span>' + escapar(detalleEstadoFlota(c)) + '</span></span></button>';
+    }).join("");
+  }
+
+  function pintarFlota() {
+    if (MODO !== "admin" || !mapaEspera || !googleMapsListo) return;
+    var vistos = {}, limites = new google.maps.LatLngBounds(), n = 0;
+    flotaDatos.forEach(function (c) {
+      if (c.lat === null || c.lng === null || isNaN(c.lat) || isNaN(c.lng)) return;
+      var pos = new google.maps.LatLng(c.lat, c.lng), m = flotaMarcas[c.conductor_id];
+      vistos[c.conductor_id] = true; limites.extend(pos); n++;
+      var rumbo = m ? m.rumbo : 0;
+      if (m && google.maps.geometry && google.maps.geometry.spherical.computeDistanceBetween(m.marker.getPosition(), pos) > 15) {
+        rumbo = google.maps.geometry.spherical.computeHeading(m.marker.getPosition(), pos);   // hacia donde se movió
+      }
+      var firma = c.estado + "|" + c.vehiculo_color + "|" + c.vehiculo_marca + "|" + c.vehiculo_modelo + "|" + Math.round(rumbo / 5);
+      if (!m) {
+        m = flotaMarcas[c.conductor_id] = { marker: new google.maps.Marker({ map: mapaEspera, position: pos, title: c.nombre, zIndex: 3 }), rumbo: rumbo, firma: "" };
+        m.marker.addListener("click", function () { abrirInfoFlota(c.conductor_id); });
+      } else {
+        m.marker.setPosition(pos);
+      }
+      m.rumbo = rumbo;
+      if (m.firma !== firma) { m.firma = firma; m.marker.setIcon(iconoFlota(c, rumbo)); }
+      m.marker.setZIndex(c.estado === "EN_VIAJE" ? 4 : 3);
+    });
+    Object.keys(flotaMarcas).forEach(function (id) {
+      if (!vistos[id]) { flotaMarcas[id].marker.setMap(null); delete flotaMarcas[id]; }
+    });
+    if (n && !flotaEncuadrada) {   // primera vez: encuadra la flota en la parte visible (entre la barra y la ventana)
+      flotaEncuadrada = true;
+      var cs = getComputedStyle(document.body);
+      var abajo = (parseFloat(cs.getPropertyValue("--hoja-vis")) || 0) + 24, arriba = (parseFloat(cs.getPropertyValue("--topbar-h")) || 0) + 24;
+      if (n === 1) { mapaEspera.setZoom(14); mapaEspera.setCenter(limites.getCenter()); }
+      else mapaEspera.fitBounds(limites, { top: arriba, bottom: abajo, left: 32, right: 32 });
+    }
+  }
+
+  function abrirInfoFlota(id) {
+    var c = flotaDatos.filter(function (x) { return x.conductor_id === id; })[0], m = flotaMarcas[id];
+    if (!c || !m || !mapaEspera) return;
+    if (!flotaInfo) flotaInfo = new google.maps.InfoWindow();
+    var veh = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" ") + (c.vehiculo_patente ? " · " + c.vehiculo_patente : "");
+    flotaInfo.setContent('<div style="font-family:sans-serif;font-size:14px;color:#101A20;min-width:150px;"><strong>' + escapar(c.nombre) + '</strong><br>' +
+      escapar(veh || "Sin datos del vehículo") + '<br><span style="color:' + (COLOR_ESTADO_FLOTA[c.estado] || "#8A949E") + ';font-weight:700;">' +
+      NOMBRE_ESTADO_FLOTA[c.estado] + '</span> · ' + escapar(detalleEstadoFlota(c)) + '</div>');
+    flotaInfo.open(mapaEspera, m.marker);
+  }
+
+  function cargarFlota() {
+    if (MODO !== "admin" || flotaCargando) return;
+    flotaCargando = true;
+    apiPost({ accion: "flota_admin" }).then(function (res) {
+      flotaCargando = false;
+      var nota = document.getElementById("flotaNota");
+      if (!res || !res.ok) { nota.textContent = "No se pudo cargar la flota" + (res && res.error ? ": " + res.error : "") + "."; return; }
+      nota.textContent = "";
+      flotaDatos = res.flota || [];
+      pintarFlotaLista();
+      pintarFlota();
+    }).catch(function () { flotaCargando = false; document.getElementById("flotaNota").textContent = "Sin conexión. Reintentando…"; });
+  }
+  function iniciarFlota() {
+    detenerFlota();
+    flotaTimer = setInterval(function () {
+      if (!document.hidden && document.body.classList.contains("cond-pantalla")) cargarFlota();
+    }, 15000);
+  }
+  function detenerFlota() {
+    if (flotaTimer) { clearInterval(flotaTimer); flotaTimer = null; }
+    flotaEncuadrada = false; flotaDatos = [];
+    Object.keys(flotaMarcas).forEach(function (id) { flotaMarcas[id].marker.setMap(null); });
+    flotaMarcas = {};
+  }
+  document.getElementById("flotaLista").addEventListener("click", function (ev) {
+    var f = ev.target.closest("[data-flota]");
+    if (!f) return;
+    var m = flotaMarcas[f.dataset.flota];
+    if (!m) { document.getElementById("flotaNota").textContent = "Ese conductor no tiene ubicación reciente."; return; }
+    document.getElementById("flotaNota").textContent = "";
+    var p = m.marker.getPosition();
+    if (mapaEspera.getZoom() < 15) mapaEspera.setZoom(15);
+    centrarEnZonaVisible({ lat: p.lat(), lng: p.lng() }, true);
+    abrirInfoFlota(f.dataset.flota);
+  });
 
   // Sin permiso de ubicación se queda en Santiago y ofrece un botón; el
   // diálogo del sistema solo aparece cuando el conductor toca ese botón.

@@ -1811,7 +1811,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 45;
+  var APP_VERSION = 46;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3080,6 +3080,7 @@
     document.getElementById("calificacionEnviada").style.display = "none";
     document.getElementById("tabSeguimiento").disabled = false;
     document.getElementById("badgeSeguimiento").classList.add("activo");
+    document.getElementById("cardChat").style.display = "none";   // aparece recién al confirmarse el viaje (abrirChat)
     mostrarPestana("seguimiento");
     limpiarSeguimientoVisual();
     document.getElementById("estadoBox").className = "estado-box pendiente";
@@ -3387,6 +3388,7 @@
         } else if (res.estado === "COMPLETADO") {
           pintarPasos(4);
           document.getElementById("etaConductor").style.display = "none";
+          ocultarChat();   // el viaje terminó: la burbuja solo existe mientras hay viaje en Rumbo
           mostrarCierreDeViaje(res);
         } else if (res.estado === "SIN_CONDUCTOR") {
           // No se le muestra cada rechazo individual mientras se deriva
@@ -3660,6 +3662,13 @@
     document.getElementById("cardChat").style.display = "block";
     // Los mensajes nuevos llegan con sincronizarViaje (sin temporizador aparte).
     if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
+  }
+
+  // Esconde burbuja y ventana (sin borrar la conversación del viaje).
+  function ocultarChat() {
+    cerrarVentanaChat();
+    ocultarVistaPrevia();
+    document.getElementById("cardChat").style.display = "none";
   }
 
   // Deja el chat limpio para el viaje siguiente.
