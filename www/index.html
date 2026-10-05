@@ -1526,7 +1526,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 35;
+  var APP_VERSION = 36;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1825,7 +1825,7 @@
     ).then(function (res) {
       if (!res.ok) {
         msg.textContent = res.error; msg.className = "nota error";
-        if (porHuella) { bioDesactivar(); document.getElementById("claveCliente").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
+        if (porHuella && /incorrectos/i.test(res.error || "")) { bioDesactivar(); document.getElementById("claveCliente").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
         return;
       }
       guardarSesionPasajero(res);
@@ -1881,18 +1881,27 @@
       telefono: document.getElementById("cuentaTelefono").value.trim(),
       email: document.getElementById("cuentaEmail").value.trim()
     }, "cuentaEditMsg", function (res, sesion) {
+      var telefonoAntes = sesion.pasajero && sesion.pasajero.telefono;
       sesion.pasajero = res.pasajero; guardarSesionPasajero(sesion); pintarSesionPasajero();
       var m = document.getElementById("cuentaEditMsg"); m.textContent = "Datos guardados."; m.className = "nota ok";
+      // La huella guarda el teléfono con el que se activó: si cambió, ya no sirve.
+      if (bioActivada() && String(res.pasajero.telefono || "") !== String(telefonoAntes || "")) {
+        bioDesactivar();
+        m.textContent = "Datos guardados. Cambiaste tu WhatsApp: vuelve a activar la huella al ingresar con tu clave.";
+      }
     });
   });
 
   document.getElementById("btnCambiarClavePasajero").addEventListener("click", function () {
+    var claveNuevaTecleada = document.getElementById("clavePasNueva").value;
     accionCuenta({
       accion: "cambiar_clave_pasajero",
       clave_actual: document.getElementById("clavePasActual").value,
-      clave_nueva: document.getElementById("clavePasNueva").value
+      clave_nueva: claveNuevaTecleada
     }, "clavePasMsg", function (res) {
       guardarSesionPasajero(res);
+      // Con la huella activa, se actualiza la clave guardada para que siga entrando.
+      if (bioActivada() && res.pasajero && res.pasajero.telefono) bioTrasLogin(String(res.pasajero.telefono), claveNuevaTecleada);
       document.getElementById("clavePasActual").value = ""; document.getElementById("clavePasNueva").value = "";
       var m = document.getElementById("clavePasMsg"); m.textContent = "Clave cambiada. Se cerraron tus otras sesiones."; m.className = "nota ok";
     });
@@ -2611,6 +2620,7 @@
       origen: document.getElementById("origen").value.trim(),
       destino: document.getElementById("destino").value.trim(),
       nombre_pasajero: esParaOtro ? document.getElementById("nombreTercero").value.trim() : "",
+      telefono_viajero: esParaOtro ? document.getElementById("telefonoTercero").value.trim() : "",
       paradas: obtenerParadas().join("|"),
       fecha: fechaHoraCotizada.fecha,
       hora: fechaHoraCotizada.hora,

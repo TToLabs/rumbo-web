@@ -1327,7 +1327,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 33;
+  var APP_VERSION = 34;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2216,7 +2216,7 @@
     apiPost({ accion: "login_conductor", usuario: usuario, clave: clave }).then(function (res) {
       if (!res.ok) {
         msg.textContent = res.error; msg.className = "msg error";
-        if (porHuella) { bioDesactivar(); document.getElementById("loginClave").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
+        if (porHuella && /incorrectos/i.test(res.error || "")) { bioDesactivar(); document.getElementById("loginClave").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
         return;
       }
       var rechazo = cuentaPermitida(res.conductor);
@@ -2466,6 +2466,7 @@
       // (ver cambiarClave en Codigo.gs) — se cierra sesión acá también
       // para no dejar la pantalla mostrando algo que ya no puede usarse.
       alert("Clave cambiada. Vuelve a ingresar con tu clave nueva.");
+      bioDesactivar();   // la clave guardada para la huella ya no sirve; se reactiva al ingresar
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
       if (sondeoTimer) clearInterval(sondeoTimer);
       borrarSesion();
@@ -2891,7 +2892,7 @@
       panelEtapa = '<p class="ayuda" style="margin:0 2px 10px;font-size:13.5px;">Ida y vuelta: al llegar al destino toca <strong>«Llegué al destino»</strong>. ' +
         'Así se mide la espera que contrató el pasajero (' + minutosEsperaContratada(p) + ' min) y se cobra si se pasa.</p>';
     } else if (etapa === "espera") {
-      panelEtapa = '<div class="espera-panel" data-espera="' + escapar(p.pedido_id) + '" data-desde="' + escapar(new Date(p.llegada_destino_en).toISOString()) + '" data-incluida="' + minutosEsperaContratada(p) + '">' +
+      panelEtapa = '<div class="espera-panel" data-espera="' + escapar(p.pedido_id) + '" data-desde="' + escapar(isNaN(new Date(p.llegada_destino_en).getTime()) ? "" : new Date(p.llegada_destino_en).toISOString()) + '" data-incluida="' + minutosEsperaContratada(p) + '">' +
         '<div class="espera-titulo">Esperando al pasajero en el destino</div>' +
         '<div class="espera-reloj" data-reloj>00:00</div>' +
         '<div class="espera-barra"><div class="espera-barra-llena" data-barra style="width:0%"></div></div>' +
@@ -2983,10 +2984,7 @@
     var kmTotal = (Number(p.km_ciudad) || 0) + (Number(p.km_ruta) || 0);
     div.innerHTML =
       '<div class="pedido-tope">' +
-        '<div>' +
-          '<div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
-          '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a>' +
-        '</div>' +
+        '<div>' + htmlContacto(p) + '</div>' +
         '<div class="pedido-total">' + fmt(p.total) + '</div>' +
       '</div>' +
       htmlProgramacion(p) +
@@ -3208,16 +3206,33 @@
     cobrosPendientes = siguen;
   }
 
+  /* Quién viaja y a quién llamar. Viaje normal: nombre y teléfono de la cuenta.
+     Viaje PARA OTRA PERSONA (el servidor guarda 'solicitante'): se rotula quién
+     viaja (con su WhatsApp si lo dio) y quién lo pidió, para no llamar al titular
+     de la cuenta creyendo que es el viajero. Sin teléfono (pedido aún de otro
+     conductor) no se dibuja un enlace vacío. */
+  function enlaceTel(tel, rotulo) {
+    var t = String(tel || "").replace(/[^0-9]/g, "");
+    if (!t) return "";
+    return '<a class="pedido-tel" href="tel:+' + escapar(t) + '">' + (rotulo ? escapar(rotulo) + " " : "") + "+" + escapar(t) + "</a>";
+  }
+  function htmlContacto(p) {
+    if (!p.solicitante) {
+      return '<div class="pedido-cliente">' + escapar(p.nombre) + "</div>" + enlaceTel(p.telefono, "");
+    }
+    return '<div class="pedido-cliente">Viaja: ' + escapar(p.nombre) + "</div>" +
+      (enlaceTel(p.telefono_viajero, "") || '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);">Sin teléfono de quien viaja</div>') +
+      '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);margin-top:4px;">Lo pidió: ' + escapar(p.solicitante) + "</div>" +
+      enlaceTel(p.telefono, "");
+  }
+
   function tarjetaEnCurso(p) {
     var div = document.createElement("div");
     div.className = "pedido-card";
     if (p.estado_pago === "PENDIENTE") return tarjetaEsperandoPago(div, p);
     div.innerHTML =
       '<div class="pedido-tope">' +
-        '<div>' +
-          '<div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
-          '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a>' +
-        '</div>' +
+        '<div>' + htmlContacto(p) + '</div>' +
         '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       htmlProgramacion(p, !!p.inicio_viaje_en) +
@@ -3251,8 +3266,7 @@
   function tarjetaEsperandoPago(div, p) {
     div.innerHTML =
       '<div class="pedido-tope">' +
-        '<div><div class="pedido-cliente">' + escapar(p.nombre) + '</div>' +
-        '<a class="pedido-tel" href="tel:+' + escapar(p.telefono) + '">+' + escapar(p.telefono) + '</a></div>' +
+        '<div>' + htmlContacto(p) + '</div>' +
         '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
