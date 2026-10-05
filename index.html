@@ -35,14 +35,14 @@
     --text: #101A20;
     --text-2: #55666D;
     --text-3: #859097;
-    --primary: #0F2D4F;
-    --primary-hover: #0C233C;
+    --primary: #11304A;
+    --primary-hover: #0E2637;
     --primary-ink: #FFFFFF;
-    --primary-soft: #E6EDF3;
-    --primary-soft-hover: #D6E0EA;
-    --primary-soft-ink: #0F2D4F;
-    --primary-mid: #1A3B66;
-    --primary-mid-hover: #142F54;
+    --primary-soft: #E6EEF2;
+    --primary-soft-hover: #D6E1E8;
+    --primary-soft-ink: #11304A;
+    --primary-mid: #1C3D61;
+    --primary-mid-hover: #16324F;
     --accent: #0B7A4B;
     --accent-soft: #E6F4ED;
     --danger: #B3392B;
@@ -816,7 +816,7 @@
   }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
-  .splash img { width: 148px; height: 148px; filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
+  .splash img { width: min(64vw, 280px); height: min(64vw, 280px); filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
   .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--primary); }
   .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; color: var(--text-2); }
   .splash .splash-puntos { display: flex; gap: 6px; margin-top: 6px; }
@@ -1811,7 +1811,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 47;
+  var APP_VERSION = 48;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
