@@ -192,6 +192,24 @@
   .ruta-pto-tope { display: flex; align-items: baseline; gap: 8px; }
   .ruta-pto-dir { font-size: 15px; overflow-wrap: anywhere; }
   .ruta-pto-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .ruta-pto-acciones .btn-ok { flex: 1 1 100%; }
+  /* Espera en el destino (ida y vuelta): reloj contra los minutos que contrató el pasajero. */
+  .espera-panel { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; background: var(--surface-2); }
+  .espera-panel.excedida { border-color: #F97316; background: #FFF4EA; }
+  .espera-titulo { font-size: 13.5px; font-weight: 600; color: var(--text-2); }
+  .espera-reloj { font-size: 40px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
+  .espera-panel.excedida .espera-reloj { color: #C2410C; }
+  .espera-barra { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+  .espera-barra-llena { height: 100%; background: var(--primary); transition: width 0.4s linear; }
+  .espera-panel.excedida .espera-barra-llena { background: #F97316; }
+  .espera-texto { font-size: 14px; margin-top: 8px; color: var(--text-2); }
+  .espera-panel.excedida .espera-texto { color: #C2410C; font-weight: 600; }
+  /* Ventana de cierre del viaje. */
+  .cierre-detalle { display: flex; flex-direction: column; gap: 8px; }
+  .cierre-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .cierre-fila.extra strong { color: #C2410C; }
+  .cierre-fila.total { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; font-size: 18px; }
+  .cierre-fila.total strong { font-size: 22px; }
   .pedido-linea { font-size: 15px; }
 
   /* ---------- Campos ---------- */
@@ -684,6 +702,7 @@
       <input type="password" id="loginClave" autocomplete="current-password">
     </div>
     <button class="btn btn-primario" id="btnLogin" type="button" style="width:100%;">Ingresar</button>
+    <button class="btn btn-secundario" id="btnHuella" type="button" style="width:100%;margin-top:10px;display:none;">Ingresar con huella</button>
     <p class="msg" id="loginMsg" style="margin:12px 2px 0;"></p>
     <button class="btn btn-chico" id="btnOlvideClave" type="button" style="width:100%;margin-top:10px;">¿Olvidaste tu clave?</button>
     <div id="bloqueCrearCuenta">
@@ -1257,6 +1276,22 @@
   <div class="chat-panel" id="chatPaneles" style="flex:1;min-height:0;"></div>
 </section>
 
+<!-- Cierre del viaje: muestra lo que se va a cobrar (valor real con la espera
+     medida) antes de elegir cómo paga el pasajero. -->
+<div class="modal-fondo" id="modalCierre" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 12px;font-size:19px;">Finalizar viaje</h2>
+    <div id="cierreDetalle" class="cierre-detalle"></div>
+    <div id="cierreAvisos"></div>
+    <p class="nota" style="margin:12px 0 10px;">¿Cómo te paga el pasajero?</p>
+    <div class="btn-row">
+      <button class="btn btn-ok" id="btnCierreMp" type="button" disabled>Mercado Pago</button>
+      <button class="btn btn-chico" id="btnCierreEfectivo" type="button" disabled>Efectivo</button>
+    </div>
+    <button class="btn btn-chico" id="btnCierreVolver" type="button" style="width:100%;margin-top:10px;">Volver al viaje</button>
+  </div>
+</div>
+
 <!-- Jueves: recordatorio de actualizar el precio del combustible (admin y
      conductores con tarifa propia), una vez por jueves al abrir la app. -->
 <div class="modal-fondo" id="modalCombustible" hidden>
@@ -1292,7 +1327,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 32;
+  var APP_VERSION = 33;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1457,6 +1492,7 @@
 
   function mostrarPantalla(cual) {
     document.getElementById("pantallaLogin").style.display = cual === "login" ? "block" : "none";
+    if (cual === "login" && typeof pintarBotonHuella === "function") pintarBotonHuella();
     document.getElementById("pantallaApp").style.display = cual === "app" ? "block" : "none";
     // La barra de secciones no tiene sentido en la pantalla de login.
     document.getElementById("navConductor").style.display = cual === "app" ? "grid" : "none";
@@ -2100,18 +2136,94 @@
     lector.readAsDataURL(archivo);
   });
 
+  /* Ingreso con huella. La clave se guarda cifrada en el almacén seguro del
+     teléfono (Android Keystore) y solo se lee después de que la huella (o el
+     rostro) se verifica. Solo existe dentro de la app instalada y si el
+     teléfono tiene biometría configurada; en el navegador no aparece. Todo
+     acceso a localStorage va envuelto: en contextos restringidos lanza error. */
+  var BIO_SERVER = "cl.rumbo.panel";
+  var viaHuella = false;
+  var bioPedida = false;   // tocó "Ingresar con huella" sin tenerla activada: en su próximo ingreso con clave se le ofrece de nuevo
+  function bioLeer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function bioGuardarLocal(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function bioBorrarLocal(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function bioPlugin() {
+    try {
+      var c = window.Capacitor;
+      if (c && c.isNativePlatform && c.isNativePlatform() && c.Plugins && c.Plugins.NativeBiometric) return c.Plugins.NativeBiometric;
+    } catch (e) {}
+    return null;
+  }
+  function bioDisponible() {
+    var P = bioPlugin();
+    if (!P) return Promise.resolve(false);
+    return P.isAvailable({ useFallback: false }).then(function (r) { return !!(r && r.isAvailable); }).catch(function () { return false; });
+  }
+  function bioActivada() { return bioLeer("rumbo_bio") === "1"; }
+  function pintarBotonHuella() {
+    var b = document.getElementById("btnHuella");
+    if (!b) return;
+    bioDisponible().then(function (ok) { b.style.display = ok ? "block" : "none"; });
+  }
+  function bioDesactivar() {
+    var P = bioPlugin();
+    bioBorrarLocal("rumbo_bio");
+    if (P) P.deleteCredentials({ server: BIO_SERVER }).catch(function () {});
+    pintarBotonHuella();
+  }
+  // Tras un ingreso con clave: ofrece activar la huella una sola vez (si dice
+  // que no, no se vuelve a preguntar); si ya estaba activa, deja guardada la
+  // clave vigente por si la cambió.
+  function bioTrasLogin(usuario, clave) {
+    var P = bioPlugin();
+    if (!P) return;
+    if (bioActivada()) { P.setCredentials({ username: usuario, password: clave, server: BIO_SERVER }).catch(function () {}); return; }
+    if (bioLeer("rumbo_bio_no") === "1" && !bioPedida) return;
+    bioPedida = false;
+    bioDisponible().then(function (ok) {
+      if (!ok) return;
+      if (!confirm("¿Quieres ingresar con tu huella la próxima vez, sin escribir la clave?")) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
+      return P.verifyIdentity({ reason: "Confirma con tu huella", title: "Activar ingreso con huella", negativeButtonText: "Cancelar", useFallback: false })
+        .then(function () { return P.setCredentials({ username: usuario, password: clave, server: BIO_SERVER }); })
+        .then(function () { bioGuardarLocal("rumbo_bio", "1"); pintarBotonHuella(); })
+        .catch(function () {});
+    });
+  }
+  document.getElementById("btnHuella").addEventListener("click", function () {
+    var P = bioPlugin();
+    var msg = document.getElementById("loginMsg");
+    if (!P) return;
+    if (!bioActivada()) { bioPedida = true; msg.textContent = "Ingresa ahora con tu usuario y clave: te preguntaremos si quieres activar la huella."; msg.className = "msg"; return; }
+    P.verifyIdentity({ reason: "Ingresar a Rumbo", title: "Ingresar a Rumbo", subtitle: "Usa tu huella", negativeButtonText: "Usar clave", useFallback: false })
+      .then(function () { return P.getCredentials({ server: BIO_SERVER }); })
+      .then(function (cred) {
+        document.getElementById("loginUsuario").value = cred.username;
+        document.getElementById("loginClave").value = cred.password;
+        viaHuella = true;
+        document.getElementById("btnLogin").click();
+      })
+      .catch(function () { msg.textContent = "No se pudo usar la huella. Ingresa con tu clave."; msg.className = "msg error"; });
+  });
+  pintarBotonHuella();
+
   document.getElementById("btnLogin").addEventListener("click", function () {
     var usuario = document.getElementById("loginUsuario").value.trim();
     var clave = document.getElementById("loginClave").value;
     var msg = document.getElementById("loginMsg");
+    var porHuella = viaHuella; viaHuella = false;
     if (!usuario || !clave) { msg.textContent = "Completa usuario y clave."; msg.className = "msg error"; return; }
     msg.textContent = "Ingresando..."; msg.className = "msg";
     apiPost({ accion: "login_conductor", usuario: usuario, clave: clave }).then(function (res) {
-      if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
+      if (!res.ok) {
+        msg.textContent = res.error; msg.className = "msg error";
+        if (porHuella) { bioDesactivar(); document.getElementById("loginClave").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
+        return;
+      }
       var rechazo = cuentaPermitida(res.conductor);
       if (rechazo) { msg.textContent = rechazo; msg.className = "msg error"; return; }
       guardarSesion(res);
       document.getElementById("loginClave").value = "";
+      bioTrasLogin(usuario, clave);
       entrar(res);
     }).catch(function (err) {
       msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
@@ -2313,6 +2425,10 @@
     document.getElementById("modalCombustible").hidden = false;
     combustiblePreguntadoEnSesion = true;
   }
+
+  document.getElementById("btnCierreVolver").addEventListener("click", cerrarCierre);
+  document.getElementById("btnCierreMp").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "MERCADOPAGO", this); });
+  document.getElementById("btnCierreEfectivo").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "EFECTIVO", this); });
 
   document.getElementById("btnCombustibleLuego").addEventListener("click", function () {
     document.getElementById("modalCombustible").hidden = true;
@@ -2686,27 +2802,178 @@
     window.open(url, "_system");
   }
 
+  /* ---------------------------------------------------------------
+     Etapas del viaje. Solo ida:  recoger → ida → finalizar.
+     Ida y vuelta:  recoger → ida → [Llegué al destino] → espera →
+     [Iniciar regreso] → regreso → finalizar. La espera que contrató el
+     pasajero (p.horas_espera) corre desde "Llegué al destino" hasta "Iniciar
+     regreso" y se cobra si pasa de lo contratado.
+     --------------------------------------------------------------- */
+  function esIdaYVuelta(p) { return String(p.ida_vuelta).toUpperCase() === "SI"; }
+
+  function etapaDelViaje(p) {
+    if (!p.inicio_viaje_en) return "recoger";
+    if (!esIdaYVuelta(p)) return "ida";
+    if (p.inicio_regreso_en) return "regreso";
+    if (p.llegada_destino_en) return "espera";
+    return "ida";
+  }
+
+  // El regreso es al origen (el pasajero lo deja de vuelta donde lo recogió).
+  function puntoRegreso(p, puntosIda) {
+    if (!esIdaYVuelta(p)) return null;
+    var origen = puntosIda[0];
+    return { rol: "regreso", etiqueta: "Regreso", dir: origen.dir, coord: origen.coord };
+  }
+
+  function minutosEsperaContratada(p) { return esIdaYVuelta(p) ? Math.round((Number(p.horas_espera) || 0) * 60) : 0; }
+
+  function dosDig(n) { return (n < 10 ? "0" : "") + n; }
+  function mmss(seg) { seg = Math.max(0, Math.floor(seg)); return dosDig(Math.floor(seg / 60)) + ":" + dosDig(seg % 60); }
+
+  // Reloj de la espera: cuánto lleva, cuánto queda de lo contratado o cuánto
+  // se pasó. Función pura (se prueba aparte).
+  function estadoEspera(transcurridoSeg, incluidaMin) {
+    var incluidaSeg = incluidaMin * 60;
+    var excedida = incluidaSeg > 0 ? transcurridoSeg > incluidaSeg : transcurridoSeg > 0;
+    var pct = incluidaSeg > 0 ? Math.min(100, Math.max(0, transcurridoSeg / incluidaSeg * 100)) : 100;
+    var texto;
+    if (incluidaSeg <= 0) texto = "El pasajero no contrató espera: todo el tiempo se suma al cobro";
+    else if (!excedida) texto = "Quedan " + mmss(incluidaSeg - transcurridoSeg) + " de los " + incluidaMin + " min incluidos";
+    else texto = "Tiempo extra +" + mmss(transcurridoSeg - incluidaSeg) + " (se suma al cobro)";
+    return { reloj: mmss(transcurridoSeg), pct: pct, texto: texto, excedida: excedida };
+  }
+
+  function actualizarRelojesEspera() {
+    [].forEach.call(document.querySelectorAll(".espera-panel[data-desde]"), function (el) {
+      var desde = Date.parse(el.dataset.desde);
+      if (isNaN(desde)) return;
+      var e = estadoEspera((Date.now() - desde) / 1000, Number(el.dataset.incluida) || 0);
+      el.querySelector("[data-reloj]").textContent = e.reloj;
+      el.querySelector("[data-barra]").style.width = e.pct + "%";
+      el.querySelector("[data-texto]").textContent = e.texto;
+      el.classList.toggle("excedida", e.excedida);
+    });
+  }
+  setInterval(actualizarRelojesEspera, 1000);
+
   // Lista de puntos con el siguiente resaltado y sus botones de navegación.
   function htmlRutaViaje(p) {
-    var puntos = puntosDelViaje(p);
-    var actual = leerTramo(p, puntos.length);
-    var hayParadas = puntos.length > 2;
-    return '<div class="ruta-viaje" data-ruta-de="' + escapar(p.pedido_id) + '">' + puntos.map(function (pt, i) {
+    var puntosIda = puntosDelViaje(p);
+    var regreso = puntoRegreso(p, puntosIda);
+    var todos = regreso ? puntosIda.concat([regreso]) : puntosIda;
+    var idxDestino = puntosIda.length - 1;
+    var etapa = etapaDelViaje(p);
+    var actual = etapa === "recoger" ? 0
+      : etapa === "regreso" ? todos.length - 1
+      : etapa === "espera" ? idxDestino
+      : leerTramo(p, puntosIda.length);
+    var hayParadas = puntosIda.length > 2;
+    var filas = todos.map(function (pt, i) {
       var estado = i < actual ? "hecho" : i === actual ? "siguiente" : "";
       var acciones = "";
-      if (i === actual) {
+      if (i === actual && etapa !== "espera") {
         acciones = '<div class="ruta-pto-acciones">' +
           '<a class="btn btn-chico" target="_blank" rel="noopener" href="' + escapar(urlWazePunto(pt)) + '">Ir con Waze</a>' +
           '<a class="btn btn-chico" target="_blank" rel="noopener" href="' + escapar(urlMapsPunto(pt)) + '">Ir con Maps</a>' +
-          (p.inicio_viaje_en && pt.rol === "parada"
+          (etapa === "ida" && pt.rol === "parada"
             ? '<button class="btn btn-ok" data-llegue="' + escapar(p.pedido_id) + '" data-siguiente="' + (i + 1) + '">Llegué a la parada</button>' : "") +
+          (etapa === "ida" && pt.rol === "destino" && esIdaYVuelta(p)
+            ? '<button class="btn btn-ok" data-llegue-destino="' + escapar(p.pedido_id) + '">Llegué al destino</button>' : "") +
           '</div>';
       }
       return '<div class="ruta-pto ' + estado + '"><div class="ruta-pto-tope"><span class="pedido-etiqueta">' + escapar(pt.etiqueta) + '</span>' +
         '<span class="ruta-pto-dir">' + escapar(pt.dir) + '</span></div>' + acciones + '</div>';
-    }).join("") + '</div>' +
-    (hayParadas && p.inicio_viaje_en
-      ? '<a class="btn btn-chico" style="margin-bottom:10px;" target="_blank" rel="noopener" href="' + escapar(urlMapsDesde(puntos, actual)) + '">Ruta completa en Maps (con paradas)</a>' : "");
+    }).join("");
+
+    var panelEtapa = "";
+    if (etapa === "ida" && esIdaYVuelta(p)) {
+      panelEtapa = '<p class="ayuda" style="margin:0 2px 10px;font-size:13.5px;">Ida y vuelta: al llegar al destino toca <strong>«Llegué al destino»</strong>. ' +
+        'Así se mide la espera que contrató el pasajero (' + minutosEsperaContratada(p) + ' min) y se cobra si se pasa.</p>';
+    } else if (etapa === "espera") {
+      panelEtapa = '<div class="espera-panel" data-espera="' + escapar(p.pedido_id) + '" data-desde="' + escapar(new Date(p.llegada_destino_en).toISOString()) + '" data-incluida="' + minutosEsperaContratada(p) + '">' +
+        '<div class="espera-titulo">Esperando al pasajero en el destino</div>' +
+        '<div class="espera-reloj" data-reloj>00:00</div>' +
+        '<div class="espera-barra"><div class="espera-barra-llena" data-barra style="width:0%"></div></div>' +
+        '<div class="espera-texto" data-texto></div>' +
+        '<button class="btn btn-medio" style="width:100%;margin-top:12px;" data-iniciar-regreso="' + escapar(p.pedido_id) + '">Iniciar regreso</button>' +
+        '</div>';
+    } else if (etapa === "regreso") {
+      var esperaMin = (Date.parse(p.inicio_regreso_en) - Date.parse(p.llegada_destino_en)) / 60000;
+      panelEtapa = '<p class="ayuda" style="margin:0 2px 10px;font-size:13.5px;">Regreso en curso.' +
+        (isFinite(esperaMin) ? ' Esperaste ' + Math.round(esperaMin) + ' min (incluidos ' + minutosEsperaContratada(p) + ').' : "") + ' Al llegar, toca <strong>«Finalizar viaje»</strong>.</p>';
+    }
+
+    return '<div class="ruta-viaje" data-ruta-de="' + escapar(p.pedido_id) + '">' + filas + '</div>' + panelEtapa +
+      (hayParadas && (etapa === "recoger" || etapa === "ida")
+        ? '<a class="btn btn-chico" style="margin-bottom:10px;" target="_blank" rel="noopener" href="' + escapar(urlMapsDesde(puntosIda, Math.min(actual, idxDestino))) + '">Ruta completa en Maps (con paradas)</a>' : "");
+  }
+
+  /* Ventana de cierre: antes de cobrar se le muestra al conductor lo que se va
+     a cobrar (el mismo cálculo del servidor) y la espera medida. */
+  function filasCierre(r) {
+    var filas = [["Valor cotizado", fmt(r.cotizado), ""]];
+    if (r.ida_vuelta) {
+      if (r.espera_real_min !== null && r.espera_real_min !== undefined) {
+        filas.push(["Espera en el destino", Math.round(r.espera_real_min) + " min (incluidos " + r.espera_cotizada_min + ")", r.extra_espera_min > 0 ? "extra" : ""]);
+        if (r.extra_espera_min > 0) filas.push(["Espera adicional", "+" + Math.round(r.extra_espera_min) + " min", "extra"]);
+      }
+    }
+    if (r.minutos_reales > 0) filas.push(["Tiempo total del viaje", Math.round(r.minutos_reales) + " min", ""]);
+    if (r.km_reales > 0) filas.push(["Distancia medida", String(r.km_reales).replace(".", ",") + " km", ""]);
+    filas.push(["Valor a cobrar", fmt(r.a_cobrar), "total"]);
+    return filas;
+  }
+
+  function avisosCierre(r) {
+    var av = [];
+    if (r.metodo === "COTIZADO") av.push("No se inició el viaje con «Iniciar viaje»: se cobra lo cotizado.");
+    if (r.ida_vuelta && r.metodo !== "COTIZADO" && !r.llegada_marcada) av.push("No marcaste «Llegué al destino»: la espera no se pudo medir por separado; se cobra por el tiempo total.");
+    if (r.ida_vuelta && r.llegada_marcada && !r.regreso_marcado) av.push("No marcaste «Iniciar regreso»: la espera se cuenta hasta ahora.");
+    if (!r.cobro_real && r.metodo !== "COTIZADO") av.push("El cobro con valores reales está desactivado: se cobra lo cotizado.");
+    else if (r.cobro_real && r.metodo === "MINIMO") av.push("El viaje salió más corto que lo cotizado: se cobra lo cotizado (mínimo).");
+    else if (r.cobro_real && r.metodo === "TOPE") av.push("El valor real superó el tope de +30%: se cobra el tope.");
+    return av;
+  }
+
+  var cierrePedidoId = "";
+  function abrirCierre(pedidoId) {
+    cierrePedidoId = pedidoId;
+    var cont = document.getElementById("cierreDetalle");
+    cont.innerHTML = '<p class="nota">Calculando…</p>';
+    document.getElementById("cierreAvisos").innerHTML = "";
+    document.getElementById("btnCierreMp").disabled = true;
+    document.getElementById("btnCierreEfectivo").disabled = true;
+    document.getElementById("modalCierre").hidden = false;
+    api({ accion: "previsualizar_cierre", pedido_id: pedidoId }).then(function (r) {
+      if (cierrePedidoId !== pedidoId) return;
+      if (!r || !r.ok) { cont.innerHTML = '<p class="msg error">' + escapar((r && r.error) || "No se pudo calcular") + '</p>'; return; }
+      cont.innerHTML = filasCierre(r).map(function (f) {
+        return '<div class="cierre-fila ' + f[2] + '"><span>' + escapar(f[0]) + '</span><strong>' + escapar(f[1]) + '</strong></div>';
+      }).join("");
+      document.getElementById("cierreAvisos").innerHTML = avisosCierre(r).map(function (a) { return '<p class="pedido-aviso">' + escapar(a) + '</p>'; }).join("");
+      document.getElementById("btnCierreMp").disabled = false;
+      document.getElementById("btnCierreEfectivo").disabled = false;
+    }).catch(function () { cont.innerHTML = '<p class="msg error">Error de red. Intenta de nuevo.</p>'; });
+  }
+
+  function cerrarCierre() { cierrePedidoId = ""; document.getElementById("modalCierre").hidden = true; }
+
+  function finalizarViaje(pedidoId, forma, boton) {
+    boton.disabled = true;
+    apiPost({ accion: "finalizar_pedido", pedido_id: pedidoId, forma_pago: forma }).then(function (res) {
+      if (!res.ok) { alert("Error: " + res.error); boton.disabled = false; return; }
+      cerrarCierre();
+      // Si el monto final es mayor que lo cotizado, el conductor tiene que
+      // saber cuánto cobrar (sobre todo en efectivo).
+      if (res.ajuste > 0) {
+        alert("Monto final: " + fmt(res.total_final) + "\n(cotizado " + fmt(res.total_cotizado) + " + " + fmt(res.ajuste) + " por tiempo y km reales)\n\n" +
+          (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
+      }
+      document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
+      cargarViajesEnCurso();
+      abrirCalificarPasajero(pedidoId);
+    }).catch(function (err) { alert("Error de red: " + err.message); boton.disabled = false; });
   }
 
   function pedidoCard(p) {
@@ -2733,7 +3000,7 @@
       '</div>' +
       '<div class="pedido-meta">' +
         (p.fuera_de_santiago === "SI" ? "Fuera de Santiago" : "En ciudad") +
-        ' · ' + (p.ida_vuelta === "SI" ? "Ida y vuelta" : "Solo ida") +
+        ' · ' + (p.ida_vuelta === "SI" ? "Ida y vuelta" + (minutosEsperaContratada(p) > 0 ? " (espera " + minutosEsperaContratada(p) + " min)" : "") : "Solo ida") +
         (kmTotal > 0 ? ' · ' + kmTotal.toFixed(1).replace(".", ",") + ' km' : '') +
         (Number(p.minutos_ida) > 0 ? ' · ' + Math.round(Number(p.minutos_ida)) + ' min' : '') +
         ' · pedido ' + escapar(horaCorta(p.creado_en)) +
@@ -2891,7 +3158,7 @@
       // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
       // curso → esperando pago), para no borrar los mensajes ya pintados ni
       // lo que el conductor está tipeando.
-      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : ""); }).join(",");
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : "") + (p.llegada_destino_en ? "l" : "") + (p.inicio_regreso_en ? "r" : ""); }).join(",");
       if (lista.dataset.ids !== idsActuales) {
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
@@ -2971,15 +3238,13 @@
         : '<button class="btn btn-medio" style="width:100%;margin-top:14px;" data-iniciar="' + escapar(p.pedido_id) + '" data-destino="' + escapar(p.destino) + '"' +
             ' data-waze-sig="' + escapar(urlWazePunto(puntosDelViaje(p)[1])) + '" data-maps-sig="' + escapar(urlMapsDesde(puntosDelViaje(p), 1)) + '">Iniciar viaje</button>' +
           '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">Tócalo cuando el pasajero suba: así se miden el tiempo y los km reales del viaje.</p>') +
-      // Finalizar = cobrar: el conductor elige cómo le paga el pasajero.
-      '<p class="msg" style="margin:14px 2px 6px;font-weight:600;">' +
+      // Finalizar: abre una ventana que muestra lo que se va a cobrar (valor
+      // real con la espera medida) y ahí se elige cómo paga el pasajero.
+      '<button class="btn btn-primario" style="width:100%;margin-top:14px;" data-cerrar="' + escapar(p.pedido_id) + '">Finalizar viaje</button>' +
+      '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">' +
         (cobroRealActivo && p.inicio_viaje_en
-          ? 'Finalizar viaje: se cobra el valor real (mínimo ' + fmt(montoP(p)) + ')'
-          : 'Finalizar viaje y cobrar ' + fmt(montoP(p))) + '</p>' +
-      '<div class="btn-row">' +
-        '<button class="btn btn-ok" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="MERCADOPAGO">Mercado Pago</button>' +
-        '<button class="btn btn-chico" data-finalizar="' + escapar(p.pedido_id) + '" data-forma="EFECTIVO">Efectivo</button>' +
-      '</div>';
+          ? 'Antes de cobrar verás el valor real (mínimo ' + fmt(montoP(p)) + ').'
+          : 'Antes de cobrar verás el valor a cobrar.') + '</p>';
     return div;
   }
 
@@ -3494,26 +3759,37 @@
       }).catch(function (err) { alert("Error de red: " + err.message); iniciar.disabled = false; });
       return;
     }
-    var finalizar = ev.target.closest("[data-finalizar]");
-    if (finalizar) {
-      var forma = finalizar.dataset.forma;
-      var pregunta = forma === "EFECTIVO"
-        ? "¿Terminar el viaje y marcarlo como cobrado en efectivo?"
-        : "¿Terminar el viaje y pedirle el pago al pasajero por Mercado Pago?";
-      if (!confirm(pregunta)) return;
-      finalizar.disabled = true;
-      apiPost({ accion: "finalizar_pedido", pedido_id: finalizar.dataset.finalizar, forma_pago: forma }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); finalizar.disabled = false; return; }
-        // Si el monto final es mayor que lo cotizado, el conductor tiene que
-        // saber cuánto cobrar (sobre todo en efectivo).
-        if (res.ajuste > 0) {
-          alert("Monto final: " + fmt(res.total_final) + "\n(cotizado " + fmt(res.total_cotizado) + " + " + fmt(res.ajuste) + " por tiempo y km reales)\n\n" +
-            (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
-        }
+    var cerrar = ev.target.closest("[data-cerrar]");
+    if (cerrar) { abrirCierre(cerrar.dataset.cerrar); return; }
+
+    // Ida y vuelta, etapa 1: llegó al destino → empieza a correr la espera.
+    var llegueDestino = ev.target.closest("[data-llegue-destino]");
+    if (llegueDestino) {
+      llegueDestino.disabled = true;
+      apiPost({ accion: "llegue_destino", pedido_id: llegueDestino.dataset.llegueDestino }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); llegueDestino.disabled = false; return; }
         document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
         cargarViajesEnCurso();
-        abrirCalificarPasajero(finalizar.dataset.finalizar);
-      });
+      }).catch(function (err) { alert("Error de red: " + err.message); llegueDestino.disabled = false; });
+      return;
+    }
+    // Etapa 2: termina la espera y sale de regreso (abre la navegación al origen).
+    var iniciarRegresoBtn = ev.target.closest("[data-iniciar-regreso]");
+    if (iniciarRegresoBtn) {
+      iniciarRegresoBtn.disabled = true;
+      var idRegreso = iniciarRegresoBtn.dataset.iniciarRegreso;
+      apiPost({ accion: "iniciar_regreso", pedido_id: idRegreso }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); iniciarRegresoBtn.disabled = false; return; }
+        var pedidoReg = null;
+        pedidosEnCursoActuales.forEach(function (x) { if (x.pedido_id === idRegreso) pedidoReg = x; });
+        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
+        cargarViajesEnCurso();
+        if (pedidoReg) {
+          var ida = puntosDelViaje(pedidoReg);
+          var reg = puntoRegreso(pedidoReg, ida);
+          if (reg) abrirNavegacion([reg], 0);
+        }
+      }).catch(function (err) { alert("Error de red: " + err.message); iniciarRegresoBtn.disabled = false; });
       return;
     }
     var efectivo = ev.target.closest("[data-efectivo]");

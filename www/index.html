@@ -966,7 +966,7 @@
     <div class="card" id="cardDesgloseFinal" style="display:none;">
       <div class="card-head"><span class="card-title">Resumen del cobro</span></div>
       <div class="desglose" id="desgloseFinal"></div>
-      <p class="desglose-motivo" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
+      <p class="desglose-motivo" id="motivoDesglose" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
     </div>
     <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
          El monto lo fija el backend (precio congelado): acá no se escribe. -->
@@ -1053,6 +1053,7 @@
         <span>Entiendo cómo Rumbo usa mis datos para coordinar mis viajes. <button type="button" class="link-inline" id="verPolitica">Ver política de datos</button></span>
       </label>
       <button class="btn btn-medio" id="btnCrearCuenta" type="button" style="width:100%;">Crear mi cuenta</button>
+      <button class="btn btn-medio" id="btnHuellaPasajero" type="button" style="width:100%;margin-top:10px;display:none;">Ingresar con huella</button>
       <p class="nota" id="cuentaMsg" style="margin:10px 2px 0;"></p>
     </section>
 
@@ -1525,7 +1526,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 34;
+  var APP_VERSION = 35;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1602,7 +1603,7 @@
     ["cardSesion", "cardViajes", "cardClavePasajero", "cardPrivacidad"].forEach(function (id) {
       document.getElementById(id).style.display = hayCuenta ? "block" : "none";
     });
-    if (hayCuenta) { cargarMisViajes(); iniciarPush(); }
+    if (hayCuenta) { cargarMisViajes(); iniciarPush(); restaurarViajeActivo(); }
     var brandSub = document.getElementById("brandSubPasajero");
     brandSub.textContent = hayCuenta
       ? "Hola " + (sesion.pasajero.nombre || "").split(" ")[0] + ", programa tu viaje"
@@ -1614,6 +1615,36 @@
       document.getElementById("cuentaEmail").value = sesion.pasajero.email || "";
     }
     actualizarBotonPedir();
+  }
+
+  /* Recupera el viaje en curso al abrir la app. El viaje se guardaba solo en
+     memoria: al cerrar la app (o instalar una versión nueva) desaparecían el
+     seguimiento, el chat y los datos del vehículo aunque el viaje siguiera
+     activo en el servidor. Ahora se le pregunta al servidor cuál es el viaje
+     activo de esta cuenta y se reconstruye la pantalla. Una sola vez por
+     sesión (si el pasajero toca "Cotizar otro viaje" no se lo vuelve a poner). */
+  var viajeRestauradoPara = "";
+  var historialChatSilencioso = false;   // el primer lote de mensajes al recuperar es historial: no suena
+  function restaurarViajeActivo() {
+    var sesion = obtenerSesionPasajero();
+    if (!sesion || !sesion.token || pedidoActualId || viajeRestauradoPara === sesion.token) return;
+    viajeRestauradoPara = sesion.token;
+    api({ accion: "mi_viaje_activo", pasajero_token: sesion.token }).then(function (res) {
+      if (!res || !res.ok || !res.viaje || pedidoActualId) return;
+      var v = res.viaje;
+      pedidoActualId = v.pedido_id;
+      tokenSeguimientoActual = v.token_seguimiento || "";
+      document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
+      viajeActualInfo = {
+        origen: v.origen, destino: v.destino,
+        paradas: String(v.paradas || "").split("|").map(function (s) { return s.trim(); }).filter(Boolean),
+        fecha: v.fecha, hora: v.hora
+      };
+      historialChatSilencioso = true;
+      ultimoMensajeEn = "";
+      mostrarVistaEstado(v.total);
+      iniciarPolling();
+    }).catch(function () { viajeRestauradoPara = ""; });   // sin red: se reintenta la próxima vez
   }
 
   /* Historial de viajes completados: se consulta cada vez que se entra a
@@ -1699,7 +1730,74 @@
     document.getElementById("btnCrearCuenta").textContent = crear ? "Crear mi cuenta" : "Ingresar";
     document.getElementById("claveCliente").autocomplete = crear ? "new-password" : "current-password";
     document.getElementById("cuentaMsg").textContent = "";
+    pintarBotonHuellaPasajero();
   }
+
+  /* Ingreso con huella. La clave se guarda cifrada en el almacén seguro del
+     teléfono (Android Keystore) y solo se lee después de verificar la huella
+     (o el rostro). Solo existe dentro de la app instalada y si el teléfono
+     tiene biometría configurada. localStorage siempre envuelto en try/catch. */
+  var BIO_SERVER = "cl.rumbo.pasajero";
+  var viaHuellaPas = false;
+  var bioPedida = false;   // tocó "Ingresar con huella" sin tenerla activada: en su próximo ingreso con clave se le ofrece de nuevo
+  function bioLeer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function bioGuardarLocal(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function bioBorrarLocal(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function bioPlugin() {
+    try {
+      var c = window.Capacitor;
+      if (c && c.isNativePlatform && c.isNativePlatform() && c.Plugins && c.Plugins.NativeBiometric) return c.Plugins.NativeBiometric;
+    } catch (e) {}
+    return null;
+  }
+  function bioDisponible() {
+    var P = bioPlugin();
+    if (!P) return Promise.resolve(false);
+    return P.isAvailable({ useFallback: false }).then(function (r) { return !!(r && r.isAvailable); }).catch(function () { return false; });
+  }
+  function bioActivada() { return bioLeer("rumbo_bio") === "1"; }
+  function pintarBotonHuellaPasajero() {
+    var b = document.getElementById("btnHuellaPasajero");
+    if (!b) return;
+    if (modoCuenta !== "ingresar") { b.style.display = "none"; return; }
+    bioDisponible().then(function (ok) { b.style.display = ok && modoCuenta === "ingresar" ? "block" : "none"; });
+  }
+  function bioDesactivar() {
+    var P = bioPlugin();
+    bioBorrarLocal("rumbo_bio");
+    if (P) P.deleteCredentials({ server: BIO_SERVER }).catch(function () {});
+    pintarBotonHuellaPasajero();
+  }
+  function bioTrasLogin(telefono, clave) {
+    var P = bioPlugin();
+    if (!P) return;
+    if (bioActivada()) { P.setCredentials({ username: telefono, password: clave, server: BIO_SERVER }).catch(function () {}); return; }
+    if (bioLeer("rumbo_bio_no") === "1" && !bioPedida) return;
+    bioPedida = false;
+    bioDisponible().then(function (ok) {
+      if (!ok) return;
+      if (!confirm("¿Quieres ingresar con tu huella la próxima vez, sin escribir la clave?")) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
+      return P.verifyIdentity({ reason: "Confirma con tu huella", title: "Activar ingreso con huella", negativeButtonText: "Cancelar", useFallback: false })
+        .then(function () { return P.setCredentials({ username: telefono, password: clave, server: BIO_SERVER }); })
+        .then(function () { bioGuardarLocal("rumbo_bio", "1"); pintarBotonHuellaPasajero(); })
+        .catch(function () {});
+    });
+  }
+  document.getElementById("btnHuellaPasajero").addEventListener("click", function () {
+    var P = bioPlugin();
+    var msg = document.getElementById("cuentaMsg");
+    if (!P) return;
+    if (!bioActivada()) { bioPedida = true; msg.textContent = "Ingresa ahora con tu WhatsApp y clave: te preguntaremos si quieres activar la huella."; msg.className = "nota"; return; }
+    P.verifyIdentity({ reason: "Ingresar a Rumbo", title: "Ingresar a Rumbo", subtitle: "Usa tu huella", negativeButtonText: "Usar clave", useFallback: false })
+      .then(function () { return P.getCredentials({ server: BIO_SERVER }); })
+      .then(function (cred) {
+        document.getElementById("telefonoCliente").value = cred.username;
+        document.getElementById("claveCliente").value = cred.password;
+        viaHuellaPas = true;
+        document.getElementById("btnCrearCuenta").click();
+      })
+      .catch(function () { msg.textContent = "No se pudo usar la huella. Ingresa con tu clave."; msg.className = "nota error"; });
+  });
   document.getElementById("modoCrear").addEventListener("click", function () { modoCuenta = "crear"; pintarModoCuenta(); });
   document.getElementById("modoIngresar").addEventListener("click", function () { modoCuenta = "ingresar"; pintarModoCuenta(); });
 
@@ -1710,6 +1808,7 @@
     var clave = document.getElementById("claveCliente").value;
     var msg = document.getElementById("cuentaMsg");
     var crear = modoCuenta === "crear";
+    var porHuella = viaHuellaPas; viaHuellaPas = false;
     if ((crear && !nombre) || !telefono || !clave) {
       msg.textContent = crear ? "Completa nombre, WhatsApp y clave." : "Completa tu WhatsApp y tu clave.";
       msg.className = "nota error"; return;
@@ -1724,10 +1823,15 @@
       ? { accion: "registrar_pasajero", nombre: nombre, telefono: telefono, email: correo, clave: clave, acepta_politica: true, version_politica: VERSION_POLITICA }
       : { accion: "ingresar_pasajero", telefono: telefono, clave: clave }
     ).then(function (res) {
-      if (!res.ok) { msg.textContent = res.error; msg.className = "nota error"; return; }
+      if (!res.ok) {
+        msg.textContent = res.error; msg.className = "nota error";
+        if (porHuella) { bioDesactivar(); document.getElementById("claveCliente").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
+        return;
+      }
       guardarSesionPasajero(res);
       msg.textContent = "";
       document.getElementById("claveCliente").value = "";
+      bioTrasLogin(telefono, clave);
       pintarSesionPasajero();
       // Se pide el permiso de ubicación UNA vez, justo al crear la cuenta
       // (junto con el check de datos de arriba) — no en cada pantalla que
@@ -1765,6 +1869,7 @@
 
   function salirDeCuentaPasajero() {
     try { localStorage.removeItem(PERFIL_KEY); } catch (e) {}
+    if (bioActivada()) { modoCuenta = "ingresar"; pintarModoCuenta(); }
     pintarSesionPasajero();
     mostrarPestana("cuenta");
   }
@@ -1822,6 +1927,7 @@
     if (!clave) return;
     accionCuenta({ accion: "borrar_cuenta_pasajero", clave: clave }, "privacidadMsg", function () {
       alert("Tus datos fueron borrados.");
+      bioDesactivar();   // la clave guardada para la huella también se elimina
       salirDeCuentaPasajero();
     });
   });
@@ -2594,7 +2700,8 @@
           document.getElementById("btnCompartirViaje").style.display = "block";
         }
         manejarEstado(res.estado);
-        (res.mensajes || []).forEach(function (m) { pintarMensaje(m, m.autor === "pasajero"); ultimoMensajeEn = m.creado_en; });
+        (res.mensajes || []).forEach(function (m) { pintarMensaje(m, m.autor === "pasajero", historialChatSilencioso); ultimoMensajeEn = m.creado_en; });
+        historialChatSilencioso = false;   // lo que llegue desde ahora sí es nuevo
         if (res.ubicacion) moverAutoEnMapa(res.ubicacion);
         if (res.conductor) pintarConductorAsignado(res.conductor);
         document.getElementById("avisoDerivado").style.display = res.derivado ? "" : "none";
@@ -2617,6 +2724,9 @@
   // Viaje agendado: hasta 1 hora antes se muestra "confirmado para…", no
   // "en camino" (decisión de Alberto). Lo informa el servidor en cada sondeo.
   var viajeMsActual = 0, paraAhoraActual = true, viajeFechaActual = "", viajeHoraActual = "";
+  // Viaje de ida y vuelta ya iniciado: 'ida', 'espera' (el conductor llegó al
+  // destino y espera) o 'regreso'. Y cuántos minutos de espera contrató.
+  var faseViajeActual = "", esperaIncluidaActual = 0;
   function esperaProgramada() {
     return !paraAhoraActual && viajeMsActual > 0 && viajeMsActual - Date.now() > 60 * 60 * 1000;
   }
@@ -2653,6 +2763,15 @@
   function pintarEta() {
     var el = document.getElementById("etaConductor");
     var titulo, detalle;
+    if (viajeIniciadoActual && faseViajeActual === "espera") {
+      el.innerHTML = "";
+      var s1 = document.createElement("strong"); s1.textContent = "Tu conductor te espera";
+      var d1 = document.createElement("span");
+      d1.textContent = esperaIncluidaActual > 0 ? "Incluiste " + esperaIncluidaActual + " min de espera; después se suma al valor." : "El tiempo de espera se suma al valor.";
+      el.appendChild(s1); el.appendChild(d1);
+      el.style.display = "block";
+      return;
+    }
     if (!viajeIniciadoActual && esperaProgramada()) {
       var cuando = textoCuando(viajeFechaActual, viajeHoraActual);
       el.innerHTML = "";
@@ -2687,7 +2806,8 @@
     var caja = document.getElementById("estadoBox");
     caja.className = "estado-box confirmado";
     if (viajeIniciadoActual) {
-      caja.textContent = "En viaje";
+      caja.textContent = faseViajeActual === "espera" ? "Esperando en el destino"
+        : faseViajeActual === "regreso" ? "En viaje de regreso" : "En viaje";
       pintarPasos(3);
     } else if (esperaProgramada()) {
       caja.textContent = "Viaje confirmado";
@@ -2756,6 +2876,7 @@
   function limpiarSeguimientoVisual() {
     viajeIniciadoActual = false; ultimosMetros = null; etaReal = null; puntosRutaActuales = []; puntosPintados = ""; ultimoAjusteVista = 0;
     viajeMsActual = 0; paraAhoraActual = true; viajeFechaActual = ""; viajeHoraActual = "";
+    faseViajeActual = ""; esperaIncluidaActual = 0;
     marcadoresPuntos.forEach(function (m) { m.setMap(null); });
     marcadoresPuntos = [];
     document.getElementById("etaConductor").style.display = "none";
@@ -2827,6 +2948,7 @@
           viajeMsActual = Number(res.viaje_ms) || 0;
           paraAhoraActual = res.para_ahora !== false;
           viajeFechaActual = res.viaje_fecha || ""; viajeHoraActual = res.viaje_hora || "";
+          faseViajeActual = res.fase || ""; esperaIncluidaActual = Number(res.espera_cotizada_min) || 0;
           actualizarEtapaViaje();
           if (viajeConfirmadoMostrado) return;
           viajeConfirmadoMostrado = true;
@@ -2862,6 +2984,11 @@
       ["Ajuste por tiempo y distancia reales", "+ " + fmt(total - cotizado), "ajuste"],
       ["Total a pagar", fmt(total), "final"]
     ];
+    // Si el conductor esperó más de lo contratado, se dice con todas sus letras.
+    var extra = Number(res.espera_extra_min) || 0;
+    document.getElementById("motivoDesglose").textContent = extra > 0
+      ? "Tu conductor esperó " + Math.round(extra) + " min más de los " + (Number(res.espera_cotizada_min) || 0) + " min de espera incluidos, por eso el monto final es mayor que la tarifa estimada."
+      : "El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.";
     var cont = document.getElementById("desgloseFinal");
     cont.innerHTML = "";
     filas.forEach(function (f) {
@@ -3120,7 +3247,7 @@
     });
   }
 
-  function pintarMensaje(m, esMio) {
+  function pintarMensaje(m, esMio, silencioso) {
     // El mismo mensaje puede llegar dos veces (la respuesta al enviarlo y el
     // sondeo que ya venía en camino): se dibuja una sola.
     if (m.mensaje_id) {
@@ -3140,7 +3267,7 @@
     burbuja.appendChild(hora);
     cont.appendChild(burbuja);
     cont.scrollTop = cont.scrollHeight;
-    if (!esMio && !ventanaChatAbierta()) avisarMensajeNuevo(m.texto);
+    if (!esMio && !silencioso && !ventanaChatAbierta()) avisarMensajeNuevo(m.texto);
   }
 
   var enviandoChat = false;
@@ -3412,6 +3539,7 @@
   if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
   cargarGoogleMaps();
   mostrarAvisoInstalarApp();
+  if (bioActivada() && !obtenerSesionPasajero()) { modoCuenta = "ingresar"; pintarModoCuenta(); }
   pintarSesionPasajero();
 
   // Si llegaste sin la app (navegador) con el link/QR de un conductor, no
