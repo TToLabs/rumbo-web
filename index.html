@@ -1526,7 +1526,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 36;
+  var APP_VERSION = 37;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3029,6 +3029,15 @@
       btnPagar.style.display = "flex";
       nota.style.display = "block";
       return; // se sigue sondeando hasta que Mercado Pago confirme el pago
+    }
+    if (res.estado_pago === "PENDIENTE") {
+      // Pago pendiente pero sin enlace todavía: no se dice "pago recibido" ni se
+      // pide calificar; se sigue sondeando hasta tener el enlace o la confirmación.
+      btnPagar.style.display = "none";
+      nota.style.display = "none";
+      box.className = "estado-box pendiente";
+      box.textContent = "Tu viaje terminó. Estamos confirmando el pago…";
+      return;
     }
 
     btnPagar.style.display = "none";
