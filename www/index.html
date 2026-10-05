@@ -471,11 +471,6 @@
   }
   /* Como la maqueta: encabezado y pie chicos para dejar el mapa grande, filas de
      dirección compactas, y los chips siempre a la vista (fuera del área con scroll). */
-  body.en-cotizar .topbar { padding-top: calc(10px + env(safe-area-inset-top)); padding-bottom: 10px; margin-bottom: 8px; }
-  body.en-cotizar .brand-mark { width: 40px; height: 40px; }
-  body.en-cotizar .brand-texto { min-height: 0; }
-  body.en-cotizar .brand-wordmark { height: 20px; }
-  body.en-cotizar .brand-sub { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 56vw; }
   body.en-cotizar .app > .pie { display: none; }
   .wiz-hoja { gap: 0; }
   .wiz-hoja .ruta { padding: 8px 10px; margin: 0; border-radius: 12px; }
@@ -1247,7 +1242,8 @@
     </section>
     <p class="nota" id="calificacionEnviada" style="display:none;text-align:center;">¡Gracias por tu calificación!</p>
 
-    <button class="btn btn-secundario" id="btnNuevoPedido" type="button">Cotizar otro viaje</button>
+    <!-- Solo aparece cuando el viaje ya terminó: antes, tocarlo borraba el seguimiento del viaje en curso. -->
+    <button class="btn btn-secundario" id="btnNuevoPedido" type="button" style="display:none;">Nuevo viaje</button>
     </div>
    </div>
   </div>
@@ -1446,6 +1442,7 @@
   var esParaOtro = false;
   var rutaActual = null; // { km, minutos, peaje }
   var pedidoActualId = null;
+  var viajeCerrado = false;   // el viaje actual ya terminó (cobrado): solo entonces se puede pedir otro
   var tokenSeguimientoActual = "";
   var pollTimer = null;
   var mapa = null, marker = null;
@@ -1914,7 +1911,7 @@
      seguimiento, el chat y los datos del vehículo aunque el viaje siguiera
      activo en el servidor. Ahora se le pregunta al servidor cuál es el viaje
      activo de esta cuenta y se reconstruye la pantalla. Una sola vez por
-     sesión (si el pasajero toca "Cotizar otro viaje" no se lo vuelve a poner). */
+     sesión (si el pasajero toca "Nuevo viaje" no se lo vuelve a poner). */
   var viajeRestauradoPara = "";
   var historialChatSilencioso = false;   // el primer lote de mensajes al recuperar es historial: no suena
   function restaurarViajeActivo() {
@@ -2973,6 +2970,12 @@
   document.getElementById("btnPedir").addEventListener("click", function () {
     var pedirTexto = document.getElementById("pedirTexto");
     var sesion = obtenerSesionPasajero();
+    // Con un viaje en curso no se pide otro encima: se perdería el seguimiento del actual.
+    if (pedidoActualId && !viajeCerrado) {
+      pedirTexto.textContent = "Ya tienes un viaje en curso. Termínalo antes de pedir otro.";
+      pedirTexto.className = "nota error";
+      return;
+    }
     if (!sesion || !sesion.token) {
       // El aviso va en la pestaña de cuenta (la que queda a la vista), no
       // en la de cotizar que se deja atrás — antes el pasajero no veía
@@ -3070,6 +3073,8 @@
 
   function mostrarVistaEstado(totalConfirmado) {
     hojaEstado = "medio";   // el seguimiento abre con la ventana a media altura
+    viajeCerrado = false;   // viaje nuevo (o recuperado): sigue en curso hasta que termine y se cobre
+    document.getElementById("btnNuevoPedido").style.display = "none";
     document.getElementById("cardDesgloseFinal").style.display = "none";
     document.getElementById("cardCalificar").style.display = "none";
     document.getElementById("calificacionEnviada").style.display = "none";
@@ -3307,6 +3312,7 @@
 
   var conductorAsignadoPintado = "";
   function pintarConductorAsignado(c) {
+    aplicarVehiculoConductor(c);   // el auto del mapa = el del conductor asignado
     var clave = [c.conductor_id, c.vehiculo_patente, c.vehiculo_foto_url].join("|");
     if (clave === conductorAsignadoPintado) return;
     conductorAsignadoPintado = clave;
@@ -3462,6 +3468,8 @@
     clearInterval(pollTimer);
     if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
     mostrarCalificacion(res);
+    viajeCerrado = true;                                            // terminó y se cobró
+    document.getElementById("btnNuevoPedido").style.display = "";   // recién ahora se puede empezar otro
   }
 
   /* ---------------------------------------------------------------
@@ -3839,19 +3847,103 @@
 
   // Auto visto desde arriba (frente hacia arriba = norte), girado 'rumbo'
   // grados. Como imagen SVG para poder tener sombra, vidrios y focos.
-  function iconoAuto(rumbo) {
+  /* El auto del mapa es EL MISMO que ve el conductor: su color y su tipo de carrocería (sedán, hatchback,
+     SUV, camioneta o van, según la marca y el modelo que él registró). Mismo dibujo en las dos apps. */
+var COLORES_AUTO = [
+    ["blanc", "#F4F4F2"], ["negro", "#1F1F22"], ["plat", "#C3C7CC"], ["gris", "#8E949B"], ["plom", "#6F757C"],
+    ["rojo", "#C62828"], ["burde", "#7A1F3D"], ["vino", "#7A1F3D"], ["granate", "#7A1F3D"], ["naranja", "#EF6C00"],
+    ["amarill", "#F6B511"], ["dorad", "#C9A227"], ["verde", "#2E7D32"], ["celest", "#58B4E8"], ["azul", "#1E5FB8"],
+    ["morad", "#6A3FA0"], ["violet", "#6A3FA0"], ["rosa", "#E57BA4"], ["caf", "#6D4C41"], ["marr", "#6D4C41"],
+    ["beige", "#D6C5A1"], ["champ", "#CDB892"], ["crema", "#E9DDBF"]
+  ];
+var TIPOS_AUTO = [
+    ["pickup", ["hilux", "ranger", "d-max", "dmax", "np300", "navara", "saveiro", "l200", "amarok", "frontier", "f-150", "f150", "bt-50", "tunland", "t6", "triton", "hunter", "ram ", "colorado", "s10", "strada", "toro", "montana"]],
+    ["van", ["hiace", "h1", "staria", "carnival", "sprinter", "transit", "kangoo", "partner", "berlingo", "expert", "vito", "multivan", "sienna", "odyssey", "starex", "v80", "transporter", "caddy"]],
+    ["suv", ["tucson", "sportage", "creta", "kicks", "cx-5", "cx5", "cx-3", "cx-30", "rav4", "rav 4", "x-trail", "xtrail", "captiva", "tiguan", "duster", "mg zs", "mg hs", "haval", "seltos", "outlander", "santa fe", "sorento", "forester", "cr-v", "crv", "hr-v", "hrv", "t-cross", "t-roc", "tracker", "kona", "venga", "pajero", "montero", "land cruiser", "prado", "4runner", "fortuner", "terios", "qashqai", "juke", "tivoli", "korando", "rexton", "jimny", "vitara", "grand vitara", "s-cross", "scross", "jolion", "bronco", "explorer", "edge", "x3", "x5", "q3", "q5", "glc", "gla", "territory", "patrol", "palisade", "stonic", "sonet", "venue", "bayon", "arkana", "captur", "koleos", "5008", "3008", "2008", "c3 aircross", "pulse", "t-cross", "taos", "atlas", "yeti", "kodiaq", "karoq", "kamiq", "ecosport", "escape", "trax", "equinox", "groove", "suv"]],
+    ["hatch", ["yaris", "i10", "i20", "i30", "spark", "picanto", "rio", "swift", "celerio", "kwid", "mg3", "fit", "sail", "polo", "up!", "golf", "ibiza", "mazda2", "mazda 2", "mazda3", "mazda 3", "morning", "ignis", "alto", "a1", "208", "207", "206", "c3", "clio", "sandero", "logan hatch", "fiesta", "ka ", "onix", "tiida", "versa hatch", "note", "march", "baleno", "dzire", "i10", "grand i10", "accent hb", "elantra hb", "cerato hb", "soul", "hatchback", "hatch", "city hatch", "mirage", "attrage hatch", "etios", "a-class"]]
+  ];
+function colorDeAuto(texto) {
+    var t = String(texto || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    for (var i = 0; i < COLORES_AUTO.length; i++) if (t.indexOf(COLORES_AUTO[i][0]) !== -1) return COLORES_AUTO[i][1];
+    return "";
+  }
+function tonoDeColor(hex, factor) {
+    var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    var f = function (c) { return Math.max(0, Math.min(255, Math.round(factor < 0 ? c * (1 + factor) : c + (255 - c) * factor))); };
+    return "#" + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+  }
+function tipoDeAuto(marca, modelo) {
+    var t = (" " + String(marca || "") + " " + String(modelo || "") + " ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    for (var i = 0; i < TIPOS_AUTO.length; i++) {
+      for (var j = 0; j < TIPOS_AUTO[i][1].length; j++) if (t.indexOf(TIPOS_AUTO[i][1][j]) !== -1) return TIPOS_AUTO[i][0];
+    }
+    return "sedan";
+  }
+function svgAuto(rumbo, color, tipo) {
     var r = Math.round((rumbo || 0) / 5) * 5;
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+    var c = color || "#16333F", techo = tonoDeColor(c, -0.16), brillo = tonoDeColor(c, 0.38), sombra = tonoDeColor(c, -0.28);
+    var vidrio = "#1E2A35", brilloVidrio = "#5C7A91";
+    // Medidas por tipo de carrocería: x, y, ancho, alto, radio; luego ventanas (de adelante hacia atrás).
+    var F = {
+      sedan:  { x: 16.5, y: 5,  w: 23, h: 46, rx: 10.5, cap: [15, 18.2], par: [18.2, 25.2], techo: [25.2, 37], luneta: [37.8, 42.6], faro: 8.2, trasera: 46.8 },
+      hatch:  { x: 17,   y: 8,  w: 22, h: 41, rx: 9.5,  cap: [13.5, 16.8], par: [16.8, 23.2], techo: [23.2, 38], luneta: [38.6, 43], faro: 11, trasera: 43.4 },
+      suv:    { x: 15.5, y: 5,  w: 25, h: 46, rx: 9,    cap: [13, 16.4], par: [16.4, 23], techo: [23, 40], luneta: [40.6, 44.8], faro: 8.2, trasera: 46.6 },
+      van:    { x: 15,   y: 3,  w: 26, h: 50, rx: 8,    cap: [8.5, 11], par: [11, 16.5], techo: [16.5, 44], luneta: [44.6, 48.4], faro: 6, trasera: 49.4 },
+      pickup: { x: 16,   y: 4,  w: 24, h: 48, rx: 9,    cap: [12, 14.8], par: [14.8, 20.4], techo: [20.4, 27], luneta: [27.4, 31], faro: 7, trasera: 49.6 }
+    }[tipo] || null;
+    if (!F) F = { x: 16.5, y: 5, w: 23, h: 46, rx: 10.5, cap: [15, 18.2], par: [18.2, 25.2], techo: [25.2, 37], luneta: [37.8, 42.6], faro: 8.2, trasera: 46.8 };
+    var x0 = F.x, x1 = F.x + F.w, cx = 28;
+    var i0 = x0 + 3.4, i1 = x1 - 3.4;                       // ancho de los vidrios
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">' +
+      '<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="0">' +
+        '<stop offset="0" stop-color="' + sombra + '"/><stop offset=".3" stop-color="' + brillo + '"/>' +
+        '<stop offset=".62" stop-color="' + c + '"/><stop offset="1" stop-color="' + sombra + '"/></linearGradient></defs>' +
       '<g transform="rotate(' + r + ' 28 28)">' +
-      '<ellipse cx="29" cy="30" rx="12" ry="21" fill="rgba(0,0,0,0.22)"/>' +
-      '<rect x="17" y="7" width="22" height="42" rx="9" fill="#16333F" stroke="#FFFFFF" stroke-width="2.5"/>' +
-      '<path d="M20.5 17 Q28 12.5 35.5 17 L34 23 Q28 21 22 23 Z" fill="#9BD4F5"/>' +
-      '<rect x="21.5" y="24.5" width="13" height="12" rx="3" fill="#2B5468"/>' +
-      '<path d="M22 38.5 Q28 40.5 34 38.5 L35.2 43 Q28 45.5 20.8 43 Z" fill="#9BD4F5"/>' +
-      '<circle cx="21" cy="10" r="1.7" fill="#FFE29A"/><circle cx="35" cy="10" r="1.7" fill="#FFE29A"/>' +
-      '<rect x="19" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/><rect x="33" y="46" width="4" height="1.8" rx=".9" fill="#F87171"/>' +
+      '<ellipse cx="29.5" cy="30" rx="' + (F.w / 2 + 2) + '" ry="' + (F.h / 2 + 1.5) + '" fill="rgba(0,0,0,0.26)"/>' +
+      // ruedas asomando a los lados
+      '<rect x="' + (x0 - 1.6) + '" y="' + (F.y + 6.5) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      '<rect x="' + (x1 - 1.8) + '" y="' + (F.y + 6.5) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      '<rect x="' + (x0 - 1.6) + '" y="' + (F.y + F.h - 15) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      '<rect x="' + (x1 - 1.8) + '" y="' + (F.y + F.h - 15) + '" width="3.4" height="8.5" rx="1.4" fill="#17181A"/>' +
+      // espejos
+      '<rect x="' + (x0 - 3.6) + '" y="' + (F.par[0] + 1) + '" width="5" height="3.4" rx="1.5" fill="' + c + '" stroke="#FFFFFF" stroke-width="1.1"/>' +
+      '<rect x="' + (x1 - 1.4) + '" y="' + (F.par[0] + 1) + '" width="5" height="3.4" rx="1.5" fill="' + c + '" stroke="#FFFFFF" stroke-width="1.1"/>' +
+      // carrocería con volumen
+      '<rect x="' + x0 + '" y="' + F.y + '" width="' + F.w + '" height="' + F.h + '" rx="' + F.rx + '" fill="url(#g)" stroke="#FFFFFF" stroke-width="2.2"/>' +
+      // luz sobre el capó
+      '<path d="M' + (x0 + 2.4) + ' ' + F.cap[1] + ' Q' + cx + ' ' + (F.cap[0] - 3) + ' ' + (x1 - 2.4) + ' ' + F.cap[1] + ' L' + (x1 - 2.4) + ' ' + (F.cap[1] + 0.6) + ' Q' + cx + ' ' + (F.cap[0] + 0.5) + ' ' + (x0 + 2.4) + ' ' + (F.cap[1] + 0.6) + ' Z" fill="#FFFFFF" opacity=".35"/>' +
+      // parabrisas
+      '<path d="M' + i0 + ' ' + F.par[1] + ' Q' + cx + ' ' + (F.par[0] - 1.6) + ' ' + i1 + ' ' + F.par[1] + ' L' + (i1 - 1.4) + ' ' + F.techo[0] + ' Q' + cx + ' ' + (F.techo[0] - 2.2) + ' ' + (i0 + 1.4) + ' ' + F.techo[0] + ' Z" fill="' + vidrio + '"/>' +
+      '<path d="M' + (i0 + 2) + ' ' + (F.par[1] + 1.2) + ' L' + (i0 + 6) + ' ' + (F.par[0] + 1.6) + ' L' + (i0 + 8) + ' ' + (F.par[0] + 1.6) + ' L' + (i0 + 4) + ' ' + (F.par[1] + 1.2) + ' Z" fill="' + brilloVidrio + '" opacity=".55"/>' +
+      // techo
+      '<rect x="' + (i0 + 0.6) + '" y="' + F.techo[0] + '" width="' + (i1 - i0 - 1.2) + '" height="' + (F.techo[1] - F.techo[0]) + '" rx="3.4" fill="' + techo + '"/>' +
+      // luneta trasera
+      '<path d="M' + (i0 + 1.4) + ' ' + F.luneta[0] + ' Q' + cx + ' ' + (F.luneta[0] + 2.2) + ' ' + (i1 - 1.4) + ' ' + F.luneta[0] + ' L' + (i1 + 0.4) + ' ' + F.luneta[1] + ' Q' + cx + ' ' + (F.luneta[1] + 2.4) + ' ' + (i0 - 0.4) + ' ' + F.luneta[1] + ' Z" fill="' + vidrio + '"/>';
+    if (tipo === "suv") {   // barras del techo
+      s += '<rect x="' + (i0 + 1.8) + '" y="' + (F.techo[0] + 1) + '" width="1.1" height="' + (F.techo[1] - F.techo[0] - 2) + '" rx=".5" fill="#202225"/>' +
+           '<rect x="' + (i1 - 2.9) + '" y="' + (F.techo[0] + 1) + '" width="1.1" height="' + (F.techo[1] - F.techo[0] - 2) + '" rx=".5" fill="#202225"/>';
+    }
+    if (tipo === "pickup") {   // tolva abierta
+      s += '<rect x="' + (x0 + 2.4) + '" y="' + (F.luneta[1] + 2.4) + '" width="' + (F.w - 4.8) + '" height="' + (F.y + F.h - F.luneta[1] - 5.4) + '" rx="2.4" fill="#2A2F35" stroke="' + sombra + '" stroke-width=".8"/>' +
+           '<path d="M' + (x0 + 4.4) + ' ' + (F.luneta[1] + 5) + ' H' + (x1 - 4.4) + ' M' + (x0 + 4.4) + ' ' + (F.luneta[1] + 9) + ' H' + (x1 - 4.4) + ' M' + (x0 + 4.4) + ' ' + (F.luneta[1] + 13) + ' H' + (x1 - 4.4) + '" stroke="#3B424A" stroke-width=".9"/>';
+    }
+    // focos y luces traseras
+    s += '<ellipse cx="' + (x0 + 5.4) + '" cy="' + F.faro + '" rx="2.3" ry="1.5" fill="#FFF3C4"/><ellipse cx="' + (x1 - 5.4) + '" cy="' + F.faro + '" rx="2.3" ry="1.5" fill="#FFF3C4"/>' +
+      '<rect x="' + (x0 + 2.6) + '" y="' + F.trasera + '" width="5" height="1.9" rx=".95" fill="#EF4444"/><rect x="' + (x1 - 7.6) + '" y="' + F.trasera + '" width="5" height="1.9" rx=".95" fill="#EF4444"/>' +
       '</g></svg>';
+    return s;
+  }
+  var colorConductor = "", tipoConductor = "sedan", ultimoRumboAuto = 0;
+  function iconoAuto(rumbo, color, tipo) {
+    var svg = svgAuto(rumbo, color, tipo);
     return { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg), scaledSize: new google.maps.Size(56, 56), anchor: new google.maps.Point(28, 28) };
+  }
+  // Cuando llegan los datos del vehículo del conductor asignado, el auto del mapa pasa a ser el suyo.
+  function aplicarVehiculoConductor(c) {
+    var color = colorDeAuto(c && c.vehiculo_color), tipo = tipoDeAuto(c && c.vehiculo_marca, c && c.vehiculo_modelo);
+    if (color === colorConductor && tipo === tipoConductor) return;
+    colorConductor = color; tipoConductor = tipo;
+    try { if (marker && window.google) marker.setIcon(iconoAuto(ultimoRumboAuto, colorConductor, tipoConductor)); } catch (e) {}
   }
 
   function iconoPersona() {
@@ -3867,7 +3959,8 @@
     if (antes && google.maps.geometry) {
       var ahora = new google.maps.LatLng(pos.lat, pos.lng);
       if (google.maps.geometry.spherical.computeDistanceBetween(antes, ahora) > 4) {
-        marcador.setIcon(iconoAuto(google.maps.geometry.spherical.computeHeading(antes, ahora)));
+        ultimoRumboAuto = google.maps.geometry.spherical.computeHeading(antes, ahora);
+        marcador.setIcon(iconoAuto(ultimoRumboAuto, colorConductor, tipoConductor));
       }
     }
     if (!antes) { marcador.setPosition(pos); return; }
@@ -3913,7 +4006,7 @@
       zoom: 13, center: { lat: -33.45, lng: -70.66 },
       disableDefaultUI: true, zoomControl: true, styles: estiloMapaActual()
     });
-    marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoAuto(0), zIndex: 3 });
+    marker = new google.maps.Marker({ map: mapa, title: "Conductor", icon: iconoAuto(ultimoRumboAuto, colorConductor, tipoConductor), zIndex: 3 });
     dibujarRutaViaje();
     pintarPuntosRuta();
     pintarmeEnMapa();
@@ -3977,7 +4070,9 @@
     dejarDeCompartirUbicacion();
     document.getElementById("btnPagarMp").style.display = "none";
     document.getElementById("notaPago").style.display = "none";
+    document.getElementById("btnNuevoPedido").style.display = "none";   // vuelve a ocultarse hasta que termine el próximo viaje
     pedidoActualId = null;
+    viajeCerrado = false;
     tokenSeguimientoActual = "";
     document.getElementById("btnCompartirViaje").style.display = "none";
     rutaActual = null;
