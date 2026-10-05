@@ -1552,7 +1552,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 39;
+  var APP_VERSION = 40;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -3099,7 +3099,9 @@
   function textoEta(id) {
     var e = etaPorPedido[id];
     if (e && e.texto) return e.texto;
-    return miPosicionConductor ? "Calculando cuánto demoras en llegar…" : "Activa tu ubicación para ver cuánto demoras en llegar";
+    if (miPosicionConductor) return "Calculando cuánto demoras en llegar…";
+    // La ubicación está siempre encendida: mientras llega la primera lectura solo se espera.
+    return gpsSinPermiso ? "Permite la ubicación de Rumbo en el teléfono para ver cuánto demoras en llegar" : "Buscando tu ubicación…";
   }
 
   function pintarEtas() {
@@ -4660,19 +4662,30 @@
      activa solo cuando hay un viaje confirmado. */
   var watchLocalId = null, centradoEsperaInicial = false;
 
+  var gpsSinPermiso = false;   // el conductor negó el permiso de ubicación (lo único que no se arregla solo)
+  function nuevaPosicionLocal(pos) {
+    miPosicionConductor = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    gpsSinPermiso = false;
+    pintarMiPosicionEspera();
+    pintarMiAutoEnMapas();
+    navPosicion(miPosicionConductor);   // si está navegando en Rumbo, sigue el avance
+    pedirEtas();                        // el tiempo hasta cada pedido se calcula solo, apenas hay posición
+  }
   function iniciarUbicacionLocal() {
     if (watchLocalId !== null || !navigator.geolocation) return;
     try {
-      watchLocalId = navigator.geolocation.watchPosition(function (pos) {
-        miPosicionConductor = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        pintarMiPosicionEspera();
-        pintarMiAutoEnMapas();
-        navPosicion(miPosicionConductor);   // si está navegando en Rumbo, sigue el avance
-        pedirEtas();
-      }, function () {
-        // Sin permiso o sin señal: queda el botón "Usar mi ubicación".
+      // Primero la última posición conocida (llega en un instante) y recién después el GPS fino,
+      // que en frío puede tardar: así el tiempo de llegada no espera al GPS.
+      navigator.geolocation.getCurrentPosition(nuevaPosicionLocal, function () {}, { enableHighAccuracy: false, maximumAge: 300000, timeout: 6000 });
+      watchLocalId = navigator.geolocation.watchPosition(nuevaPosicionLocal, function (err) {
         watchLocalId = null;
-        document.getElementById("tabBtnCentrar").hidden = false;
+        if (err && err.code === 1) {   // permiso negado: queda el botón "Usar mi ubicación"
+          gpsSinPermiso = true;
+          document.getElementById("tabBtnCentrar").hidden = false;
+          pintarEtas();
+        } else {
+          setTimeout(iniciarUbicacionLocal, 5000);   // sin señal o tardó: se reintenta solo
+        }
       }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
     } catch (e) { watchLocalId = null; }
   }
