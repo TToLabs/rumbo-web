@@ -438,7 +438,7 @@
   body.cond-pantalla .brand-mark { width: 40px; height: 40px; }
   body.cond-pantalla .brand-texto { min-height: 0; }
   body.cond-pantalla .brand-wordmark { height: 20px; }
-  body.cond-pantalla .brand-sub { display: none; }
+  body.cond-pantalla .brand-sub { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 52vw; }
   /* "Usar mi ubicación" solo aparece si el GPS no se pudo detectar: con la clase .btn
      el atributo hidden no ocultaba el botón y se veía siempre. */
   .tablero-mapa .btn-centrar[hidden] { display: none !important; }
@@ -1552,7 +1552,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 40;
+  var APP_VERSION = 41;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1891,10 +1891,11 @@
   });
 
   function entrar(sesion) {
-    document.getElementById("brandSubConductor").textContent = "Hola, " + sesion.conductor.nombre + ", organizando tu próximo viaje";
     document.getElementById("emailActual").value = sesion.conductor.email || "";
     mostrarPantalla("app");
     aplicarPermisos();
+    // Junto al logo: la plataforma y el saludo (después de aplicarPermisos, que pone el texto genérico).
+    document.getElementById("brandSubConductor").textContent = (MODO === "admin" ? "Admin" : "Conductor") + " · Hola " + String(sesion.conductor.nombre || "").split(" ")[0];
     if (MODO === "admin") {
       // Panel de administración: sin pedidos, sin sondeo, sin mapa.
       cargarTarifas();

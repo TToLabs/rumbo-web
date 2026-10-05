@@ -475,7 +475,7 @@
   body.en-cotizar .brand-mark { width: 40px; height: 40px; }
   body.en-cotizar .brand-texto { min-height: 0; }
   body.en-cotizar .brand-wordmark { height: 20px; }
-  body.en-cotizar .brand-sub { display: none; }
+  body.en-cotizar .brand-sub { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 56vw; }
   body.en-cotizar .app > .pie { display: none; }
   .wiz-hoja { gap: 0; }
   .wiz-hoja .ruta { padding: 8px 10px; margin: 0; border-radius: 12px; }
@@ -520,6 +520,90 @@
     background: var(--surface-2);
   }
 
+  /* ---------- Pasajero: igual que el conductor ----------
+     El MAPA ocupa toda la pantalla de fondo y la información va en una ventana inferior que
+     se arrastra (baja del todo / media / alta). Las medidas las fija aplicarHojaP():
+     --nav-h (barra de abajo, 0 si no hay), --topbar-h y --hoja-vis (alto visible de la ventana). */
+  .hoja-asa { display: none; }
+  /* El botón del chat queda justo arriba de la ventana (sube y baja con ella), sin tapar sus botones. */
+  body.pas-pantalla .burbuja-chat { bottom: calc(var(--nav-h, 0px) + var(--hoja-vis, 0px) + 14px); transition: bottom .28s cubic-bezier(.2, .8, .2, 1); }
+  body.pas-pantalla.arrastrando .burbuja-chat { transition: none; }
+  body.pas-pantalla { overflow: hidden; }
+  body.pas-pantalla .topbar { position: relative; z-index: 30; }
+  body.pas-pantalla .wiz { height: auto !important; min-height: 0; display: block; }
+  body.pas-pantalla .wiz-mapa { position: fixed; left: 0; right: 0; top: 0; bottom: var(--nav-h, 0px); z-index: 1; margin: 0; }
+  body.pas-pantalla #mapaCotizar, body.pas-pantalla #mapaConductor { height: 100%; min-height: 0 !important; border-radius: 0; border: none; }
+  body.pas-pantalla .wiz.teclado .wiz-mapa { display: block; }   /* el mapa de fondo no estorba al escribir */
+  body.pas-pantalla .radar-buscando { border-radius: 0; border: none; }
+  body.pas-pantalla .wiz-hoja {
+    position: fixed; left: 50%; bottom: var(--nav-h, 0px); width: 100%; max-width: 448px; z-index: 20;
+    transform: translateX(-50%); transition: height .28s cubic-bezier(.2, .8, .2, 1);
+    border-radius: 20px 20px 0 0; border-bottom: none; padding: 0 14px 12px; overflow: hidden;
+    box-shadow: 0 -6px 24px rgba(10, 20, 40, 0.18); display: flex; flex-direction: column;
+  }
+  body.pas-pantalla #segHoja { display: block; overflow-y: auto; overscroll-behavior: contain; }
+  body.pas-pantalla.arrastrando .wiz-hoja { transition: none; }
+  body.pas-pantalla .hoja-asa {
+    display: flex; justify-content: center; align-items: center; height: 44px; margin: 0 -14px; flex: none;
+    position: sticky; top: 0; z-index: 6; background: var(--surface); border-radius: 20px 20px 0 0;
+    touch-action: none; cursor: grab;
+  }
+  .hoja-asa span { width: 56px; height: 6px; border-radius: 3px; background: var(--border-strong); }
+  /* Sin desplazarse: en la altura MEDIA solo lo esencial; la ALTA muestra todo; la BAJA, solo el asa. */
+  body.pas-pantalla.hoja-medio #cardRecorrido, body.pas-pantalla.hoja-medio #btnCompartirViaje,
+  body.pas-pantalla.hoja-medio #distanciaConductor, body.pas-pantalla.hoja-medio .pasos,
+  body.pas-pantalla.hoja-medio #avisoDerivado, body.pas-pantalla.hoja-medio #estadoDetalle { display: none; }
+  /* La barra de abajo solo existe cuando hay un viaje: sin viaje no hay nada que cambiar. */
+  .nav-inferior:not(:has(#tabSeguimiento:not(:disabled))) { display: none; }
+  #tabCuenta { display: none; }
+  /* "Mi cuenta" y el menú viven ahora en el menú lateral (3 rayas arriba a la derecha). */
+  .menu-wrap { display: none; }
+  .btn-menu-cond {
+    width: 46px; height: 46px; flex: none; border: none; border-radius: 12px; cursor: pointer;
+    background: rgba(255, 255, 255, 0.14); color: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-menu-cond:active { background: rgba(255, 255, 255, 0.26); }
+  .menu-lateral-fondo { position: fixed; inset: 0; z-index: 85; background: rgba(10, 20, 40, 0.5); }
+  .menu-lateral-fondo[hidden] { display: none; }
+  .menu-lateral {
+    position: fixed; top: 0; bottom: 0; right: 0; z-index: 90; width: min(82vw, 330px);
+    background: var(--surface); box-shadow: -8px 0 28px rgba(10, 20, 40, 0.25);
+    transform: translateX(105%); transition: transform .26s cubic-bezier(.2, .8, .2, 1);
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); overflow-y: auto;
+  }
+  .menu-lateral.abierto { transform: none; }
+  .menu-lateral-cab { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .menu-lateral-avatar {
+    width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: #fff; flex: none;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 19px;
+  }
+  .menu-lateral-quien { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .menu-lateral-quien strong { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-lateral-quien span { font-size: 13px; color: var(--text-3); }
+  .menu-lateral-cerrar { width: 40px; height: 40px; border: none; background: none; font-size: 30px; line-height: 1; color: var(--text-2); cursor: pointer; }
+  .menu-lateral-item {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 8px; border: none; background: none;
+    font: inherit; font-size: 17px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
+  }
+  .menu-lateral-item:active { background: var(--surface-2); }
+  .menu-lateral-item .ico { color: var(--primary); width: 24px; height: 24px; }
+  .cuenta-cab { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
+  .cuenta-cab h2 { margin: 0; font-size: 22px; }
+  .cuenta-cab button { width: 44px; height: 44px; border: none; background: var(--surface-2); border-radius: 12px; font-size: 28px; line-height: 1; color: var(--text); cursor: pointer; }
+
+  /* Mis lugares: Casa, Trabajo y "Otros" (los más usados). */
+  .lugares-fila { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 8px; }
+  .chip-opc.guardado { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .lugar-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .lugar-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .lugar-info strong { font-size: 16px; }
+  .lugar-info span { font-size: 13.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lugar-item .btn { width: auto; min-height: 40px; padding: 6px 12px; font-size: 13.5px; }
+  .lugares-sub { margin: 16px 0 4px; font-size: 14px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; }
+  .lugar-otro { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .lugar-otro .lugar-info { flex: 1; }
+  .lugar-otro .btn { width: auto; min-height: 36px; padding: 4px 10px; font-size: 13px; }
+  .wiz-hoja .btn-direcciones-recientes { display: none !important; }   /* ahora viven en "Otros" */
   /* De noche el fondo del mapa también es oscuro (mientras cargan las baldosas). */
   body.mapa-noche #mapaCotizar, body.mapa-noche #mapaConductor, body.mapa-noche .radar-buscando { background: #17212B; border-color: #2E3F52; }
 
@@ -866,10 +950,14 @@
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
         <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
-        <span class="brand-sub" id="brandSubPasajero">Programa tu viaje</span>
+        <span class="brand-sub" id="brandSubPasajero">Pasajero</span>
       </span>
     </div>
     <span class="topbar-spacer"></span>
+    <!-- Menú lateral (como en la app del conductor): cuenta, lugares y ayuda. -->
+    <button type="button" class="btn-menu-cond" id="btnMenuP" aria-label="Abrir el menú" aria-haspopup="true" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
     <div class="menu-wrap">
       <button class="icon-btn" id="btnMenu" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menú">
         <svg class="ico" aria-hidden="true"><use href="#i-mas"/></svg>
@@ -903,8 +991,15 @@
     <div class="wiz-mapa"><div id="mapaCotizar"></div></div>
 
     <div class="wiz-hoja" id="hojaPaso1">
+      <div class="hoja-asa" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
       <h2 class="wiz-titulo">¿A dónde vas?</h2>
       <div class="wiz-cuerpo">
+        <!-- Lugares guardados: Casa y Trabajo, y "Otros" con tus direcciones más usadas. -->
+        <div class="lugares-fila" id="filaLugares" role="group" aria-label="Tus lugares">
+          <button type="button" class="chip-opc" id="chipCasa" data-lugar="casa"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg><span id="chipCasaTxt">Casa</span></button>
+          <button type="button" class="chip-opc" id="chipTrabajo" data-lugar="trabajo"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg><span id="chipTrabajoTxt">Trabajo</span></button>
+          <button type="button" class="chip-opc" id="chipOtros" data-lugar="otros"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg><span>Otros</span></button>
+        </div>
         <button type="button" class="btn-direcciones-recientes" id="btnDireccionesRecientes" style="display:none;">
           <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
           Direcciones recientes
@@ -962,6 +1057,7 @@
     </div>
 
     <div class="wiz-hoja" id="hojaPaso2" style="display:none;">
+      <div class="hoja-asa" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
       <div class="wiz-cabeza">
         <button type="button" class="wiz-atras" id="btnPasoAtras" aria-label="Volver a editar el viaje">‹ Editar</button>
         <h2 class="wiz-titulo" style="margin:0;">Confirma tu viaje</h2>
@@ -1070,6 +1166,7 @@
       <div id="mapaConductor"></div>
     </div>
     <div class="wiz-hoja seg-hoja" id="segHoja">
+    <div class="hoja-asa" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
          mientras el conductor va a buscarte. -->
@@ -1156,6 +1253,11 @@
   </div>
 
   <div id="vistaCuenta" role="tabpanel" aria-labelledby="tabCuenta" style="display:none;">
+    <!-- Mi cuenta abre como pantalla completa desde el menú lateral; flecha para volver. -->
+    <div class="cuenta-cab">
+      <button type="button" id="btnVolverCuenta" aria-label="Volver">&#8249;</button>
+      <h2>Mi cuenta</h2>
+    </div>
     <!-- Cuenta del pasajero: se pide UNA sola vez. Después queda la
          sesión guardada y solo se muestra la línea compacta de "sos vos". -->
     <section class="card" id="cardCuenta" data-enter="btnCrearCuenta">
@@ -1265,6 +1367,48 @@
   <p class="pie">Los tiempos y distancias se calculan con datos de tráfico reales al momento de cotizar.</p>
 </div>
 
+<!-- Mis lugares: Casa, Trabajo y las direcciones más usadas (sin etiqueta). Se guardan solo en este teléfono. -->
+<div class="modal-opc" id="modalLugares" hidden role="dialog" aria-labelledby="modalLugaresTit">
+  <div class="modal-opc-hoja">
+    <h3 id="modalLugaresTit">Mis lugares</h3>
+    <div class="lugar-item" data-fila="casa">
+      <div class="lugar-info"><strong>Casa</strong><span id="lugarCasaDir">Sin guardar</span></div>
+      <button type="button" class="btn btn-chico" data-lugar-accion="editar" data-cual="casa">Cambiar</button>
+      <button type="button" class="btn btn-chico" data-lugar-accion="quitar" data-cual="casa" id="quitarCasa">Quitar</button>
+    </div>
+    <div class="lugar-item" data-fila="trabajo">
+      <div class="lugar-info"><strong>Trabajo</strong><span id="lugarTrabajoDir">Sin guardar</span></div>
+      <button type="button" class="btn btn-chico" data-lugar-accion="editar" data-cual="trabajo">Cambiar</button>
+      <button type="button" class="btn btn-chico" data-lugar-accion="quitar" data-cual="trabajo" id="quitarTrabajo">Quitar</button>
+    </div>
+    <div class="campo" id="lugarEditor" hidden style="margin:10px 0 14px;">
+      <label class="campo-label" for="lugarEditorInput">Dirección de <span id="lugarEditorNombre">Casa</span></label>
+      <input type="text" id="lugarEditorInput" placeholder="Escribe la dirección" autocomplete="off">
+      <p class="nota" id="lugarEditorMsg" style="margin:6px 2px 0;"></p>
+      <div class="btn-row" style="margin-top:8px;">
+        <button type="button" class="btn btn-chico" id="lugarEditorCancelar">Cancelar</button>
+        <button type="button" class="btn btn-medio" id="lugarEditorGuardar">Guardar</button>
+      </div>
+    </div>
+    <h4 class="lugares-sub">Otros lugares frecuentes</h4>
+    <div id="listaOtrosLugares"></div>
+    <button type="button" class="btn btn-primario" data-cierra="modalLugares" style="margin-top:14px;">Listo</button>
+  </div>
+</div>
+
+<div class="menu-lateral-fondo" id="menuLateralFondo" hidden></div>
+<aside class="menu-lateral" id="menuLateral" aria-hidden="true" aria-label="Menú">
+  <div class="menu-lateral-cab">
+    <span class="menu-lateral-avatar" id="menuAvatar" aria-hidden="true">P</span>
+    <div class="menu-lateral-quien"><strong id="menuNombre">Pasajero</strong><span>Rumbo Pasajero</span></div>
+    <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuP" aria-label="Cerrar el menú">&times;</button>
+  </div>
+  <button type="button" class="menu-lateral-item" data-menu="cuenta"><svg class="ico" aria-hidden="true"><use href="#i-persona"/></svg>Mi cuenta</button>
+  <button type="button" class="menu-lateral-item" data-menu="lugares"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Mis lugares</button>
+  <button type="button" class="menu-lateral-item" data-menu="precio"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>¿Cómo se calcula el precio?</button>
+  <button type="button" class="menu-lateral-item" data-menu="cobertura"><svg class="ico" aria-hidden="true"><use href="#i-escudo"/></svg>Cobertura y condiciones</button>
+</aside>
+
 <nav class="nav-inferior" role="tablist" aria-label="Secciones">
   <button class="nav-item activo" id="tabCotizar" type="button" role="tab" aria-selected="true" aria-controls="vistaCotizar">
     <svg class="ico" aria-hidden="true"><use href="#i-ruta"/></svg>
@@ -1331,6 +1475,8 @@
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.body.classList.toggle("en-cotizar", cual === "cotizar" || cual === "seguimiento");   // encabezado y pie compactos
+    document.body.classList.toggle("pas-pantalla", cual === "cotizar" || cual === "seguimiento");  // mapa completo + ventana arrastrable
+    if (cual !== "cotizar" && cual !== "seguimiento") document.body.classList.remove("hoja-bajo", "hoja-medio", "hoja-alto");
     if (cual === "seguimiento") ajustarWiz();
     if (cual === "cotizar") {
       // Sin una cotización vigente no hay nada que confirmar: se vuelve a la hoja 1.
@@ -1496,7 +1642,7 @@
       var yo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       if (marcadoresCotizar.yo) marcadoresCotizar.yo.setPosition(yo);
       else marcadoresCotizar.yo = new google.maps.Marker({ map: mapaCotizar, position: yo, title: "Tu ubicación", icon: iconoPersona() });
-      if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) { mapaCotizar.setCenter(yo); mapaCotizar.setZoom(15); }
+      if (!marcadoresCotizar.origen && !marcadoresCotizar.destino) { mapaCotizar.setZoom(15); centrarMapaVisible(mapaCotizar, yo, false); }
     }, function () { /* sin permiso: se queda centrado en Santiago */ }, { maximumAge: 30000, timeout: 8000 });
   }
 
@@ -1532,10 +1678,10 @@
     var puntos = Object.keys(marcadoresCotizar).filter(function (k) { return k !== "yo"; })
       .map(function (k) { return marcadoresCotizar[k]; }).filter(Boolean).map(function (m) { return m.getPosition(); });
     if (!puntos.length) return;
-    if (puntos.length === 1) { mapaCotizar.setCenter(puntos[0]); mapaCotizar.setZoom(14); return; }
+    if (puntos.length === 1) { mapaCotizar.setZoom(14); centrarMapaVisible(mapaCotizar, { lat: puntos[0].lat(), lng: puntos[0].lng() }, false); return; }
     var limites = new google.maps.LatLngBounds();
     puntos.forEach(function (p) { limites.extend(p); });
-    mapaCotizar.fitBounds(limites, 40);
+    mapaCotizar.fitBounds(limites, paddingMapa());
   }
 
   // Se llama al calcular el precio: reemplaza los marcadores "sueltos" del
@@ -1550,7 +1696,7 @@
     pintarMarcadorCotizar("destino", puntos[puntos.length - 1]);
     var limites = new google.maps.LatLngBounds();
     puntos.forEach(function (p) { limites.extend(p); });
-    mapaCotizar.fitBounds(limites, 40);
+    mapaCotizar.fitBounds(limites, paddingMapa());
   }
 
   function limpiarMapaCotizar() {
@@ -1668,7 +1814,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 41;
+  var APP_VERSION = 42;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1747,9 +1893,13 @@
     });
     if (hayCuenta) { cargarMisViajes(); iniciarPush(); restaurarViajeActivo(); }
     var brandSub = document.getElementById("brandSubPasajero");
+    // Junto al logo: la plataforma y el saludo (cabe en una línea, también con el encabezado compacto).
     brandSub.textContent = hayCuenta
-      ? "Hola " + (sesion.pasajero.nombre || "").split(" ")[0] + ", programa tu viaje"
-      : "Programa tu viaje";
+      ? "Pasajero · Hola " + (sesion.pasajero.nombre || "").split(" ")[0]
+      : "Pasajero";
+    // Cabecera del menú lateral: nombre e inicial.
+    document.getElementById("menuNombre").textContent = hayCuenta ? (sesion.pasajero.nombre || "Pasajero") : "Pasajero";
+    document.getElementById("menuAvatar").textContent = hayCuenta ? (String(sesion.pasajero.nombre || "P").trim().charAt(0).toUpperCase() || "P") : "P";
     if (hayCuenta) {
       document.getElementById("sesionTexto").textContent = "Conectado como " + sesion.pasajero.nombre;
       document.getElementById("cuentaNombre").value = sesion.pasajero.nombre || "";
@@ -2079,6 +2229,9 @@
     accionCuenta({ accion: "borrar_cuenta_pasajero", clave: clave }, "privacidadMsg", function () {
       alert("Tus datos fueron borrados.");
       bioDesactivar();   // la clave guardada para la huella también se elimina
+      // Lugares y direcciones guardados en este teléfono: también se borran.
+      try { localStorage.removeItem(LUGARES_KEY); localStorage.removeItem(DIRECCIONES_KEY); } catch (e) {}
+      pintarChipsLugares(); pintarChipsDirecciones();
       salirDeCuentaPasajero();
     });
   });
@@ -2293,7 +2446,7 @@
      try/catch.
      --------------------------------------------------------------- */
   var DIRECCIONES_KEY = "rumbo_direcciones_recientes";
-  var MAX_DIRECCIONES = 5;
+  var MAX_DIRECCIONES = 12;   // se guardan por reciente; "Otros" las muestra ordenadas por cuántas veces se usaron
   // Qué input recibe el próximo chip que se toque: se actualiza al enfocar
   // origen o destino, y por defecto es "origen" si ninguno tiene foco (ej.
   // apenas se abre la pantalla).
@@ -2312,8 +2465,11 @@
     direccion = String(direccion || "").trim();
     if (!direccion || !coords) return;
     try {
-      var lista = leerDirecciones().filter(function (d) { return d.direccion !== direccion; });
-      lista.unshift({ direccion: direccion, lat: coords.lat, lng: coords.lng });
+      var previas = leerDirecciones();
+      var antes = previas.filter(function (d) { return d.direccion === direccion; })[0];
+      var veces = (antes && antes.veces || 0) + 1;   // cuántas veces se usó: así "Otros" muestra primero las recurrentes
+      var lista = previas.filter(function (d) { return d.direccion !== direccion; });
+      lista.unshift({ direccion: direccion, lat: coords.lat, lng: coords.lng, veces: veces });
       localStorage.setItem(DIRECCIONES_KEY, JSON.stringify(lista.slice(0, MAX_DIRECCIONES)));
     } catch (e) { /* sin localStorage no se guarda, pero el viaje igual se cotiza */ }
   }
@@ -2376,6 +2532,117 @@
     cont.style.display = cont.style.display === "none" ? "flex" : "none";
   });
   pintarChipsDirecciones();
+
+  /* ---------------------------------------------------------------
+     Mis lugares: Casa y Trabajo (los guarda el pasajero) y "Otros" (las direcciones que más
+     usa, ordenadas por frecuencia, sin etiqueta). Todo queda SOLO en este teléfono; se borra
+     al borrar la cuenta. localStorage siempre con try/catch.
+     --------------------------------------------------------------- */
+  var LUGARES_KEY = "rumbo_lugares";
+  function leerLugares() {
+    try { var o = JSON.parse(localStorage.getItem(LUGARES_KEY) || "{}"); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; }
+  }
+  function guardarLugares(o) { try { localStorage.setItem(LUGARES_KEY, JSON.stringify(o)); } catch (e) {} }
+  function lugaresOtros() {   // más usadas primero; si empatan, las más recientes (el orden guardado es por recientes)
+    var base = leerDirecciones().map(function (d, i) { return { d: d, i: i }; });
+    base.sort(function (a, b) { return (b.d.veces || 1) - (a.d.veces || 1) || a.i - b.i; });
+    return base.map(function (x) { return x.d; });
+  }
+  function pintarChipsLugares() {
+    var l = leerLugares();
+    [["casa", "Casa", "chipCasa", "chipCasaTxt"], ["trabajo", "Trabajo", "chipTrabajo", "chipTrabajoTxt"]].forEach(function (c) {
+      document.getElementById(c[2]).classList.toggle("guardado", !!(l[c[0]] && l[c[0]].direccion));
+      document.getElementById(c[3]).textContent = c[1];
+    });
+    document.getElementById("chipOtros").style.display = "";
+  }
+  // Un lugar guardado va al DESTINO (como en Uber); si el destino ya está escrito, al campo activo.
+  function aplicarLugar(l) {
+    var id = !document.getElementById("destino").value.trim() ? "destino" : campoDireccionActivo;
+    var inp = document.getElementById(id);
+    inp.value = l.direccion;
+    inp.dispatchEvent(new Event("input"));
+    pintarMarcadorCotizar(id, { lat: l.lat, lng: l.lng });
+  }
+  var lugarEditando = "", lugarElegido = null, autocompletarLugar = null;
+  function abrirEditorLugar(cual) {
+    lugarEditando = cual; lugarElegido = null;
+    document.getElementById("lugarEditorNombre").textContent = cual === "casa" ? "Casa" : "Trabajo";
+    document.getElementById("lugarEditorMsg").textContent = "";
+    var inp = document.getElementById("lugarEditorInput");
+    inp.value = "";
+    document.getElementById("lugarEditor").hidden = false;
+    if (!autocompletarLugar && window.google && google.maps && google.maps.places) {
+      autocompletarLugar = new google.maps.places.Autocomplete(inp, { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry"] });
+      autocompletarLugar.addListener("place_changed", function () {
+        var p = autocompletarLugar.getPlace();
+        if (p && p.geometry && p.geometry.location) {
+          lugarElegido = { direccion: p.formatted_address || inp.value, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
+          document.getElementById("lugarEditorMsg").textContent = "";
+        }
+      });
+    }
+    setTimeout(function () { try { inp.focus(); } catch (e) {} }, 60);
+  }
+  function renderLugares() {
+    var l = leerLugares();
+    [["casa", "lugarCasaDir", "quitarCasa"], ["trabajo", "lugarTrabajoDir", "quitarTrabajo"]].forEach(function (c) {
+      var v = l[c[0]];
+      document.getElementById(c[1]).textContent = v && v.direccion ? v.direccion : "Sin guardar";
+      document.getElementById(c[2]).style.display = v && v.direccion ? "" : "none";
+    });
+    var cont = document.getElementById("listaOtrosLugares");
+    cont.innerHTML = "";
+    var otros = lugaresOtros();
+    if (!otros.length) {
+      var vacio = document.createElement("p"); vacio.className = "nota"; vacio.textContent = "Aquí aparecen las direcciones que más usas.";
+      cont.appendChild(vacio);
+      return;
+    }
+    otros.forEach(function (d) {
+      var fila = document.createElement("div"); fila.className = "lugar-otro";
+      var info = document.createElement("div"); info.className = "lugar-info";
+      var dir = document.createElement("span"); dir.textContent = d.direccion; dir.title = d.direccion;
+      info.appendChild(dir);
+      fila.appendChild(info);
+      var acciones = [
+        ["Usar", function () { aplicarLugar(d); cerrarModalOpc("modalLugares"); }],
+        ["Casa", function () { var x = leerLugares(); x.casa = { direccion: d.direccion, lat: d.lat, lng: d.lng }; guardarLugares(x); renderLugares(); pintarChipsLugares(); }],
+        ["Trabajo", function () { var x = leerLugares(); x.trabajo = { direccion: d.direccion, lat: d.lat, lng: d.lng }; guardarLugares(x); renderLugares(); pintarChipsLugares(); }],
+        ["×", function () { borrarDireccionReciente(d.direccion); pintarChipsDirecciones(); renderLugares(); }]
+      ];
+      acciones.forEach(function (a) {
+        var b = document.createElement("button"); b.type = "button"; b.className = "btn btn-chico"; b.textContent = a[0];
+        if (a[0] === "×") b.setAttribute("aria-label", "Quitar esta dirección");
+        b.addEventListener("click", a[1]);
+        fila.appendChild(b);
+      });
+      cont.appendChild(fila);
+    });
+  }
+  ["casa", "trabajo"].forEach(function (cual) {
+    document.getElementById(cual === "casa" ? "chipCasa" : "chipTrabajo").addEventListener("click", function () {
+      var v = leerLugares()[cual];
+      if (v && v.direccion) { aplicarLugar(v); return; }
+      renderLugares(); abrirModalOpc("modalLugares"); abrirEditorLugar(cual);   // sin guardar: se pide la dirección
+    });
+  });
+  document.getElementById("chipOtros").addEventListener("click", function () { renderLugares(); abrirModalOpc("modalLugares"); });
+  [].forEach.call(document.querySelectorAll("[data-lugar-accion]"), function (b) {
+    b.addEventListener("click", function () {
+      var cual = b.getAttribute("data-cual");
+      if (b.getAttribute("data-lugar-accion") === "editar") { abrirEditorLugar(cual); return; }
+      var x = leerLugares(); delete x[cual]; guardarLugares(x); renderLugares(); pintarChipsLugares();
+    });
+  });
+  document.getElementById("lugarEditorCancelar").addEventListener("click", function () { document.getElementById("lugarEditor").hidden = true; });
+  document.getElementById("lugarEditorGuardar").addEventListener("click", function () {
+    if (!lugarElegido) { document.getElementById("lugarEditorMsg").textContent = "Elige una dirección de la lista que aparece al escribir."; return; }
+    var x = leerLugares(); x[lugarEditando] = lugarElegido; guardarLugares(x);
+    document.getElementById("lugarEditor").hidden = true;
+    renderLugares(); pintarChipsLugares();
+  });
+  pintarChipsLugares();
 
   // Ubicación actual como origen: toma coordenadas GPS y las convierte en
   // una dirección legible (geocodificación inversa) para que quede igual
@@ -2802,6 +3069,7 @@
   });
 
   function mostrarVistaEstado(totalConfirmado) {
+    hojaEstado = "medio";   // el seguimiento abre con la ventana a media altura
     document.getElementById("cardDesgloseFinal").style.display = "none";
     document.getElementById("cardCalificar").style.display = "none";
     document.getElementById("calificacionEnviada").style.display = "none";
@@ -3022,7 +3290,7 @@
     ultimoAjusteVista = Date.now();
     var limites = new google.maps.LatLngBounds();
     limites.extend(posConductor); limites.extend(miPosicionPasajero);
-    mapa.fitBounds(limites, 70);
+    mapa.fitBounds(limites, paddingMapa());
     google.maps.event.addListenerOnce(mapa, "idle", function () { if (mapa.getZoom() > 17) mapa.setZoom(17); });
   }
 
@@ -3659,7 +3927,7 @@
     lineaRuta = dibujarRutaNaranja(mapa, puntos);
     var limites = new google.maps.LatLngBounds();
     puntos.forEach(function (pt) { limites.extend(pt); });
-    mapa.fitBounds(limites, 40);
+    mapa.fitBounds(limites, paddingMapa());
   }
 
   function moverAutoEnMapa(ubicacion) {
@@ -3670,7 +3938,7 @@
     moverAuto(marker, pos);
     posConductor = pos;
     pintarDistanciaConductor();
-    if (!lineaRuta) mapa.setCenter(pos);
+    if (!lineaRuta) centrarMapaVisible(mapa, pos, false);
   }
 
   function actualizarUbicacionEnMapa() {
@@ -3682,7 +3950,7 @@
       moverAuto(marker, pos);
       posConductor = pos;
       pintarDistanciaConductor();
-      mapa.panTo(pos);
+      centrarMapaVisible(mapa, pos, true);
     });
   }
 
@@ -3759,18 +4027,53 @@
 
   // El alto de mapa + hoja se ajusta para llenar justo la pantalla (entre la
   // barra superior y la de navegación). Con el teclado abierto se reduce solo.
-  function ajustarWiz() {
-    ["wiz", "seg"].forEach(function (id) {
-      var w = document.getElementById(id);
-      if (!w || w.offsetParent === null) return;   // vista oculta
-      var arriba = w.getBoundingClientRect().top + window.scrollY;
-      var abajo = parseFloat(getComputedStyle(document.body).paddingBottom) || 96;
-      // Lo que va debajo de las vistas (texto de pie) también cuenta, para no pasarse de la pantalla.
-      var pie = document.querySelector(".app > .pie");
-      if (pie && pie.offsetParent !== null) { var ep = getComputedStyle(pie); abajo += pie.offsetHeight + (parseFloat(ep.marginTop) || 0) + (parseFloat(ep.marginBottom) || 0); }
-      var minimo = w.classList.contains("teclado") ? 200 : 320;
-      w.style.height = Math.max(minimo, Math.floor(window.innerHeight - arriba - abajo)) + "px";
+  function ajustarWiz() { aplicarHojaP(); }   // nombre que ya usaban el resto de llamadas
+
+  /* ---------------------------------------------------------------
+     Ventana inferior arrastrable (igual que en la app del conductor): el MAPA ocupa toda la
+     pantalla y la ventana tiene 3 alturas: baja (solo el asa), media (lo esencial, sin
+     desplazarse) y alta (toda la información). Se arrastra desde el asa, o con un toque
+     pasa a la siguiente. Las medidas son puras (se prueban aparte).
+     --------------------------------------------------------------- */
+  var HOJA_ESTADOS = ["bajo", "medio", "alto"];
+  var hojaEstado = "medio";
+  var HOJAS_PAS = ["hojaPaso1", "hojaPaso2", "segHoja"];
+  function medidasHoja(altoVentana, altoBarra, altoTopbar) {
+    var libre = Math.max(200, altoVentana - altoBarra - altoTopbar);
+    var H = Math.round(libre * 0.94);
+    return { H: H, bajo: Math.min(44, H), medio: Math.min(H, Math.round(libre * 0.52)), alto: H };
+  }
+  function destinoHoja(m, estado, visActual, dy, velocidad) {
+    var i = HOJA_ESTADOS.indexOf(estado);
+    if (Math.abs(velocidad) > 0.6 && Math.abs(dy) > 12) {
+      var sube = dy < 0;
+      return HOJA_ESTADOS[Math.max(0, Math.min(2, i + (sube ? 1 : -1)))];
+    }
+    var mejor = HOJA_ESTADOS[0], dist = Infinity;
+    HOJA_ESTADOS.forEach(function (e) {
+      var d = Math.abs(m[e] - visActual);
+      if (d < dist) { dist = d; mejor = e; }
     });
+    return mejor;
+  }
+  function medidasActuales() {
+    var nav = document.querySelector(".nav-inferior"), tb = document.querySelector(".topbar");
+    return medidasHoja(window.innerHeight, nav ? nav.offsetHeight : 0, tb ? tb.offsetHeight : 60);
+  }
+  function fijarAlturaHoja(vis) {
+    document.body.style.setProperty("--hoja-vis", vis + "px");
+    HOJAS_PAS.forEach(function (id) { var h = document.getElementById(id); if (h) h.style.height = vis + "px"; });
+  }
+  function aplicarHojaP() {
+    var b = document.body;
+    if (!b.classList.contains("pas-pantalla")) return;
+    var nav = document.querySelector(".nav-inferior"), tb = document.querySelector(".topbar");
+    var barra = nav ? nav.offsetHeight : 0, arriba = tb ? tb.offsetHeight : 60;
+    var m = medidasHoja(window.innerHeight, barra, arriba);
+    HOJA_ESTADOS.forEach(function (e) { b.classList.toggle("hoja-" + e, e === hojaEstado); });
+    b.style.setProperty("--nav-h", barra + "px");
+    b.style.setProperty("--topbar-h", arriba + "px");
+    fijarAlturaHoja(m[hojaEstado]);
     try {
       if (window.google && google.maps) {
         if (mapaCotizar) google.maps.event.trigger(mapaCotizar, "resize");
@@ -3778,6 +4081,81 @@
       }
     } catch (e) {}
   }
+  function ponerHojaP(estado) { hojaEstado = estado; aplicarHojaP(); }
+
+  [].forEach.call(document.querySelectorAll("[data-asa]"), function (asa) {
+    var y0 = 0, t0 = 0, vis0 = 0, m = null, activo = false, movio = false;
+    asa.addEventListener("pointerdown", function (ev) {
+      activo = true; movio = false; y0 = ev.clientY; t0 = Date.now();
+      m = medidasActuales(); vis0 = m[hojaEstado];
+      document.body.classList.add("arrastrando");
+      try { asa.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    asa.addEventListener("pointermove", function (ev) {
+      if (!activo) return;
+      var dy = ev.clientY - y0;
+      if (Math.abs(dy) > 4) movio = true;
+      fijarAlturaHoja(Math.min(m.H, Math.max(m.bajo, vis0 - dy)));   // hacia arriba = más alta
+    });
+    function soltar(ev) {
+      if (!activo) return;
+      activo = false;
+      document.body.classList.remove("arrastrando");
+      var dy = ev.clientY - y0, dt = Math.max(1, Date.now() - t0);
+      if (!movio) { ponerHojaP(hojaEstado === "bajo" ? "medio" : hojaEstado === "medio" ? "alto" : "medio"); return; }
+      ponerHojaP(destinoHoja(m, hojaEstado, Math.min(m.H, Math.max(m.bajo, vis0 - dy)), dy, dy / dt));
+    }
+    asa.addEventListener("pointerup", soltar);
+    asa.addEventListener("pointercancel", soltar);
+    asa.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ponerHojaP(hojaEstado === "bajo" ? "medio" : hojaEstado === "medio" ? "alto" : "bajo"); }
+    });
+  });
+
+  // Los mapas dejan libre lo que tapan la barra de arriba y la ventana: se encuadra en la zona visible.
+  function paddingMapa() {
+    var cs = getComputedStyle(document.body);
+    var vis = parseFloat(cs.getPropertyValue("--hoja-vis")) || 0, top = parseFloat(cs.getPropertyValue("--topbar-h")) || 0;
+    return { top: top + 24, bottom: vis + 24, left: 28, right: 28 };
+  }
+  function centrarMapaVisible(m, pos, suave) {
+    if (!m || !window.google) return;
+    var cs = getComputedStyle(document.body);
+    var vis = parseFloat(cs.getPropertyValue("--hoja-vis")) || 0, top = parseFloat(cs.getPropertyValue("--topbar-h")) || 0;
+    var desvio = (vis - top) / 2;
+    var destino = new google.maps.LatLng(pos.lat, pos.lng), proy = m.getProjection && m.getProjection();
+    if (proy && desvio) {
+      var p = proy.fromLatLngToPoint(destino), escala = Math.pow(2, m.getZoom());
+      destino = proy.fromPointToLatLng(new google.maps.Point(p.x, p.y + desvio / escala));
+    }
+    if (suave) m.panTo(destino); else m.setCenter(destino);
+  }
+
+  /* Menú lateral (3 rayas): cuenta, lugares y ayuda. */
+  function abrirMenuP(si) {
+    var mm = document.getElementById("menuLateral"), f = document.getElementById("menuLateralFondo");
+    mm.classList.toggle("abierto", si);
+    mm.setAttribute("aria-hidden", si ? "false" : "true");
+    f.hidden = !si;
+    document.getElementById("btnMenuP").setAttribute("aria-expanded", si ? "true" : "false");
+  }
+  document.getElementById("btnMenuP").addEventListener("click", function () { abrirMenuP(true); });
+  document.getElementById("btnCerrarMenuP").addEventListener("click", function () { abrirMenuP(false); });
+  document.getElementById("menuLateralFondo").addEventListener("click", function () { abrirMenuP(false); });
+  [].forEach.call(document.querySelectorAll("#menuLateral .menu-lateral-item"), function (b) {
+    b.addEventListener("click", function () {
+      abrirMenuP(false);
+      var cual = b.getAttribute("data-menu");
+      if (cual === "cuenta") mostrarPestana("cuenta");
+      else if (cual === "lugares") { renderLugares(); abrirModalOpc("modalLugares"); }
+      else if (cual === "precio") document.getElementById("menuComoSeCalcula").click();
+      else if (cual === "cobertura") document.getElementById("menuCobertura").click();
+    });
+  });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuP(false); });
+  document.getElementById("btnVolverCuenta").addEventListener("click", function () {
+    mostrarPestana(document.getElementById("tabSeguimiento").disabled ? "cotizar" : "seguimiento");
+  });
 
   function textoOpcionesViaje() {
     var f = document.getElementById("fechaSalida").value, h = document.getElementById("horaSalida").value;
@@ -3832,6 +4210,7 @@
     document.getElementById("hojaPaso2").style.display = n === 2 ? "flex" : "none";
     document.getElementById("wiz").classList.remove("teclado");
     document.getElementById("wiz").classList.toggle("paso2", n === 2);
+    hojaEstado = "medio";   // al cambiar de paso, la ventana vuelve a la altura media
     if (n === 2) pintarResumenPaso2(); else pintarChipsViaje();
     ajustarWiz();
   }
@@ -3868,16 +4247,16 @@
   (function () {
     var hoja = document.getElementById("hojaPaso1"), w = document.getElementById("wiz");
     hoja.addEventListener("focusin", function (ev) {
-      if (ev.target.tagName === "INPUT") { w.classList.add("teclado"); ajustarWiz(); }
+      if (ev.target.tagName === "INPUT") { w.classList.add("teclado"); hojaEstado = "alto"; ajustarWiz(); }   // al escribir, la ventana sube
     });
     hoja.addEventListener("focusout", function () {
       setTimeout(function () {
         var a = document.activeElement;
-        if (!a || a.tagName !== "INPUT" || !hoja.contains(a)) { w.classList.remove("teclado"); ajustarWiz(); }
+        if (!a || a.tagName !== "INPUT" || !hoja.contains(a)) { w.classList.remove("teclado"); if (hojaEstado === "alto") hojaEstado = "medio"; ajustarWiz(); }
       }, 200);
     });
   })();
-  document.body.classList.add("en-cotizar");   // la app abre en esta pantalla
+  document.body.classList.add("en-cotizar", "pas-pantalla");   // la app abre en esta pantalla
   window.addEventListener("resize", ajustarWiz);
   window.addEventListener("load", function () { ajustarWiz(); setTimeout(ajustarWiz, 400); });
   pintarChipsViaje();
