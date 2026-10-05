@@ -475,6 +475,32 @@
   /* Administrador: mismo formato (mapa completo + ventana arrastrable + menú lateral), sin barra
      de abajo. En el mapa va la flota; en la ventana, el resumen y la lista de conductores. */
   body.modo-admin.cond-pantalla { padding-bottom: 0; }
+  /* Pantallas de administración: cada sección del menú es una pantalla fija bajo la barra de arriba.
+     La pantalla NO se desplaza; solo la lista larga (conductores, pagos, pedidos) lo hace dentro de su zona. */
+  .adm-pantalla {
+    position: fixed; left: 50%; transform: translateX(-50%); top: var(--topbar-h, 96px); bottom: 0; width: 100%; max-width: 448px; z-index: 40;
+    background: var(--bg); display: flex; flex-direction: column; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); overflow: hidden;
+  }
+  .adm-pantalla[hidden] { display: none; }
+  .adm-pantalla .ajustes-cab { margin: 0; flex: none; }
+  .adm-pantalla .card { border: none; box-shadow: none; padding: 0; margin: 0 0 10px; background: none; }
+  .adm-pantalla .card-head { margin-bottom: 8px; }
+  .adm-kpis { display: flex; gap: 10px; flex: none; }
+  .adm-kpis .kpi-card { flex: 1; min-width: 0; padding: 10px 12px; }
+  .adm-kpis .kpi-valor { font-size: 22px; }
+  .adm-kpis .kpi-cabeza svg { display: none; }
+  .adm-kpis .kpi-etiqueta { font-size: 12.5px; }
+  .adm-kpis .kpi-nota { font-size: 12px; }
+  .adm-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+  .adm-fijo { flex: none; }
+  .adm-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface-2); flex: none; }
+  .adm-tabs button { flex: 1; min-height: 40px; border: none; border-radius: 9px; background: none; font: inherit; font-weight: 700; font-size: 14.5px; color: var(--text-2); cursor: pointer; }
+  .adm-tabs button.activo { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgba(10, 20, 40, 0.16); }
+  .adm-panel-tab[hidden] { display: none; }
+  .adm-pantalla .plegable { border-top: none; margin: 0; }
+  .adm-pantalla .plegable-btn { display: none; }
+  .adm-pantalla .plegable-cuerpo { display: block; }
+  .adm-pantalla .fila { margin-bottom: 10px; }
   .flota[hidden] { display: none; }
   .flota-resumen { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
   .flota-chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; background: var(--surface-2); font-size: 14px; font-weight: 600; color: var(--text); }
@@ -1471,10 +1497,16 @@
     <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span id="menuPlataforma">Rumbo Conductor</span></div>
     <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuCond" aria-label="Cerrar el menú">&times;</button>
   </div>
-  <button type="button" class="menu-lateral-item" data-menu="ajustes">
+  <!-- Administrador: cada sección es una pantalla propia (sin scroll de página). -->
+  <button type="button" class="menu-lateral-item solo-red" data-adm="conductores"><svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>Conductores</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="pagos"><svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>Historial de pagos</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="pedidos"><svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Registro de pedidos</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="tarifas"><svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>Tarifas de la red</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="cuenta"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Mi cuenta</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-menu="ajustes">
     <svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>Ajustes
   </button>
-  <button type="button" class="menu-lateral-item" data-tablero="tarifas">
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="tarifas">
     <svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>Ajustar tarifas
   </button>
   <button type="button" class="menu-lateral-item solo-conductor" data-tablero="horarios">
@@ -1588,7 +1620,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 46;
+  var APP_VERSION = 47;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1916,6 +1948,7 @@
     b.addEventListener("click", function () {
       abrirMenuCond(false);
       if (b.getAttribute("data-menu") === "ajustes") mostrarPestana("ajustes");   // los data-tablero los atiende el manejador general
+      if (b.getAttribute("data-adm")) abrirPantallaAdmin(b.getAttribute("data-adm"));
     });
   });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuCond(false); });
@@ -2167,10 +2200,128 @@
       document.getElementById("tabAjustes").style.display = "none";
       document.getElementById("flotaAdmin").hidden = false;
       document.getElementById("menuPlataforma").textContent = "Rumbo Admin";
-      document.querySelector('#menuLateral [data-menu="ajustes"]').lastChild.textContent = "Administración";
-      document.querySelector("#panelAjustes .ajustes-cab h2").textContent = "Administración";
+      armarPantallasAdmin();
     }
   }
+
+  /* ---------------------------------------------------------------
+     Administrador: cada sección del menú lateral es UNA pantalla propia, sin scroll de página
+     (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
+     Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
+     --------------------------------------------------------------- */
+  var PANTALLAS_ADMIN = { conductores: "Conductores", pagos: "Historial de pagos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  function crearPantallaAdmin(id) {
+    var p = document.createElement("section");
+    p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
+    p.innerHTML = '<div class="ajustes-cab"><button type="button" data-adm-volver aria-label="Volver">&#8249;</button><h2>' + PANTALLAS_ADMIN[id] + '</h2></div>';
+    document.body.appendChild(p);
+    return p;
+  }
+  function envolver(p, clase, hijos) {
+    var d = document.createElement("div");
+    d.className = clase;
+    hijos.forEach(function (h) { if (h) d.appendChild(h); });
+    p.appendChild(d);
+    return d;
+  }
+  function hijosDe(sel) { return [].slice.call(document.querySelector(sel).children); }
+  // Pestañas dentro de una pantalla: [{ id, titulo, nodos: [...] }]; solo una se ve a la vez.
+  function armarTabsAdmin(p, tabs, antesDe) {
+    var barra = document.createElement("div");
+    barra.className = "adm-tabs";
+    var area = document.createElement("div");
+    area.className = "adm-scroll";
+    tabs.forEach(function (t, i) {
+      var b = document.createElement("button");
+      b.type = "button"; b.textContent = t.titulo; b.dataset.admTab = t.id;
+      b.className = i === 0 ? "activo" : "";
+      barra.appendChild(b);
+      var panel = document.createElement("div");
+      panel.className = "adm-panel-tab"; panel.dataset.admPanel = t.id; panel.hidden = i !== 0;
+      t.nodos.forEach(function (n) { panel.appendChild(n); });
+      area.appendChild(panel);
+    });
+    barra.addEventListener("click", function (ev) {
+      var b = ev.target.closest("[data-adm-tab]");
+      if (!b) return;
+      [].forEach.call(barra.children, function (x) { x.classList.toggle("activo", x === b); });
+      [].forEach.call(area.children, function (x) { x.hidden = x.dataset.admPanel !== b.dataset.admTab; });
+    });
+    p.appendChild(barra);
+    p.appendChild(area);
+  }
+  function armarPantallasAdmin() {
+    if (document.getElementById("adm-conductores")) return;
+    var kpiDe = function (id) { return document.getElementById(id).closest(".kpi-card"); };
+    // Conductores: dos cifras arriba y la lista (con su propio desplazamiento).
+    var pc = crearPantallaAdmin("conductores");
+    envolver(pc, "adm-kpis", [kpiDe("kpiConductores"), kpiDe("kpiPendientes")]);
+    var ayuda = document.querySelector("#acordeonConductores .ayuda");
+    ayuda.style.margin = "0";
+    envolver(pc, "adm-fijo", [ayuda]);
+    envolver(pc, "adm-scroll", [document.getElementById("listaConductores")]);
+    // Historial de pagos: total del mes, filtros y la tabla con desplazamiento propio.
+    var pp = crearPantallaAdmin("pagos");
+    var cuerpoH = hijosDe("#acordeonHistorial > .acordeon-cuerpo");   // cabecera, resumen, tabla
+    envolver(pp, "adm-kpis", [kpiDe("kpiFacturado")]);
+    envolver(pp, "adm-fijo", [cuerpoH[0], cuerpoH[1]]);
+    envolver(pp, "adm-scroll", [cuerpoH[2]]);
+    // Registro de pedidos: igual.
+    var pr = crearPantallaAdmin("pedidos");
+    var cuerpoR = hijosDe("#acordeonRegistroPedidos > .acordeon-cuerpo");
+    envolver(pr, "adm-fijo", [cuerpoR[0], cuerpoR[1]]);
+    envolver(pr, "adm-scroll", [cuerpoR[2]]);
+    // Tarifas de la red: tres pestañas (costos / hora / franjas) y el botón Guardar siempre a la vista.
+    var pt = crearPantallaAdmin("tarifas");
+    var cuerpoT = document.querySelector("#acordeonTarifas > .acordeon-cuerpo");
+    var tarjetas = cuerpoT.querySelectorAll(":scope > section.card");
+    var franjas = tarjetas[1].querySelector(".plegable");
+    document.getElementById("cuerpoHorarios").classList.add("abierto");
+    armarTabsAdmin(pt, [
+      { id: "costos", titulo: "Costos", nodos: [tarjetas[0]] },
+      { id: "hora", titulo: "Valor hora", nodos: [tarjetas[1]] },
+      { id: "franjas", titulo: "Franjas", nodos: [franjas] }
+    ]);
+    envolver(pt, "adm-fijo", [document.getElementById("btnGuardarTarifas"), document.getElementById("tarifasMsg")]);
+    // Mi cuenta: clave y correo en pestañas; cerrar sesión siempre a la vista.
+    var pq = crearPantallaAdmin("cuenta");
+    var cuerpoQ = [].slice.call(document.getElementById("btnCerrarSesion").parentNode.children);
+    var tarjetasQ = cuerpoQ.filter(function (n) { return n.tagName === "SECTION"; });
+    armarTabsAdmin(pq, [
+      { id: "clave", titulo: "Clave", nodos: [tarjetasQ[0]] },
+      { id: "correo", titulo: "Correo", nodos: [tarjetasQ[1]] }
+    ]);
+    var cerrar = document.getElementById("btnCerrarSesion");
+    cerrar.style.margin = "0";
+    envolver(pq, "adm-fijo", [cerrar]);
+  }
+
+  var admAbierta = "";
+  function abrirPantallaAdmin(id) {
+    var p = document.getElementById("adm-" + id);
+    if (!p) return;
+    var tb = document.querySelector("#pantallaApp .topbar");
+    document.body.style.setProperty("--topbar-h", (tb ? tb.offsetHeight : 96) + "px");
+    [].forEach.call(document.querySelectorAll(".adm-pantalla"), function (x) { x.hidden = x !== p; });
+    document.body.classList.add("adm-abierta");
+    admAbierta = id;
+    if (sondeoAdminTimer) { clearInterval(sondeoAdminTimer); sondeoAdminTimer = null; }
+    if (id === "conductores") {
+      cargarConductoresAdmin();
+      sondeoAdminTimer = setInterval(function () { if (!document.hidden) cargarConductoresAdmin(); }, SONDEO_MS);
+    } else if (id === "pagos") abrirHistorial();
+    else if (id === "pedidos") cargarRegistroPedidos();
+    else if (id === "tarifas") cargarTarifas();
+  }
+  function cerrarPantallasAdmin() {
+    [].forEach.call(document.querySelectorAll(".adm-pantalla"), function (x) { x.hidden = true; });
+    document.body.classList.remove("adm-abierta");
+    admAbierta = "";
+    if (sondeoAdminTimer) { clearInterval(sondeoAdminTimer); sondeoAdminTimer = null; }
+  }
+  document.addEventListener("click", function (ev) {
+    if (ev.target.closest("[data-adm-volver]")) cerrarPantallasAdmin();
+  });
 
   /* ---------------------------------------------------------------
      Historial de pagos por mes (solo monto, estado y forma de pago).
@@ -2290,8 +2441,8 @@
 
   document.getElementById("histMes").addEventListener("change", cargarHistorial);
   document.getElementById("histConductor").addEventListener("change", cargarHistorial);
-  document.getElementById("acordeonHistorial").addEventListener("toggle", function () {
-    if (!this.open) return;
+  document.getElementById("acordeonHistorial").addEventListener("toggle", function () { if (this.open) abrirHistorial(); });
+  function abrirHistorial() {
     if (MODO === "admin") {
       document.getElementById("histFiltroConductor").style.display = "";
       var sel = document.getElementById("histConductor");
@@ -2307,7 +2458,7 @@
       }
     }
     cargarHistorial();
-  });
+  }
 
   // "En la red" (público, conectado al radar): además de su clientela,
   // puede recibir viajes derivados de otros conductores. "Solo mi
@@ -5108,7 +5259,7 @@
   function iniciarFlota() {
     detenerFlota();
     flotaTimer = setInterval(function () {
-      if (!document.hidden && document.body.classList.contains("cond-pantalla")) cargarFlota();
+      if (!document.hidden && document.body.classList.contains("cond-pantalla") && !document.body.classList.contains("adm-abierta")) cargarFlota();
     }, 15000);
   }
   function detenerFlota() {
