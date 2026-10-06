@@ -465,11 +465,11 @@
   body.cond-pantalla .hoja-asa { height: 44px; margin-bottom: 0; }
   /* Sin desplazarse: en la altura MEDIA solo lo esencial (quién, cuánto, a dónde y el botón
      principal); la ALTA muestra toda la información; la BAJA deja solo el asa. */
-  body.cond-pantalla.hoja-medio .pedido-meta,
-  body.cond-pantalla.hoja-medio .pedido-aviso,
-  body.cond-pantalla.hoja-medio .nota-mapa,
-  body.cond-pantalla.hoja-medio .mapa-pasajero,
-  body.cond-pantalla.hoja-medio .ayuda,
+  body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .pedido-meta,
+  body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .pedido-aviso,
+  body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .nota-mapa,
+  body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .mapa-pasajero,
+  body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .ayuda,
   body.cond-pantalla.hoja-medio .tablero .kpi-fila { display: none; }
   body.cond-pantalla.hoja-bajo #panelPedidos, body.cond-pantalla.hoja-bajo #panelEnCurso { padding-bottom: 0; overflow: hidden; }
   /* Administrador: mismo formato (mapa completo + ventana arrastrable + menú lateral), sin barra
@@ -628,14 +628,52 @@
     position: sticky; bottom: -12px; background: var(--surface-2); padding: 10px 0 4px; margin-top: 6px;
   }
   body.cond-pantalla .pedido-card > .btn-row:last-child .btn { min-height: 52px; font-size: 16px; }
-  /* Viaje en curso: "Iniciar viaje" y "Finalizar viaje" siempre visibles abajo de la hoja. */
-  body.cond-pantalla #listaEnCurso .pedido-card > .ayuda { display: none; }
-  body.cond-pantalla #listaEnCurso .pedido-card > button[data-cerrar],
-  body.cond-pantalla #listaEnCurso .pedido-card > button[data-iniciar] {
-    position: sticky; z-index: 3; min-height: 52px; font-size: 16px; margin-top: 8px;
+  /* Viaje en curso (conductor, como Uber): el mapa de fondo + UNA tarjeta flotante con la próxima acción.
+     La ventana arrastrable se oculta mientras hay viaje; el detalle (contacto, ruta, chat) es una pantalla aparte. */
+  body.con-viaje #panelEnCurso { display: none !important; }
+  body:not(.cond-pantalla) .tarjeta-viaje, body:not(.cond-pantalla) .detalle-viaje { display: none !important; }
+  .tarjeta-viaje {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h, 72px) + 8px); z-index: 30;
+    width: calc(100% - 16px); max-width: 432px; padding: 12px 14px 14px; border-radius: 18px;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: 0 -2px 14px rgba(17, 48, 74, 0.22);
   }
-  body.cond-pantalla #listaEnCurso .pedido-card > button[data-cerrar] { bottom: -12px; }
-  body.cond-pantalla #listaEnCurso .pedido-card > button[data-iniciar] { bottom: 56px; }
+  .tarjeta-viaje[hidden], .detalle-viaje[hidden], .tv-crono[hidden], .tv-sec[hidden], .tv-otros[hidden] { display: none !important; }
+  .tv-fila { display: flex; align-items: flex-start; gap: 8px; }
+  .tv-textos { flex: 1; min-width: 0; }
+  .tv-et { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .tv-dir { margin-top: 2px; font-size: 18px; font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; }
+  .tv-sub { margin-top: 2px; font-size: 14px; color: var(--text-2); overflow-wrap: anywhere; }
+  .tv-mas { flex: none; width: 40px; height: 40px; border: none; border-radius: 50%; background: var(--surface-2); color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .tv-mas svg { width: 22px; height: 22px; }
+  .tv-crono { margin: 10px 0 0; padding: 10px 14px; }
+  .tv-crono .espera-reloj { font-size: 34px; margin: 2px 0 6px; }
+  .tv-accion {
+    display: block; width: 100%; margin-top: 10px; min-height: 58px; border: none; border-radius: 14px;
+    background: var(--primary); color: var(--primary-ink); font: inherit; font-size: 19px; font-weight: 700; cursor: pointer;
+  }
+  .tv-accion.naranja { background: #F97316; color: #fff; }
+  .tv-accion.verde { background: #0B7A4B; color: #fff; }
+  .tv-accion:disabled { opacity: 0.6; }
+  .tv-sec, .tv-otros { display: block; width: 100%; margin-top: 6px; min-height: 40px; border: none; background: none; color: var(--text-2); font: inherit; font-size: 14.5px; text-decoration: underline; cursor: pointer; }
+  .tarjeta-viaje .nav-pie { position: static; margin-top: 8px; padding: 6px 8px; box-shadow: none; background: var(--surface-2); }
+  /* El chat flotante sube por encima de la tarjeta (si no, tapaba el botón). */
+  body.con-tarjeta .burbuja-chat { bottom: calc(var(--nav-h, 72px) + var(--tv-h, 170px) + 18px + env(safe-area-inset-bottom)); }
+  .detalle-viaje {
+    position: fixed; left: 50%; transform: translateX(-50%); top: var(--topbar-h, 60px); bottom: var(--nav-h, 72px); z-index: 35;
+    width: 100%; max-width: 448px; padding: 12px 16px; overflow-y: auto; overscroll-behavior: contain; background: var(--bg);
+  }
+  .detalle-viaje .ajustes-cab { margin: 0 0 10px; }
+  .detalle-viaje .card { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
+  /* Deslizable Waze / Google Maps (Ajustes → Navegación GPS). */
+  .gps-switch { display: flex; align-items: center; gap: 12px; padding: 4px 0; touch-action: pan-y; }
+  .gps-lado { flex: 1; font-size: 16px; color: var(--text-3); cursor: pointer; }
+  .gps-lado:last-child { text-align: right; }
+  .gps-lado.activo { color: var(--primary); font-weight: 700; }
+  .gps-sw { width: 62px; height: 34px; }
+  .gps-sw .switch-pista { background: var(--primary-mid); }
+  .gps-sw .switch-pista::after { width: 28px; height: 28px; top: 3px; left: 3px; }
+  .gps-sw input:checked ~ .switch-pista { background: var(--primary-mid); }
+  .gps-sw input:checked ~ .switch-pista::after { transform: translateX(28px); }
   .vacio-bloque {
     display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
     padding: 22px 16px; color: var(--text-2);
@@ -1212,9 +1250,13 @@
     <details class="acordeon simple"><summary>Navegación GPS</summary><div class="acordeon-cuerpo">
     <div class="campo">
       <span class="campo-label">Con qué app navegar al iniciar un viaje</span>
-      <div class="segmentado" role="group" aria-label="App de navegación" id="grupoGps">
-        <button class="seg-btn active" type="button" data-gps="WAZE">Waze</button>
-        <button class="seg-btn" type="button" data-gps="GOOGLE_MAPS">Google Maps</button>
+      <div class="gps-switch" role="group" aria-label="App de navegación" id="grupoGps">
+        <span class="gps-lado activo" data-gps="WAZE">Waze</span>
+        <label class="switch gps-sw">
+          <input type="checkbox" id="chkGps" role="switch" aria-label="Navegar con Google Maps; apagado, con Waze">
+          <span class="switch-pista"></span>
+        </label>
+        <span class="gps-lado" data-gps="GOOGLE_MAPS">Google Maps</span>
       </div>
       <p class="msg" style="margin:8px 2px 0;font-size:12.5px;">Al tocar "Iniciar viaje" se abre sola, con la ruta hacia el destino ya cargada.</p>
     </div>
@@ -1517,6 +1559,29 @@
   </button>
 </aside>
 
+<!-- Viaje en curso (solo conductor): UNA tarjeta flotante sobre el mapa con lo necesario para la próxima acción
+     y un solo botón. Todo lo demás (contacto, ruta, chat) está en el detalle, una pantalla aparte. -->
+<div class="tarjeta-viaje solo-conductor" id="tarjetaViaje" hidden>
+  <div class="tv-fila">
+    <div class="tv-textos"><div class="tv-et" id="tvEt"></div><div class="tv-dir" id="tvDir"></div><div class="tv-sub" id="tvSub"></div></div>
+    <button type="button" class="tv-mas" id="tvMas" aria-label="Ver el detalle del viaje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+  </div>
+  <div class="espera-panel tv-crono" id="tvCrono" hidden>
+    <div class="espera-titulo">Tiempo de espera</div>
+    <div class="espera-reloj" data-reloj>00:00</div>
+    <div class="espera-barra"><div class="espera-barra-llena" data-barra style="width:0%"></div></div>
+    <div class="espera-texto" data-texto></div>
+  </div>
+  <div id="tvNav"></div>
+  <button type="button" class="tv-accion" id="tvAccion"></button>
+  <button type="button" class="tv-sec" id="tvSec" hidden></button>
+  <button type="button" class="tv-otros" id="tvOtros" hidden></button>
+</div>
+<div class="detalle-viaje solo-conductor" id="detalleViaje" hidden>
+  <div class="ajustes-cab"><button type="button" id="btnCerrarDetalle" aria-label="Volver">&#8249;</button><h2>Detalle del viaje</h2></div>
+  <div id="detalleCuerpo"></div>
+</div>
+
 <nav class="nav-inferior" role="tablist" aria-label="Secciones" id="navConductor" style="display:none;">
   <button class="nav-item activo" id="tabPedidos" type="button" role="tab" aria-selected="true" aria-controls="panelPedidos">
     <span class="nav-badge" id="burbujaPedidos"></span>
@@ -1620,7 +1685,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 49;
+  var APP_VERSION = 50;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1791,6 +1856,13 @@
     // La barra de secciones no tiene sentido en la pantalla de login.
     document.getElementById("navConductor").style.display = cual === "app" && MODO !== "admin" ? "grid" : "none";
     if (cual !== "app" && typeof detenerFlota === "function") detenerFlota();
+    if (cual !== "app") {   // cerrar sesión / cambio de cuenta: nada del viaje anterior queda en pantalla
+      document.body.classList.remove("con-viaje", "con-tarjeta");
+      var tvx = document.getElementById("tarjetaViaje"), dvx = document.getElementById("detalleViaje");
+      if (tvx) tvx.hidden = true;
+      if (dvx) dvx.hidden = true;
+      if (typeof limpiarMapaViaje === "function") limpiarMapaViaje();
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -1838,6 +1910,8 @@
       clearInterval(sondeoAdminTimer);
       sondeoAdminTimer = null;
     }
+    if (typeof cerrarDetalleViaje === "function") cerrarDetalleViaje();
+    if (typeof pintarTarjetaViaje === "function") pintarTarjetaViaje();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   /* Ventana inferior arrastrable del conductor (como DiDi). El MAPA ocupa toda la
@@ -2499,22 +2573,37 @@
   function pintarGps(valor) {
     gpsPreferido = valor === "GOOGLE_MAPS" ? "GOOGLE_MAPS" : "WAZE";
     document.body.setAttribute("data-gps", gpsPreferido);   // las tarjetas muestran solo esa app
-    document.querySelectorAll("#grupoGps .seg-btn").forEach(function (b) {
-      b.classList.toggle("active", b.dataset.gps === gpsPreferido);
+    document.getElementById("chkGps").checked = gpsPreferido === "GOOGLE_MAPS";
+    document.querySelectorAll("#grupoGps .gps-lado").forEach(function (b) {
+      b.classList.toggle("activo", b.dataset.gps === gpsPreferido);
     });
   }
   function cargarPreferenciaGps() {
     api({ accion: "mi_gps" }).then(function (res) { if (res.ok) pintarGps(res.gps); });
   }
-  document.querySelectorAll("#grupoGps .seg-btn").forEach(function (b) {
-    b.addEventListener("click", function () {
-      var anterior = gpsPreferido;
-      pintarGps(b.dataset.gps); // optimista: se nota al toque
-      apiPost({ accion: "cambiar_mi_gps", gps: b.dataset.gps }).then(function (res) {
-        if (!res.ok) { pintarGps(anterior); alert("No se pudo cambiar: " + res.error); }
-      }).catch(function (err) { pintarGps(anterior); alert("Error de red: " + err.message); });
-    });
+  function elegirGps(valor) {
+    if (valor === gpsPreferido) return;
+    var anterior = gpsPreferido;
+    pintarGps(valor); // optimista: se nota al toque
+    apiPost({ accion: "cambiar_mi_gps", gps: valor }).then(function (res) {
+      if (!res.ok) { pintarGps(anterior); alert("No se pudo cambiar: " + res.error); }
+    }).catch(function (err) { pintarGps(anterior); alert("Error de red: " + err.message); });
+  }
+  document.getElementById("chkGps").addEventListener("change", function () { elegirGps(this.checked ? "GOOGLE_MAPS" : "WAZE"); });
+  document.querySelectorAll("#grupoGps .gps-lado").forEach(function (b) {
+    b.addEventListener("click", function () { elegirGps(b.dataset.gps); });
   });
+  // Deslizar el dedo sobre el selector también cambia (derecha = Google Maps, izquierda = Waze).
+  (function () {
+    var x0 = null, grupo = document.getElementById("grupoGps");
+    grupo.addEventListener("pointerdown", function (ev) { x0 = ev.clientX; });
+    grupo.addEventListener("pointerup", function (ev) {
+      if (x0 === null) return;
+      var dx = ev.clientX - x0; x0 = null;
+      if (dx > 24) elegirGps("GOOGLE_MAPS"); else if (dx < -24) elegirGps("WAZE");
+    });
+    grupo.addEventListener("pointercancel", function () { x0 = null; });
+  })();
 
   function cargarEstadoMp() {
     var estado = document.getElementById("mpEstado");
@@ -3503,12 +3592,14 @@
     detenerNavegacion(true);
     nav = { dest: dest, pasos: [], pts: [], cum: [], acum: [], idx: 0, linea: null, ultimaConsulta: 0, fuera: 0, anunciado: {}, voz: true, fin: false, pidiendo: false };
     document.body.classList.add("cond-navegando");
+    cerrarDetalleViaje();
     document.getElementById("navBanner").hidden = false;
     document.getElementById("navPie").hidden = false;
     document.getElementById("navInstr").textContent = "Calculando la ruta…";
     document.getElementById("navDist").textContent = "";
     document.getElementById("navFlecha").textContent = "↑";
     ponerHoja("bajo");   // la ventana baja para dejar ver el mapa
+    refrescarMapaViaje();
     pedirRutaNav();
   }
 
@@ -3610,6 +3701,7 @@
     if (b) b.hidden = true;
     if (p) p.hidden = true;
     if (!silencioso) ponerHoja("medio");
+    refrescarMapaViaje();
   }
 
   document.getElementById("btnNavSalir").addEventListener("click", function () { detenerNavegacion(); });
@@ -3683,7 +3775,7 @@
   setInterval(actualizarRelojesEspera, 1000);
 
   // Lista de puntos con el siguiente resaltado y sus botones de navegación.
-  function htmlRutaViaje(p) {
+  function htmlRutaViaje(p, sinAcciones) {
     var puntosIda = puntosDelViaje(p);
     var regreso = puntoRegreso(p, puntosIda);
     var todos = regreso ? puntosIda.concat([regreso]) : puntosIda;
@@ -3702,9 +3794,9 @@
           '<button class="btn btn-medio" type="button" data-nav-rumbo data-nav-lat="' + (pt.coord ? escapar(pt.coord.lat) : "") + '" data-nav-lng="' + (pt.coord ? escapar(pt.coord.lng) : "") + '" data-nav-dir="' + escapar(pt.dir) + '">Navegar en Rumbo</button>' +
           '<a class="btn btn-chico ir-waze" target="_blank" rel="noopener" href="' + escapar(urlWazePunto(pt)) + '">Ir con Waze</a>' +
           '<a class="btn btn-chico ir-maps" target="_blank" rel="noopener" href="' + escapar(urlMapsPunto(pt)) + '">Ir con Maps</a>' +
-          (etapa === "ida" && pt.rol === "parada"
+          (!sinAcciones && etapa === "ida" && pt.rol === "parada"
             ? '<button class="btn btn-ok" data-llegue="' + escapar(p.pedido_id) + '" data-siguiente="' + (i + 1) + '">Llegué a la parada</button>' : "") +
-          (etapa === "ida" && pt.rol === "destino" && esIdaYVuelta(p)
+          (!sinAcciones && etapa === "ida" && pt.rol === "destino" && esIdaYVuelta(p)
             ? '<button class="btn btn-ok" data-llegue-destino="' + escapar(p.pedido_id) + '">Llegué al destino</button>' : "") +
           '</div>';
       }
@@ -3713,7 +3805,9 @@
     }).join("");
 
     var panelEtapa = "";
-    if (etapa === "ida" && esIdaYVuelta(p)) {
+    if (sinAcciones) {
+      panelEtapa = "";   // los avisos y el reloj de la espera están en la tarjeta flotante
+    } else if (etapa === "ida" && esIdaYVuelta(p)) {
       panelEtapa = '<p class="ayuda" style="margin:0 2px 10px;font-size:13.5px;">Ida y vuelta: al llegar al destino toca <strong>«Llegué al destino»</strong>. ' +
         'Así se mide la espera que contrató el pasajero (' + minutosEsperaContratada(p) + ' min) y se cobra si se pasa.</p>';
     } else if (etapa === "espera") {
@@ -3734,6 +3828,263 @@
       (hayParadas && (etapa === "recoger" || etapa === "ida")
         ? '<a class="btn btn-chico" style="margin-bottom:10px;" target="_blank" rel="noopener" href="' + escapar(urlMapsDesde(puntosIda, Math.min(actual, idxDestino))) + '">Ruta completa en Maps (con paradas)</a>' : "");
   }
+
+  /* ---------------------------------------------------------------
+     Tarjeta flotante del viaje (como Uber). Una función PURA decide qué mostrar y cuál es el
+     único botón de la próxima acción (modeloTarjeta); otra elige qué viaje es el "foco" cuando
+     hay varios (elegirFoco). Todo el resto vive en el detalle (pantalla aparte).
+     --------------------------------------------------------------- */
+  // "Llegué" al punto de recogida: el servidor lo guarda; si el servidor no lo acepta (versión vieja o sin
+  // red) se recuerda en el teléfono para NO trabar el viaje: el botón siguiente (Iniciar viaje) sale igual.
+  function llegoARecogida(p) {
+    if (p.llegada_recogida_en) return true;
+    try { return localStorage.getItem("rumbo_llegue_" + p.pedido_id) === "1"; } catch (e) { return false; }
+  }
+  function marcarLlegoLocal(id) { try { localStorage.setItem("rumbo_llegue_" + id, "1"); } catch (e) {} }
+
+  function modeloTarjeta(p) {
+    var puntos = puntosDelViaje(p), quien = String(p.nombre || "el pasajero");
+    if (p.estado_pago === "PENDIENTE") {
+      return { etapa: "pago", id: p.pedido_id, etiqueta: "Viaje terminado", titulo: "Por cobrar " + fmt(montoP(p)),
+        sub: "Esperando el pago por Mercado Pago", boton: { texto: "Me pagó en efectivo", accion: "efectivo", clase: "verde" }, crono: null, secundario: null, punto: null };
+    }
+    var etapa = etapaDelViaje(p);
+    if (etapa === "recoger") {
+      var sec = { texto: "Finalizar sin iniciar", accion: "cerrar" };   // pasajero que no sube: siempre se puede cerrar y cobrar
+      return llegoARecogida(p)
+        ? { etapa: "recogida", id: p.pedido_id, etiqueta: "Pasajero", titulo: quien, sub: "Llegaste a " + puntos[0].dir,
+            boton: { texto: "Iniciar viaje", accion: "iniciar", clase: "" }, crono: null, secundario: sec, punto: puntos[0] }
+        : { etapa: "recoger", id: p.pedido_id, etiqueta: "Recoger a", titulo: quien, sub: puntos[0].dir,
+            boton: { texto: "Llegué", accion: "llegue-recogida", clase: "" }, crono: null, secundario: sec, punto: puntos[0] };
+    }
+    if (etapa === "espera") {
+      var d = new Date(p.llegada_destino_en);
+      return { etapa: "espera", id: p.pedido_id, etiqueta: "Esperando a " + quien, titulo: puntos[puntos.length - 1].dir, sub: "Ida y vuelta",
+        boton: { texto: "Iniciar regreso", accion: "iniciar-regreso", clase: "naranja" },
+        crono: { desde: isNaN(d.getTime()) ? "" : d.toISOString(), incluidaMin: minutosEsperaContratada(p) }, secundario: null, punto: puntos[puntos.length - 1] };
+    }
+    if (etapa === "regreso") {
+      var reg = puntoRegreso(p, puntos), esp = (Date.parse(p.inicio_regreso_en) - Date.parse(p.llegada_destino_en)) / 60000;
+      return { etapa: "regreso", id: p.pedido_id, etiqueta: "Regreso a", titulo: reg.dir, sub: isFinite(esp) ? "Esperaste " + Math.round(esp) + " min (incluidos " + minutosEsperaContratada(p) + ")" : "Ida y vuelta",
+        boton: { texto: "Finalizar viaje", accion: "cerrar", clase: "" }, crono: null, secundario: null, punto: reg };
+    }
+    // ida: paradas una por una y, al final, el destino
+    var idx = leerTramo(p, puntos.length), pt = puntos[idx];
+    if (pt.rol === "parada") {
+      return { etapa: "ida", id: p.pedido_id, etiqueta: "Parada " + idx + " de " + (puntos.length - 2), titulo: pt.dir, sub: "Con " + quien,
+        boton: { texto: "Llegué a la parada", accion: "llegue-parada", siguiente: idx + 1, clase: "" }, crono: null, secundario: null, punto: pt };
+    }
+    return esIdaYVuelta(p)
+      ? { etapa: "ida", id: p.pedido_id, etiqueta: "En viaje a", titulo: pt.dir, sub: "Ida y vuelta · con " + quien,
+          boton: { texto: "Llegué al destino", accion: "llegue-destino", clase: "" }, crono: null, secundario: null, punto: pt }
+      : { etapa: "ida", id: p.pedido_id, etiqueta: "En viaje a", titulo: pt.dir, sub: "Con " + quien,
+          boton: { texto: "Finalizar viaje", accion: "cerrar", clase: "" }, crono: null, secundario: null, punto: pt };
+  }
+
+  // Qué viaje muestra la tarjeta. Uno ya iniciado manda (el servidor solo deja uno a la vez); si no, el que se
+  // pidió "para ahora" antes que el programado, y entre programados el de hora más cercana. Un viaje que solo espera
+  // el pago no compite con uno por atender. Desempate fijo por pedido_id para que el foco no salte entre sondeos.
+  function elegirFoco(pedidos, manualId) {
+    if (!pedidos || !pedidos.length) return null;
+    var manual = pedidos.filter(function (p) { return p.pedido_id === manualId; })[0];
+    if (manual) return manual;
+    var porAtender = pedidos.filter(function (p) { return p.estado_pago !== "PENDIENTE"; });
+    var lista = porAtender.length ? porAtender : pedidos;
+    var porId = function (a, b) { return String(a.pedido_id) < String(b.pedido_id) ? -1 : 1; };
+    var iniciados = lista.filter(function (p) { return p.inicio_viaje_en; });
+    if (iniciados.length) return iniciados.sort(function (a, b) { return (Date.parse(a.inicio_viaje_en) - Date.parse(b.inicio_viaje_en)) || porId(a, b); })[0];
+    return lista.slice().sort(function (a, b) {
+      var aa = esParaAhora(a) ? 0 : 1, bb = esParaAhora(b) ? 0 : 1;
+      if (aa !== bb) return aa - bb;
+      var ma = momentoProgramado(a), mb = momentoProgramado(b), ta = ma ? ma.getTime() : 0, tb = mb ? mb.getTime() : 0;
+      return (ta - tb) || porId(a, b);
+    })[0];
+  }
+
+  var focoManualId = "", tvOcupado = false, tvClave = "";
+
+  function pintarTarjetaViaje() {
+    var tv = document.getElementById("tarjetaViaje");
+    if (!tv) return;
+    var hay = MODO === "conductor" && pedidosEnCursoActuales.length > 0;
+    document.body.classList.toggle("con-viaje", hay);
+    var enTab = hay && document.body.classList.contains("cond-pantalla") && document.getElementById("tabEnCurso").classList.contains("activo");
+    var p = enTab ? elegirFoco(pedidosEnCursoActuales, focoManualId) : null;
+    if (!p) {
+      tv.hidden = true;
+      document.body.classList.remove("con-tarjeta");
+      limpiarMapaViaje();
+      return;
+    }
+    var m = modeloTarjeta(p);
+    document.getElementById("tvEt").textContent = m.etiqueta;
+    document.getElementById("tvDir").textContent = m.titulo;
+    document.getElementById("tvSub").textContent = m.sub;
+    var cr = document.getElementById("tvCrono");
+    if (m.crono) {
+      cr.dataset.desde = m.crono.desde; cr.dataset.incluida = String(m.crono.incluidaMin);
+      cr.hidden = false; actualizarRelojesEspera();
+    } else { cr.hidden = true; delete cr.dataset.desde; }
+    var b = document.getElementById("tvAccion");
+    b.textContent = m.boton.texto;
+    b.className = "tv-accion" + (m.boton.clase ? " " + m.boton.clase : "");
+    b.dataset.accion = m.boton.accion; b.dataset.id = m.id; b.dataset.siguiente = m.boton.siguiente !== undefined ? String(m.boton.siguiente) : "";
+    b.disabled = tvOcupado;
+    var sc = document.getElementById("tvSec");
+    if (m.secundario) { sc.hidden = false; sc.textContent = m.secundario.texto; sc.dataset.accion = m.secundario.accion; sc.dataset.id = m.id; } else sc.hidden = true;
+    var otros = pedidosEnCursoActuales.length - 1, ot = document.getElementById("tvOtros");
+    if (otros > 0) { ot.hidden = false; ot.textContent = "Hay " + otros + (otros === 1 ? " viaje más" : " viajes más") + " · ver detalle"; } else ot.hidden = true;
+    tv.hidden = false;
+    document.body.classList.add("con-tarjeta");
+    document.body.style.setProperty("--tv-h", tv.offsetHeight + "px");
+    actualizarMapaViaje(p, m);
+  }
+
+  /* El mapa de fondo muestra el viaje en curso: la ruta naranja del viaje, el pasajero (si hay que buscarlo)
+     y el punto al que va. Mientras la navegación en Rumbo dibuja su propia ruta, la del viaje cede. */
+  var viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "" };
+  var posPasajeroPorPedido = {};
+  function limpiarMapaViaje() {
+    try {
+      if (viajeMapa.linea) viajeMapa.linea.setMap(null);
+      if (viajeMapa.dest) viajeMapa.dest.setMap(null);
+      if (viajeMapa.pasajero) viajeMapa.pasajero.setMap(null);
+    } catch (e) {}
+    viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "" };
+  }
+  function refrescarMapaViaje() {
+    var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
+    if (p && !document.getElementById("tarjetaViaje").hidden) actualizarMapaViaje(p, modeloTarjeta(p));
+  }
+  function actualizarMapaViaje(p, m) {
+    if (!mapaEspera || !googleMapsListo) return;
+    if (viajeMapa.id !== p.pedido_id) { limpiarMapaViaje(); viajeMapa.id = p.pedido_id; }
+    var cod = rutasPorPedido[p.pedido_id];
+    if (nav) {
+      if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }
+    } else if (cod && !viajeMapa.linea && google.maps.geometry) {
+      var pts = google.maps.geometry.encoding.decodePath(cod);
+      if (pts.length) viajeMapa.linea = dibujarRutaNaranja(mapaEspera, pts);
+    }
+    // punto al que va ahora (recogida, parada, destino o regreso)
+    var coord = m && m.punto && m.punto.coord;
+    var clavePunto = coord ? coord.lat + "," + coord.lng : "";
+    if (viajeMapa.dest && viajeMapa.clavePunto !== clavePunto) { viajeMapa.dest.setMap(null); viajeMapa.dest = null; }
+    if (coord && !viajeMapa.dest) {
+      viajeMapa.dest = new google.maps.Marker({ map: mapaEspera, position: coord, title: m.titulo, zIndex: 2,
+        icon: { url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="#11304A" stroke="#FFFFFF" stroke-width="3"/><rect x="10.5" y="10.5" width="9" height="9" rx="1.5" fill="#FFFFFF"/></svg>'),
+          scaledSize: new google.maps.Size(30, 30), anchor: new google.maps.Point(15, 15) } });
+    }
+    viajeMapa.clavePunto = clavePunto;
+    // el pasajero solo se dibuja mientras hay que ir a buscarlo
+    var pp = posPasajeroPorPedido[p.pedido_id], buscando = m && (m.etapa === "recoger" || m.etapa === "recogida");
+    if (pp && buscando) {
+      if (!viajeMapa.pasajero) viajeMapa.pasajero = new google.maps.Marker({ map: mapaEspera, title: "Pasajero", icon: iconoPersona(), zIndex: 1 });
+      viajeMapa.pasajero.setPosition(pp);
+    } else if (viajeMapa.pasajero) { viajeMapa.pasajero.setMap(null); viajeMapa.pasajero = null; }
+    // encuadre: una sola vez por viaje y etapa, y nunca mientras se navega (ahí el mapa sigue al auto)
+    var clave = p.pedido_id + ":" + (m ? m.etapa : "");
+    if (nav || viajeMapa.clave === clave) return;
+    viajeMapa.clave = clave;
+    var lim = new google.maps.LatLngBounds(), n = 0;
+    if (miPosicionConductor) { lim.extend(miPosicionConductor); n++; }
+    if (coord) { lim.extend(coord); n++; }
+    if (pp && buscando) { lim.extend(pp); n++; }
+    var cs = getComputedStyle(document.body);
+    var abajo = (parseFloat(cs.getPropertyValue("--tv-h")) || 0) + (parseFloat(cs.getPropertyValue("--nav-h")) || 0) + 24;
+    var arriba = (parseFloat(cs.getPropertyValue("--topbar-h")) || 0) + 24;
+    if (n > 1) mapaEspera.fitBounds(lim, { top: arriba, bottom: abajo, left: 36, right: 36 });
+    else if (coord) { mapaEspera.setZoom(16); centrarEnZonaVisible(coord, false); }
+  }
+
+  /* Acciones del viaje (las usa la tarjeta flotante y el detalle: una sola lógica). */
+  function pedidoEnCurso(id) {
+    var r = null;
+    pedidosEnCursoActuales.forEach(function (x) { if (x.pedido_id === id) r = x; });
+    return r;
+  }
+  function refrescarViajes() {
+    document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
+    cargarViajesEnCurso();
+  }
+  // Ocupa el botón mientras la acción está en el aire (el sondeo repinta la tarjeta cada 5 s).
+  function conBotonOcupado(promesa) {
+    tvOcupado = true;
+    document.getElementById("tvAccion").disabled = true;
+    return promesa.then(function (r) { tvOcupado = false; pintarTarjetaViaje(); return r; },
+                        function (e) { tvOcupado = false; pintarTarjetaViaje(); throw e; });
+  }
+  function accionViaje(tipo, id, siguiente) {
+    var p = pedidoEnCurso(id);
+    if (tipo === "cerrar") { abrirCierre(id); return; }
+    if (tipo === "llegue-parada") {
+      // "Llegué a la parada": pasa al tramo siguiente y abre su navegación.
+      guardarTramo(id, siguiente);
+      refrescarViajes();
+      if (p) abrirNavegacion(puntosDelViaje(p), siguiente);
+      return;
+    }
+    if (tipo === "llegue-recogida") {
+      conBotonOcupado(apiPost({ accion: "llegue_recogida", pedido_id: id }).then(function (res) {
+        if (!res || !res.ok) marcarLlegoLocal(id);   // sin servidor nuevo o sin red: igual sigue "Iniciar viaje"
+        refrescarViajes();
+      }).catch(function () { marcarLlegoLocal(id); refrescarViajes(); }));
+      return;
+    }
+    if (tipo === "iniciar") {
+      if (!confirm("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales.")) return;
+      conBotonOcupado(apiPost({ accion: "iniciar_viaje", pedido_id: id }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); return; }
+        refrescarViajes();
+        // Con el pasajero ya arriba se navega solo: Google Maps recibe la ruta completa con TODAS las
+        // paradas; Waze solo admite un destino por enlace, así que va a la primera parada (o al destino).
+        if (p) {
+          var puntos = puntosDelViaje(p);
+          var urlGps = gpsPreferido === "GOOGLE_MAPS" ? urlMapsDesde(puntos, 1) : urlWazePunto(puntos[1]);
+          if (urlGps) window.open(urlGps, "_system");
+        }
+      })).catch(function (err) { alert("Error de red: " + err.message); });
+      return;
+    }
+    if (tipo === "llegue-destino") {
+      // Ida y vuelta, etapa 1: llegó al destino → empieza a correr la espera.
+      conBotonOcupado(apiPost({ accion: "llegue_destino", pedido_id: id }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); return; }
+        refrescarViajes();
+      })).catch(function (err) { alert("Error de red: " + err.message); });
+      return;
+    }
+    if (tipo === "iniciar-regreso") {
+      // Etapa 2: termina la espera y sale de regreso (abre la navegación al origen).
+      conBotonOcupado(apiPost({ accion: "iniciar_regreso", pedido_id: id }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); return; }
+        refrescarViajes();
+        if (p) {
+          var reg = puntoRegreso(p, puntosDelViaje(p));
+          if (reg) abrirNavegacion([reg], 0);
+        }
+      })).catch(function (err) { alert("Error de red: " + err.message); });
+      return;
+    }
+    if (tipo === "efectivo") {
+      if (!confirm("¿El pasajero te pagó en efectivo? Se cierra el cobro por Mercado Pago.")) return;
+      conBotonOcupado(apiPost({ accion: "marcar_pagado_efectivo", pedido_id: id }).then(function (res) {
+        if (!res.ok) { alert("Error: " + res.error); return; }
+        refrescarViajes();
+      }));
+    }
+  }
+
+  function abrirDetalleViaje() { var d = document.getElementById("detalleViaje"); document.body.style.setProperty("--topbar-h", ((document.querySelector("#pantallaApp .topbar") || {}).offsetHeight || 60) + "px"); d.hidden = false; }
+  function cerrarDetalleViaje() { var d = document.getElementById("detalleViaje"); if (d) d.hidden = true; }
+  // El menú y el aviso del navegador no cambian: solo se mueven los bloques ya existentes.
+  document.getElementById("tvNav").appendChild(document.getElementById("navPie"));
+  document.getElementById("detalleCuerpo").appendChild(document.getElementById("grupoEnCurso"));
+  document.getElementById("tvAccion").addEventListener("click", function () { accionViaje(this.dataset.accion, this.dataset.id, parseInt(this.dataset.siguiente, 10)); });
+  document.getElementById("tvSec").addEventListener("click", function () { accionViaje(this.dataset.accion, this.dataset.id); });
+  document.getElementById("tvMas").addEventListener("click", abrirDetalleViaje);
+  document.getElementById("tvOtros").addEventListener("click", abrirDetalleViaje);
+  document.getElementById("btnCerrarDetalle").addEventListener("click", cerrarDetalleViaje);
 
   /* Ventana de cierre: antes de cobrar se le muestra al conductor lo que se va
      a cobrar (el mismo cálculo del servidor) y la espera medida. */
@@ -3979,7 +4330,7 @@
       emergenteDescartado[id] = true;
       cerrarEmergente();
       cargarPedidos(); cargarViajesEnCurso();
-      if (accion === "confirmar_pedido") { mostrarPestana("enCurso"); ponerHoja("medio"); }
+      if (accion === "confirmar_pedido") { cerrarDetalleViaje(); mostrarPestana("enCurso"); ponerHoja("medio"); }
     }).catch(function (err) { boton.disabled = false; alert("Error de red: " + err.message); });
   }
   document.getElementById("peAceptar").addEventListener("click", function () { responderEmergente("confirmar_pedido", this); });
@@ -4042,6 +4393,9 @@
         vacio.style.display = "flex";
         lista.innerHTML = "";
         lista.dataset.ids = "";
+        detenerNavegacion(true);   // sin viaje no hay a dónde navegar (si no, la voz seguía sin controles)
+        cerrarDetalleViaje();
+        pintarTarjetaViaje();
         return;
       }
       grupo.style.display = "block";
@@ -4055,7 +4409,7 @@
       // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
       // curso → esperando pago), para no borrar los mensajes ya pintados ni
       // lo que el conductor está tipeando.
-      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : "") + (p.llegada_destino_en ? "l" : "") + (p.inicio_regreso_en ? "r" : ""); }).join(",");
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : "") + (p.llegada_recogida_en ? "g" : "") + (p.llegada_destino_en ? "l" : "") + (p.inicio_regreso_en ? "r" : ""); }).join(",");
       if (lista.dataset.ids !== idsActuales) {
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
@@ -4069,6 +4423,7 @@
         if (p.estado === "CONFIRMADO") dibujarRutaPedido(p.pedido_id);
       });
       pedirEtas();
+      pintarTarjetaViaje();
       if (ubicaciones) {
         Object.keys(ubicaciones).forEach(function (id) { pintarUbicacionPasajero(id, ubicaciones[id]); });
       } else {
@@ -4135,26 +4490,16 @@
         '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       htmlProgramacion(p, !!p.inicio_viaje_en) +
-      // Ruta con paradas: el punto siguiente va resaltado con Waze/Maps y,
-      // si es una parada, el botón "Llegué" que pasa al tramo siguiente.
-      htmlRutaViaje(p) +
-      // Mapa con la posición del pasajero, para ir a buscarlo. Solo se
-      // dibuja si el pasajero aceptó compartir ubicación; si no, queda
-      // el aviso y el conductor lo ubica por la dirección de siempre.
-      '<div class="mapa-pasajero" data-mapa="' + escapar(p.pedido_id) + '"></div>' +
-      '<p class="nota-mapa" data-mapa-aviso="' + escapar(p.pedido_id) + '">Esperando la ubicación del pasajero...</p>' +
-      '<p class="nota-mapa" data-distancia="' + escapar(p.pedido_id) + '"></p>' +
-      // El chat vive en la ventana flotante (burbuja), no dentro de la tarjeta.
-      '<button class="btn btn-chico" style="width:100%;margin-top:10px;" data-abrir-chat="' + escapar(p.pedido_id) + '">Chat con el pasajero</button>' +
-      // Iniciar viaje: desde ahí el servidor mide el tiempo y los km reales.
-      (p.inicio_viaje_en
-        ? '<p class="msg ok" style="margin:14px 2px 6px;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>'
-        : '<button class="btn btn-medio" style="width:100%;margin-top:14px;" data-iniciar="' + escapar(p.pedido_id) + '" data-destino="' + escapar(p.destino) + '"' +
-            ' data-waze-sig="' + escapar(urlWazePunto(puntosDelViaje(p)[1])) + '" data-maps-sig="' + escapar(urlMapsDesde(puntosDelViaje(p), 1)) + '">Iniciar viaje</button>' +
-          '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">Tócalo cuando el pasajero suba: así se miden el tiempo y los km reales del viaje.</p>') +
-      // Finalizar: abre una ventana que muestra lo que se va a cobrar (valor
-      // real con la espera medida) y ahí se elige cómo paga el pasajero.
-      '<button class="btn btn-primario" style="width:100%;margin-top:14px;" data-cerrar="' + escapar(p.pedido_id) + '">Finalizar viaje</button>' +
+      // Ruta con paradas: el punto siguiente va resaltado con Navegar / Waze / Maps. Las acciones (Llegué,
+      // Iniciar, Finalizar) están en la tarjeta flotante sobre el mapa.
+      htmlRutaViaje(p, true) +
+      '<div class="btn-row" style="margin:10px 0 0;">' +
+        '<button class="btn btn-chico" data-abrir-chat="' + escapar(p.pedido_id) + '">Chat con el pasajero</button>' +
+        (pedidosEnCursoActuales.length > 1 ? '<button class="btn btn-chico" data-foco="' + escapar(p.pedido_id) + '">Ver en la tarjeta</button>' : "") +
+      '</div>' +
+      (p.inicio_viaje_en ? '<p class="msg ok" style="margin:12px 2px 0;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>' : "") +
+      // Siempre se puede cerrar y cobrar desde acá (también un viaje que nunca se inició).
+      '<button class="btn btn-chico" style="width:100%;margin-top:12px;" data-cerrar="' + escapar(p.pedido_id) + '">Finalizar viaje</button>' +
       '<p class="ayuda" style="margin:6px 2px 0;font-size:13px;">' +
         (cobroRealActivo && p.inicio_viaje_en
           ? 'Antes de cobrar verás el valor real (mínimo ' + fmt(montoP(p)) + ').'
@@ -4386,6 +4731,8 @@
     if (!ubicacion) return;
     var pos = { lat: Number(ubicacion.lat), lng: Number(ubicacion.lng) };
     if (isNaN(pos.lat) || isNaN(pos.lng)) return;
+    posPasajeroPorPedido[pedidoId] = pos;
+    refrescarMapaViaje();
     var m = mapaDelPedido(pedidoId, pos);
     if (!m) return;
     var aviso = document.querySelector('[data-mapa-aviso="' + pedidoId + '"]');
@@ -4727,79 +5074,12 @@
   document.getElementById("listaEnCurso").addEventListener("click", function (ev) {
     var abrirChatBtn = ev.target.closest("[data-abrir-chat]");
     if (abrirChatBtn) { abrirVentanaChat(abrirChatBtn.dataset.abrirChat); return; }
-    var llegue = ev.target.closest("[data-llegue]");
-    if (llegue) {
-      // "Llegué a la parada": pasa al tramo siguiente y abre su navegación.
-      var idPedido = llegue.dataset.llegue, sig = parseInt(llegue.dataset.siguiente, 10);
-      var pedidoLlegue = null;
-      pedidosEnCursoActuales.forEach(function (x) { if (x.pedido_id === idPedido) pedidoLlegue = x; });
-      guardarTramo(idPedido, sig);
-      document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
-      cargarViajesEnCurso();
-      if (pedidoLlegue) abrirNavegacion(puntosDelViaje(pedidoLlegue), sig);
-      return;
-    }
-    var iniciar = ev.target.closest("[data-iniciar]");
-    if (iniciar) {
-      if (!confirm("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales.")) return;
-      iniciar.disabled = true;
-      apiPost({ accion: "iniciar_viaje", pedido_id: iniciar.dataset.iniciar }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); iniciar.disabled = false; return; }
-        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
-        cargarViajesEnCurso();
-        // Con el pasajero ya arriba se navega solo: Google Maps recibe la ruta
-        // completa con TODAS las paradas; Waze solo admite un destino por
-        // enlace, así que va a la primera parada (o al destino si no hay) y
-        // el conductor sigue con "Llegué a la parada" tramo por tramo.
-        var urlGps = gpsPreferido === "GOOGLE_MAPS" ? iniciar.dataset.mapsSig : iniciar.dataset.wazeSig;
-        if (urlGps) window.open(urlGps, "_system");
-      }).catch(function (err) { alert("Error de red: " + err.message); iniciar.disabled = false; });
-      return;
-    }
+    var foco = ev.target.closest("[data-foco]");
+    if (foco) { focoManualId = foco.dataset.foco; cerrarDetalleViaje(); pintarTarjetaViaje(); return; }
     var cerrar = ev.target.closest("[data-cerrar]");
-    if (cerrar) { abrirCierre(cerrar.dataset.cerrar); return; }
-
-    // Ida y vuelta, etapa 1: llegó al destino → empieza a correr la espera.
-    var llegueDestino = ev.target.closest("[data-llegue-destino]");
-    if (llegueDestino) {
-      llegueDestino.disabled = true;
-      apiPost({ accion: "llegue_destino", pedido_id: llegueDestino.dataset.llegueDestino }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); llegueDestino.disabled = false; return; }
-        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
-        cargarViajesEnCurso();
-      }).catch(function (err) { alert("Error de red: " + err.message); llegueDestino.disabled = false; });
-      return;
-    }
-    // Etapa 2: termina la espera y sale de regreso (abre la navegación al origen).
-    var iniciarRegresoBtn = ev.target.closest("[data-iniciar-regreso]");
-    if (iniciarRegresoBtn) {
-      iniciarRegresoBtn.disabled = true;
-      var idRegreso = iniciarRegresoBtn.dataset.iniciarRegreso;
-      apiPost({ accion: "iniciar_regreso", pedido_id: idRegreso }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); iniciarRegresoBtn.disabled = false; return; }
-        var pedidoReg = null;
-        pedidosEnCursoActuales.forEach(function (x) { if (x.pedido_id === idRegreso) pedidoReg = x; });
-        document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
-        cargarViajesEnCurso();
-        if (pedidoReg) {
-          var ida = puntosDelViaje(pedidoReg);
-          var reg = puntoRegreso(pedidoReg, ida);
-          if (reg) abrirNavegacion([reg], 0);
-        }
-      }).catch(function (err) { alert("Error de red: " + err.message); iniciarRegresoBtn.disabled = false; });
-      return;
-    }
+    if (cerrar) { cerrarDetalleViaje(); accionViaje("cerrar", cerrar.dataset.cerrar); return; }
     var efectivo = ev.target.closest("[data-efectivo]");
-    if (efectivo) {
-      if (!confirm("¿El pasajero te pagó en efectivo? Se cierra el cobro por Mercado Pago.")) return;
-      efectivo.disabled = true;
-      apiPost({ accion: "marcar_pagado_efectivo", pedido_id: efectivo.dataset.efectivo }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); efectivo.disabled = false; return; }
-        document.getElementById("listaEnCurso").dataset.ids = "";
-        cargarViajesEnCurso();
-      });
-      return;
-    }
+    if (efectivo) { accionViaje("efectivo", efectivo.dataset.efectivo); return; }
     var linkPago = ev.target.closest("[data-link-pago]");
     if (linkPago) {
       var texto = "Este es el link para pagar tu viaje en Rumbo: " + linkPago.dataset.linkPago;
@@ -4898,7 +5178,7 @@
   function centrarEnZonaVisible(pos, suave) {
     if (!mapaEspera || !window.google) return;
     var cs = getComputedStyle(document.body);
-    var vis = parseFloat(cs.getPropertyValue("--hoja-vis")) || 0, top = parseFloat(cs.getPropertyValue("--topbar-h")) || 0;
+    var vis = parseFloat(cs.getPropertyValue(document.body.classList.contains("con-tarjeta") ? "--tv-h" : "--hoja-vis")) || 0, top = parseFloat(cs.getPropertyValue("--topbar-h")) || 0;
     var desvio = (vis - top) / 2;   // px que hay que correr el centro del mapa hacia abajo para subir el auto
     var proy = mapaEspera.getProjection && mapaEspera.getProjection();
     var destino = new google.maps.LatLng(pos.lat, pos.lng);
