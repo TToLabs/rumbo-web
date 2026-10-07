@@ -550,10 +550,10 @@
   body.pas-pantalla.hoja-medio #avisoDerivado, body.pas-pantalla.hoja-medio #estadoDetalle { display: none; }
   /* Viaje terminado: la ventana sube del todo y muestra solo lo que importa (valor, detalle, pago, calificación, Nuevo viaje). */
   .fin-viaje { text-align: center; padding: 6px 4px 14px; }
-  .fin-icono { width: 64px; height: 64px; margin: 4px auto 8px; border-radius: 50%; background: #0B7A4B; color: #fff; display: flex; align-items: center; justify-content: center; }
-  .fin-icono svg { width: 34px; height: 34px; }
-  .fin-titulo { font-size: 20px; font-weight: 700; }
-  .fin-total { font-size: 40px; font-weight: 700; line-height: 1.15; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+  .fin-icono { width: 52px; height: 52px; margin: 2px auto 6px; border-radius: 50%; background: #0B7A4B; color: #fff; display: flex; align-items: center; justify-content: center; }
+  .fin-icono svg { width: 28px; height: 28px; }
+  .fin-titulo { font-size: 18px; font-weight: 700; }
+  .fin-total { font-size: 28px; font-weight: 700; line-height: 1.2; margin: 2px 0 2px; font-variant-numeric: tabular-nums; }
   .fin-sub { font-size: 15px; color: var(--text-2); }
   body.viaje-terminado #etaConductor, body.viaje-terminado .pasos, body.viaje-terminado #estadoDetalle, body.viaje-terminado #distanciaConductor,
   body.viaje-terminado #avisoDerivado, body.viaje-terminado #tarjetaConductorAsignado, body.viaje-terminado #cardRecorrido, body.viaje-terminado #btnCompartirViaje { display: none !important; }
@@ -1830,7 +1830,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 50;
+  var APP_VERSION = 51;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3518,11 +3518,14 @@
   function motivosDelAumento(res) {
     var d = res.detalle || {}, m = [];
     var cot = Number(d.minutos_cotizados) || 0, real = Number(d.minutos_reales) || 0;
-    if (cot > 0 && real > cot) m.push("El viaje se calculó por " + cot + " min y duró " + real + " min (" + (real - cot) + " min más).");
+    // Solo se explica lo que superó la tolerancia (una diferencia chica o un desvío involuntario no sube el valor).
+    var tp = Number(d.tolerancia_pct); if (!isFinite(tp) || tp <= 0) tp = 0.10;
+    var tm = Number(d.tolerancia_min); if (!isFinite(tm) || tm < 0) tm = 5;
+    if (cot > 0 && real > Math.max(cot * (1 + tp), cot + tm)) m.push("El viaje se calculó por " + cot + " min y duró " + real + " min (" + (real - cot) + " min más).");
     var extra = Number(res.espera_extra_min) || 0;
     if (extra > 0) m.push("Tu conductor esperó " + Math.round(extra) + " min más de los " + (Number(res.espera_cotizada_min) || 0) + " min de espera incluidos.");
     var kc = Number(d.km_cotizados) || 0, kr = Number(d.km_reales) || 0;
-    if (kc > 0 && kr > kc * 1.05) m.push("Se calculó por " + textoKm(kc) + " y se recorrieron " + textoKm(kr) + ".");
+    if (kc > 0 && kr > kc * (1 + tp)) m.push("Se calculó por " + textoKm(kc) + " y se recorrieron " + textoKm(kr) + ".");
     if (res.final_metodo === "TOPE") m.push("El ajuste tiene un tope de 30% sobre la tarifa estimada.");
     if (!m.length) m.push("El viaje duró más tiempo o recorrió más distancia de lo previsto.");
     m.push("Por eso el monto final es mayor que la tarifa estimada.");
