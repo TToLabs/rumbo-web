@@ -533,7 +533,7 @@
   body.pas-pantalla .wiz-hoja {
     position: fixed; left: 50%; bottom: var(--nav-h, 0px); width: 100%; max-width: 448px; z-index: 20;
     transform: translateX(-50%); transition: height .28s cubic-bezier(.2, .8, .2, 1);
-    border-radius: 20px 20px 0 0; border-bottom: none; padding: 0 14px 12px; overflow: hidden;
+    border-radius: 20px 20px 0 0; border-bottom: none; padding: 0 14px calc(12px + env(safe-area-inset-bottom)); overflow: hidden;
     box-shadow: 0 -6px 24px rgba(10, 20, 40, 0.18); display: flex; flex-direction: column;
   }
   body.pas-pantalla #segHoja { display: block; overflow-y: auto; overscroll-behavior: contain; }
@@ -548,8 +548,9 @@
   body.pas-pantalla.hoja-medio #cardRecorrido, body.pas-pantalla.hoja-medio #btnCompartirViaje,
   body.pas-pantalla.hoja-medio #distanciaConductor, body.pas-pantalla.hoja-medio .pasos,
   body.pas-pantalla.hoja-medio #avisoDerivado, body.pas-pantalla.hoja-medio #estadoDetalle { display: none; }
-  /* La barra de abajo solo existe cuando hay un viaje: sin viaje no hay nada que cambiar. */
-  .nav-inferior:not(:has(#tabSeguimiento:not(:disabled))) { display: none; }
+  /* Sin barra de pestañas (como el conductor): el viaje toma la pantalla solo y lo demás está en el menú de 3 rayas.
+     Los botones de pestaña siguen en el DOM porque el código los usa. */
+  .nav-inferior { display: none !important; }
   #tabCuenta { display: none; }
   /* "Mi cuenta" y el menú viven ahora en el menú lateral (3 rayas arriba a la derecha). */
   .menu-wrap { display: none; }
@@ -1811,7 +1812,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 48;
+  var APP_VERSION = 49;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -1914,13 +1915,59 @@
      sesión (si el pasajero toca "Nuevo viaje" no se lo vuelve a poner). */
   var viajeRestauradoPara = "";
   var historialChatSilencioso = false;   // el primer lote de mensajes al recuperar es historial: no suena
+
+  /* El viaje activo también se guarda en ESTE teléfono (de esta cuenta): al abrir la app el seguimiento aparece al instante,
+     sin pasar por la pantalla de cotizar y sin esperar al servidor (Apps Script tarda varios segundos). El servidor lo confirma
+     o lo corrige después. Solo una respuesta del servidor invalida lo guardado (nunca un fallo de red). */
+  var VIAJE_KEY = "rumbo_viaje_activo";
+  var viajeDesdeCache = "";   // pedido_id que se mostró desde lo guardado y aún no confirmó el servidor
+  function leerViajeGuardado() {
+    try { var v = JSON.parse(localStorage.getItem(VIAJE_KEY) || "null"); return v && v.pedido_id ? v : null; } catch (e) { return null; }
+  }
+  function guardarViajeLocal(total) {
+    if (!pedidoActualId) return;
+    var s = obtenerSesionPasajero();
+    try {
+      localStorage.setItem(VIAJE_KEY, JSON.stringify({
+        pasajero_id: s && s.pasajero ? s.pasajero.pasajero_id : "", pedido_id: pedidoActualId,
+        token_seguimiento: tokenSeguimientoActual, total: total, info: viajeActualInfo
+      }));
+    } catch (e) {}
+  }
+  function borrarViajeLocal() { try { localStorage.removeItem(VIAJE_KEY); } catch (e) {} viajeDesdeCache = ""; }
+  // El viaje guardado ya no vale (terminó, no existe, no es de esta cuenta o la sesión venció): se limpia todo y se vuelve al inicio.
+  function viajeInvalido(sesionVencida) {
+    borrarViajeLocal();
+    if (pedidoActualId) document.getElementById("btnNuevoPedido").click();
+    if (sesionVencida) salirDeCuentaPasajero();
+  }
+  function restaurarDesdeCache() {
+    var g = leerViajeGuardado();
+    if (!g || pedidoActualId) return false;
+    var s = obtenerSesionPasajero();
+    if (!s || !s.token || !s.pasajero || g.pasajero_id !== s.pasajero.pasajero_id) { borrarViajeLocal(); return false; }   // otra cuenta o sin sesión
+    pedidoActualId = g.pedido_id;
+    tokenSeguimientoActual = g.token_seguimiento || "";
+    document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
+    viajeActualInfo = g.info || null;
+    historialChatSilencioso = true;
+    ultimoMensajeEn = "";
+    viajeDesdeCache = g.pedido_id;
+    mostrarVistaEstado(g.total, true);
+    iniciarPolling();
+    return true;
+  }
   function restaurarViajeActivo() {
     var sesion = obtenerSesionPasajero();
-    if (!sesion || !sesion.token || pedidoActualId || viajeRestauradoPara === sesion.token) return;
+    if (!sesion || !sesion.token || viajeRestauradoPara === sesion.token) return;
     viajeRestauradoPara = sesion.token;
     api({ accion: "mi_viaje_activo", pasajero_token: sesion.token }).then(function (res) {
-      if (!res || !res.ok || !res.viaje || pedidoActualId) return;
+      if (res && res.requiere_login) { viajeInvalido(true); return; }
+      if (!res || !res.ok) return;
       var v = res.viaje;
+      // Lo mostrado desde el teléfono ya no coincide con el servidor (terminó, otro viaje): se descarta.
+      if (viajeDesdeCache && pedidoActualId === viajeDesdeCache && (!v || v.pedido_id !== pedidoActualId)) viajeInvalido(false);
+      if (!v || pedidoActualId) return;   // sin viaje activo, o ya está en pantalla y coincide
       pedidoActualId = v.pedido_id;
       tokenSeguimientoActual = v.token_seguimiento || "";
       document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
@@ -1932,6 +1979,7 @@
       historialChatSilencioso = true;
       ultimoMensajeEn = "";
       mostrarVistaEstado(v.total);
+      guardarViajeLocal(v.total);
       iniciarPolling();
     }).catch(function () { viajeRestauradoPara = ""; });   // sin red: se reintenta la próxima vez
   }
@@ -2118,6 +2166,8 @@
         return;
       }
       guardarSesionPasajero(res);
+      var gv = leerViajeGuardado();   // lo guardado de OTRA cuenta no se hereda
+      if (gv && res.pasajero && gv.pasajero_id !== res.pasajero.pasajero_id) { borrarViajeLocal(); if (pedidoActualId) document.getElementById("btnNuevoPedido").click(); }
       msg.textContent = "";
       document.getElementById("claveCliente").value = "";
       bioTrasLogin(telefono, clave);
@@ -2157,6 +2207,8 @@
   }
 
   function salirDeCuentaPasajero() {
+    borrarViajeLocal();
+    if (pedidoActualId) document.getElementById("btnNuevoPedido").click();   // el viaje de esta cuenta no pasa a la siguiente
     try { localStorage.removeItem(PERFIL_KEY); } catch (e) {}
     if (bioActivada()) { modoCuenta = "ingresar"; pintarModoCuenta(); }
     pintarSesionPasajero();
@@ -3061,6 +3113,7 @@
         paradas: obtenerParadas(), fecha: fechaHoraCotizada.fecha, hora: fechaHoraCotizada.hora
       };
       mostrarVistaEstado(res.total);
+      guardarViajeLocal(res.total);
       iniciarPolling();
     }).catch(function (err) {
       pedirTexto.textContent = "No se pudo enviar la solicitud (" + err.message + "). Intenta de nuevo.";
@@ -3071,7 +3124,7 @@
     enviarPedido(false);
   });
 
-  function mostrarVistaEstado(totalConfirmado) {
+  function mostrarVistaEstado(totalConfirmado, desdeCache) {
     hojaEstado = "medio";   // el seguimiento abre con la ventana a media altura
     viajeCerrado = false;   // viaje nuevo (o recuperado): sigue en curso hasta que termine y se cobre
     document.getElementById("btnNuevoPedido").style.display = "none";
@@ -3084,7 +3137,7 @@
     mostrarPestana("seguimiento");
     limpiarSeguimientoVisual();
     document.getElementById("estadoBox").className = "estado-box pendiente";
-    document.getElementById("estadoBox").textContent = "Esperando confirmación del conductor";
+    document.getElementById("estadoBox").textContent = desdeCache ? "Verificando tu viaje…" : "Esperando confirmación del conductor";
     var cuando = viajeActualInfo ? textoCuando(viajeActualInfo.fecha, viajeActualInfo.hora) : "";
     // Un viaje pedido para dentro de pocos minutos es "ahora": no se muestra
     // una hora, que daría la impresión de un mínimo de espera.
@@ -3115,7 +3168,10 @@
     var sesion = obtenerSesionPasajero();
     api({ accion: "sincronizar_pasajero", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "", desde: ultimoMensajeEn })
       .then(function (res) {
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (res.requiere_login || /no encontrado|sin acceso/i.test(res.error || "")) viajeInvalido(!!res.requiere_login);
+          return;
+        }
         if (!res.estado) {
           // Backend anterior a la versión 11: consulta suelta de estado.
           return api({ accion: "estado_pedido", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "" }).then(manejarEstado);
@@ -3390,6 +3446,12 @@
           document.getElementById("etaConductor").style.display = "none";
           ocultarChat();   // el viaje terminó: la burbuja solo existe mientras hay viaje en Rumbo
           mostrarCierreDeViaje(res);
+        } else if (res.estado === "PENDIENTE") {
+          // Sigue esperando conductor (también tras abrir la app con el viaje guardado: se reemplaza el texto neutro).
+          var eb = document.getElementById("estadoBox");
+          if (eb.className.indexOf("pendiente") >= 0) eb.textContent = "Esperando confirmación del conductor";
+        } else if (res.estado === "CANCELADO") {
+          viajeInvalido(false);
         } else if (res.estado === "SIN_CONDUCTOR") {
           // No se le muestra cada rechazo individual mientras se deriva
           // entre conductores — solo el resultado final, para no generar
@@ -3471,6 +3533,7 @@
     if (chatTimer) { clearInterval(chatTimer); chatTimer = null; }
     mostrarCalificacion(res);
     viajeCerrado = true;                                            // terminó y se cobró
+    borrarViajeLocal();                                             // ya no hay viaje activo que recuperar
     document.getElementById("btnNuevoPedido").style.display = "";   // recién ahora se puede empezar otro
   }
 
@@ -3609,8 +3672,11 @@
     function aplicar(p) {
       if (!p) return;
       b.style.left = Math.min(Math.max(8, p.x), window.innerWidth - 68) + "px";
+      b.style.right = "auto";
+      // En el pasajero queda siempre justo sobre la ventana (que sube y baja): solo se elige el lado, nunca la altura.
+      if (document.body.classList.contains("pas-pantalla")) return;
       b.style.top = Math.min(Math.max(8, p.y), window.innerHeight - 140) + "px";
-      b.style.right = "auto"; b.style.bottom = "auto";
+      b.style.bottom = "auto";
     }
     try { aplicar(JSON.parse(localStorage.getItem("rumbo_burbuja_chat") || "null")); } catch (e) {}
     b.addEventListener("pointerdown", function (ev) {
@@ -4081,6 +4147,7 @@ function svgAuto(rumbo, color, tipo) {
     document.getElementById("notaPago").style.display = "none";
     document.getElementById("btnNuevoPedido").style.display = "none";   // vuelve a ocultarse hasta que termine el próximo viaje
     pedidoActualId = null;
+    borrarViajeLocal();
     viajeCerrado = false;
     tokenSeguimientoActual = "";
     document.getElementById("btnCompartirViaje").style.display = "none";
@@ -4370,6 +4437,7 @@ function svgAuto(rumbo, color, tipo) {
   cargarGoogleMaps();
   mostrarAvisoInstalarApp();
   if (bioActivada() && !obtenerSesionPasajero()) { modoCuenta = "ingresar"; pintarModoCuenta(); }
+  restaurarDesdeCache();   // con un viaje activo guardado, el seguimiento aparece directo (nunca la pantalla de cotizar)
   pintarSesionPasajero();
 
   // Si llegaste sin la app (navegador) con el link/QR de un conductor, no

@@ -1718,7 +1718,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 52;
+  var APP_VERSION = 53;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -4601,10 +4601,7 @@
         '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
       '</div>' +
       htmlProgramacion(p, !!p.inicio_viaje_en) +
-      '<div class="btn-row" style="margin:10px 0 0;">' +
-        '<button class="btn btn-chico" data-abrir-chat="' + escapar(p.pedido_id) + '">Chat con el pasajero</button>' +
-        (pedidosEnCursoActuales.length > 1 ? '<button class="btn btn-chico" data-foco="' + escapar(p.pedido_id) + '">Ver en la tarjeta</button>' : "") +
-      '</div>' +
+      (pedidosEnCursoActuales.length > 1 ? '<div class="btn-row" style="margin:10px 0 0;"><button class="btn btn-chico" data-foco="' + escapar(p.pedido_id) + '">Ver en la tarjeta</button></div>' : "") +
       (p.inicio_viaje_en ? '<p class="msg ok" style="margin:12px 2px 0;font-weight:600;">Viaje iniciado a las ' + horaDe(p.inicio_viaje_en) + '</p>' : "") +
       // Siempre se puede cerrar y cobrar desde acá (también un viaje que nunca se inició).
       '<button class="btn btn-chico" style="width:100%;margin-top:12px;" data-cerrar="' + escapar(p.pedido_id) + '">Finalizar viaje</button>' +
@@ -4628,8 +4625,7 @@
       '<div class="btn-row" style="margin:10px 0 8px;">' +
         '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' +
         '<button class="btn btn-chico" data-efectivo="' + escapar(p.pedido_id) + '">Me pagó en efectivo</button>' +
-      '</div>' +
-      '<button class="btn btn-chico" style="width:100%;" data-abrir-chat="' + escapar(p.pedido_id) + '">Chat con el pasajero</button>';
+      '</div>';
     return div;
   }
 
