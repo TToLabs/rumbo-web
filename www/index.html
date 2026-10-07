@@ -548,6 +548,17 @@
   body.pas-pantalla.hoja-medio #cardRecorrido, body.pas-pantalla.hoja-medio #btnCompartirViaje,
   body.pas-pantalla.hoja-medio #distanciaConductor, body.pas-pantalla.hoja-medio .pasos,
   body.pas-pantalla.hoja-medio #avisoDerivado, body.pas-pantalla.hoja-medio #estadoDetalle { display: none; }
+  /* Viaje terminado: la ventana sube del todo y muestra solo lo que importa (valor, detalle, pago, calificación, Nuevo viaje). */
+  .fin-viaje { text-align: center; padding: 6px 4px 14px; }
+  .fin-icono { width: 64px; height: 64px; margin: 4px auto 8px; border-radius: 50%; background: #0B7A4B; color: #fff; display: flex; align-items: center; justify-content: center; }
+  .fin-icono svg { width: 34px; height: 34px; }
+  .fin-titulo { font-size: 20px; font-weight: 700; }
+  .fin-total { font-size: 40px; font-weight: 700; line-height: 1.15; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+  .fin-sub { font-size: 15px; color: var(--text-2); }
+  body.viaje-terminado #etaConductor, body.viaje-terminado .pasos, body.viaje-terminado #estadoDetalle, body.viaje-terminado #distanciaConductor,
+  body.viaje-terminado #avisoDerivado, body.viaje-terminado #tarjetaConductorAsignado, body.viaje-terminado #cardRecorrido, body.viaje-terminado #btnCompartirViaje { display: none !important; }
+  body.viaje-terminado #btnNuevoPedido { position: sticky; bottom: 0; width: 100%; margin-top: 8px; min-height: 54px; font-size: 17px; z-index: 5; background: var(--surface); box-shadow: 0 -10px 10px var(--surface); }
+  body.viaje-terminado #estadoBox.confirmado { display: none; }   /* ya lo dice la tarjeta grande de arriba */
   /* Sin barra de pestañas (como el conductor): el viaje toma la pantalla solo y lo demás está en el menú de 3 rayas.
      Los botones de pestaña siguen en el DOM porque el código los usa. */
   .nav-inferior { display: none !important; }
@@ -1163,6 +1174,13 @@
     </div>
     <div class="wiz-hoja seg-hoja" id="segHoja">
     <div class="hoja-asa" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
+    <!-- Al terminar el viaje: pantalla propia y bien visible con el valor del viaje (no una línea chica en la ventana). -->
+    <div class="fin-viaje" id="cardFin" style="display:none;" aria-live="polite">
+      <div class="fin-icono" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <div class="fin-titulo">Viaje terminado</div>
+      <div class="fin-total" id="finTotal"></div>
+      <div class="fin-sub" id="finSub"></div>
+    </div>
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
          mientras el conductor va a buscarte. -->
@@ -1812,7 +1830,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 49;
+  var APP_VERSION = 50;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3126,6 +3144,7 @@
 
   function mostrarVistaEstado(totalConfirmado, desdeCache) {
     hojaEstado = "medio";   // el seguimiento abre con la ventana a media altura
+    ocultarFinDeViaje();
     viajeCerrado = false;   // viaje nuevo (o recuperado): sigue en curso hasta que termine y se cobre
     document.getElementById("btnNuevoPedido").style.display = "none";
     document.getElementById("cardDesgloseFinal").style.display = "none";
@@ -3161,10 +3180,12 @@
   /* UNA consulta cada 5 s trae estado, mensajes nuevos, ubicación del auto y
      la ruta. Antes eran 3 temporizadores separados y Apps Script los
      encolaba (medido: hasta 40 s de atraso). En segundo plano no consulta. */
-  var sincronizandoViaje = false;
+  var sincronizandoViaje = false, sincronizandoDesde = 0;
   function sincronizarViaje() {
-    if (sincronizandoViaje || document.hidden || !pedidoActualId) return;
-    sincronizandoViaje = true;
+    if (document.hidden || !pedidoActualId) return;
+    // Una consulta que nunca vuelve (mala señal) no puede dejar el seguimiento pegado para siempre: pasados 20 s se reintenta.
+    if (sincronizandoViaje && Date.now() - sincronizandoDesde < 20000) return;
+    sincronizandoViaje = true; sincronizandoDesde = Date.now();
     var sesion = obtenerSesionPasajero();
     api({ accion: "sincronizar_pasajero", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "", desde: ultimoMensajeEn })
       .then(function (res) {
@@ -3471,17 +3492,14 @@
   function pintarDesgloseFinal(res) {
     var tarjeta = document.getElementById("cardDesgloseFinal");
     var cotizado = Number(res.total_cotizado) || 0, total = Number(res.total) || 0;
-    if (!(cotizado > 0) || !(total > cotizado)) { tarjeta.style.display = "none"; return; }
+    if (!(cotizado > 0) || !(total > cotizado)) { tarjeta.style.display = "none"; return; }   // paga lo informado: el valor ya está arriba
     var filas = [
       ["Tarifa estimada", fmt(cotizado), ""],
       ["Ajuste por tiempo y distancia reales", "+ " + fmt(total - cotizado), "ajuste"],
       ["Total a pagar", fmt(total), "final"]
     ];
-    // Si el conductor esperó más de lo contratado, se dice con todas sus letras.
-    var extra = Number(res.espera_extra_min) || 0;
-    document.getElementById("motivoDesglose").textContent = extra > 0
-      ? "Tu conductor esperó " + Math.round(extra) + " min más de los " + (Number(res.espera_cotizada_min) || 0) + " min de espera incluidos, por eso el monto final es mayor que la tarifa estimada."
-      : "El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.";
+    var motivos = motivosDelAumento(res);
+    document.getElementById("motivoDesglose").textContent = motivos.join(" ");
     var cont = document.getElementById("desgloseFinal");
     cont.innerHTML = "";
     filas.forEach(function (f) {
@@ -3495,6 +3513,44 @@
     tarjeta.style.display = "block";
   }
 
+  // Por qué subió el valor, con números: cuánto se calculó y cuánto fue de verdad. Solo dice lo que se midió.
+  function textoKm(n) { return String(Math.round(n * 10) / 10).replace(".", ",") + " km"; }
+  function motivosDelAumento(res) {
+    var d = res.detalle || {}, m = [];
+    var cot = Number(d.minutos_cotizados) || 0, real = Number(d.minutos_reales) || 0;
+    if (cot > 0 && real > cot) m.push("El viaje se calculó por " + cot + " min y duró " + real + " min (" + (real - cot) + " min más).");
+    var extra = Number(res.espera_extra_min) || 0;
+    if (extra > 0) m.push("Tu conductor esperó " + Math.round(extra) + " min más de los " + (Number(res.espera_cotizada_min) || 0) + " min de espera incluidos.");
+    var kc = Number(d.km_cotizados) || 0, kr = Number(d.km_reales) || 0;
+    if (kc > 0 && kr > kc * 1.05) m.push("Se calculó por " + textoKm(kc) + " y se recorrieron " + textoKm(kr) + ".");
+    if (res.final_metodo === "TOPE") m.push("El ajuste tiene un tope de 30% sobre la tarifa estimada.");
+    if (!m.length) m.push("El viaje duró más tiempo o recorrió más distancia de lo previsto.");
+    m.push("Por eso el monto final es mayor que la tarifa estimada.");
+    return m;
+  }
+
+  // Pantalla de "Viaje terminado": la ventana sube del todo y deja a la vista el valor del viaje (antes era una línea
+  // chica a media altura y el pasajero ni se daba cuenta de que había terminado).
+  var finMostrado = false;
+  function mostrarFinDeViaje(res) {
+    document.body.classList.add("viaje-terminado");
+    document.getElementById("cardFin").style.display = "block";
+    document.getElementById("finTotal").textContent = fmt(Number(res.total) || 0);
+    document.getElementById("finSub").textContent = res.estado_pago === "PAGADO"
+      ? (res.forma_pago === "EFECTIVO" ? "Pagado en efectivo" : "Pago recibido por Mercado Pago")
+      : "Falta pagar con Mercado Pago";
+    if (finMostrado) return;
+    finMostrado = true;
+    hojaEstado = "alto"; ajustarWiz();
+    try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+  }
+  function ocultarFinDeViaje() {
+    finMostrado = false;
+    document.body.classList.remove("viaje-terminado");
+    var c = document.getElementById("cardFin");
+    if (c) c.style.display = "none";
+  }
+
   function mostrarCierreDeViaje(res) {
     var box = document.getElementById("estadoBox");
     var btnPagar = document.getElementById("btnPagarMp");
@@ -3502,6 +3558,7 @@
     dejarDeCompartirUbicacion();
     if (mapaTimer) { clearInterval(mapaTimer); mapaTimer = null; }
     document.getElementById("distanciaConductor").textContent = ""; // ya llegó: la distancia no aplica
+    mostrarFinDeViaje(res);
     pintarDesgloseFinal(res);
 
     if (res.estado_pago === "PENDIENTE" && res.mp_link) {
@@ -4148,6 +4205,7 @@ function svgAuto(rumbo, color, tipo) {
     document.getElementById("btnNuevoPedido").style.display = "none";   // vuelve a ocultarse hasta que termine el próximo viaje
     pedidoActualId = null;
     borrarViajeLocal();
+    ocultarFinDeViaje();
     viajeCerrado = false;
     tokenSeguimientoActual = "";
     document.getElementById("btnCompartirViaje").style.display = "none";
