@@ -1858,7 +1858,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 52;
+  var APP_VERSION = 53;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3577,11 +3577,14 @@
   // Pantalla de "Viaje terminado": la ventana sube del todo y deja a la vista el valor del viaje (antes era una línea
   // chica a media altura y el pasajero ni se daba cuenta de que había terminado).
   var finMostrado = false;
-  // Viaje más corto que lo calculado: no baja el valor, se cobra lo informado al pedirlo (igual que ve el conductor).
+  // Solo si el viaje terminó en otro punto, más cerca que el destino indicado (los km recorridos quedan por debajo de los
+  // cotizados más allá de la tolerancia): no baja el valor, se cobra lo informado al pedirlo. Llegar al destino en menos
+  // tiempo no se avisa.
   function notaViajeMasCorto(res) {
-    var d = res.detalle || {}, cot = Number(d.minutos_cotizados) || 0, real = Number(d.minutos_reales) || 0;
-    if (res.final_metodo !== "MINIMO" || !(cot > 0) || !(real > 0) || real >= cot) return "";
-    return "Tu viaje salió más corto de lo calculado (" + real + " de " + cot + " min). Se cobra el valor informado al pedirlo.";
+    var d = res.detalle || {}, kc = Number(d.km_cotizados) || 0, kr = Number(d.km_reales) || 0;
+    var cot = Number(res.total_cotizado) || 0, total = Number(res.total) || 0;
+    if (res.final_metodo !== "RECALCULADO" || !(kc > 0) || !(kr > 0) || !(cot > 0) || !(total < cot)) return "";
+    return "El viaje terminó antes del destino indicado (" + textoKm(kr) + " de " + textoKm(kc) + "), así que el valor se recalculó: " + fmt(total) + " en vez de " + fmt(cot) + ".";
   }
   function mostrarFinDeViaje(res) {
     document.body.classList.add("viaje-terminado");

@@ -1748,7 +1748,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 54;
+  var APP_VERSION = 55;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -4255,6 +4255,7 @@
     if (r.ida_vuelta && r.metodo !== "COTIZADO" && !r.llegada_marcada) av.push("No marcaste «Llegué al destino»: la espera no se pudo medir por separado; se cobra por el tiempo total.");
     if (r.ida_vuelta && r.llegada_marcada && !r.regreso_marcado) av.push("No marcaste «Iniciar regreso»: la espera se cuenta hasta ahora.");
     if (!r.cobro_real && r.metodo !== "COTIZADO") av.push("El cobro con valores reales está desactivado: se cobra lo cotizado.");
+    else if (r.cobro_real && r.metodo === "RECALCULADO") av.push("El viaje terminó antes del destino indicado: se recalculó y se cobra lo recorrido (menos que lo cotizado).");
     else if (r.cobro_real && r.metodo === "MINIMO") av.push("El viaje salió más corto que lo cotizado: se cobra lo cotizado (mínimo).");
     else if (r.cobro_real && r.metodo === "TOPE") av.push("El valor real superó el tope de +30%: se cobra el tope.");
     return av;
