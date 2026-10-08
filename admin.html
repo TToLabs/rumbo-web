@@ -1300,6 +1300,35 @@
     </section>
     </div></details>
 
+    <details class="acordeon simple"><summary>Cobrar por transferencia</summary><div class="acordeon-cuerpo">
+    <section class="card" id="cardTransferencia">
+      <div class="card-head"><span class="card-title">Datos para transferencia</span></div>
+      <p class="ayuda" style="margin:0 0 12px;">
+        Al terminar el viaje, el pasajero puede elegir pagarte por transferencia. Ve estos datos con botón de copiar, para pegarlos en su banco sin errores.
+        Si dejas todo vacío, no se ofrece transferencia.
+      </p>
+      <div class="campo"><label class="campo-label" for="trTitular">Nombre del titular</label><input type="text" id="trTitular" autocomplete="off" maxlength="80"></div>
+      <div class="campo"><label class="campo-label" for="trRut">RUT</label><input type="text" id="trRut" placeholder="12.345.678-9" autocomplete="off" maxlength="14"></div>
+      <div class="campo"><label class="campo-label" for="trBanco">Banco</label>
+        <select id="trBanco">
+          <option value="">Elige el banco…</option>
+          <option>Banco de Chile</option><option>BancoEstado</option><option>Banco Santander</option><option>Banco BCI</option>
+          <option>Scotiabank</option><option>Banco Itaú</option><option>Banco Falabella</option><option>Banco Ripley</option>
+          <option>Banco Security</option><option>Banco BICE</option><option>Banco Consorcio</option><option>Banco Internacional</option>
+          <option>Coopeuch</option><option>Mercado Pago</option><option>Tenpo</option><option>MACH</option><option>Otro banco</option>
+        </select></div>
+      <div class="campo"><label class="campo-label" for="trTipo">Tipo de cuenta</label>
+        <select id="trTipo">
+          <option value="">Elige el tipo…</option>
+          <option>Cuenta Corriente</option><option>Cuenta Vista</option><option>Cuenta RUT</option><option>Cuenta de Ahorro</option>
+        </select></div>
+      <div class="campo"><label class="campo-label" for="trNumero">Número de cuenta</label><input type="text" id="trNumero" inputmode="numeric" autocomplete="off" maxlength="30"></div>
+      <div class="campo"><label class="campo-label" for="trEmail">Correo (opcional)</label><input type="email" id="trEmail" autocomplete="off" maxlength="80"></div>
+      <button class="btn btn-chico" id="btnGuardarTransferencia" type="button">Guardar datos</button>
+      <p class="msg" id="transferenciaMsg" style="margin:10px 2px 0;"></p>
+    </section>
+    </div></details>
+
     <details class="acordeon simple"><summary>QR para pasajeros</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMiQr">
       <div class="card-head"><span class="card-title">QR para pasajeros</span></div>
@@ -1674,9 +1703,10 @@
     <h2 style="margin:0 0 12px;font-size:19px;">Finalizar viaje</h2>
     <div id="cierreDetalle" class="cierre-detalle"></div>
     <div id="cierreAvisos"></div>
-    <p class="nota" style="margin:12px 0 10px;">¿Cómo te paga el pasajero?</p>
+    <button class="btn btn-ok" id="btnCierrePasajero" type="button" disabled style="width:100%;margin-top:12px;">Finalizar: el pasajero elige cómo pagar</button>
+    <p class="nota" style="margin:12px 0 8px;">O elige tú cómo te paga:</p>
     <div class="btn-row">
-      <button class="btn btn-ok" id="btnCierreMp" type="button" disabled>Mercado Pago</button>
+      <button class="btn btn-chico" id="btnCierreMp" type="button" disabled>Mercado Pago</button>
       <button class="btn btn-chico" id="btnCierreEfectivo" type="button" disabled>Efectivo</button>
     </div>
     <button class="btn btn-chico" id="btnCierreVolver" type="button" style="width:100%;margin-top:10px;">Volver al viaje</button>
@@ -1718,7 +1748,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 53;
+  var APP_VERSION = 54;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2104,6 +2134,7 @@
     cargarViajesEnCurso();
     cargarGoogleMaps();
     pintarVehiculo(sesion.conductor);
+    cargarTransferencia();
     pintarMiQr(sesion.conductor);
     // Se carga acá (no solo al abrir Ajustes) para que ya esté lista la
     // primera vez que toque "Iniciar viaje" en esta sesión.
@@ -2818,6 +2849,30 @@
     } catch (e) {}
   }
 
+  // Datos para cobrar por transferencia: bancos y tipo de cuenta se ELIGEN de una lista (no se escriben).
+  var CAMPOS_TR = { titular: "trTitular", rut: "trRut", banco: "trBanco", tipo: "trTipo", numero: "trNumero", email: "trEmail" };
+  function cargarTransferencia() {
+    apiPost({ accion: "mi_transferencia" }).then(function (res) {
+      if (!res || !res.ok || !res.datos) return;
+      Object.keys(CAMPOS_TR).forEach(function (k) {
+        var el = document.getElementById(CAMPOS_TR[k]), v = res.datos[k] || "";
+        if (el.tagName === "SELECT" && v && ![].some.call(el.options, function (o) { return o.value === v || o.text === v; })) {
+          var op = document.createElement("option"); op.textContent = v; el.appendChild(op);   // valor guardado que no está en la lista
+        }
+        el.value = v;
+      });
+    }).catch(function () {});
+  }
+  document.getElementById("btnGuardarTransferencia").addEventListener("click", function () {
+    var msg = document.getElementById("transferenciaMsg"), cuerpo = { accion: "guardar_transferencia" };
+    Object.keys(CAMPOS_TR).forEach(function (k) { cuerpo[k] = document.getElementById(CAMPOS_TR[k]).value.trim(); });
+    msg.textContent = "Guardando..."; msg.className = "msg";
+    apiPost(cuerpo).then(function (res) {
+      msg.textContent = res.ok ? "Datos guardados." : ("Error: " + res.error);
+      msg.className = "msg " + (res.ok ? "ok" : "error");
+    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
+  });
+
   document.getElementById("btnGuardarVehiculo").addEventListener("click", function () {
     var msg = document.getElementById("vehiculoMsg");
     msg.textContent = "Guardando..."; msg.className = "msg";
@@ -3157,6 +3212,7 @@
   }
 
   document.getElementById("btnCierreVolver").addEventListener("click", cerrarCierre);
+  document.getElementById("btnCierrePasajero").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "POR_ELEGIR", this); });
   document.getElementById("btnCierreMp").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "MERCADOPAGO", this); });
   document.getElementById("btnCierreEfectivo").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "EFECTIVO", this); });
 
@@ -3882,8 +3938,11 @@
   function modeloTarjeta(p) {
     var puntos = puntosDelViaje(p), quien = String(p.nombre || "el pasajero");
     if (p.estado_pago === "PENDIENTE") {
+      var fp = p.forma_pago;
       return { etapa: "pago", id: p.pedido_id, etiqueta: "Viaje terminado", titulo: "Por cobrar " + fmt(montoP(p)),
-        sub: "Esperando el pago por Mercado Pago", boton: { texto: "Me pagó en efectivo", accion: "efectivo", clase: "verde" }, crono: null, secundario: null, punto: null, nav: null };
+        sub: fp === "EFECTIVO" ? "El pasajero pagará en efectivo" : fp === "TRANSFERENCIA" ? "El pasajero pagará por transferencia"
+          : (fp === "POR_ELEGIR" || !fp) ? "El pasajero está eligiendo cómo pagar" : "Esperando el pago por Mercado Pago",
+        boton: { texto: fp === "TRANSFERENCIA" ? "Recibí la transferencia" : fp === "EFECTIVO" ? "Recibí el efectivo" : "Me pagó en efectivo", accion: "efectivo", clase: "verde" }, crono: null, secundario: null, punto: null, nav: null };
     }
     var etapa = etapaDelViaje(p);
     if (etapa === "recoger") {
@@ -4130,7 +4189,7 @@
       return;
     }
     if (tipo === "efectivo") {
-      if (!confirm("¿El pasajero te pagó en efectivo? Se cierra el cobro por Mercado Pago.")) return;
+      if (!confirm("¿Recibiste el pago de este viaje? Se cierra el cobro.")) return;
       conBotonOcupado(apiPost({ accion: "marcar_pagado_efectivo", pedido_id: id }).then(function (res) {
         if (!res.ok) { alert("Error: " + res.error); return; }
         refrescarViajes();
@@ -4209,6 +4268,7 @@
     document.getElementById("cierreAvisos").innerHTML = "";
     document.getElementById("btnCierreMp").disabled = true;
     document.getElementById("btnCierreEfectivo").disabled = true;
+    document.getElementById("btnCierrePasajero").disabled = true;
     document.getElementById("modalCierre").hidden = false;
     api({ accion: "previsualizar_cierre", pedido_id: pedidoId }).then(function (r) {
       if (cierrePedidoId !== pedidoId) return;
@@ -4219,6 +4279,7 @@
       document.getElementById("cierreAvisos").innerHTML = avisosCierre(r).map(function (a) { return '<p class="pedido-aviso">' + escapar(a) + '</p>'; }).join("");
       document.getElementById("btnCierreMp").disabled = false;
       document.getElementById("btnCierreEfectivo").disabled = false;
+      document.getElementById("btnCierrePasajero").disabled = false;
     }).catch(function () { cont.innerHTML = '<p class="msg error">Error de red. Intenta de nuevo.</p>'; });
   }
 
@@ -4233,7 +4294,7 @@
       // saber cuánto cobrar (sobre todo en efectivo).
       if (res.ajuste > 0) {
         alert("Monto final: " + fmt(res.total_final) + "\n(cotizado " + fmt(res.total_cotizado) + " + " + fmt(res.ajuste) + " por tiempo y km reales)\n\n" +
-          (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
+          (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : forma === "POR_ELEGIR" ? "El pasajero verá " + fmt(res.total_final) + " y elegirá cómo pagar." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
       }
       document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
       cargarViajesEnCurso();
@@ -4613,19 +4674,22 @@
   }
 
   function tarjetaEsperandoPago(div, p) {
+    var forma = p.forma_pago, monto = fmt(montoP(p));
+    var aviso = forma === "EFECTIVO" ? "Viaje terminado. El pasajero te pagará " + monto + " en efectivo: confirma cuando lo recibas."
+      : forma === "TRANSFERENCIA" ? "Viaje terminado. El pasajero pagará " + monto + " por transferencia: confirma cuando veas el depósito."
+      : forma === "MERCADOPAGO" ? "Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre."
+      : "Viaje terminado. El pasajero está eligiendo cómo pagar " + monto + ".";
+    // Mercado Pago: por si al pasajero no le aparece el botón, el conductor le reenvía el link.
+    var botones = (forma === "MERCADOPAGO" && p.mp_link ? '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' : "") +
+      '<button class="btn btn-chico" data-efectivo="' + escapar(p.pedido_id) + '">' +
+        (forma === "TRANSFERENCIA" ? "Recibí la transferencia" : forma === "EFECTIVO" ? "Recibí el efectivo" : "Me pagó en efectivo") + '</button>';
     div.innerHTML =
       '<div class="pedido-tope">' +
         '<div>' + htmlContacto(p) + '</div>' +
-        '<div class="pedido-total">' + fmt(montoP(p)) + '</div>' +
+        '<div class="pedido-total">' + monto + '</div>' +
       '</div>' +
-      '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' +
-        'Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre.' +
-      '</div>' +
-      // Por si al pasajero no le aparece el botón: el conductor le reenvía el link.
-      '<div class="btn-row" style="margin:10px 0 8px;">' +
-        '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' +
-        '<button class="btn btn-chico" data-efectivo="' + escapar(p.pedido_id) + '">Me pagó en efectivo</button>' +
-      '</div>';
+      '<div class="pedido-aviso" style="background:var(--primary-soft);color:var(--primary-soft-ink);">' + escapar(aviso) + '</div>' +
+      '<div class="btn-row" style="margin:10px 0 8px;">' + botones + '</div>';
     return div;
   }
 
