@@ -226,6 +226,14 @@
   body.escribiendo-direccion { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
   .ruta-input-wrap input, .parada-input-wrap input { scroll-margin-top: 14px; }
   .pac-container { z-index: 100000 !important; max-height: 45vh; overflow-y: auto; }
+  /* Las sugerencias de Google solo existen mientras se escribe una dirección: si el campo pierde el foco o se
+     cambia de pantalla sin elegir ninguna, no deben quedar flotando sobre la app. */
+  body:not(.escribiendo-direccion) .pac-container { display: none !important; }
+  .recientes-rapidos { margin: 8px 0 0; border: 1px solid var(--border, rgba(127,127,127,.3)); border-radius: 12px; overflow: hidden; background: var(--surface, #fff); }
+  .rec-tit { font-size: 12px; font-weight: 600; opacity: .7; padding: 8px 12px 2px; }
+  .rec-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--border, rgba(127,127,127,.2)); font: inherit; color: inherit; cursor: pointer; }
+  .rec-item span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-item:active { background: var(--primary-soft); }
   .parada-input-wrap input, .ruta-input-wrap input { padding-right: 40px; }
   .btn-quitar-parada, .btn-borrar-direccion {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
@@ -1024,7 +1032,7 @@
         <div class="lugares-fila" id="filaLugares" role="group" aria-label="Tus lugares">
           <button type="button" class="chip-opc" id="chipCasa" data-lugar="casa"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg><span id="chipCasaTxt">Casa</span></button>
           <button type="button" class="chip-opc" id="chipTrabajo" data-lugar="trabajo"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-ruta"/></svg><span id="chipTrabajoTxt">Trabajo</span></button>
-          <button type="button" class="chip-opc" id="chipOtros" data-lugar="otros"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg><span>Otros</span></button>
+          <button type="button" class="chip-opc" id="chipOtros" data-lugar="otros"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg><span>Recientes</span></button>
         </div>
         <button type="button" class="btn-direcciones-recientes" id="btnDireccionesRecientes" style="display:none;">
           <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
@@ -1057,6 +1065,9 @@
             </button>
           </div>
         </div>
+        <!-- Direcciones recientes a la mano: aparecen bajo los campos mientras se enfoca uno vacío (el chip de arriba
+             queda fuera de pantalla cuando sube el teclado). -->
+        <div class="recientes-rapidos" id="recientesRapidos" style="display:none;" role="group" aria-label="Direcciones recientes"></div>
         <button class="btn-agregar-parada" id="btnAgregarParada" type="button">
           <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
           Agregar parada
@@ -1451,7 +1462,7 @@
         <button type="button" class="btn btn-medio" id="lugarEditorGuardar">Guardar</button>
       </div>
     </div>
-    <h4 class="lugares-sub">Otros lugares frecuentes</h4>
+    <h4 class="lugares-sub">Direcciones recientes</h4>
     <div id="listaOtrosLugares"></div>
     <button type="button" class="btn btn-primario" data-cierra="modalLugares" style="margin-top:14px;">Listo</button>
   </div>
@@ -1526,7 +1537,25 @@
     cuenta: { vista: "vistaCuenta", tab: "tabCuenta" }
   };
 
+  // Cierra el teclado y las sugerencias de dirección de Google (si no se eligió ninguna, no deben quedar sobre la app).
+  function cerrarSugerencias() {
+    var a = document.activeElement;
+    if (a && a.tagName === "INPUT" && a.closest && a.closest(".ruta-input-wrap, .parada-input-wrap")) { try { a.blur(); } catch (e) {} }
+    document.body.classList.remove("escribiendo-direccion");
+    [].forEach.call(document.querySelectorAll(".pac-container"), function (c) { c.style.display = "none"; });
+    var rec = document.getElementById("recientesRapidos");
+    if (rec) rec.style.display = "none";
+  }
+  // Tocar fuera de los campos, de las sugerencias y de los recientes mientras se escribe: se cierran.
+  document.addEventListener("pointerdown", function (ev) {
+    if (!document.body.classList.contains("escribiendo-direccion")) return;
+    if (ev.target.closest && ev.target.closest(".pac-container, .ruta-input-wrap, .parada-input-wrap, .recientes-rapidos")) return;
+    cerrarSugerencias();
+  }, true);
+  document.addEventListener("visibilitychange", function () { if (document.hidden) cerrarSugerencias(); });
+
   function mostrarPestana(cual) {
+    cerrarSugerencias();
     Object.keys(SECCIONES).forEach(function (nombre) {
       var s = SECCIONES[nombre];
       var esEsta = nombre === cual;
@@ -1876,7 +1905,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 57;
+  var APP_VERSION = 58;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2757,6 +2786,41 @@
   });
   pintarChipsLugares();
 
+  /* Recientes a la mano: al enfocar un campo vacío se listan hasta 4 direcciones usadas (las más frecuentes primero) justo
+     debajo de los campos. Tocar una la pone en ESE campo, con su marcador. */
+  function ocultarRecientesRapidos() { document.getElementById("recientesRapidos").style.display = "none"; }
+  function pintarRecientesRapidos(id) {
+    var cont = document.getElementById("recientesRapidos"), input = document.getElementById(id);
+    var usadas = [document.getElementById("origen").value.trim(), document.getElementById("destino").value.trim()];
+    var lista = lugaresOtros().filter(function (d) { return usadas.indexOf(d.direccion) < 0; }).slice(0, 4);
+    if (!lista.length || input.value.trim()) { ocultarRecientesRapidos(); return; }
+    cont.innerHTML = "";
+    var tit = document.createElement("div"); tit.className = "rec-tit"; tit.textContent = "Direcciones recientes";
+    cont.appendChild(tit);
+    lista.forEach(function (d) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "rec-item";
+      b.innerHTML = '<svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>';
+      var t = document.createElement("span"); t.textContent = d.direccion; t.title = d.direccion;
+      b.appendChild(t);
+      // pointerdown no quita el foco al campo (el teclado y las sugerencias siguen en su sitio hasta elegir).
+      b.addEventListener("pointerdown", function (ev) { ev.preventDefault(); });
+      b.addEventListener("click", function () {
+        input.value = d.direccion;
+        input.dispatchEvent(new Event("input"));   // muestra el × de borrar
+        pintarMarcadorCotizar(id, { lat: d.lat, lng: d.lng });
+        ocultarRecientesRapidos();
+      });
+      cont.appendChild(b);
+    });
+    cont.style.display = "block";
+  }
+  ["origen", "destino"].forEach(function (id) {
+    var input = document.getElementById(id);
+    input.addEventListener("focus", function () { pintarRecientesRapidos(id); });
+    input.addEventListener("input", function () { if (input.value.trim()) ocultarRecientesRapidos(); else pintarRecientesRapidos(id); });
+    input.addEventListener("blur", function () { setTimeout(function () { if (document.activeElement !== input) ocultarRecientesRapidos(); }, 250); });
+  });
+
   // Ubicación actual como origen: toma coordenadas GPS y las convierte en
   // una dirección legible (geocodificación inversa) para que quede igual
   // que si la hubiera escrito con el autocompletado.
@@ -3189,6 +3253,7 @@
   });
 
   function mostrarVistaEstado(totalConfirmado, desdeCache) {
+    cerrarSugerencias();
     hojaEstado = "medio";   // el seguimiento abre con la ventana a media altura
     ocultarFinDeViaje();
     viajeCerrado = false;   // viaje nuevo (o recuperado): sigue en curso hasta que termine y se cobre
