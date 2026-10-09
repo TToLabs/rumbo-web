@@ -558,8 +558,15 @@
   .pago-conf { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 12px; background: var(--primary-soft); color: var(--primary-soft-ink); border-left: 5px solid var(--primary-soft-ink); }
   .pago-conf strong { font-size: 17px; }
   .pago-conf span { font-size: 14px; line-height: 1.35; }
-  .pago-opciones { display: flex; flex-direction: column; gap: 8px; }
-  .pago-opciones .btn { width: 100%; }
+  .pago-conf .pago-nota { font-size: 12.5px; opacity: .85; margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(17,48,74,.18); }
+  .pago-opciones { display: flex; flex-direction: row; gap: 8px; margin-bottom: 12px; }
+  .pago-op { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 12px 2px; border-radius: 12px; border: 2px solid var(--border, rgba(127,127,127,.35)); background: var(--surface, #fff); color: inherit; font: inherit; cursor: pointer; text-align: center; }
+  .pago-op strong { font-size: 13px; letter-spacing: -.1px; white-space: nowrap; }
+  .pago-op small { font-size: 11px; opacity: .7; line-height: 1.2; }
+  .pago-op.activa { background: var(--primary-soft-ink); border-color: var(--primary-soft-ink); color: #fff; }
+  .pago-op.activa small { opacity: .85; }
+  .pago-alt { width: 100%; margin-top: 10px; }
+  .pago-op:focus-visible { outline: 3px solid var(--primary-soft-ink); outline-offset: 2px; }
   .transf-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border, rgba(127,127,127,.25)); }
   .transf-dato { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
   .transf-et { font-size: 12px; opacity: .7; }
@@ -1198,28 +1205,33 @@
     <!-- Cómo pagar un viaje terminado: Mercado Pago, efectivo o transferencia (con los datos del conductor para copiar). -->
     <section class="card pago-card" id="cardPago" style="display:none;">
       <div class="pago-titulo" id="pagoTitulo">Elige cómo pagar</div>
-      <div class="pago-opciones" id="pagoOpciones">
-        <button type="button" class="btn btn-primario" id="pagoMp">Pagar con Mercado Pago</button>
-        <button type="button" class="btn btn-secundario" id="pagoEfectivo">En efectivo</button>
-        <button type="button" class="btn btn-secundario" id="pagoTransf">Por transferencia</button>
+      <div class="pago-opciones" id="pagoOpciones" role="group" aria-label="Forma de pago">
+        <button type="button" class="pago-op" id="pagoEfectivo" aria-pressed="false"><strong>Efectivo</strong><small id="pagoEfectivoSub">al conductor</small></button>
+        <button type="button" class="pago-op" id="pagoMp" aria-pressed="false"><strong>Tarjeta</strong><small>Crédito / Débito</small></button>
+      </div>
+      <div class="pago-conf" id="pagoMpInfo" style="display:none;" role="status">
+        <strong id="pagoMpTit"></strong>
+        <span id="pagoMpTxt"></span>
+        <span class="pago-nota" id="pagoMpNota"></span>
       </div>
       <div class="pago-conf" id="pagoEfectivoInfo" style="display:none;" role="status">
         <strong id="pagoEfectivoTit"></strong>
         <span id="pagoEfectivoTxt"></span>
+        <button type="button" class="btn btn-secundario pago-alt" id="pagoAltTransf" style="display:none;">Prefiero pagar por transferencia</button>
       </div>
       <div id="pagoTransfInfo" style="display:none;">
         <div id="transfFilas"></div>
         <button type="button" class="btn btn-primario" id="transfCopiarTodo" style="width:100%;margin-top:10px;">Copiar todos los datos</button>
         <p class="nota" style="margin:8px 0 0;">Pega los datos en tu banco. Cuando tu conductor vea el depósito, confirmará tu pago.</p>
+        <button type="button" class="btn btn-secundario pago-alt" id="pagoAltEfectivo">Prefiero pagar en efectivo</button>
       </div>
-      <button type="button" class="btn btn-secundario btn-chico" id="pagoCambiar" style="display:none;width:100%;margin-top:10px;">Elegir otra forma de pago</button>
       <p class="nota" id="pagoMsg" style="margin:8px 0 0;"></p>
     </section>
     <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
          El monto lo fija el backend (precio congelado): acá no se escribe. -->
     <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
     <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
-      Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o Mercado Pago, no Rumbo.
+      Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o la plataforma de pago, no Rumbo.
     </p>
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
@@ -1864,7 +1876,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 55;
+  var APP_VERSION = 57;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3600,10 +3612,10 @@
     document.getElementById("finTitulo").textContent = pagado ? "Viaje finalizado" : "Has llegado a tu destino";
     document.getElementById("finLabel").textContent = pagado ? "Valor del viaje:" : "El pago por el viaje es:";
     document.getElementById("finSub").textContent = pagado
-      ? (fp === "EFECTIVO" ? "Pagado en efectivo" : fp === "TRANSFERENCIA" ? "Pago recibido por transferencia" : "Pago recibido por Mercado Pago")
+      ? (fp === "EFECTIVO" ? "Pagado en efectivo" : fp === "TRANSFERENCIA" ? "Pago recibido por transferencia" : "Pago recibido con tarjeta")
       : fp === "EFECTIVO" ? "Pagas en efectivo a tu conductor"
       : fp === "TRANSFERENCIA" ? "Pagas por transferencia"
-      : fp === "MERCADOPAGO" ? "Falta pagar con Mercado Pago"
+      : fp === "MERCADOPAGO" ? "Falta pagar con tarjeta"
       : "Elige cómo pagar";
     var nota = notaViajeMasCorto(res), cajaNota = document.getElementById("finNota");
     cajaNota.textContent = nota; cajaNota.style.display = nota ? "block" : "none";
@@ -3655,19 +3667,31 @@
   function pintarPago(res) {
     var card = document.getElementById("cardPago");
     if (res.estado_pago !== "PENDIENTE") { card.style.display = "none"; pagoCambiando = false; return; }
-    var fp = res.forma_pago, opc = res.pago_opciones || {}, elegir = pagoCambiando || !fp || fp === "POR_ELEGIR";
+    var fp = res.forma_pago, opc = res.pago_opciones || {}, elegir = !fp || fp === "POR_ELEGIR";
     var mostrar = function (id, v) { document.getElementById(id).style.display = v ? "" : "none"; };
     card.style.display = "block";
-    document.getElementById("pagoTitulo").textContent = elegir ? "Elige cómo pagar" : fp === "TRANSFERENCIA" ? "Paga por transferencia" : fp === "EFECTIVO" ? "Pago en efectivo" : "Pago con Mercado Pago";
-    mostrar("pagoOpciones", elegir);
-    mostrar("pagoMp", elegir && opc.mercadopago !== false);
-    mostrar("pagoTransf", elegir && !!opc.transferencia);
-    mostrar("pagoEfectivoInfo", !elegir && fp === "EFECTIVO");
+    var sel = elegir ? "EFECTIVO" : fp;   // Efectivo viene seleccionado; no se guarda hasta que el pasajero toque algo
+    document.getElementById("pagoTitulo").textContent = elegir ? "Elige cómo pagar" : "Tu forma de pago";
+    // Los tres botones siempre a la vista, en fila: el elegido queda resaltado y se puede cambiar tocando otro.
+    mostrar("pagoOpciones", true);
+    mostrar("pagoMp", opc.mercadopago !== false);
+    // "Efectivo" agrupa el pago directo al conductor: efectivo o, como alternativa dentro de él, transferencia.
+    document.getElementById("pagoEfectivoSub").textContent = opc.transferencia ? "o transferencia" : "al conductor";
+    [["pagoMp", sel === "MERCADOPAGO"], ["pagoEfectivo", sel === "EFECTIVO" || sel === "TRANSFERENCIA"]].forEach(function (b) {
+      var el = document.getElementById(b[0]);
+      el.classList.toggle("activa", b[1]);
+      el.setAttribute("aria-pressed", b[1] ? "true" : "false");
+    });
+    mostrar("pagoAltTransf", !!opc.transferencia);
+    mostrar("pagoMpInfo", sel === "MERCADOPAGO");
+    document.getElementById("pagoMpTit").textContent = "Pagarás " + fmt(res.total) + " con tarjeta";
+    document.getElementById("pagoMpTxt").textContent = "Crédito o débito, también en cuotas. Toca «Pagar» para abrir el pago seguro.";
+    document.getElementById("pagoMpNota").textContent = "Rumbo no cobra recargo por pagar con tarjeta: el valor del viaje es " + fmt(res.total) + ". Si eliges pagar en cuotas con tarjeta de crédito, el interés lo cobra tu banco o la plataforma de pago, no Rumbo.";
+    mostrar("pagoEfectivoInfo", sel === "EFECTIVO");
     document.getElementById("pagoEfectivoTit").textContent = "Pagarás " + fmt(res.total) + " en efectivo";
     document.getElementById("pagoEfectivoTxt").textContent = "Entrégaselo a tu conductor. Cuando lo reciba, él confirma el pago en su app y tu viaje queda cerrado.";
-    var tr = !elegir && fp === "TRANSFERENCIA" && opc.transferencia;
+    var tr = fp === "TRANSFERENCIA" && opc.transferencia;
     mostrar("pagoTransfInfo", !!tr);
-    mostrar("pagoCambiar", !elegir);
     if (tr) {
       var cont = document.getElementById("transfFilas");
       cont.innerHTML = "";
@@ -3709,8 +3733,8 @@
   }
   document.getElementById("pagoMp").addEventListener("click", function () { elegirPago("MERCADOPAGO"); });
   document.getElementById("pagoEfectivo").addEventListener("click", function () { elegirPago("EFECTIVO"); });
-  document.getElementById("pagoTransf").addEventListener("click", function () { elegirPago("TRANSFERENCIA"); });
-  document.getElementById("pagoCambiar").addEventListener("click", function () { pagoCambiando = true; if (ultimoCierre) mostrarCierreDeViaje(ultimoCierre); });
+  document.getElementById("pagoAltTransf").addEventListener("click", function () { elegirPago("TRANSFERENCIA"); });
+  document.getElementById("pagoAltEfectivo").addEventListener("click", function () { elegirPago("EFECTIVO"); });
   document.getElementById("transfCopiarTodo").addEventListener("click", function () {
     var b = this;
     copiarTexto(b.dataset.texto || "").then(function (ok) {
@@ -3734,10 +3758,10 @@
     if (res.estado_pago === "PENDIENTE" && res.mp_link && !pagoCambiando) {
       box.className = "estado-box pendiente";
       box.textContent = "Llegaste. Falta pagar tu viaje";
-      btnPagar.textContent = "Pagar " + fmt(res.total) + " con Mercado Pago";
+      btnPagar.textContent = "Pagar " + fmt(res.total) + " con tarjeta (crédito / débito)";
       btnPagar.href = res.mp_link;
       btnPagar.style.display = "flex";
-      nota.style.display = "block";
+      nota.style.display = "none";
       return; // se sigue sondeando hasta que Mercado Pago confirme el pago
     }
     if (res.estado_pago === "PENDIENTE") {
