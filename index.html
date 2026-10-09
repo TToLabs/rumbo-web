@@ -555,6 +555,9 @@
   .fin-titulo { font-size: 18px; font-weight: 700; }
   .pago-card { margin: 0 0 12px; }
   .pago-titulo { font-size: 16px; font-weight: 700; margin: 0 0 10px; }
+  .pago-conf { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 12px; background: var(--primary-soft); color: var(--primary-soft-ink); border-left: 5px solid var(--primary-soft-ink); }
+  .pago-conf strong { font-size: 17px; }
+  .pago-conf span { font-size: 14px; line-height: 1.35; }
   .pago-opciones { display: flex; flex-direction: column; gap: 8px; }
   .pago-opciones .btn { width: 100%; }
   .transf-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border, rgba(127,127,127,.25)); }
@@ -1200,7 +1203,10 @@
         <button type="button" class="btn btn-secundario" id="pagoEfectivo">En efectivo</button>
         <button type="button" class="btn btn-secundario" id="pagoTransf">Por transferencia</button>
       </div>
-      <p class="nota" id="pagoEfectivoInfo" style="display:none;margin:0;"></p>
+      <div class="pago-conf" id="pagoEfectivoInfo" style="display:none;" role="status">
+        <strong id="pagoEfectivoTit"></strong>
+        <span id="pagoEfectivoTxt"></span>
+      </div>
       <div id="pagoTransfInfo" style="display:none;">
         <div id="transfFilas"></div>
         <button type="button" class="btn btn-primario" id="transfCopiarTodo" style="width:100%;margin-top:10px;">Copiar todos los datos</button>
@@ -1858,7 +1864,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 54;
+  var APP_VERSION = 55;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3657,7 +3663,8 @@
     mostrar("pagoMp", elegir && opc.mercadopago !== false);
     mostrar("pagoTransf", elegir && !!opc.transferencia);
     mostrar("pagoEfectivoInfo", !elegir && fp === "EFECTIVO");
-    document.getElementById("pagoEfectivoInfo").textContent = "Págale " + fmt(res.total) + " en efectivo a tu conductor. Él confirmará el pago en su app.";
+    document.getElementById("pagoEfectivoTit").textContent = "Pagarás " + fmt(res.total) + " en efectivo";
+    document.getElementById("pagoEfectivoTxt").textContent = "Entrégaselo a tu conductor. Cuando lo reciba, él confirma el pago en su app y tu viaje queda cerrado.";
     var tr = !elegir && fp === "TRANSFERENCIA" && opc.transferencia;
     mostrar("pagoTransfInfo", !!tr);
     mostrar("pagoCambiar", !elegir);
@@ -3695,6 +3702,9 @@
       var nuevo = {}; Object.keys(res0).forEach(function (k) { nuevo[k] = res0[k]; });
       nuevo.forma_pago = r.forma_pago; nuevo.mp_link = r.mp_link || "";
       mostrarCierreDeViaje(nuevo);
+      // Que se note el cambio: una vibración corta y la tarjeta de pago a la vista.
+      try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) {}
+      try { document.getElementById("cardPago").scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
     }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "nota error"; });
   }
   document.getElementById("pagoMp").addEventListener("click", function () { elegirPago("MERCADOPAGO"); });
