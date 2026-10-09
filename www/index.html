@@ -558,10 +558,10 @@
   .pago-opciones { display: flex; flex-direction: column; gap: 8px; }
   .pago-opciones .btn { width: 100%; }
   .transf-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border, rgba(127,127,127,.25)); }
-  .transf-dato { min-width: 0; display: flex; flex-direction: column; }
+  .transf-dato { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
   .transf-et { font-size: 12px; opacity: .7; }
   .transf-dato strong { font-size: 15px; overflow-wrap: anywhere; user-select: all; }
-  .transf-copiar { flex: none; min-width: 84px; }
+  .transf-fila .transf-copiar { flex: none; width: auto; min-width: 84px; }
   .fin-total { font-size: 28px; font-weight: 700; line-height: 1.2; margin: 2px 0 2px; font-variant-numeric: tabular-nums; }
   .fin-sub { font-size: 15px; color: var(--text-2); }
   body.viaje-terminado #etaConductor, body.viaje-terminado .pasos, body.viaje-terminado #estadoDetalle, body.viaje-terminado #distanciaConductor,
@@ -1209,6 +1209,12 @@
       <button type="button" class="btn btn-secundario btn-chico" id="pagoCambiar" style="display:none;width:100%;margin-top:10px;">Elegir otra forma de pago</button>
       <p class="nota" id="pagoMsg" style="margin:8px 0 0;"></p>
     </section>
+    <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
+         El monto lo fija el backend (precio congelado): acá no se escribe. -->
+    <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
+    <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
+      Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o Mercado Pago, no Rumbo.
+    </p>
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
          mientras el conductor va a buscarte. -->
@@ -1241,12 +1247,6 @@
       <div class="desglose" id="desgloseFinal"></div>
       <p class="desglose-motivo" id="motivoDesglose" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
     </div>
-    <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
-         El monto lo fija el backend (precio congelado): acá no se escribe. -->
-    <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
-    <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
-      Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o Mercado Pago, no Rumbo.
-    </p>
     <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
          en Uber/DiDi — antes de eso no hay conductor asignado con quien
          hablar. -->
@@ -1858,7 +1858,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 53;
+  var APP_VERSION = 54;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3685,8 +3685,8 @@
     }
   }
   function elegirPago(forma) {
-    var msg = document.getElementById("pagoMsg"), res0 = ultimoCierre;
-    if (!res0 || !sesion || !pedidoActualId) return;
+    var msg = document.getElementById("pagoMsg"), res0 = ultimoCierre, sesion = obtenerSesionPasajero();
+    if (!res0 || !sesion || !sesion.token || !pedidoActualId) return;
     msg.textContent = "Un momento…"; msg.className = "nota";
     apiPost({ accion: "elegir_forma_pago", pasajero_token: sesion.token, pedido_id: pedidoActualId, forma: forma }).then(function (r) {
       if (!r.ok) { msg.textContent = r.error || "No se pudo elegir. Intenta de nuevo."; msg.className = "nota error"; return; }

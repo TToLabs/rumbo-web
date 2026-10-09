@@ -1748,7 +1748,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 55;
+  var APP_VERSION = 56;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -4213,6 +4213,8 @@
   document.getElementById("tvIr").addEventListener("click", function () {
     var p = elegirFoco(pedidosEnCursoActuales, focoManualId), m = p ? modeloTarjeta(p) : null;
     if (m && m.nav) abrirNavegacion(m.nav.puntos, m.nav.indice);
+    // Va hacia el pasajero: se le avisa una sola vez (el servidor ignora los repetidos).
+    if (m && m.etapa === "recoger" && p) apiPost({ accion: "salgo_a_buscar", pedido_id: p.pedido_id }).catch(function () {});
   });
   // Tocar la tarjeta de arriba ("Recoger a …") despliega o pliega el itinerario hacia abajo.
   document.getElementById("tarjetaViaje").addEventListener("click", function () { if (itinerarioAbierto()) cerrarDetalleViaje(); else abrirDetalleViaje(); });
