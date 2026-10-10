@@ -229,6 +229,7 @@
   /* Las sugerencias de Google solo existen mientras se escribe una dirección: si el campo pierde el foco o se
      cambia de pantalla sin elegir ninguna, no deben quedar flotando sobre la app. */
   body:not(.escribiendo-direccion) .pac-container { display: none !important; }
+  body.escribiendo-direccion .wiz-chips-fijos { display: none; }
   .recientes-rapidos { margin: 8px 0 0; border: 1px solid var(--border, rgba(127,127,127,.3)); border-radius: 12px; overflow: hidden; background: var(--surface, #fff); }
   .rec-tit { font-size: 12px; font-weight: 600; opacity: .7; padding: 8px 12px 2px; }
   .rec-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--border, rgba(127,127,127,.2)); font: inherit; color: inherit; cursor: pointer; }
@@ -1232,7 +1233,7 @@
       </div>
       <div id="pagoTransfInfo" style="display:none;">
         <div id="transfFilas"></div>
-        <button type="button" class="btn btn-primario" id="transfCopiarTodo" style="width:100%;margin-top:10px;">Copiar todos los datos</button>
+        <button type="button" class="btn btn-primario" id="transfCopiarTodo" style="width:100%;margin-top:10px;">Copiar datos</button>
         <p class="nota" style="margin:8px 0 0;">Pega los datos en tu banco. Cuando tu conductor vea el depósito, confirmará tu pago.</p>
         <button type="button" class="btn btn-secundario pago-alt" id="pagoAltEfectivo">Prefiero pagar en efectivo</button>
       </div>
@@ -1905,7 +1906,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 58;
+  var APP_VERSION = 59;
   var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2705,6 +2706,7 @@
     inp.value = l.direccion;
     inp.dispatchEvent(new Event("input"));
     pintarMarcadorCotizar(id, { lat: l.lat, lng: l.lng });
+    cerrarSugerencias();
   }
   var lugarEditando = "", lugarElegido = null, autocompletarLugar = null;
   function abrirEditorLugar(cual) {
@@ -2809,6 +2811,7 @@
         input.dispatchEvent(new Event("input"));   // muestra el × de borrar
         pintarMarcadorCotizar(id, { lat: d.lat, lng: d.lng });
         ocultarRecientesRapidos();
+        cerrarSugerencias();   // el evento "input" despierta las sugerencias de Google: se cierran junto con el teclado
       });
       cont.appendChild(b);
     });
@@ -3760,22 +3763,14 @@
     if (tr) {
       var cont = document.getElementById("transfFilas");
       cont.innerHTML = "";
-      var filas = filasTransferencia(opc.transferencia).concat([["Monto", fmt(res.total), String(Math.round(Number(res.total) || 0))]]);
+      var filas = filasTransferencia(opc.transferencia);
       filas.forEach(function (f) {
         var fila = document.createElement("div"); fila.className = "transf-fila";
         var txt = document.createElement("div"); txt.className = "transf-dato";
         var et = document.createElement("span"); et.className = "transf-et"; et.textContent = f[0];
         var val = document.createElement("strong"); val.textContent = f[1];
         txt.appendChild(et); txt.appendChild(val);
-        var b = document.createElement("button"); b.type = "button"; b.className = "btn btn-chico transf-copiar"; b.textContent = "Copiar";
-        b.setAttribute("aria-label", "Copiar " + f[0]);
-        b.addEventListener("click", function () {
-          copiarTexto(f[2] !== undefined ? f[2] : f[1]).then(function (ok) {
-            b.textContent = ok ? "Copiado" : "Mantén pulsado";
-            setTimeout(function () { b.textContent = "Copiar"; }, 1600);
-          });
-        });
-        fila.appendChild(txt); fila.appendChild(b); cont.appendChild(fila);
+        fila.appendChild(txt); cont.appendChild(fila);
       });
       document.getElementById("transfCopiarTodo").dataset.texto = textoTransferencia(opc.transferencia);
     }
@@ -3803,8 +3798,8 @@
   document.getElementById("transfCopiarTodo").addEventListener("click", function () {
     var b = this;
     copiarTexto(b.dataset.texto || "").then(function (ok) {
-      b.textContent = ok ? "¡Datos copiados!" : "No se pudo copiar: mantén pulsado un dato";
-      setTimeout(function () { b.textContent = "Copiar todos los datos"; }, 1800);
+      b.textContent = ok ? "¡Datos copiados!" : "No se pudo copiar";
+      setTimeout(function () { b.textContent = "Copiar datos"; }, 1800);
     });
   });
 
@@ -3823,7 +3818,7 @@
     if (res.estado_pago === "PENDIENTE" && res.mp_link && !pagoCambiando) {
       box.className = "estado-box pendiente";
       box.textContent = "Llegaste. Falta pagar tu viaje";
-      btnPagar.textContent = "Pagar " + fmt(res.total) + " con tarjeta (crédito / débito)";
+      btnPagar.textContent = "Pagar " + fmt(res.total) + " con tarjeta";
       btnPagar.href = res.mp_link;
       btnPagar.style.display = "flex";
       nota.style.display = "none";
