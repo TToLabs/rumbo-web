@@ -204,6 +204,18 @@
   .espera-panel.excedida .espera-barra-llena { background: #F97316; }
   .espera-texto { font-size: 14px; margin-top: 8px; color: var(--text-2); }
   .espera-panel.excedida .espera-texto { color: #C2410C; font-weight: 600; }
+  /* Espera en la recogida: cuenta regresiva en verde (3 min sin costo) y, al pasar, cuenta desde cero en rojo (se cobra). */
+  .ed-fila { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .ed-fila input { flex: 1; min-width: 0; }
+  .ed-precio { margin: 10px 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 14px; line-height: 1.4; }
+  .espera-panel.gratis { border-color: #16A34A; background: #EAF7EF; }
+  .espera-panel.gratis .espera-reloj { color: #15803D; }
+  .espera-panel.gratis .espera-barra-llena { background: #16A34A; }
+  .espera-panel.gratis .espera-texto { color: #15803D; font-weight: 600; }
+  .espera-panel.cobrando { border-color: #DC2626; background: #FDECEC; }
+  .espera-panel.cobrando .espera-reloj { color: #B91C1C; }
+  .espera-panel.cobrando .espera-barra-llena { background: #DC2626; }
+  .espera-panel.cobrando .espera-texto { color: #B91C1C; font-weight: 600; }
   /* Ventana de cierre del viaje. */
   .cierre-detalle { display: flex; flex-direction: column; gap: 8px; }
   .cierre-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
@@ -1293,7 +1305,13 @@
         El pasajero puede pagar con débito, crédito o en cuotas (el interés de las cuotas lo paga él).
       </p>
       <p class="msg" id="mpEstado" style="margin:0 0 12px;">Revisando...</p>
+      <div class="estado-conductor" id="mpPausaFila" style="display:none;margin:0 0 12px;">
+        <div class="estado-texto"><div class="estado-titulo" style="font-size:14px;">Cobrar con tarjeta</div>
+          <p class="msg" id="mpPausaTexto" style="margin:2px 0 0;font-size:12.5px;"></p></div>
+        <label class="switch"><input type="checkbox" id="chkMpActivo"><span class="sr-only">Cobrar con tarjeta</span><span class="switch-pista"></span></label>
+      </div>
       <button class="btn btn-medio" id="btnVincularMp" type="button" style="width:100%;display:none;">Vincular mi Mercado Pago</button>
+      <button class="btn btn-chico" id="btnDesconectarMp" type="button" style="width:100%;display:none;margin-top:8px;">Desconectar mi Mercado Pago</button>
       <p class="ayuda" style="margin:12px 0 0;font-size:13px;">
         Importante: en tu cuenta de Mercado Pago <strong>no actives "cuotas sin interés"</strong>; si lo activás, ese costo lo pagás vos en cada viaje.
       </p>
@@ -1640,6 +1658,7 @@
 </div>
 <div class="itinerario-viaje solo-conductor" id="itinerarioViaje" role="dialog" aria-label="Itinerario del viaje">
   <button type="button" class="btn btn-medio tv-ir" id="tvIr">Ir con Waze</button>
+  <button type="button" class="btn btn-medio tv-ir" id="tvEditar" hidden>Editar viaje</button>
   <div id="detalleCuerpo"></div>
   <div class="tv-asa" id="itAsa" role="button" tabindex="0" aria-label="Cerrar el itinerario"><span></span></div>
 </div>
@@ -1696,6 +1715,31 @@
   <div class="chat-panel" id="chatPaneles" style="flex:1;min-height:0;"></div>
 </section>
 
+<!-- Editar el viaje (el conductor corrige direcciones o agrega paradas para ayudar al pasajero) -->
+<div class="modal-fondo" id="modalEditarC" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 8px;font-size:19px;">Editar viaje</h2>
+    <p class="nota" style="margin:0 0 10px;">Corrige direcciones o agrega paradas para ayudar al pasajero. Si el valor cambia más de 3 %, el pasajero debe aceptar el cambio. Para seguir después del destino actual, agrégalo como parada y escribe el destino nuevo abajo.</p>
+    <div class="campo"><label class="campo-label" for="edcOrigen">Salida</label><input type="text" id="edcOrigen" autocomplete="off"></div>
+    <div id="edcParadas" style="margin-top:8px;"></div>
+    <button class="btn btn-chico" id="edcAgregar" type="button" style="margin:0 0 10px;">+ Agregar parada</button>
+    <div class="campo"><label class="campo-label" for="edcDestino">Destino</label><input type="text" id="edcDestino" autocomplete="off"></div>
+    <div class="ed-precio" id="edcPrecio" style="display:none;"></div>
+    <p class="nota" id="edcMsg" style="margin:6px 0;"></p>
+    <button class="btn btn-chico" id="edcCalcular" type="button" style="width:100%;margin-bottom:8px;">Calcular nuevo valor</button>
+    <button class="btn btn-ok" id="edcEnviar" type="button" disabled style="width:100%;margin-bottom:8px;">Enviar cambio</button>
+    <button class="btn btn-chico" id="edcCerrar" type="button" style="width:100%;">Cancelar</button>
+  </div>
+</div>
+<div class="modal-fondo" id="modalCambioPas" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 8px;font-size:19px;">Viaje modificado</h2>
+    <p class="nota" id="cambioPasTxt" style="margin:0 0 12px;"></p>
+    <button class="btn btn-ok" id="cambioPasAceptar" type="button" style="width:100%;margin-bottom:8px;">Aceptar el cambio</button>
+    <button class="btn btn-chico" id="cambioPasRechazar" type="button" style="width:100%;">Rechazar: sigo con el viaje original</button>
+  </div>
+</div>
+
 <!-- Cierre del viaje: muestra lo que se va a cobrar (valor real con la espera
      medida) antes de elegir cómo paga el pasajero. -->
 <div class="modal-fondo" id="modalCierre" hidden>
@@ -1748,7 +1792,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 56;
+  var APP_VERSION = 58;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1874,7 +1918,7 @@
     if (document.getElementById("gmapsScript")) return;
     var script = document.createElement("script");
     script.id = "gmapsScript";
-    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry&callback=alGoogleMapsListo";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry,places&callback=alGoogleMapsListo";
     document.head.appendChild(script);
   }
   window.alGoogleMapsListo = function () { googleMapsListo = true; };
@@ -1896,11 +1940,20 @@
     return fetch(url).then(function (r) { return r.json(); }).then(verificarSesionValida);
   }
 
+  // Estas acciones el servidor las trata como idempotentes ("ya marcado" / "ya iniciado"): si Apps Script
+  // contesta una página HTML o se corta la red, se reintenta una vez antes de mostrar un error.
+  var ACCIONES_REINTENTABLES = { llegue_recogida: 1, salgo_a_buscar: 1, iniciar_viaje: 1 };
   function apiPost(body) {
     var sesion = obtenerSesion();
     if (sesion && sesion.token && !("token" in body)) body.token = sesion.token;
-    return fetch(API_URL, { method: "POST", body: JSON.stringify(body) })
-      .then(function (r) { return r.json(); }).then(verificarSesionValida);
+    function una() {
+      return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+    }
+    var p = una();
+    if (ACCIONES_REINTENTABLES[body.accion]) {
+      p = p.catch(function () { return new Promise(function (ok) { setTimeout(ok, 1500); }).then(una); });
+    }
+    return p.then(verificarSesionValida);
   }
 
   // Si el backend dice "requiere_login" (token vencido o cerrado desde
@@ -2242,35 +2295,26 @@
         kpiPendientes.textContent = pendientes;
       }
       lista.innerHTML = res.conductores.map(function (c) {
-        var etiqueta = c.solo_admin
-          ? '<span class="badge badge-gris">Administrador</span>'
-          : !c.activo
-            ? '<span class="badge badge-ambar">Pendiente / suspendido</span>'
-            : c.en_red
-              ? '<span class="badge badge-azul">Activo · en la red</span>'
-              : '<span class="badge badge-verde">Activo · su clientela</span>';
+        var etiqueta = c.solo_admin ? '<span class="badge badge-gris">Administrador</span>'
+          : !c.activo ? '<span class="badge badge-ambar">Sin habilitar</span>' : '<span class="badge badge-verde">Habilitado</span>';
         var botones = "";
+        // Un interruptor por cosa, con su estado escrito al lado: así se ve de un vistazo qué tiene activo
+        // cada conductor (antes se mezclaba todo en una etiqueta y botones que cambiaban de texto).
+        function interruptor(dato, encendido, titulo, textoSi, textoNo, extra, apagado) {
+          return '<div class="estado-conductor' + (encendido ? " activo" : "") + '" style="margin-top:8px;' + (apagado ? "opacity:.5;" : "") + '">' +
+            '<div class="estado-texto"><div class="estado-titulo" style="font-size:13.5px;">' + titulo + '</div>' +
+            '<p class="msg" style="margin:2px 0 0;font-size:12px;">' + (encendido ? textoSi : textoNo) + '</p>' + (extra || "") + '</div>' +
+            '<label class="switch"><input type="checkbox" ' + dato + '="' + escapar(c.conductor_id) + '"' + (encendido ? " checked" : "") + (apagado ? " disabled" : "") + '>' +
+            '<span class="sr-only">' + titulo + ' de ' + escapar(c.nombre) + '</span><span class="switch-pista"></span></label></div>';
+        }
         var switchTarifa = "";
         if (c.conductor_id !== yo) {
-          botones += '<button class="btn btn-chico" data-activo="' + escapar(c.conductor_id) + '" data-valor="' + (c.activo ? "NO" : "SI") + '">' + (c.activo ? "Suspender" : "Aprobar") + '</button>';
-          if (c.activo && !c.solo_admin) {
-            botones += '<button class="btn btn-chico" data-red="' + escapar(c.conductor_id) + '" data-valor="' + (c.en_red ? "NO" : "SI") + '">' + (c.en_red ? "Sacar de la red" : "Agregar a la red") + '</button>';
-          }
+          switchTarifa = interruptor("data-activo", c.activo, "Habilitado", "Puede iniciar sesión y recibir viajes.", "Suspendido o pendiente de aprobar: no recibe viajes.");
           if (!c.solo_admin) {
-            // Switch en vez de botón: se ve de un vistazo en qué modo está
-            // (pista verde = tarifa propia), y con un solo gesto se cambia o
-            // se autoriza un pedido de tarifa propia pendiente.
-            switchTarifa =
-              '<div class="estado-conductor' + (c.modo_tarifa === "INDIVIDUAL" ? " activo" : "") + '" style="margin-top:8px;">' +
-                '<div class="estado-texto"><div class="estado-titulo" style="font-size:13.5px;">Tarifa propia</div>' +
-                (c.solicitud_tarifa === "PENDIENTE" ? '<p class="msg" style="margin:2px 0 0;font-size:12px;color:var(--accent);">Pidió tarifa propia — activa para autorizar</p>' : '') +
-                '</div>' +
-                '<label class="switch">' +
-                  '<input type="checkbox" data-modo="' + escapar(c.conductor_id) + '"' + (c.modo_tarifa === "INDIVIDUAL" ? ' checked' : '') + '>' +
-                  '<span class="sr-only">Tarifa propia de ' + escapar(c.nombre) + '</span>' +
-                  '<span class="switch-pista"></span>' +
-                '</label>' +
-              '</div>';
+            switchTarifa += interruptor("data-red", c.activo && c.en_red, "En la red", "Recibe sus pasajeros y también viajes que otros conductores no pudieron tomar.",
+              c.activo ? "Solo recibe viajes de sus propios pasajeros." : "Primero hay que habilitarlo.", "", !c.activo);
+            switchTarifa += interruptor("data-modo", c.modo_tarifa === "INDIVIDUAL", "Tarifa propia", "Cobra con sus propias tarifas.", "Cobra con la tarifa general de Rumbo.",
+              c.solicitud_tarifa === "PENDIENTE" ? '<p class="msg" style="margin:2px 0 0;font-size:12px;color:var(--accent);">Pidió tarifa propia — activa para autorizar</p>' : "");
           }
         }
         return '<div class="pedido-card" style="margin-bottom:10px;">' +
@@ -2297,21 +2341,24 @@
     });
   });
 
-  document.getElementById("listaConductores").addEventListener("click", function (ev) {
+  document.getElementById("listaConductores").addEventListener("change", function (ev) {
     var b = ev.target.closest("[data-activo],[data-red]");
     if (!b) return;
     var esActivo = b.hasAttribute("data-activo");
     var id = esActivo ? b.dataset.activo : b.dataset.red;
-    var valor = b.dataset.valor;
-    if (!confirm(b.textContent + "?")) return;
+    var valor = b.checked ? "SI" : "NO";
+    var pregunta = esActivo ? (b.checked ? "¿Habilitar a este conductor?" : "¿Suspender a este conductor? No podrá recibir viajes.")
+      : (b.checked ? "¿Agregarlo a la red? Podrá recibir viajes de otros conductores." : "¿Sacarlo de la red? Solo recibirá viajes de sus pasajeros.");
+    if (!confirm(pregunta)) { b.checked = !b.checked; return; }
     b.disabled = true;
     apiPost(esActivo
       ? { accion: "cambiar_activo", conductor_id: id, activo: valor }
       : { accion: "cambiar_en_red", conductor_id: id, en_red: valor }
     ).then(function (res) {
-      if (!res.ok) { alert(res.error); b.disabled = false; return; }
+      b.disabled = false;
+      if (!res.ok) { alert(res.error); b.checked = !b.checked; return; }
       cargarConductoresAdmin();
-    });
+    }).catch(function (err) { b.disabled = false; b.checked = !b.checked; alert("Error de red: " + err.message); });
   });
 
   // Qué ve cada tipo de cuenta. Solo-admin: únicamente administración (no
@@ -2683,9 +2730,10 @@
         boton.style.display = "none";
         return;
       }
+      mpMostrarControles(res);
       if (res.vinculado) {
-        estado.textContent = "✓ Tu cuenta está vinculada. Ya puedes cobrar viajes por Mercado Pago.";
-        estado.className = "msg ok";
+        estado.textContent = res.pausado ? "Tu cuenta está vinculada, pero el cobro con tarjeta está en pausa: el pasajero no ve esa opción." : "✓ Tu cuenta está vinculada. Ya puedes cobrar viajes por Mercado Pago.";
+        estado.className = res.pausado ? "msg" : "msg ok";
         // Un conductor tiene UNA sola cuenta de Mercado Pago vinculada, no
         // varias — este botón re-autoriza esa misma cuenta (útil si se le
         // revocó el permiso sin querer), nunca agrega una cuenta distinta.
@@ -2698,6 +2746,35 @@
       boton.style.display = "flex";
     });
   }
+
+  // Interruptor "Cobrar con tarjeta" (pausa) y botón para desconectar: solo con la cuenta vinculada.
+  function mpMostrarControles(res) {
+    var fila = document.getElementById("mpPausaFila"), chk = document.getElementById("chkMpActivo"), des = document.getElementById("btnDesconectarMp");
+    fila.style.display = res.vinculado ? "flex" : "none";
+    des.style.display = res.vinculado ? "block" : "none";
+    chk.checked = !res.pausado;
+    fila.classList.toggle("activo", !res.pausado);
+    document.getElementById("mpPausaTexto").textContent = res.pausado ? "En pausa: el pasajero no ve la opción de tarjeta." : "Activo: el pasajero puede elegir pagar con tarjeta.";
+  }
+  document.getElementById("chkMpActivo").addEventListener("change", function () {
+    var chk = this, pausar = !chk.checked;
+    chk.disabled = true;
+    apiPost({ accion: "cambiar_mp_pausa", pausado: pausar }).then(function (res) {
+      chk.disabled = false;
+      if (!res.ok) { alert(res.error); chk.checked = pausar; return; }
+      cargarEstadoMp();
+    }).catch(function (err) { chk.disabled = false; chk.checked = pausar; alert("Error de red: " + err.message); });
+  });
+  document.getElementById("btnDesconectarMp").addEventListener("click", function () {
+    var b = this;
+    if (!confirm("¿Desconectar tu Mercado Pago? Dejarás de cobrar con tarjeta hasta que lo vincules de nuevo. Para quitar también el permiso, revócalo desde tu cuenta de Mercado Pago.")) return;
+    b.disabled = true;
+    apiPost({ accion: "desconectar_mp" }).then(function (res) {
+      b.disabled = false;
+      if (!res.ok) { alert(res.error); return; }
+      cargarEstadoMp();
+    }).catch(function (err) { b.disabled = false; alert("Error de red: " + err.message); });
+  });
 
   document.getElementById("btnVincularMp").addEventListener("click", function () {
     var boton = this;
@@ -3586,6 +3663,148 @@
   }
   function guardarTramo(id, n) { try { localStorage.setItem(claveTramo(id), String(n)); } catch (e) {} }
 
+  /* ---------- Editar el viaje ----------
+     Si el viaje cambió (destino o paradas), el avance guardado en el teléfono se vuelve a ubicar: se cuentan las
+     paradas ya pasadas que siguen en la ruta nueva, así la tarjeta no apunta a otro lugar. */
+  function reubicarTramoSiCambio(p) {
+    if (!p.inicio_viaje_en) return;
+    var dirs = puntosDelViaje(p).map(function (x) { return x.dir; }), clave = "rumbo_puntos_" + p.pedido_id, prev = null;
+    try { prev = JSON.parse(localStorage.getItem(clave) || "null"); } catch (e) {}
+    if (prev && JSON.stringify(prev) !== JSON.stringify(dirs)) {
+      var idxPrev = 1;
+      try { idxPrev = parseInt(localStorage.getItem(claveTramo(p.pedido_id)), 10) || 1; } catch (e) {}
+      var intermedias = dirs.slice(1, dirs.length - 1), nuevo = 1;
+      prev.slice(1, idxPrev).forEach(function (d) { if (intermedias.indexOf(d) >= 0) nuevo++; });
+      guardarTramo(p.pedido_id, Math.min(nuevo, dirs.length - 1));
+    }
+    try { localStorage.setItem(clave, JSON.stringify(dirs)); } catch (e) {}
+  }
+
+  var cambioMostrado = {};
+  var cambiosVistosMem = {};
+  function cambioVisto(p) {
+    var v = "";
+    try { v = localStorage.getItem("rumbo_cambio_visto_" + p.pedido_id) || ""; } catch (e) {}
+    return v || cambiosVistosMem[p.pedido_id] || "";
+  }
+  function marcarCambioVisto(p) {
+    cambiosVistosMem[p.pedido_id] = String(p.cambio_en);
+    try { localStorage.setItem("rumbo_cambio_visto_" + p.pedido_id, String(p.cambio_en)); } catch (e) {}
+  }
+  function propuestaDe(p) { try { return JSON.parse(p.cambio_propuesto || "{}"); } catch (e) { return {}; } }
+  function textoPropuesta(pr) {
+    var par = pr.paradas ? String(pr.paradas).split("|").filter(Boolean) : [];
+    return (pr.origen ? "Salida: " + pr.origen + ". " : "") + (par.length ? "Paradas: " + par.join(", ") + ". " : "") + "Destino: " + pr.destino + ".";
+  }
+  // Un cambio que propuso el pasajero se muestra con sonido; la respuesta del pasajero a uno mío se avisa una vez.
+  function atenderCambiosDeViaje(pedidos) {
+    pedidos.forEach(function (p) {
+      if (p.estado !== "CONFIRMADO" || !p.cambio_estado) return;
+      if (p.cambio_estado === "PENDIENTE" && p.cambio_por === "PASAJERO") {
+        if (cambioMostrado[p.pedido_id] !== p.cambio_en) {
+          cambioMostrado[p.pedido_id] = p.cambio_en;
+          mostrarCambioPas(p);
+          try { sonarAviso(); if (navigator.vibrate) navigator.vibrate([300, 120, 300]); } catch (e) {}
+        }
+      } else if (cambioPasId === p.pedido_id && !(p.cambio_estado === "PENDIENTE" && p.cambio_por === "PASAJERO")) {
+        document.getElementById("modalCambioPas").hidden = true; cambioPasId = "";
+      }
+      if (p.cambio_por === "CONDUCTOR" && (p.cambio_estado === "ACEPTADO" || p.cambio_estado === "RECHAZADO") && cambioVisto(p) !== String(p.cambio_en)) {
+        marcarCambioVisto(p);
+        alert(p.cambio_estado === "ACEPTADO" ? "El pasajero aceptó el cambio del viaje." : "El pasajero no aceptó el cambio: el viaje sigue como estaba.");
+      }
+    });
+  }
+  var cambioPasId = "";
+  function mostrarCambioPas(p) {
+    var pr = propuestaDe(p);
+    cambioPasId = p.pedido_id;
+    document.getElementById("cambioPasTxt").textContent = "El pasajero quiere cambiar el viaje. " + textoPropuesta(pr) + " Valor: " + fmt(pr.total_anterior) + " → " + fmt(pr.total) + ".";
+    document.getElementById("modalCambioPas").hidden = false;
+  }
+  function responderCambioPas(acepta) {
+    if (!cambioPasId) return;
+    var a = document.getElementById("cambioPasAceptar"), r = document.getElementById("cambioPasRechazar");
+    a.disabled = r.disabled = true;
+    apiPost({ accion: "responder_cambio", pedido_id: cambioPasId, acepta: acepta }).then(function (res) {
+      a.disabled = r.disabled = false;
+      if (!res.ok) { alert(res.error); return; }
+      document.getElementById("modalCambioPas").hidden = true; cambioPasId = "";
+      refrescarViajes();
+    }).catch(function (err) { a.disabled = r.disabled = false; alert("Error de red: " + err.message); });
+  }
+  document.getElementById("cambioPasAceptar").addEventListener("click", function () { responderCambioPas(true); });
+  document.getElementById("cambioPasRechazar").addEventListener("click", function () { responderCambioPas(false); });
+
+  // Ventana para editar: salida, paradas y destino con autocompletado de Google (si está disponible).
+  var edcPedidoId = "", edcAuto = {};
+  function edcAutocompletar(inp) {
+    try { if (window.google && google.maps.places && !inp.dataset.auto) { inp.dataset.auto = "1"; new google.maps.places.Autocomplete(inp, { componentRestrictions: { country: "cl" }, fields: ["formatted_address"] }); } } catch (e) {}
+  }
+  function edcInvalidar() { document.getElementById("edcEnviar").disabled = true; document.getElementById("edcPrecio").style.display = "none"; }
+  function edcFila(valor) {
+    var fila = document.createElement("div"); fila.className = "ed-fila";
+    var inp = document.createElement("input"); inp.type = "text"; inp.value = valor || ""; inp.placeholder = "Parada intermedia"; inp.setAttribute("autocomplete", "off");
+    var q = document.createElement("button"); q.type = "button"; q.className = "btn btn-chico"; q.textContent = "Quitar"; q.style.flex = "none";
+    q.addEventListener("click", function () { fila.remove(); edcInvalidar(); });
+    inp.addEventListener("input", edcInvalidar);
+    fila.appendChild(inp); fila.appendChild(q); document.getElementById("edcParadas").appendChild(fila);
+    edcAutocompletar(inp);
+  }
+  function edcDatos() {
+    var par = [].map.call(document.querySelectorAll("#edcParadas input"), function (i) { return i.value.trim(); }).filter(Boolean);
+    return { pedido_id: edcPedidoId, origen: document.getElementById("edcOrigen").value.trim(), destino: document.getElementById("edcDestino").value.trim(), paradas: par.join("|") };
+  }
+  function abrirEditarViajeC() {
+    var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
+    if (!p) return;
+    edcPedidoId = p.pedido_id;
+    var pts = puntosDelViaje(p);
+    document.getElementById("edcOrigen").value = pts[0] ? pts[0].dir : (p.origen || "");
+    document.getElementById("edcDestino").value = pts.length ? pts[pts.length - 1].dir : (p.destino || "");
+    document.getElementById("edcParadas").innerHTML = "";
+    pts.slice(1, pts.length - 1).forEach(function (x) { edcFila(x.dir); });
+    ["edcOrigen", "edcDestino"].forEach(function (id) { var i = document.getElementById(id); edcAutocompletar(i); i.oninput = edcInvalidar; });
+    document.getElementById("edcOrigen").disabled = !!p.llegada_recogida_en || !!p.inicio_viaje_en;
+    document.getElementById("edcMsg").textContent = ""; edcInvalidar();
+    document.getElementById("modalEditarC").hidden = false;
+  }
+  document.getElementById("tvEditar").addEventListener("click", function () {
+    var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
+    // Si el cambio pendiente es del PASAJERO, el botón vuelve a abrir la ventana para responderlo.
+    if (p && p.cambio_estado === "PENDIENTE" && p.cambio_por === "PASAJERO") { mostrarCambioPas(p); return; }
+    abrirEditarViajeC();
+  });
+  document.getElementById("edcAgregar").addEventListener("click", function () { edcFila(""); edcInvalidar(); });
+  document.getElementById("edcCerrar").addEventListener("click", function () { document.getElementById("modalEditarC").hidden = true; });
+  document.getElementById("edcCalcular").addEventListener("click", function () {
+    var msg = document.getElementById("edcMsg"), btn = this, d = edcDatos();
+    if (!d.destino) { msg.textContent = "Escribe el destino."; return; }
+    btn.disabled = true; msg.textContent = "Calculando…";
+    d.accion = "proponer_cambio"; d.solo_calcular = true;
+    apiPost(d).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { msg.textContent = r.error || "No se pudo calcular."; return; }
+      msg.textContent = "";
+      var dif = r.diferencia, umbral = Math.max(500, r.total_actual * 0.03), pr = document.getElementById("edcPrecio");
+      pr.innerHTML = "Valor actual " + fmt(r.total_actual) + " → <strong>nuevo " + fmt(r.total_nuevo) + "</strong>" + (dif === 0 ? " (sin cambio)" : dif > 0 ? " (+" + fmt(dif) + ")" : " (−" + fmt(-dif) + ")") +
+        "<br>" + (Math.abs(dif) <= umbral ? "El cambio es menor: se aplica y se avisa al pasajero." : "El pasajero tiene que aceptar este valor.");
+      pr.style.display = "block";
+      document.getElementById("edcEnviar").disabled = false;
+    }).catch(function (err) { btn.disabled = false; msg.textContent = "Error de red: " + err.message; });
+  });
+  document.getElementById("edcEnviar").addEventListener("click", function () {
+    var msg = document.getElementById("edcMsg"), btn = this, d = edcDatos();
+    btn.disabled = true; msg.textContent = "Enviando…";
+    d.accion = "proponer_cambio";
+    apiPost(d).then(function (r) {
+      if (!r.ok) { btn.disabled = false; msg.textContent = r.error || "No se pudo enviar."; return; }
+      document.getElementById("modalEditarC").hidden = true;
+      if (!r.aplicado) alert("Cambio enviado: esperando que el pasajero lo acepte.");
+      refrescarViajes();
+    }).catch(function (err) { btn.disabled = false; msg.textContent = "Error de red: " + err.message; });
+  });
+
   function abrirNavegacion(puntos, indice) {
     var url = gpsPreferido === "GOOGLE_MAPS" ? urlMapsDesde(puntos, indice) : urlWazePunto(puntos[indice]);
     window.open(url, "_system");
@@ -3854,11 +4073,36 @@
     return { reloj: mmss(transcurridoSeg), pct: pct, texto: texto, excedida: excedida };
   }
 
+  // Espera del conductor en la recogida (como Uber): 3 min sin costo en cuenta regresiva (verde); al pasar, el reloj
+  // vuelve a empezar desde cero en rojo y se va cobrando. Función pura (se prueba aparte).
+  var ESPERA_RECOGIDA_GRATIS_MIN = 3;
+  function estadoEsperaRecogida(transcurridoSeg, valorHora) {
+    var libre = ESPERA_RECOGIDA_GRATIS_MIN * 60;
+    if (transcurridoSeg <= libre) {
+      return { reloj: mmss(libre - transcurridoSeg), pct: Math.max(0, Math.min(100, transcurridoSeg / libre * 100)), cobrando: false,
+        texto: "Sin costo · quedan " + mmss(libre - transcurridoSeg) + " de " + ESPERA_RECOGIDA_GRATIS_MIN + " min" };
+    }
+    var extra = transcurridoSeg - libre, monto = Math.round(extra / 60 * (Number(valorHora) || 0) / 60);
+    return { reloj: mmss(extra), pct: 100, cobrando: true, texto: "Cobrando espera" + (monto > 0 ? " · +" + fmt(monto) : "") };
+  }
+
   function actualizarRelojesEspera() {
     [].forEach.call(document.querySelectorAll(".espera-panel[data-desde]"), function (el) {
       var desde = Date.parse(el.dataset.desde);
       if (isNaN(desde)) return;
-      var e = estadoEspera((Date.now() - desde) / 1000, Number(el.dataset.incluida) || 0);
+      var seg = (Date.now() - desde) / 1000;
+      if (el.dataset.modo === "recogida") {
+        var r = estadoEsperaRecogida(seg, el.dataset.valorhora);
+        el.querySelector("[data-reloj]").textContent = r.reloj;
+        el.querySelector("[data-barra]").style.width = r.pct + "%";
+        el.querySelector("[data-texto]").textContent = r.texto;
+        el.classList.remove("excedida");
+        el.classList.toggle("gratis", !r.cobrando);
+        el.classList.toggle("cobrando", r.cobrando);
+        return;
+      }
+      el.classList.remove("gratis", "cobrando");
+      var e = estadoEspera(seg, Number(el.dataset.incluida) || 0);
       el.querySelector("[data-reloj]").textContent = e.reloj;
       el.querySelector("[data-barra]").style.width = e.pct + "%";
       el.querySelector("[data-texto]").textContent = e.texto;
@@ -3933,7 +4177,53 @@
     if (p.llegada_recogida_en) return true;
     try { return localStorage.getItem("rumbo_llegue_" + p.pedido_id) === "1"; } catch (e) { return false; }
   }
-  function marcarLlegoLocal(id) { try { localStorage.setItem("rumbo_llegue_" + id, "1"); } catch (e) {} }
+  // Hora de "Llegué" para el contador: la del servidor o, si no alcanzó a llegar, la marcada en el teléfono.
+  function llegadaIso(p) {
+    var t = p.espera_desde ? new Date(p.espera_desde) : (p.llegada_recogida_en ? new Date(p.llegada_recogida_en) : null);
+    if (t && !isNaN(t.getTime())) return t.toISOString();
+    try { var l = localStorage.getItem("rumbo_llegue_hora_" + p.pedido_id); if (l && !isNaN(Date.parse(l))) return l; } catch (e) {}
+    return "";
+  }
+  function marcarLlegoLocal(id) {
+    try { if (!localStorage.getItem("rumbo_llegue_hora_" + id)) localStorage.setItem("rumbo_llegue_hora_" + id, new Date().toISOString()); } catch (e) {} try { localStorage.setItem("rumbo_llegue_" + id, "1"); } catch (e) {} }
+  // "Ir a buscar" ya tocado: lo dice el servidor (salida_en) o, si no alcanzó a llegar, la marca local.
+  function salioABuscar(p) {
+    if (p.salida_en || p.llegada_recogida_en) return true;
+    try { return localStorage.getItem("rumbo_salio_" + p.pedido_id) === "1"; } catch (e) { return false; }
+  }
+  function marcarSalioLocal(id) { try { localStorage.setItem("rumbo_salio_" + id, "1"); } catch (e) {} }
+  // El aviso "Tu vehículo está en camino" que no llegó al servidor se reenvía solo cada 8 s hasta que confirma.
+  var salidasPendientes = {};
+  function salidaPendiente(id) {
+    if (salidasPendientes[id]) return;
+    salidasPendientes[id] = true;
+    (function intentar() {
+      apiPost({ accion: "salgo_a_buscar", pedido_id: id }).then(function (res) {
+        if (res && (res.ok || res.requiere_login || res.error)) { delete salidasPendientes[id]; return; }
+        setTimeout(intentar, 8000);
+      }).catch(function () { setTimeout(intentar, 8000); });
+    })();
+  }
+
+  /* "Llegué" que no alcanzó al servidor: el pasajero NO fue avisado. Se deja anotado, el botón sigue
+     ("Iniciar viaje") y se reenvía solo cada 8 s hasta que el servidor confirma; mientras tanto se avisa. */
+  var llegadasPendientes = {};
+  function llegadaPendiente(id, errorServidor) {
+    marcarLlegoLocal(id);
+    refrescarViajes();
+    if (errorServidor && errorServidor !== "sesion invalida") { alert("No se pudo avisar al pasajero: " + errorServidor); return; }
+    if (llegadasPendientes[id]) return;
+    llegadasPendientes[id] = true;
+    alert("No se pudo avisar al pasajero que llegaste (sin conexión con el servidor). Sigo intentando cada pocos segundos: no cierres la app.");
+    (function intentar() {
+      apiPost({ accion: "llegue_recogida", pedido_id: id }).then(function (res) {
+        if (res && res.ok) { delete llegadasPendientes[id]; refrescarViajes(); return; }
+        if (res && res.requiere_login) return;   // volvió a la pantalla de login: al entrar de nuevo se vuelve a tocar
+        if (res && res.error) { delete llegadasPendientes[id]; return; }
+        setTimeout(intentar, 8000);
+      }).catch(function () { setTimeout(intentar, 8000); });
+    })();
+  }
 
   function modeloTarjeta(p) {
     var puntos = puntosDelViaje(p), quien = String(p.nombre || "el pasajero");
@@ -3949,9 +4239,11 @@
       var sec = { texto: "Finalizar sin iniciar", accion: "cerrar" };   // pasajero que no sube: siempre se puede cerrar y cobrar
       return llegoARecogida(p)
         ? { etapa: "recogida", id: p.pedido_id, etiqueta: "Pasajero", titulo: quien, sub: "Llegaste a " + puntos[0].dir,
-            boton: { texto: "Iniciar viaje", accion: "iniciar", clase: "" }, crono: null, secundario: sec, punto: puntos[0], nav: { puntos: puntos, indice: 0 } }
+            boton: { texto: "Iniciar viaje", accion: "iniciar", clase: "" },
+            crono: llegadaIso(p) ? { desde: llegadaIso(p), incluidaMin: ESPERA_RECOGIDA_GRATIS_MIN, modo: "recogida", titulo: "Espera del pasajero", valorHora: Number(p.valor_hora) || 0 } : null, secundario: sec, punto: puntos[0], nav: { puntos: puntos, indice: 0 } }
         : { etapa: "recoger", id: p.pedido_id, etiqueta: "Recoger a", titulo: quien, sub: puntos[0].dir,
-            boton: { texto: "Llegué", accion: "llegue-recogida", clase: "" }, crono: null, secundario: sec, punto: puntos[0], nav: { puntos: puntos, indice: 0 } };
+            boton: salioABuscar(p) ? { texto: "Llegué", accion: "llegue-recogida", clase: "" } : { texto: "Ir a buscar", accion: "ir-buscar", clase: "" },
+            crono: null, secundario: sec, punto: puntos[0], nav: { puntos: puntos, indice: 0 } };
     }
     if (etapa === "espera") {
       var d = new Date(p.llegada_destino_en);
@@ -4040,10 +4332,19 @@
     var cr = document.getElementById("tvCrono");
     if (m.crono) {
       cr.dataset.desde = m.crono.desde; cr.dataset.incluida = String(m.crono.incluidaMin);
+      if (m.crono.modo) { cr.dataset.modo = m.crono.modo; cr.dataset.valorhora = String(m.crono.valorHora || 0); } else { delete cr.dataset.modo; delete cr.dataset.valorhora; }
+      cr.querySelector(".espera-titulo").textContent = m.crono.titulo || "Tiempo de espera";
       cr.hidden = false; actualizarRelojesEspera();
-    } else { cr.hidden = true; delete cr.dataset.desde; }
+    } else { cr.hidden = true; delete cr.dataset.desde; delete cr.dataset.modo; cr.classList.remove("gratis", "cobrando"); }
     // "Ir con Waze/Maps" (la app de Ajustes) vive en el desplegable: Waze se abre solo al iniciar el viaje y, si se cierra por error, se reabre ahí
     document.getElementById("tvIr").hidden = !m.nav;
+    var tvEd = document.getElementById("tvEditar");
+    var puedeEditar = p.estado === "CONFIRMADO" && !p.llegada_destino_en && !p.estado_pago && m.etapa !== "pago";
+    var pendienteMio = p.cambio_estado === "PENDIENTE" && p.cambio_por === "CONDUCTOR";
+    var pendienteDelPasajero = p.cambio_estado === "PENDIENTE" && p.cambio_por === "PASAJERO";
+    tvEd.hidden = !puedeEditar;
+    tvEd.disabled = pendienteMio;
+    tvEd.textContent = pendienteMio ? "Cambio enviado: esperando al pasajero" : pendienteDelPasajero ? "Responder el cambio del pasajero" : "Editar viaje";
     document.getElementById("tvIr").textContent = gpsPreferido === "GOOGLE_MAPS" ? "Ir con Maps" : "Ir con Waze";
     var b = document.getElementById("tvAccion");
     b.textContent = m.boton.texto;
@@ -4063,15 +4364,16 @@
 
   /* El mapa de fondo muestra el viaje en curso: la ruta naranja del viaje, el pasajero (si hay que buscarlo)
      y el punto al que va. Mientras la navegación en Rumbo dibuja su propia ruta, la del viaje cede. */
-  var viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "" };
+  var viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "", tramo: null, tramoClave: "" };
   var posPasajeroPorPedido = {};
   function limpiarMapaViaje() {
     try {
       if (viajeMapa.linea) viajeMapa.linea.setMap(null);
       if (viajeMapa.dest) viajeMapa.dest.setMap(null);
       if (viajeMapa.pasajero) viajeMapa.pasajero.setMap(null);
+      if (viajeMapa.tramo) viajeMapa.tramo.setMap(null);
     } catch (e) {}
-    viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "" };
+    viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "", tramo: null, tramoClave: "" };
   }
   function refrescarMapaViaje() {
     var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
@@ -4082,11 +4384,30 @@
     if (!mapaEspera || !googleMapsListo) return;
     if (viajeMapa.id !== p.pedido_id) { limpiarMapaViaje(); viajeMapa.id = p.pedido_id; }
     var cod = rutasPorPedido[p.pedido_id];
-    if (nav) {
+    // Yendo a buscar al pasajero (después de "Ir a buscar"): se dibuja el camino desde el auto hasta la
+    // recogida, una sola vez por viaje, y la ruta del viaje (recogida → destino) espera hasta "Iniciar viaje".
+    var yendo = !nav && m && m.etapa === "recoger" && salioABuscar(p) && m.punto && m.punto.coord;
+    if (!yendo && viajeMapa.tramo) { viajeMapa.tramo.setMap(null); viajeMapa.tramo = null; }
+    if (yendo) {
       if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }
-    } else if (cod && !viajeMapa.linea && google.maps.geometry) {
-      var pts = google.maps.geometry.encoding.decodePath(cod);
-      if (pts.length) viajeMapa.linea = dibujarRutaNaranja(mapaEspera, pts);
+      if (viajeMapa.tramoClave !== p.pedido_id && miPosicionConductor && google.maps.geometry) {
+        viajeMapa.tramoClave = p.pedido_id;
+        var idTramo = p.pedido_id;
+        api({ accion: "ruta_navegacion", lat: miPosicionConductor.lat, lng: miPosicionConductor.lng, dlat: m.punto.coord.lat, dlng: m.punto.coord.lng }).then(function (res) {
+          if (!res || !res.ok || !res.polilinea || viajeMapa.id !== idTramo || viajeMapa.tramo) { if (!(res && res.ok)) viajeMapa.tramoClave = ""; return; }
+          var pts = google.maps.geometry.encoding.decodePath(res.polilinea);
+          if (pts.length) viajeMapa.tramo = dibujarRutaNaranja(mapaEspera, pts);
+        }).catch(function () { viajeMapa.tramoClave = ""; });   // sin red: se vuelve a intentar en el próximo repintado
+      }
+    } else if (nav) {
+      if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }
+    } else if (cod && google.maps.geometry) {
+      // Si el viaje cambió (editado), la ruta nueva reemplaza a la vieja y el mapa se vuelve a encuadrar.
+      if (viajeMapa.linea && viajeMapa.codLinea !== cod) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; viajeMapa.clave = ""; }
+      if (!viajeMapa.linea) {
+        var pts = google.maps.geometry.encoding.decodePath(cod);
+        if (pts.length) { viajeMapa.linea = dibujarRutaNaranja(mapaEspera, pts); viajeMapa.codLinea = cod; }
+      }
     }
     // punto al que va ahora (recogida, parada, destino o regreso)
     var coord = m && m.punto && m.punto.coord;
@@ -4105,7 +4426,7 @@
       viajeMapa.pasajero.setPosition(pp);
     } else if (viajeMapa.pasajero) { viajeMapa.pasajero.setMap(null); viajeMapa.pasajero = null; }
     // encuadre: una sola vez por viaje y etapa, y nunca mientras se navega (ahí el mapa sigue al auto)
-    var clave = p.pedido_id + ":" + (m ? m.etapa : "");
+    var clave = p.pedido_id + ":" + (m ? m.etapa : "") + (yendo ? ":yendo" : "");
     if (nav || viajeMapa.clave === clave) return;
     viajeMapa.clave = clave;
     var lim = new google.maps.LatLngBounds(), n = 0;
@@ -4146,11 +4467,21 @@
       if (p) abrirNavegacion(puntosDelViaje(p), siguiente);
       return;
     }
+    if (tipo === "ir-buscar") {
+      // Primer paso hacia el pasajero: abre la navegación a la recogida, le avisa "Tu vehículo está en camino" y el mapa dibuja la ruta hasta él.
+      marcarSalioLocal(id);
+      if (p) abrirNavegacion(puntosDelViaje(p), 0);
+      apiPost({ accion: "salgo_a_buscar", pedido_id: id }).then(function (res) {
+        if (!res || !res.ok) salidaPendiente(id);
+      }).catch(function () { salidaPendiente(id); });
+      refrescarViajes();
+      return;
+    }
     if (tipo === "llegue-recogida") {
       conBotonOcupado(apiPost({ accion: "llegue_recogida", pedido_id: id }).then(function (res) {
-        if (!res || !res.ok) marcarLlegoLocal(id);   // sin servidor nuevo o sin red: igual sigue "Iniciar viaje"
+        if (!res || !res.ok) { llegadaPendiente(id, res && res.error); return; }
         refrescarViajes();
-      }).catch(function () { marcarLlegoLocal(id); refrescarViajes(); }));
+      }).catch(function () { llegadaPendiente(id); }));
       return;
     }
     if (tipo === "iniciar") {
@@ -4245,6 +4576,7 @@
         if (r.extra_espera_min > 0) filas.push(["Espera adicional", "+" + Math.round(r.extra_espera_min) + " min", "extra"]);
       }
     }
+    if (r.espera_recogida_valor > 0) filas.push(["Espera en la recogida", Math.round(r.espera_recogida_min) + " min (3 sin costo) · +" + fmt(r.espera_recogida_valor), "extra"]);
     if (r.minutos_reales > 0) filas.push(["Tiempo total del viaje", Math.round(r.minutos_reales) + " min", ""]);
     if (r.km_reales > 0) filas.push(["Distancia medida", String(r.km_reales).replace(".", ",") + " km", ""]);
     filas.push(["Valor a cobrar", fmt(r.a_cobrar), "total"]);
@@ -4582,7 +4914,8 @@
       // Solo se redibuja si cambió el conjunto de viajes (o su etapa: en
       // curso → esperando pago), para no borrar los mensajes ya pintados ni
       // lo que el conductor está tipeando.
-      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : "") + (p.llegada_recogida_en ? "g" : "") + (p.llegada_destino_en ? "l" : "") + (p.inicio_regreso_en ? "r" : ""); }).join(",");
+      res.pedidos.forEach(function (p) { reubicarTramoSiCambio(p); });
+      var idsActuales = res.pedidos.map(function (p) { return p.pedido_id + ":" + (p.cambio_en ? new Date(p.cambio_en).getTime() : "") + ":" + p.estado_pago + ":" + (p.inicio_viaje_en ? "i" : "") + (p.llegada_recogida_en ? "g" : "") + (p.llegada_destino_en ? "l" : "") + (p.inicio_regreso_en ? "r" : ""); }).join(",");
       if (lista.dataset.ids !== idsActuales) {
         lista.dataset.ids = idsActuales;
         lista.innerHTML = "";
@@ -4592,11 +4925,12 @@
         mapasPorPedido = {};
       }
       res.pedidos.forEach(function (p) {
-        if (p.polilinea) rutasPorPedido[p.pedido_id] = p.polilinea;
+        if (p.polilinea) rutasPorPedido[p.pedido_id] = p.polilinea; else delete rutasPorPedido[p.pedido_id];
         if (p.estado === "CONFIRMADO") dibujarRutaPedido(p.pedido_id);
       });
       pedirEtas();
       pintarTarjetaViaje();
+      atenderCambiosDeViaje(res.pedidos);
       if (ubicaciones) {
         Object.keys(ubicaciones).forEach(function (id) { pintarUbicacionPasajero(id, ubicaciones[id]); });
       } else {
