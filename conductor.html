@@ -883,6 +883,11 @@
     background: var(--bg); color: var(--text); text-align: center;
     transition: opacity 0.35s ease;
   }
+  /* By BTo Innova soluciones (regla de marca): al pie del splash y en el pie de la cuenta. El logo es azul oscuro: va sobre un recuadro claro. */
+  .splash .by { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
+  .splash .by span { font: 400 16px system-ui, sans-serif; color: #4E5A6C; }
+  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 10px; padding: 3px 8px; }
+  .by-pie { text-align: center; color: #4E5A6C; font-size: 13px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
   .splash img { width: min(64vw, 280px); height: min(64vw, 280px); filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
@@ -928,6 +933,7 @@
   <div class="splash-titulo" id="splashTitulo">Rumbo</div>
   <div class="splash-texto" id="splashTexto"></div>
   <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
 </div>
 <script>
   /* MODO lo fija scripts/generar-paneles.js. Esta pantalla se decide ANTES
@@ -1530,7 +1536,8 @@
     <details class="acordeon simple"><summary>Mi cuenta</summary><div class="acordeon-cuerpo">
     <!-- Cerrar sesión solo desde acá, a propósito: la sesión queda abierta
          (hasta 5 dispositivos) y no debe cerrarse por un toque accidental. -->
-    <button class="btn btn-danger" id="btnCerrarSesion" type="button" style="width:100%;margin:0 0 18px;">Cerrar sesión en este dispositivo</button>
+    <button class="btn btn-danger" id="btnCerrarSesion" type="button" style="width:100%;margin:0 0 6px;">Cerrar sesión en este dispositivo</button>
+    <p class="by-pie">by BTo Innova soluciones</p>
     <section class="card">
       <div class="card-head"><span class="card-title">Tu cuenta</span></div>
       <div class="campo" style="margin-bottom:12px;">
@@ -1719,7 +1726,7 @@
 <div class="modal-fondo" id="modalEditarC" hidden>
   <div class="modal-hoja">
     <h2 style="margin:0 0 8px;font-size:19px;">Editar viaje</h2>
-    <p class="nota" style="margin:0 0 10px;">Corrige direcciones o agrega paradas para ayudar al pasajero. Si el valor cambia más de 3 %, el pasajero debe aceptar el cambio. Para seguir después del destino actual, agrégalo como parada y escribe el destino nuevo abajo.</p>
+    <p class="nota" style="margin:0 0 10px;">Corrige direcciones o agrega paradas para ayudar al pasajero. El cambio se aplica de inmediato y se le avisa; solo si el valor sube más de 30 % sobre el primero, el pasajero debe aceptarlo. Para seguir después del destino actual, agrégalo como parada y escribe el destino nuevo abajo.</p>
     <div class="campo"><label class="campo-label" for="edcOrigen">Salida</label><input type="text" id="edcOrigen" autocomplete="off"></div>
     <div id="edcParadas" style="margin-top:8px;"></div>
     <button class="btn btn-chico" id="edcAgregar" type="button" style="margin:0 0 10px;">+ Agregar parada</button>
@@ -1792,7 +1799,7 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 58;
+  var APP_VERSION = 59;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -3709,6 +3716,12 @@
       } else if (cambioPasId === p.pedido_id && !(p.cambio_estado === "PENDIENTE" && p.cambio_por === "PASAJERO")) {
         document.getElementById("modalCambioPas").hidden = true; cambioPasId = "";
       }
+      // El pasajero cambió el viaje y ya quedó aplicado: solo se avisa (con sonido), no hay que responder.
+      if (p.cambio_por === "PASAJERO" && p.cambio_estado === "APLICADO" && cambioVisto(p) !== String(p.cambio_en)) {
+        marcarCambioVisto(p);
+        mostrarCambioPas(p, true);
+        try { sonarAviso(); if (navigator.vibrate) navigator.vibrate([300, 120, 300]); } catch (e) {}
+      }
       if (p.cambio_por === "CONDUCTOR" && (p.cambio_estado === "ACEPTADO" || p.cambio_estado === "RECHAZADO") && cambioVisto(p) !== String(p.cambio_en)) {
         marcarCambioVisto(p);
         alert(p.cambio_estado === "ACEPTADO" ? "El pasajero aceptó el cambio del viaje." : "El pasajero no aceptó el cambio: el viaje sigue como estaba.");
@@ -3716,14 +3729,19 @@
     });
   }
   var cambioPasId = "";
-  function mostrarCambioPas(p) {
+  var cambioPasInfo = false;
+  // info=true: el cambio ya está aplicado y solo se avisa ("Entendido"); info=false: hay que aceptar o rechazar.
+  function mostrarCambioPas(p, info) {
     var pr = propuestaDe(p);
-    cambioPasId = p.pedido_id;
-    document.getElementById("cambioPasTxt").textContent = "El pasajero quiere cambiar el viaje. " + textoPropuesta(pr) + " Valor: " + fmt(pr.total_anterior) + " → " + fmt(pr.total) + ".";
+    cambioPasId = p.pedido_id; cambioPasInfo = !!info;
+    document.getElementById("cambioPasTxt").textContent = (info ? "El pasajero cambió el viaje. " : "El pasajero quiere cambiar el viaje. ") + textoPropuesta(pr) + " Valor: " + fmt(pr.total_anterior) + " → " + fmt(pr.total) + ".";
+    document.getElementById("cambioPasAceptar").textContent = info ? "Entendido" : "Aceptar el cambio";
+    document.getElementById("cambioPasRechazar").style.display = info ? "none" : "";
     document.getElementById("modalCambioPas").hidden = false;
   }
   function responderCambioPas(acepta) {
     if (!cambioPasId) return;
+    if (cambioPasInfo) { document.getElementById("modalCambioPas").hidden = true; cambioPasId = ""; cambioPasInfo = false; return; }
     var a = document.getElementById("cambioPasAceptar"), r = document.getElementById("cambioPasRechazar");
     a.disabled = r.disabled = true;
     apiPost({ accion: "responder_cambio", pedido_id: cambioPasId, acepta: acepta }).then(function (res) {
@@ -3786,9 +3804,9 @@
       btn.disabled = false;
       if (!r.ok) { msg.textContent = r.error || "No se pudo calcular."; return; }
       msg.textContent = "";
-      var dif = r.diferencia, umbral = Math.max(500, r.total_actual * 0.03), pr = document.getElementById("edcPrecio");
+      var dif = r.diferencia, pr = document.getElementById("edcPrecio");
       pr.innerHTML = "Valor actual " + fmt(r.total_actual) + " → <strong>nuevo " + fmt(r.total_nuevo) + "</strong>" + (dif === 0 ? " (sin cambio)" : dif > 0 ? " (+" + fmt(dif) + ")" : " (−" + fmt(-dif) + ")") +
-        "<br>" + (Math.abs(dif) <= umbral ? "El cambio es menor: se aplica y se avisa al pasajero." : "El pasajero tiene que aceptar este valor.");
+        "<br>" + (r.requiere_pasajero ? "El valor sube más de 30 % sobre el primero: el pasajero tiene que aceptarlo." : "Se aplica de inmediato y se avisa al pasajero.");
       pr.style.display = "block";
       document.getElementById("edcEnviar").disabled = false;
     }).catch(function (err) { btn.disabled = false; msg.textContent = "Error de red: " + err.message; });
@@ -4364,7 +4382,7 @@
 
   /* El mapa de fondo muestra el viaje en curso: la ruta naranja del viaje, el pasajero (si hay que buscarlo)
      y el punto al que va. Mientras la navegación en Rumbo dibuja su propia ruta, la del viaje cede. */
-  var viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "", tramo: null, tramoClave: "" };
+  var viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "", tramo: null, tramoClave: "", tramoPts: null, tramoPara: "", desvioEn: 0 };
   var posPasajeroPorPedido = {};
   function limpiarMapaViaje() {
     try {
@@ -4373,7 +4391,7 @@
       if (viajeMapa.pasajero) viajeMapa.pasajero.setMap(null);
       if (viajeMapa.tramo) viajeMapa.tramo.setMap(null);
     } catch (e) {}
-    viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "", tramo: null, tramoClave: "" };
+    viajeMapa = { id: "", linea: null, dest: null, pasajero: null, clave: "", tramo: null, tramoClave: "", tramoPts: null, tramoPara: "", desvioEn: 0 };
   }
   function refrescarMapaViaje() {
     var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
@@ -4387,18 +4405,18 @@
     // Yendo a buscar al pasajero (después de "Ir a buscar"): se dibuja el camino desde el auto hasta la
     // recogida, una sola vez por viaje, y la ruta del viaje (recogida → destino) espera hasta "Iniciar viaje".
     var yendo = !nav && m && m.etapa === "recoger" && salioABuscar(p) && m.punto && m.punto.coord;
-    if (!yendo && viajeMapa.tramo) { viajeMapa.tramo.setMap(null); viajeMapa.tramo = null; }
+    // Un tramo por DESVÍO (el conductor tomó otra calle) vale solo mientras el punto al que va sea el mismo.
+    var claveObjetivo = m && m.punto && m.punto.coord ? p.pedido_id + ":" + m.punto.coord.lat + "," + m.punto.coord.lng : "";
+    var desviado = !nav && !!viajeMapa.tramoPts && viajeMapa.tramoPara === claveObjetivo;
+    if (!yendo && !desviado && viajeMapa.tramo) { viajeMapa.tramo.setMap(null); viajeMapa.tramo = null; viajeMapa.tramoPts = null; viajeMapa.tramoPara = ""; }
     if (yendo) {
       if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }
       if (viajeMapa.tramoClave !== p.pedido_id && miPosicionConductor && google.maps.geometry) {
         viajeMapa.tramoClave = p.pedido_id;
-        var idTramo = p.pedido_id;
-        api({ accion: "ruta_navegacion", lat: miPosicionConductor.lat, lng: miPosicionConductor.lng, dlat: m.punto.coord.lat, dlng: m.punto.coord.lng }).then(function (res) {
-          if (!res || !res.ok || !res.polilinea || viajeMapa.id !== idTramo || viajeMapa.tramo) { if (!(res && res.ok)) viajeMapa.tramoClave = ""; return; }
-          var pts = google.maps.geometry.encoding.decodePath(res.polilinea);
-          if (pts.length) viajeMapa.tramo = dibujarRutaNaranja(mapaEspera, pts);
-        }).catch(function () { viajeMapa.tramoClave = ""; });   // sin red: se vuelve a intentar en el próximo repintado
+        pedirTramoDeRuta(p.pedido_id, claveObjetivo, miPosicionConductor, m.punto.coord, function () { viajeMapa.tramoClave = ""; });   // sin red: se reintenta en el próximo repintado
       }
+    } else if (desviado) {
+      if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }   // la ruta cotizada ya no es la que se sigue
     } else if (nav) {
       if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }
     } else if (cod && google.maps.geometry) {
@@ -4438,6 +4456,42 @@
     var arriba = (parseFloat(cs.getPropertyValue("--topbar-h")) || 0) + (parseFloat(cs.getPropertyValue("--tvtop-h")) || 0) + 24;
     if (n > 1) mapaEspera.fitBounds(lim, { top: arriba, bottom: abajo, left: 36, right: 36 });
     else if (coord) { mapaEspera.setZoom(16); centrarEnZonaVisible(coord, false); }
+  }
+
+  /* Camino desde el auto hasta el punto al que va (recogida, parada o destino), dibujado en el mapa. Se usa al salir a
+     buscar al pasajero y, durante el viaje, cuando el conductor se sale de la ruta (ver revisarDesvioDeRuta). */
+  function pedirTramoDeRuta(pedidoId, claveObjetivo, desde, hasta, alFallar) {
+    api({ accion: "ruta_navegacion", lat: desde.lat, lng: desde.lng, dlat: hasta.lat, dlng: hasta.lng }).then(function (res) {
+      if (!res || !res.ok || !res.polilinea || viajeMapa.id !== pedidoId || !google.maps.geometry) { if (alFallar && !(res && res.ok)) alFallar(); return; }
+      var pts = google.maps.geometry.encoding.decodePath(res.polilinea).map(function (x) { return { lat: x.lat(), lng: x.lng() }; });
+      if (!pts.length) return;
+      if (viajeMapa.tramo) viajeMapa.tramo.setMap(null);
+      if (viajeMapa.linea) { viajeMapa.linea.setMap(null); viajeMapa.linea = null; }
+      viajeMapa.tramo = dibujarRutaNaranja(mapaEspera, pts);
+      viajeMapa.tramoPts = pts; viajeMapa.tramoPara = claveObjetivo;
+    }).catch(function () { if (alFallar) alFallar(); });
+  }
+
+  /* Si el conductor toma una calle distinta a la que se dibuja (más de 70 m fuera de la línea), la ruta se vuelve a
+     pedir desde donde está: el camino y el tiempo de llegada siguen la realidad. Como mucho una consulta cada 20 s. */
+  var DESVIO_RUTA_M = 70, DESVIO_RUTA_ESPERA_MS = 20000;
+  function revisarDesvioDeRuta() {
+    if (nav || !googleMapsListo || !miPosicionConductor || !mapaEspera) return;
+    var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
+    if (!p) return;
+    var m = modeloTarjeta(p), coord = m && m.punto && m.punto.coord;
+    if (!coord || !((m.etapa === "recoger" && salioABuscar(p)) || m.etapa === "ida")) return;
+    var clave = p.pedido_id + ":" + coord.lat + "," + coord.lng, pts = null;
+    if (viajeMapa.tramoPts && viajeMapa.tramoPara === clave) pts = viajeMapa.tramoPts;
+    else if (rutasPorPedido[p.pedido_id] && window.google && google.maps.geometry) {
+      pts = google.maps.geometry.encoding.decodePath(rutasPorPedido[p.pedido_id]).map(function (x) { return { lat: x.lat(), lng: x.lng() }; });
+    }
+    if (!pts || pts.length < 2) return;
+    if (distAPolilinea(miPosicionConductor, pts) <= DESVIO_RUTA_M) return;
+    if (Date.now() - (viajeMapa.desvioEn || 0) < DESVIO_RUTA_ESPERA_MS) return;
+    viajeMapa.desvioEn = Date.now();
+    if (viajeMapa.id !== p.pedido_id) { limpiarMapaViaje(); viajeMapa.id = p.pedido_id; viajeMapa.desvioEn = Date.now(); }
+    pedirTramoDeRuta(p.pedido_id, clave, miPosicionConductor, coord, null);
   }
 
   /* Acciones del viaje (las usa la tarjeta flotante y el detalle: una sola lógica). */
@@ -5656,6 +5710,7 @@
     gpsSinPermiso = false;
     pintarMiPosicionEspera();
     pintarMiAutoEnMapas();
+    revisarDesvioDeRuta();
     navPosicion(miPosicionConductor);   // si está navegando en Rumbo, sigue el avance
     pedirEtas();                        // el tiempo hasta cada pedido se calcula solo, apenas hay posición
   }
@@ -6153,6 +6208,7 @@
         // que se limita a una vez cada 15 s es el envío al servidor.
         miPosicionConductor = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         pintarMiAutoEnMapas();
+        revisarDesvioDeRuta();
         var ahora = Date.now();
         if (ahora - ultimoEnvio < UBICACION_MIN_MS) return;
         ultimoEnvio = ahora;
