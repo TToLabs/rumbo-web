@@ -51,7 +51,10 @@
   fetch(API_URL, { method: "POST", body: JSON.stringify({ accion: "mp_completar_vinculacion", code: code, state: state }) })
     .then(function (r) { return r.json(); })
     .then(function (res) {
-      if (res.ok) {
+      if (res.ok && String(state).indexOf("EMPRESA.") === 0) {
+        mostrar(true, "¡Listo! La cuenta de Mercado Pago de BTo Innova quedó conectada",
+          "Ya puedes cerrar esta pestaña. Desde ahora los pagos con tarjeta de Rumbo se recaudan en esta cuenta.");
+      } else if (res.ok) {
         mostrar(true, "¡Listo! Tu Mercado Pago quedó vinculado",
           "Ya puedes cerrar esta pestaña y volver a Rumbo Conductor. Desde ahora puedes cobrar tus viajes por Mercado Pago.");
       } else {
