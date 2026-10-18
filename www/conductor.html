@@ -6,7 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rumbo — Panel del conductor</title>
+<title>Rumbo — Conductor</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#16333F">
 <link rel="icon" type="image/png" href="img/icon-rumbo-conductor-1024.png">
@@ -26,6 +26,7 @@
     --border: #E2E6EA; --border-strong: #C9D0D7;
     --text: #101828; --text-2: #56606D; --text-3: #8A94A0;
     --primary: #11304A; --primary-hover: #0E2637; --primary-ink: #FFFFFF;
+    --acento: #0EA5B0; --acento-claro: #5FD3DB; /* turquesa de la marca: solo detalles */
     --primary-soft: #E6EEF2; --primary-soft-hover: #D6E1E8; --primary-soft-ink: #11304A;
     --primary-mid: #1C3D61; --primary-mid-hover: #16324F;
     --accent: #0B7A4B; --accent-soft: #E6F4ED;
@@ -86,7 +87,7 @@
   /* El body tiene padding lateral para el resto del contenido; el margen
      negativo hace que el fondo azul llegue de borde a borde de la
      pantalla en vez de quedar como una isla angosta. */
-  .topbar { display: flex; align-items: center; gap: 12px; padding: calc(16px + env(safe-area-inset-top)) 16px 16px; background: var(--primary); color: var(--primary-ink); margin: 0 -16px 16px; border-radius: 0 0 18px 18px; }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: calc(16px + env(safe-area-inset-top)) 16px 16px; background: var(--primary); color: var(--primary-ink); margin: 0 -16px 16px; border-radius: 0 0 18px 18px; border-bottom: 2px solid var(--acento); }
   .topbar-spacer { flex: 1; }
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand-mark {
@@ -100,7 +101,7 @@
   .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
   .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
-  .brand-sub { font-size: 13.5px; color: color-mix(in srgb, var(--primary-ink) 70%, transparent); line-height: 1.3; }
+  .brand-sub { font-size: 13.5px; color: var(--acento-claro); line-height: 1.3; }
 
   /* ---------- Estado del conductor (switch prominente) ---------- */
   .estado-conductor {
@@ -651,7 +652,7 @@
     width: calc(100% - 20px); max-width: 428px; max-height: 38vh; overflow: hidden; padding: 11px 14px; border-radius: 16px;
     background: var(--surface); border: 1px solid var(--border); box-shadow: 0 2px 14px rgba(17, 48, 74, 0.25);
   }
-  .tarjeta-viaje[hidden], .accion-viaje[hidden], .tv-crono[hidden], .tv-sec[hidden], .tv-otros[hidden] { display: none !important; }
+  .tarjeta-viaje[hidden], .accion-viaje[hidden], .tv-crono[hidden], .tv-sec[hidden], .tv-otros[hidden], .tv-editar-rapido[hidden] { display: none !important; }
   .tv-fila { display: flex; align-items: flex-start; gap: 8px; }
   .tv-textos { flex: 1; min-width: 0; }
   .tv-et { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
@@ -674,7 +675,7 @@
   .tv-accion.naranja { background: #F97316; color: #fff; }
   .tv-accion.verde { background: #0B7A4B; color: #fff; }
   .tv-accion:disabled { opacity: 0.6; }
-  .tv-sec, .tv-otros { display: block; width: 100%; margin-top: 4px; min-height: 38px; border: none; border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; box-shadow: 0 1px 8px rgba(17, 48, 74, 0.2); }
+  .tv-sec, .tv-otros, .tv-editar-rapido { display: block; width: 100%; margin-top: 4px; min-height: 38px; border: none; border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; box-shadow: 0 1px 8px rgba(17, 48, 74, 0.2); }
   .accion-viaje .nav-pie { position: static; margin: 0 0 8px; box-shadow: 0 1px 8px rgba(17, 48, 74, 0.3); }
   /* El chat flotante va justo encima del botón, a la derecha (JS fija --tv-bub). */
   body.con-tarjeta .burbuja-chat { bottom: var(--tv-bub, 150px); }
@@ -875,29 +876,32 @@
   @media (prefers-reduced-motion: reduce) { .btn:active, .nav-item:active { transform: none; } }
 
   /* ---------- Pantalla "Ingresando" (con sesión ya abierta) ---------- */
-  /* Fondo claro (el mismo --bg de la app), no el gris azulado oscuro de
-     antes — más agradable y no rompe con el resto de la app al entrar. */
+  /* Fondo petróleo (--primary) con viñeta suave y marca dorada: el emblema late y brilla mientras se ingresa. */
   .splash {
     position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 18px; padding: 32px;
-    background: var(--bg); color: var(--text); text-align: center;
+    background: radial-gradient(ellipse at 50% 38%, #1B466B 0%, #11304A 60%, #0B2236 100%); color: #fff; text-align: center;
     transition: opacity 0.35s ease;
   }
   /* By BTo Innova soluciones (regla de marca): al pie del splash y en el pie de la cuenta. El logo es azul oscuro: va sobre un recuadro claro. */
   .splash .by { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
-  .splash .by span { font: 400 16px system-ui, sans-serif; color: #4E5A6C; }
+  .splash .by span { font: 400 16px system-ui, sans-serif; color: #B9C4D0; }
   .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 10px; padding: 3px 8px; }
   .by-pie { text-align: center; color: #4E5A6C; font-size: 13px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
-  .splash img { width: min(64vw, 280px); height: min(64vw, 280px); filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
-  .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--primary); }
-  .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; color: var(--text-2); }
+  .splash img { width: min(70vw, 300px); height: min(70vw, 300px); filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)); animation: splashLatido 1.6s ease-in-out infinite, splashBrillo 2.4s ease-in-out infinite; }
+  .splash .splash-titulo { font-size: clamp(20px, 6vw, 26px); font-weight: 700; line-height: 1.1; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.35); }
+  .splash .splash-texto { font-size: 18px; line-height: 1.4; max-width: 300px; color: #C9D3DE; }
   .splash .splash-puntos { display: flex; gap: 6px; margin-top: 6px; }
-  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); opacity: 0.35; animation: splashPunto 1.2s infinite; }
+  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--acento-claro); opacity: 0.35; animation: splashPunto 1.2s infinite; }
   .splash .splash-puntos span:nth-child(2) { animation-delay: 0.2s; }
   .splash .splash-puntos span:nth-child(3) { animation-delay: 0.4s; }
+    .splash #splashLogo { width: min(46vw, 190px); height: auto; }
+    .splash .splash-palabra { width: min(64vw, 270px); height: auto; filter: none; animation: none; }
+  .splash .splash-titulo:empty { display: none; }
   @keyframes splashLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  @keyframes splashBrillo { 0%, 100% { filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)) drop-shadow(0 0 14px rgba(95,211,219,0.10)) brightness(1); } 50% { filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)) drop-shadow(0 0 26px rgba(95,211,219,0.38)) brightness(1.12); } }
   @keyframes splashPunto { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .splash img, .splash .splash-puntos span { animation: none; } }
 
@@ -917,6 +921,21 @@
   .actualizacion-card h2 { margin: 0 0 8px; font-size: 19px; font-weight: 700; }
   .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
   .actualizacion-card button { width: 100%; }
+
+  /* ---------- Marca: dorado envejecido (solo detalles; los colores base no cambian) ---------- */
+  .brand-mark { width: 72px; height: 72px; }
+  .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
+  .brand-wordmark { height: 26px; filter: none; }
+  .brand-texto { min-height: 72px; gap: 4px; }
+  .brand-lema { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+  .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
+  .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
+  .splash .splash-titulo::after { content: ""; display: block; width: 52px; height: 2px; background: var(--acento); margin: 10px auto 0; border-radius: 2px; }
+  .tv-asa span { background: var(--acento); }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):hover, select, select:hover, textarea, textarea:hover { border-color: var(--acento); }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, select:focus, textarea:focus, .chat-entrada input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, .chat-entrada textarea:focus { border-color: var(--acento); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 28%, transparent); }
+  .chip-contacto, .chip-contacto:hover, .chip-direccion, .chip-opc, .btn-secundario, .btn-direcciones-recientes { border-color: var(--acento); }
+  .btn-suave { box-shadow: inset 0 0 0 1px var(--acento); }
 </style>
 </head>
 <body>
@@ -929,8 +948,9 @@
   </div>
 </div>
 <div class="splash" id="splashIngresando">
-  <img src="img/logo-splash.png" alt="Rumbo" id="splashLogo">
-  <div class="splash-titulo" id="splashTitulo">Rumbo</div>
+  <img src="img/logo-carita.png" alt="" id="splashLogo">
+  <img src="img/rumbo-palabra-blanco.png" alt="Rumbo" class="splash-palabra">
+  <div class="splash-titulo" id="splashTitulo"></div>
   <div class="splash-texto" id="splashTexto"></div>
   <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
@@ -946,10 +966,10 @@
     var el = document.getElementById("splashIngresando");
     if (!(ses && ses.token)) { el.hidden = true; return; }
     if (MODO === "admin") {
-      document.getElementById("splashTitulo").textContent = "Rumbo Admin";
+      document.getElementById("splashTitulo").textContent = "Administrador";
       document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
     } else {
-      document.getElementById("splashTitulo").textContent = "Rumbo Conductor";
+      document.getElementById("splashTitulo").textContent = "Conductor";
       document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Conductor, para que puedas coordinar tus viajes.";
     }
   })();
@@ -972,8 +992,8 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
-        <span class="brand-sub">Panel del conductor</span>
+        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslados privados</span>
+        <span class="brand-sub">Conductor</span>
       </span>
     </div>
   </header>
@@ -1066,8 +1086,8 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
-        <span class="brand-sub" id="brandSubConductor">Panel del conductor</span>
+        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslados privados</span>
+        <span class="brand-sub" id="brandSubConductor">Conductor</span>
       </span>
     </div>
     <div class="topbar-spacer"></div>
@@ -1250,6 +1270,7 @@
         <div class="hist-cabecera">
           <div class="hist-filtros">
             <div class="campo"><label class="campo-label" for="regMes">Mes</label><input type="month" id="regMes"></div>
+            <button class="btn btn-chico" id="btnInstalaciones" type="button" style="align-self:flex-end;">Instalaciones</button>
           </div>
         </div>
         <div id="regResumen" class="msg" style="margin:0 0 10px;"></div>
@@ -1661,6 +1682,7 @@
   <div id="tvNav"></div>
   <button type="button" class="tv-accion" id="tvAccion"></button>
   <button type="button" class="tv-sec" id="tvSec" hidden></button>
+  <button type="button" class="tv-editar-rapido" id="tvEditarRapido" hidden>Editar viaje</button>
   <button type="button" class="tv-otros" id="tvOtros" hidden></button>
 </div>
 <div class="itinerario-viaje solo-conductor" id="itinerarioViaje" role="dialog" aria-label="Itinerario del viaje">
@@ -1721,6 +1743,16 @@
   <div class="ventana-chat-tabs" id="ventanaChatTabs" hidden></div>
   <div class="chat-panel" id="chatPaneles" style="flex:1;min-height:0;"></div>
 </section>
+
+<!-- Instalaciones y cotizaciones (solo admin): cuántos teléfonos tienen Rumbo y cuántos calculan viajes sin pedirlos -->
+<div class="modal-fondo" id="modalInstalaciones" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 10px;font-size:19px;">Instalaciones y cotizaciones</h2>
+    <div id="instCuerpo" class="cierre-detalle">Cargando…</div>
+    <p class="nota" style="margin:10px 0;">Cuenta desde la versión que incluye este contador. Cada instalación es un identificador anónimo, sin datos personales.</p>
+    <button class="btn btn-chico" id="instCerrar" type="button" style="width:100%;">Cerrar</button>
+  </div>
+</div>
 
 <!-- Editar el viaje (el conductor corrige direcciones o agrega paradas para ayudar al pasajero) -->
 <div class="modal-fondo" id="modalEditarC" hidden>
@@ -1793,13 +1825,13 @@
      generación. Separados a propósito para que un conductor no vea
      administración y el admin no vea pedidos ni cobros de nadie. */
   var URL_APK = MODO === "admin"
-    ? "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-admin.apk"
-    : "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo-conductor.apk";
+    ? "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo-admin.apk"
+    : "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo-conductor.apk";
 
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 59;
+  var APP_VERSION = 62;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1836,7 +1868,7 @@
   // Cada panel solo acepta su tipo de cuenta.
   function cuentaPermitida(c) {
     if (MODO === "admin" && !c.es_admin) return "Esta app es solo para administradores. Si eres conductor, usa Rumbo Conductor.";
-    if (MODO === "conductor" && c.solo_admin) return "Esta cuenta es de administración. Usa Rumbo Admin.";
+    if (MODO === "conductor" && c.solo_admin) return "Esta cuenta es de administración. Usa Rumbo Administrador.";
     return "";
   }
 
@@ -1863,17 +1895,17 @@
   (function prepararModo() {
     var esAdmin = MODO === "admin";
     document.body.classList.toggle("modo-admin", esAdmin);
-    document.title = esAdmin ? "Rumbo Admin" : "Rumbo — Panel del conductor";
+    document.title = esAdmin ? "Rumbo Administrador" : "Rumbo — Conductor";
     var ico = esAdmin ? "img/icon-rumbo-admin-1024.png" : "img/icon-rumbo-conductor-1024.png";
     [].forEach.call(document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]'), function (l) { l.href = ico; });
     [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
-      if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Panel del conductor";
+      if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Conductor";
     });
     // El admin no se registra desde acá: solo el panel de conductor ofrece crear cuenta.
     document.getElementById("bloqueCrearCuenta").style.display = esAdmin ? "none" : "";
     var link = document.getElementById("linkDescargaApp");
     link.href = URL_APK;
-    link.textContent = esAdmin ? "Descargar app Rumbo Admin (Android)" : "Descargar app Rumbo Conductor (Android)";
+    link.textContent = esAdmin ? "Descargar app Rumbo Administrador (Android)" : "Descargar app Rumbo Conductor (Android)";
   })();
   // Una clave por panel: conductor.html y admin.html comparten el mismo
   // dominio en la web, y con una sola clave entrar a uno borraba la sesión
@@ -1933,7 +1965,7 @@
   function obtenerSesion() {
     try { return JSON.parse(localStorage.getItem(SESION_KEY) || "null"); } catch (e) { return null; }
   }
-  function guardarSesion(sesion) { localStorage.setItem(SESION_KEY, JSON.stringify(sesion)); }
+  function guardarSesion(sesion) { localStorage.setItem(SESION_KEY, JSON.stringify(sesion)); setTimeout(registrarDispositivo, 800); }
   function borrarSesion() { localStorage.removeItem(SESION_KEY); }
 
   // Todo endpoint que toca pedidos/ubicación exige token de sesión — se
@@ -1946,6 +1978,29 @@
     }).join("&");
     return fetch(url).then(function (r) { return r.json(); }).then(verificarSesionValida);
   }
+
+  /* Identificador ANÓNIMO de esta instalación (aleatorio, sin datos personales) para contar instalaciones y versiones. */
+  var DISPOSITIVO_KEY = "rumbo_dispositivo", dispositivoMem = "";
+  function idDispositivo() {
+    var id = "";
+    try { id = localStorage.getItem(DISPOSITIVO_KEY) || ""; } catch (e) {}
+    if (!id) id = dispositivoMem;
+    if (!/^[A-Za-z0-9\-]{16,64}$/.test(id)) {
+      try { id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ""; } catch (e) { id = ""; }
+      if (!id) { id = ""; for (var i = 0; i < 32; i++) id += "0123456789abcdef".charAt(Math.floor(Math.random() * 16)); }
+      try { localStorage.setItem(DISPOSITIVO_KEY, id); } catch (e) {}
+    }
+    dispositivoMem = id;
+    return id;
+  }
+  function registrarDispositivo() {
+    try {
+      var nativa = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+      apiPost({ accion: "registrar_dispositivo", dispositivo_id: idDispositivo(), app: MODO === "admin" ? "admin" : "conductor", version: APP_VERSION,
+        plataforma: nativa ? "android" : "web" }).catch(function () {});   // apiPost agrega el token de la sesión si la hay
+    } catch (e) {}
+  }
+  window.addEventListener("load", function () { setTimeout(registrarDispositivo, 2500); });
 
   // Estas acciones el servidor las trata como idempotentes ("ya marcado" / "ya iniciado"): si Apps Script
   // contesta una página HTML o se corta la red, se reintenta una vez antes de mostrar un error.
@@ -2239,7 +2294,7 @@
   /* Mi QR: link propio del conductor (?c=<id>) hacia la landing pública,
      que arrastra el código hasta la web del pasajero. Así cada conductor
      reparte SU QR sin depender de que alguien se lo genere a mano. */
-  var LANDING_PASAJERO = "https://ttolabs.github.io/rumbo-web/";
+  var LANDING_PASAJERO = "https://btoinnova.github.io/rumbo-web/";
   var miLinkPasajero = "";
 
   /* ---------------------------------------------------------------
@@ -2395,7 +2450,7 @@
       document.getElementById("tabEnCurso").style.display = "none";
       document.getElementById("tabAjustes").style.display = "none";
       document.getElementById("flotaAdmin").hidden = false;
-      document.getElementById("menuPlataforma").textContent = "Rumbo Admin";
+      document.getElementById("menuPlataforma").textContent = "Rumbo Administrador";
       armarPantallasAdmin();
     }
   }
@@ -2631,6 +2686,33 @@
   }
 
   document.getElementById("regMes").addEventListener("change", cargarRegistroPedidos);
+  function filasInstalaciones(r) {
+    var por = r.por_app || {}, vers = Object.keys(r.versiones || {}).sort().map(function (k) { return k + ": " + r.versiones[k]; }).join(" · ");
+    var filas = [
+      ["Instalaciones en total", r.total + " (pasajero " + (por.pasajero || 0) + " · conductor " + (por.conductor || 0) + " · admin " + (por.admin || 0) + ")"],
+      ["Activas en 7 días / 30 días", r.activos_7d + " / " + r.activos_30d],
+      ["Con cuenta / sin cuenta", r.con_cuenta + " / " + r.sin_cuenta],
+      ["Veces que se calculó un viaje", String(r.cotizaciones_total)],
+      ["Viajes pedidos", String(r.pedidos_total)],
+      ["Cálculos que NO terminaron en pedido", String(r.cotizaciones_sin_pedido)],
+      ["Instalaciones que calcularon y nunca pidieron", String(r.nunca_pidieron)],
+      ["Calcularon SIN tener cuenta", r.cotizaron_sin_cuenta + " instalaciones · " + r.cotizaciones_sin_cuenta + " cálculos"],
+      ["Versiones", vers || "—"]
+    ];
+    return filas;
+  }
+  document.getElementById("btnInstalaciones").addEventListener("click", function () {
+    var cuerpo = document.getElementById("instCuerpo");
+    cuerpo.textContent = "Cargando…";
+    document.getElementById("modalInstalaciones").hidden = false;
+    apiPost({ accion: "resumen_dispositivos" }).then(function (r) {
+      if (!r.ok) { cuerpo.textContent = r.error || "No se pudo cargar."; return; }
+      cuerpo.innerHTML = filasInstalaciones(r).map(function (f) {
+        return '<div class="cierre-fila"><span>' + escapar(f[0]) + '</span><strong>' + escapar(f[1]) + '</strong></div>';
+      }).join("");
+    }).catch(function (err) { cuerpo.textContent = "Error de red: " + err.message; });
+  });
+  document.getElementById("instCerrar").addEventListener("click", function () { document.getElementById("modalInstalaciones").hidden = true; });
   document.getElementById("acordeonRegistroPedidos").addEventListener("toggle", function () {
     if (this.open) cargarRegistroPedidos();
   });
@@ -3787,6 +3869,7 @@
     document.getElementById("edcMsg").textContent = ""; edcInvalidar();
     document.getElementById("modalEditarC").hidden = false;
   }
+  document.getElementById("tvEditarRapido").addEventListener("click", function () { document.getElementById("tvEditar").click(); });
   document.getElementById("tvEditar").addEventListener("click", function () {
     var p = elegirFoco(pedidosEnCursoActuales, focoManualId);
     // Si el cambio pendiente es del PASAJERO, el botón vuelve a abrir la ventana para responderlo.
@@ -4363,6 +4446,11 @@
     tvEd.hidden = !puedeEditar;
     tvEd.disabled = pendienteMio;
     tvEd.textContent = pendienteMio ? "Cambio enviado: esperando al pasajero" : pendienteDelPasajero ? "Responder el cambio del pasajero" : "Editar viaje";
+    // el mismo botón, a la vista bajo la acción principal (no hace falta abrir el itinerario)
+    var tvEdR = document.getElementById("tvEditarRapido");
+    tvEdR.hidden = !puedeEditar;
+    tvEdR.disabled = pendienteMio;
+    tvEdR.textContent = tvEd.textContent;
     document.getElementById("tvIr").textContent = gpsPreferido === "GOOGLE_MAPS" ? "Ir con Maps" : "Ir con Waze";
     var b = document.getElementById("tvAccion");
     b.textContent = m.boton.texto;

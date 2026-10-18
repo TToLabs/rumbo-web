@@ -43,6 +43,7 @@
     --primary-soft-ink: #11304A;
     --primary-mid: #1C3D61;
     --primary-mid-hover: #16324F;
+    --acento: #0EA5B0; --acento-claro: #5FD3DB; /* turquesa de la marca: solo detalles */
     --accent: #0B7A4B;
     --accent-soft: #E6F4ED;
     --danger: #B3392B;
@@ -92,6 +93,7 @@
        este margen negativo hace que el fondo azul llegue de borde a
        borde de la pantalla en vez de quedar como una isla angosta. */
     margin: 0 -16px 16px; border-radius: 0 0 18px 18px;
+    border-bottom: 2px solid var(--acento);
   }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .brand-mark {
@@ -122,7 +124,7 @@
     mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 92%);
     -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 92%);
   }
-  .brand-sub { font-size: 13.5px; color: color-mix(in srgb, var(--primary-ink) 70%, transparent); line-height: 1.3; }
+  .brand-sub { font-size: 13.5px; color: var(--acento-claro); line-height: 1.3; }
   .topbar-spacer { flex: 1; }
 
   /* ---------- Menú desplegable ---------- */
@@ -858,29 +860,32 @@
   .btn.btn-peligro:hover:not(:disabled) { background: rgba(180, 35, 24, 0.08); }
 
   /* ---------- Pantalla "Ingresando" (con sesión ya abierta) ---------- */
-  /* Fondo claro (el mismo --bg de la app), no el gris azulado oscuro de
-     antes — más agradable y no rompe con el resto de la app al entrar. */
+  /* Fondo petróleo (--primary) con viñeta suave y marca dorada: el emblema late y brilla mientras se ingresa. */
   .splash {
     position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 18px; padding: 32px;
-    background: var(--bg); color: var(--text); text-align: center;
+    background: radial-gradient(ellipse at 50% 38%, #1B466B 0%, #11304A 60%, #0B2236 100%); color: #fff; text-align: center;
     transition: opacity 0.35s ease;
   }
   /* By BTo Innova soluciones (regla de marca): al pie del splash y en el pie de la cuenta. El logo es azul oscuro: va sobre un recuadro claro. */
   .splash .by { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
-  .splash .by span { font: 400 16px system-ui, sans-serif; color: #4E5A6C; }
+  .splash .by span { font: 400 16px system-ui, sans-serif; color: #B9C4D0; }
   .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 10px; padding: 3px 8px; }
   .by-pie { text-align: center; color: #4E5A6C; font-size: 13px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
-  .splash img { width: min(64vw, 280px); height: min(64vw, 280px); filter: drop-shadow(0 8px 24px rgba(16,26,32,0.18)); animation: splashLatido 1.6s ease-in-out infinite; }
-  .splash .splash-titulo { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--primary); }
-  .splash .splash-texto { font-size: 16.5px; line-height: 1.45; max-width: 300px; color: var(--text-2); }
+  .splash img { width: min(70vw, 300px); height: min(70vw, 300px); filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)); animation: splashLatido 1.6s ease-in-out infinite, splashBrillo 2.4s ease-in-out infinite; }
+  .splash .splash-titulo { font-size: clamp(20px, 6vw, 26px); font-weight: 700; line-height: 1.1; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.35); }
+  .splash .splash-texto { font-size: 18px; line-height: 1.4; max-width: 300px; color: #C9D3DE; }
   .splash .splash-puntos { display: flex; gap: 6px; margin-top: 6px; }
-  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); opacity: 0.35; animation: splashPunto 1.2s infinite; }
+  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--acento-claro); opacity: 0.35; animation: splashPunto 1.2s infinite; }
   .splash .splash-puntos span:nth-child(2) { animation-delay: 0.2s; }
   .splash .splash-puntos span:nth-child(3) { animation-delay: 0.4s; }
+    .splash #splashLogo { width: min(46vw, 190px); height: auto; }
+    .splash .splash-palabra { width: min(64vw, 270px); height: auto; filter: none; animation: none; }
+  .splash .splash-titulo:empty { display: none; }
   @keyframes splashLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+  @keyframes splashBrillo { 0%, 100% { filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)) drop-shadow(0 0 14px rgba(95,211,219,0.10)) brightness(1); } 50% { filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)) drop-shadow(0 0 26px rgba(95,211,219,0.38)) brightness(1.12); } }
   @keyframes splashPunto { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .splash img, .splash .splash-puntos span { animation: none; } }
 
@@ -945,6 +950,21 @@
   .desglose-fila.final span { font-size: 16px; font-weight: 600; }
   .desglose-fila.final span:last-child { font-size: 22px; font-weight: 700; }
   .desglose-motivo { margin: 0 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+
+  /* ---------- Marca: dorado envejecido (solo detalles; los colores base no cambian) ---------- */
+  .brand-mark { width: 72px; height: 72px; }
+  .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
+  .brand-wordmark { height: 26px; filter: none; }
+  .brand-texto { min-height: 72px; gap: 4px; }
+  .brand-lema { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+  .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
+  .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
+  .splash .splash-titulo::after { content: ""; display: block; width: 52px; height: 2px; background: var(--acento); margin: 10px auto 0; border-radius: 2px; }
+  .hoja-asa span { background: var(--acento); }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):hover, select, select:hover, textarea, textarea:hover { border-color: var(--acento); }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, select:focus, textarea:focus, .chat-entrada input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, .chat-entrada textarea:focus { border-color: var(--acento); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 28%, transparent); }
+  .chip-contacto, .chip-contacto:hover, .chip-direccion, .chip-opc, .btn-secundario, .btn-direcciones-recientes { border-color: var(--acento); }
+  .btn-suave { box-shadow: inset 0 0 0 1px var(--acento); }
 </style>
 </head>
 <body>
@@ -958,8 +978,9 @@
   </div>
 </div>
 <div class="splash" id="splashIngresando">
-  <img src="img/logo-splash.png" alt="Rumbo" id="splashLogo">
-  <div class="splash-titulo" id="splashTitulo">Rumbo</div>
+  <img src="img/logo-carita.png" alt="" id="splashLogo">
+  <img src="img/rumbo-palabra-blanco.png" alt="Rumbo" class="splash-palabra">
+  <div class="splash-titulo" id="splashTitulo"></div>
   <div class="splash-texto" id="splashTexto"></div>
   <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
@@ -972,8 +993,8 @@
     try { ses = JSON.parse(localStorage.getItem("rumbo_mi_perfil") || "null"); } catch (e) {}
     var el = document.getElementById("splashIngresando");
     if (ses && ses.token) {
-      document.getElementById("splashTitulo").textContent = "Rumbo Pasajero";
-      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Pasajero, para que puedas solicitar tu próximo viaje.";
+      document.getElementById("splashTitulo").textContent = "";
+      document.getElementById("splashTexto").textContent = "Solicita tu próximo viaje.";
     } else el.hidden = true;
   })();
 </script>
@@ -1002,7 +1023,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/logo-rumbo-wordmark.png" alt="Rumbo Traslados Privados">
+        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslados privados</span>
         <span class="brand-sub" id="brandSubPasajero">Pasajero</span>
       </span>
     </div>
@@ -1029,7 +1050,7 @@
   </header>
 
   <div class="card" id="cardInstalarApp" style="display:none;">
-    <p class="nota" style="margin:0 0 10px;">Para pedir tu viaje con este conductor, instala la app Rumbo Pasajero.</p>
+    <p class="nota" style="margin:0 0 10px;">Para pedir tu viaje con este conductor, instala la app Rumbo.</p>
     <button type="button" class="btn btn-primario" id="btnInstalarApp" style="width:100%;">Descargar app</button>
     <button type="button" class="btn btn-secundario" id="btnYaInstale" style="width:100%;margin-top:8px;">Ya la instalé, continuar</button>
   </div>
@@ -1129,6 +1150,7 @@
             <div class="detalle-fila"><dt id="lblPeaje">Peajes</dt><dd id="outPeaje">—</dd></div>
             <div class="detalle-fila"><dt>Tarifa aplicada</dt><dd id="outTipoTarifa">—</dd></div>
           </dl>
+          <p class="precio-nota" id="etaCotizar" style="display:none;font-weight:600;"></p>
           <p class="precio-nota">
             <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
             <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
@@ -1289,6 +1311,11 @@
       Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o la plataforma de pago, no Rumbo.
     </p>
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
+    <div class="cambio-banner espera" id="avisoWeb" role="status" style="display:none;">
+      Para recibir los avisos de tu viaje (conductor en camino, llegó, cambios) instala la app Rumbo en tu teléfono.
+      <a id="avisoWebInstalar" href="#" style="display:block;margin-top:6px;font-weight:700;">Descargar la app</a>
+      <button type="button" id="avisoWebCerrar" class="btn btn-chico" style="margin-top:6px;">Ahora no</button>
+    </div>
     <div class="cambio-banner" id="cambioBanner" role="status"></div>
     <div class="espera-recogida" id="esperaRecogida" role="status"><span class="er-reloj" id="erReloj">03:00</span><span class="er-texto" id="erTexto"></span></div>
     <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
@@ -1520,7 +1547,7 @@
 <aside class="menu-lateral" id="menuLateral" aria-hidden="true" aria-label="Menú">
   <div class="menu-lateral-cab">
     <span class="menu-lateral-avatar" id="menuAvatar" aria-hidden="true">P</span>
-    <div class="menu-lateral-quien"><strong id="menuNombre">Pasajero</strong><span>Rumbo Pasajero</span></div>
+    <div class="menu-lateral-quien"><strong id="menuNombre">Pasajero</strong><span>Rumbo</span></div>
     <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuP" aria-label="Cerrar el menú">&times;</button>
   </div>
   <button type="button" class="menu-lateral-item" data-menu="cuenta"><svg class="ico" aria-hidden="true"><use href="#i-persona"/></svg>Mi cuenta</button>
@@ -1866,10 +1893,35 @@
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); });
   }
 
+  /* Identificador ANÓNIMO de esta instalación (aleatorio, sin datos personales): sirve para contar instalaciones, versiones y
+     cuántas veces se calcula o se pide un viaje (con o sin cuenta). Ver "Política de datos". */
+  var DISPOSITIVO_KEY = "rumbo_dispositivo", dispositivoMem = "";
+  function idDispositivo() {
+    var id = "";
+    try { id = localStorage.getItem(DISPOSITIVO_KEY) || ""; } catch (e) {}
+    if (!id) id = dispositivoMem;
+    if (!/^[A-Za-z0-9\-]{16,64}$/.test(id)) {
+      try { id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ""; } catch (e) { id = ""; }
+      if (!id) { id = ""; for (var i = 0; i < 32; i++) id += "0123456789abcdef".charAt(Math.floor(Math.random() * 16)); }
+      try { localStorage.setItem(DISPOSITIVO_KEY, id); } catch (e) {}
+    }
+    dispositivoMem = id;
+    return id;
+  }
+  function registrarDispositivo() {
+    try {
+      var s = obtenerSesionPasajero();
+      var nativa = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+      apiPost({ accion: "registrar_dispositivo", dispositivo_id: idDispositivo(), app: "pasajero", version: APP_VERSION,
+        plataforma: nativa ? "android" : "web", pasajero_token: s && s.token ? s.token : "" }).catch(function () {});
+    } catch (e) {}
+  }
+  window.addEventListener("load", function () { setTimeout(registrarDispositivo, 2500); });
+
   // Versión del texto que se le muestra al pasajero al marcar el
   // checkbox — si el texto cambia, subir este número: así, ante un
   // reclamo, se puede probar QUÉ decía el texto que aceptó (Ley 21.719).
-  var VERSION_POLITICA = "2026-09-1";
+  var VERSION_POLITICA = "2026-10-1";
 
   // El QR/link de cada conductor trae ?c=<conductor_id>. Se guarda en
   // localStorage para que, si el pasajero cierra y vuelve a abrir sin el
@@ -1953,8 +2005,8 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga.
-  var APP_VERSION = 61;
-  var URL_APK_PASAJERO = "https://github.com/TToLabs/rumbo-web/releases/download/latest/rumbo.apk";
+  var APP_VERSION = 64;
+  var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
@@ -1991,7 +2043,7 @@
   function obtenerSesionPasajero() {
     try { return JSON.parse(localStorage.getItem(PERFIL_KEY) || "null"); } catch (e) { return null; }
   }
-  function guardarSesionPasajero(s) { localStorage.setItem(PERFIL_KEY, JSON.stringify(s)); }
+  function guardarSesionPasajero(s) { localStorage.setItem(PERFIL_KEY, JSON.stringify(s)); setTimeout(registrarDispositivo, 800); }   // quien inicia sesión deja de contar como "sin cuenta"
 
   /* Avisos con la app CERRADA (Firebase Cloud Messaging): viaje confirmado y
      mensajes del conductor. Se pide el permiso nativo recién con la cuenta
@@ -2431,6 +2483,7 @@
       "Política de datos de Rumbo\n\n" +
       "Quién trata tus datos: el conductor con el que viajas, a través de esta app.\n" +
       "Qué se guarda: nombre, teléfono, correo (si lo escribes), origen, destino, fecha/hora y precio del viaje.\n" +
+      "Además, la app guarda un identificador anónimo de esta instalación (sin nombre ni datos personales) para contar instalaciones, versiones y cuántas veces se calcula o se pide un viaje.\n" +
       "Para qué: coordinar y confirmar este viaje, y contactarte por WhatsApp si hace falta.\n" +
       "Con quién se comparte: con nadie fuera del conductor, salvo Google (aloja la planilla de pedidos).\n" +
       "Cuánto se guarda: mientras tengas viajes activos con este conductor; puedes pedir que se borre.\n" +
@@ -3158,7 +3211,7 @@
     var paradas = obtenerParadas();
 
     api({
-      accion: "calcular_ruta", origen: origen, destino: destino, departureTime: departureTime,
+      accion: "calcular_ruta", dispositivo: idDispositivo(), origen: origen, destino: destino, departureTime: departureTime,
       hora: hora, paradas: paradas.join("|")
     }).then(function (res) {
       if (!res.ok) throw new Error(res.error || "sin datos");
@@ -3181,6 +3234,7 @@
       textoEl.textContent = "";
       textoEl.className = "nota";
       calcularTotal();
+      pedirEtaConductor(origen);
       var tarjeta = document.getElementById("tarjetaPrecio");
       tarjeta.style.display = "block";
       irAPaso(2);
@@ -3196,6 +3250,28 @@
       btn.innerHTML = htmlOriginal;
     });
   });
+
+  /* "Tu conductor está a X min" al cotizar: solo si hay un conductor asignado (QR), conectado y con ubicación reciente.
+     Nunca bloquea ni demora la cotización: si falla, simplemente no se muestra. */
+  function textoEtaCotizar(r) {
+    if (!r || !r.ok || !r.disponible || !(r.minutos > 0)) return "";
+    var tiempo = r.minutos >= 60 ? Math.floor(r.minutos / 60) + " h " + (r.minutos % 60) + " min" : r.minutos + " min";
+    return "Tu conductor está a " + tiempo + " de tu salida (" + String(r.km).replace(".", ",") + " km por calles)";
+  }
+  function pedirEtaConductor(origen) {
+    var el = document.getElementById("etaCotizar"), cid = obtenerConductorId();
+    if (!el) return;
+    el.style.display = "none"; el.textContent = "";
+    if (!cid) return;
+    var q = { accion: "eta_conductor", conductor_id: cid, origen: origen };
+    var m = marcadoresCotizar && marcadoresCotizar.origen;
+    try { if (m) { var pos = m.getPosition(); q.lat = pos.lat(); q.lng = pos.lng(); } } catch (e) {}
+    api(q).then(function (r) {
+      var t = textoEtaCotizar(r);
+      if (!t) return;
+      el.textContent = t; el.style.display = "";
+    }).catch(function () {});
+  }
 
   document.getElementById("btnPedir").addEventListener("click", function () {
     var pedirTexto = document.getElementById("pedirTexto");
@@ -3259,6 +3335,7 @@
     function enviarPedido(aceptaNuevoPrecio) {
     return apiPost({
       accion: "crear_pedido",
+      dispositivo: idDispositivo(),
       pasajero_token: sesion.token,
       conductor_id: obtenerConductorId() || "",
       origen: document.getElementById("origen").value.trim(),
@@ -3500,7 +3577,24 @@
     return (c.origen ? "Salida: " + c.origen + ". " : "") + (par.length ? "Paradas: " + par.join(", ") + ". " : "") + "Destino: " + c.destino + ".";
   }
 
+  /* En el navegador (sin la app) no llegan los avisos push: se le sugiere instalar la app mientras tiene un viaje en curso.
+     Se puede descartar y no vuelve a aparecer en este navegador. */
+  function mostrarAvisoWeb() {
+    var el = document.getElementById("avisoWeb");
+    if (!el) return;
+    var nativa = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()), cerrado = false;
+    try { cerrado = localStorage.getItem("rumbo_aviso_web_cerrado") === "1"; } catch (e) {}
+    var enCurso = !!pedidoActualId && !viajeCerrado;
+    el.style.display = (!nativa && !cerrado && enCurso) ? "block" : "none";
+    document.getElementById("avisoWebInstalar").href = URL_APK_PASAJERO;
+  }
+  document.getElementById("avisoWebCerrar").addEventListener("click", function () {
+    try { localStorage.setItem("rumbo_aviso_web_cerrado", "1"); } catch (e) {}
+    document.getElementById("avisoWeb").style.display = "none";
+  });
+
   function procesarCambioDeViaje(res) {
+    mostrarAvisoWeb();
     estadoPedidoActual = res.estado; cambioActual = res.cambio || null;
     var c = cambioActual;
     // Direcciones vigentes: tras un cambio aceptado el recorrido y el valor se corrigen solos.
@@ -4672,7 +4766,7 @@ function svgAuto(rumbo, color, tipo) {
   // pasajero: ver seguimientoPublico() en el backend.
   document.getElementById("btnCompartirViaje").addEventListener("click", function () {
     if (!tokenSeguimientoActual) return;
-    var link = "https://ttolabs.github.io/rumbo-web/seguimiento.html?t=" + encodeURIComponent(tokenSeguimientoActual);
+    var link = "https://btoinnova.github.io/rumbo-web/seguimiento.html?t=" + encodeURIComponent(tokenSeguimientoActual);
     if (navigator.share) {
       navigator.share({ title: "Mi viaje en Rumbo", text: "Podés seguir mi viaje en vivo:", url: link }).catch(function () {});
       return;
