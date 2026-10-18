@@ -9,8 +9,8 @@
 <title>Rumbo — Conductor</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#16333F">
-<link rel="icon" type="image/png" href="img/icon-rumbo-conductor-1024.png">
-<link rel="apple-touch-icon" href="img/icon-rumbo-conductor-1024.png">
+<link rel="icon" type="image/png" href="img/favicon-conductor-192.png?v=64">
+<link rel="apple-touch-icon" href="img/favicon-conductor-192.png?v=64">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1896,7 +1896,7 @@
     var esAdmin = MODO === "admin";
     document.body.classList.toggle("modo-admin", esAdmin);
     document.title = esAdmin ? "Rumbo Administrador" : "Rumbo — Conductor";
-    var ico = esAdmin ? "img/icon-rumbo-admin-1024.png" : "img/icon-rumbo-conductor-1024.png";
+    var ico = esAdmin ? "img/favicon-admin-192.png?v=64" : "img/favicon-conductor-192.png?v=64";
     [].forEach.call(document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]'), function (l) { l.href = ico; });
     [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
       if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Conductor";
