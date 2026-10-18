@@ -53,7 +53,7 @@
     .then(function (res) {
       if (res.ok && String(state).indexOf("EMPRESA.") === 0) {
         mostrar(true, "¡Listo! La cuenta de Mercado Pago de BTo Innova quedó conectada",
-          "Ya puedes cerrar esta pestaña. Desde ahora los pagos con tarjeta de Rumbo se recaudan en esta cuenta.");
+          "Ya puedes cerrar esta pestaña. Desde ahora los pagos con tarjeta de Rumbo se reciben en esta cuenta como intermediario.");
       } else if (res.ok) {
         mostrar(true, "¡Listo! Tu Mercado Pago quedó vinculado",
           "Ya puedes cerrar esta pestaña y volver a Rumbo Conductor. Desde ahora puedes cobrar tus viajes por Mercado Pago.");
