@@ -6,7 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rumbo — Conductor</title>
+<title>Rumbo Driver</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#16333F">
 <link rel="icon" type="image/png" href="img/favicon-admin-192.png?v=65">
@@ -498,6 +498,35 @@
   .adm-pantalla .ajustes-cab { margin: 0; flex: none; }
   .adm-pantalla .card { border: none; box-shadow: none; padding: 0; margin: 0 0 10px; background: none; }
   .adm-pantalla .card-head { margin-bottom: 8px; }
+  .adm-pantalla .ajustes-cab { padding: 6px 2px 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+  .adm-pantalla .ajustes-cab h2 { font-size: 20px; letter-spacing: -.01em; }
+  .adm-pantalla .tabla-historial th { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); padding: 8px 6px; border-bottom: 1px solid var(--border-strong); background: none; }
+  .adm-pantalla .tabla-historial td { padding: 10px 6px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .adm-pantalla .tabla-historial td.monto { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .adm-pantalla .hist-cabecera { margin-bottom: 8px; }
+  .adm-pantalla .card-title { font-size: 16px; }
+  /* Conductores (administrador): tarjeta con avatar y lista de interruptores */
+  .cond-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin: 0 0 12px; box-shadow: var(--shadow-sm); }
+  .cond-cab { display: flex; align-items: flex-start; gap: 12px; }
+  .cond-avatar { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; letter-spacing: .02em; }
+  .cond-datos { flex: 1; min-width: 0; }
+  .cond-nombre { font-weight: 700; font-size: 16px; color: var(--text); line-height: 1.25; }
+  .cond-sub { font-size: 13px; color: var(--text-2); line-height: 1.4; overflow-wrap: anywhere; }
+  .cond-cab .badge { flex: none; margin-top: 2px; }
+  #mpEmpresaEstado, #mpEstado { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 600; line-height: 1.4; }
+  #mpEmpresaEstado.ok, #mpEstado.ok { background: var(--accent-soft); border-color: transparent; }
+  /* Liquidaciones: tarjeta por conductor con el saldo a la derecha */
+  .liq-saldo { flex: none; text-align: right; font-weight: 800; font-size: 18px; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--text); }
+  .liq-saldo small { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-3); letter-spacing: 0; }
+  .liq-saldo.a-favor { color: var(--accent); }
+  .liq-saldo.debe { color: var(--warn); }
+  .liq-cuenta { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px; line-height: 1.45; color: var(--text-2); overflow-wrap: anywhere; }
+  .liq-aviso { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: var(--text-2); }
+  .liq-aviso.mal { color: var(--danger); font-weight: 600; }
+  .cond-switches { margin-top: 10px; border-top: 1px solid var(--border); }
+  .cond-switches .estado-conductor { margin: 0 !important; padding: 11px 0; border: none; border-bottom: 1px solid var(--border); border-radius: 0; background: none; box-shadow: none; }
+  .cond-switches .estado-conductor:last-child { border-bottom: none; padding-bottom: 2px; }
+  .cond-switches .estado-conductor.activo { background: none; }
   .adm-kpis { display: flex; gap: 10px; flex: none; }
   .adm-kpis .kpi-card { flex: 1; min-width: 0; padding: 10px 12px; }
   .adm-kpis .kpi-valor { font-size: 22px; }
@@ -531,6 +560,17 @@
   .flota-ver-btn b { font-weight: 800; margin-left: 4px; }
   .flota-ver-btn.activo { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
   body.cond-pantalla.hoja-medio .flota-resumen { display: none; }   /* los botones ya muestran los totales */
+  .mem-barra { height: 10px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+  .mem-relleno { height: 100%; width: 0; background: var(--acento); transition: width .3s ease; }
+  .mem-relleno.lleno { background: var(--accent); }
+  .mem-saldo { padding: 10px 12px; border-radius: var(--r-input); background: var(--surface-2); font-size: 14px; line-height: 1.4; }
+  .mem-saldo strong { font-size: 18px; display: block; }
+  .mem-saldo.debe { background: var(--warn-soft); }
+  .mem-fila { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-2); padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .tyc-cuerpo { font-size: 14px; line-height: 1.5; color: var(--text); }
+  .tyc-cuerpo h4 { margin: 14px 0 4px; font-size: 15px; color: var(--primary); }
+  .tyc-cuerpo p { margin: 0 0 6px; }
+  .tyc-cuerpo .tyc-sub { margin-left: 14px; color: var(--text-2); }
   .flota-titulo { margin: 10px 0 2px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
   .flota-fila.sel { background: var(--surface-2); border-radius: 10px; }
   .flota-detalle { margin: 0 0 8px; padding: 12px; border-radius: 14px; background: var(--surface-2); font-size: 14px; line-height: 1.45; }
@@ -600,6 +640,9 @@
     font: inherit; font-size: 17px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
   }
   .menu-lateral-item:active { background: var(--surface-2); }
+  .menu-lateral-seccion { margin: 14px 8px 2px; padding: 0 0 6px; border-bottom: 1px solid var(--border); font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+  .ajustes-grupo { margin: 22px 2px 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+  .ajustes-grupo:first-of-type { margin-top: 6px; }
   .menu-lateral-item .ico { color: var(--primary); width: 24px; height: 24px; }
   /* Solo la app de navegación elegida en Ajustes (Waze o Google Maps). */
   body[data-gps="WAZE"] .ir-maps, body[data-gps="GOOGLE_MAPS"] .ir-waze { display: none; }
@@ -936,6 +979,23 @@
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, select:focus, textarea:focus, .chat-entrada input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, .chat-entrada textarea:focus { border-color: var(--acento); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 28%, transparent); }
   .chip-contacto, .chip-contacto:hover, .chip-direccion, .chip-opc, .btn-secundario, .btn-direcciones-recientes { border-color: var(--acento); }
   .btn-suave { box-shadow: inset 0 0 0 1px var(--acento); }
+
+  /* ---------- Alertas y confirmaciones: SIEMPRE pop-up flotante (regla de Alberto, 18-oct-2026) ---------- */
+  .nota.error:not([data-sin-popup]), .nota.ok:not([data-sin-popup]), .msg.error:not([data-sin-popup]), .msg.ok:not([data-sin-popup]) { display: none !important; }
+  .rb-pop { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(11,34,54,0.55); }
+  .rb-pop[hidden] { display: none; }
+  .rb-pop-caja { width: 100%; max-width: 360px; background: #fff; color: #11304A; border-radius: 18px; padding: 22px 20px 16px;
+    box-shadow: 0 18px 48px rgba(0,0,0,0.35); border-top: 6px solid var(--acento, #0EA5B0); max-height: 80vh; overflow-y: auto; }
+  .rb-pop-caja.error { border-top-color: #B3392B; }
+  .rb-pop-caja.ok { border-top-color: #0B7A4B; }
+  .rb-pop-texto { margin: 0 0 18px; font: 500 16px/1.45 system-ui, sans-serif; white-space: pre-line; word-wrap: break-word; }
+  .rb-pop-campo { width: 100%; box-sizing: border-box; margin: 0 0 18px; padding: 11px 12px; font: 16px system-ui, sans-serif;
+    border: 1px solid #C9D3DE; border-radius: 10px; }
+  .rb-pop-botones { display: flex; gap: 10px; justify-content: flex-end; }
+  .rb-pop-botones button { min-width: 96px; padding: 11px 16px; border-radius: 12px; font: 600 15px system-ui, sans-serif; cursor: pointer; border: 0; }
+  .rb-pop-si { background: #11304A; color: #fff; }
+  .rb-pop-no { background: #E8EEF3; color: #11304A; }
 </style>
 </head>
 <body>
@@ -970,7 +1030,7 @@
       document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
     } else {
       document.getElementById("splashTitulo").textContent = "Conductor";
-      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Conductor, para que puedas coordinar tus viajes.";
+      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Driver, para que puedas coordinar tus viajes.";
     }
   })();
 </script>
@@ -1067,8 +1127,9 @@
       </div>
       <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--text-2);margin:6px 0 14px;">
         <input type="checkbox" id="regTerminos" style="width:auto;margin-top:3px;">
-        <span>Declaro que mis datos son reales y acepto que Rumbo los use para coordinar viajes con pasajeros.</span>
+        <span>Declaro que mis datos son reales y acepto los <button type="button" class="link-inline" id="verTycConductor" style="background:none;border:0;padding:0;color:var(--acento);text-decoration:underline;font:inherit;">términos y condiciones del conductor</button> y que Rumbo use mis datos para coordinar viajes con pasajeros.</span>
       </label>
+      <div id="tycRegistro" class="tyc-cuerpo" hidden style="max-height:45vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:10px;margin:0 0 14px;background:var(--surface);"></div>
       <button class="btn btn-medio" id="btnRegistrar" type="button" style="width:100%;">Enviar solicitud</button>
       <p class="msg" id="regMsg" style="margin:12px 2px 0;"></p>
       <button class="btn btn-chico" id="btnVolverIngreso" type="button" style="width:100%;margin-top:14px;">Ya tengo cuenta · Ingresar</button>
@@ -1264,6 +1325,26 @@
       </div>
     </details>
 
+    <!-- Solo administradores: se mueve a su pantalla propia (armarPantallasAdmin). -->
+    <details class="acordeon" id="acordeonLiquidaciones" style="display:none;">
+      <summary>Liquidaciones</summary>
+      <div class="acordeon-cuerpo">
+        <p class="ayuda" style="margin:0;">Saldo = cobros con tarjeta − membresía − membresía de viajes en efectivo − transferencias ya hechas. El monto lo calcula el sistema; tú solo confirmas que transferiste.</p>
+        <div id="listaLiquidaciones"><p class="vacio">Cargando...</p></div>
+      </div>
+    </details>
+
+    <!-- Solo administradores: se mueve a su pantalla propia (armarPantallasAdmin). -->
+    <details class="acordeon" id="acordeonMpEmpresa" style="display:none;">
+      <summary>Mercado Pago de la empresa</summary>
+      <div class="acordeon-cuerpo">
+        <p class="ayuda" style="margin:0 0 10px;">Todos los pagos con tarjeta de Rumbo entran a la cuenta de Mercado Pago de <strong>BTo Innova SpA</strong>. Se conecta una sola vez, autorizando desde esa cuenta.</p>
+        <p class="msg" id="mpEmpresaEstado" data-sin-popup style="margin:0 0 12px;">Revisando...</p>
+        <button class="btn btn-medio" id="btnMpEmpresa" type="button" style="width:100%;">Conectar Mercado Pago de la empresa</button>
+        <p class="ayuda" style="margin:12px 0 0;font-size:13px;">Se abre Mercado Pago: inicia sesión con la cuenta de la empresa (no una personal). El link vence a los 15 minutos.</p>
+      </div>
+    </details>
+
     <details class="acordeon" id="acordeonRegistroPedidos">
       <summary>Registro de pedidos</summary>
       <div class="acordeon-cuerpo">
@@ -1301,7 +1382,7 @@
     <div class="estado-conductor" id="estadoConductor">
       <div class="estado-texto">
         <div class="estado-titulo">Compartir mi ubicación</div>
-        <p class="msg" id="ubicacionMsg" style="margin:2px 0 0;font-size:12.5px;">Actívalo cuando salgas a un viaje confirmado.</p>
+        <p class="msg" id="ubicacionMsg" data-sin-popup style="margin:2px 0 0;font-size:12.5px;">Actívalo cuando salgas a un viaje confirmado.</p>
       </div>
       <label class="switch">
         <input type="checkbox" id="chkUbicacion">
@@ -1324,33 +1405,41 @@
       <p class="msg" style="margin:8px 2px 0;font-size:12.5px;">Al tocar "Iniciar viaje" se abre sola, con la ruta hacia el destino ya cargada.</p>
     </div>
     </div></details>
-    <details class="acordeon simple"><summary>Cobrar con Mercado Pago</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonCobroTarjeta"><summary>Cobro con tarjeta</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMercadoPago">
-      <div class="card-head"><span class="card-title">Cobrar con Mercado Pago</span></div>
-      <p class="ayuda" style="margin:0 0 12px;">
-        La plata de cada viaje entra directo a <strong>tu</strong> cuenta de Mercado Pago.
-        El pasajero puede pagar con débito, crédito o en cuotas (el interés de las cuotas lo paga él).
+      <div class="card-head"><span class="card-title">Cobro con tarjeta</span></div>
+      <p class="ayuda" id="mpAyuda" style="margin:0 0 12px;">
+        Tus pasajeros pueden pagar con débito, crédito o en cuotas. BTo Innova recibe el pago y te lo transfiere a tu cuenta (ver <strong>Recibo de pagos</strong>), descontada tu membresía. No necesitas conectar nada.
       </p>
-      <p class="msg" id="mpEstado" style="margin:0 0 12px;">Revisando...</p>
+      <p class="msg" id="mpEstado" data-sin-popup style="margin:0 0 12px;">Revisando...</p>
       <div class="estado-conductor" id="mpPausaFila" style="display:none;margin:0 0 12px;">
         <div class="estado-texto"><div class="estado-titulo" style="font-size:14px;">Cobrar con tarjeta</div>
           <p class="msg" id="mpPausaTexto" style="margin:2px 0 0;font-size:12.5px;"></p></div>
         <label class="switch"><input type="checkbox" id="chkMpActivo"><span class="sr-only">Cobrar con tarjeta</span><span class="switch-pista"></span></label>
       </div>
-      <button class="btn btn-medio" id="btnVincularMp" type="button" style="width:100%;display:none;">Vincular mi Mercado Pago</button>
-      <button class="btn btn-chico" id="btnDesconectarMp" type="button" style="width:100%;display:none;margin-top:8px;">Desconectar mi Mercado Pago</button>
-      <p class="ayuda" style="margin:12px 0 0;font-size:13px;">
-        Importante: en tu cuenta de Mercado Pago <strong>no actives "cuotas sin interés"</strong>; si lo activás, ese costo lo pagás vos en cada viaje.
-      </p>
     </section>
     </div></details>
 
-    <details class="acordeon simple"><summary>Cobrar por transferencia</summary><div class="acordeon-cuerpo">
-    <section class="card" id="cardTransferencia">
-      <div class="card-head"><span class="card-title">Datos para transferencia</span></div>
+    <details class="acordeon simple" id="acordeonMembresia"><summary>Mi membresía y pagos</summary><div class="acordeon-cuerpo">
+    <section class="card" id="cardMembresia">
+      <div class="card-head"><span class="card-title">Membresía Rumbo</span></div>
       <p class="ayuda" style="margin:0 0 12px;">
-        Al terminar el viaje, el pasajero puede elegir pagarte por transferencia. Ve estos datos con botón de copiar, para pegarlos en su banco sin errores.
-        Si dejas todo vacío, no se ofrece transferencia.
+        Pagas el 10 % de cada viaje (sin contar peajes) hasta <strong>$100.000 al mes</strong>. Al llegar a ese tope, el resto del mes es 0 %.
+      </p>
+      <div class="mem-barra" aria-hidden="true"><div class="mem-relleno" id="memRelleno"></div></div>
+      <p class="msg" id="memAcumulado" style="margin:8px 0 12px;">Revisando...</p>
+      <div class="mem-saldo" id="memSaldo"></div>
+      <div id="memUltimas" style="margin-top:10px;"></div>
+      <button class="btn btn-chico" id="btnMemActualizar" type="button" style="margin-top:10px;">Actualizar</button>
+    </section>
+    </div></details>
+    <details class="acordeon simple" id="acordeonRecibo"><summary>Recibo de pagos</summary><div class="acordeon-cuerpo">
+    <section class="card" id="cardTransferencia">
+      <div class="card-head"><span class="card-title">Tu cuenta bancaria</span></div>
+      <p class="ayuda" style="margin:0 0 12px;">
+        Aquí te transferimos lo que se cobró con tarjeta, descontada tu membresía.
+        También se la mostramos al pasajero que elige pagarte por transferencia, con botón de copiar.
+        Si la dejas vacía, no podemos transferirte ni se ofrece transferencia.
       </p>
       <div class="campo"><label class="campo-label" for="trTitular">Nombre del titular</label><input type="text" id="trTitular" autocomplete="off" maxlength="80"></div>
       <div class="campo"><label class="campo-label" for="trRut">RUT</label><input type="text" id="trRut" placeholder="12.345.678-9" autocomplete="off" maxlength="14"></div>
@@ -1374,7 +1463,7 @@
     </section>
     </div></details>
 
-    <details class="acordeon simple"><summary>QR para pasajeros</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonQr"><summary>QR para pasajeros</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMiQr">
       <div class="card-head"><span class="card-title">QR para pasajeros</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
@@ -1515,7 +1604,20 @@
     <p class="msg" id="tarifasMsg" style="margin:12px 2px 0;"></p>
     </div></details>
 
-    <details class="acordeon simple"><summary>Mi vehículo</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonReclamos"><summary>Ayuda y reclamos</summary><div class="acordeon-cuerpo">
+      <p class="ayuda" style="margin:0 0 12px;">Escríbenos tu consulta o reclamo (pagos, viajes, calificaciones, tu cuenta). La respuesta aparecerá en esta sección.</p>
+      <div class="campo"><label class="campo-label" for="reclamoTipo">Tema</label>
+        <select id="reclamoTipo"><option value="PAGO">Un pago</option><option value="VIAJE">Un viaje</option><option value="CUENTA">Mi cuenta</option><option value="OTRO">Otro</option></select></div>
+      <div class="campo"><label class="campo-label" for="reclamoTexto">Tu mensaje</label>
+        <textarea id="reclamoTexto" rows="4" maxlength="1000" placeholder="Cuéntanos qué pasó" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px;background:var(--surface);color:var(--text);font:inherit;"></textarea></div>
+      <button class="btn btn-medio" type="button" id="btnEnviarReclamo">Enviar</button>
+      <div id="listaMisReclamos" style="margin-top:16px;"></div>
+    </div></details>
+    <details class="acordeon simple" id="acordeonReclamosAdmin"><summary>Reclamos</summary><div class="acordeon-cuerpo">
+      <p class="ayuda" style="margin:0 0 12px;">Reclamos y consultas de pasajeros y conductores. Al responder, se cierra y la persona recibe el aviso.</p>
+      <div id="listaReclamosAdmin"><p class="vacio">Cargando...</p></div>
+    </div></details>
+    <details class="acordeon simple" id="acordeonVehiculo"><summary>Mi vehículo</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head"><span class="card-title">Mi vehículo</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
@@ -1554,6 +1656,71 @@
     </section>
     </div></details>
 
+    <details class="acordeon simple" id="acordeonTycConductor"><summary>Términos y condiciones</summary><div class="acordeon-cuerpo">
+    <section class="card"><div class="tyc-cuerpo" tabindex="0">
+<!--TYC-CONDUCTOR-INICIO-->
+<p>Plataforma: Rumbo, aplicación desarrollada y operada por BTo Innova SpA, RUT 78.533.592-9 (nombre comercial "BTo Innova soluciones"), titular de las obligaciones que estos Términos atribuyen a Rumbo. En adelante, "Rumbo".</p>
+<p>Versión: 2026-10-19-tyc4 · 19 de octubre de 2026.</p>
+<p>Al registrarse y marcar la casilla "Acepto", el Conductor declara haber leído y aceptado íntegramente los presentes Términos y Condiciones, que constituyen el contrato de prestación de servicios de trabajador independiente de plataformas digitales entre Rumbo y el Conductor. Rumbo conservará registro de la fecha, la hora y la versión aceptadas. Estos Términos y las condiciones comerciales pueden cambiar más adelante, lo que será informado oportunamente a través de la aplicación.</p>
+<h4>1. Partes y domicilio</h4>
+<p>1.1. Las partes son Rumbo, individualizada arriba, y el Conductor, persona natural cuyos datos de identificación (nombre completo, RUT, teléfono y correo electrónico) constan en su registro en la aplicación.</p>
+<p>1.2. Las comunicaciones y notificaciones entre Rumbo y el Conductor se realizan a través de la aplicación y de su sección "Ayuda y reclamos".</p>
+<h4>2. Objeto y libertades del Conductor</h4>
+<p>2.1. Rumbo es una aplicación tecnológica de intermediación que otorga al Conductor una licencia de uso de su software. No es una empresa de transportes ni es empleadora del Conductor.</p>
+<p>2.2. El Conductor presta sus servicios en forma independiente. Podrá conectarse y desconectarse libremente, con la frecuencia y duración que determine; tomar o rechazar los viajes que se le ofrezcan, sin sanción alguna; y participar o no en las promociones e incentivos que Rumbo ofrezca, sin sujeción a jornada, exclusividad ni subordinación.</p>
+<p>2.3. Cada viaje constituye un contrato privado de arriendo de vehículo con chofer entre el Pasajero y el Conductor, que el Pasajero acepta al solicitar el viaje y el Conductor al aceptarlo. Rumbo actúa en calidad de mandataria e intermediaria tecnológica: calcula el valor del viaje, recauda los pagos con tarjeta por cuenta del Conductor y se los traspasa.</p>
+<h4>3. Definiciones</h4>
+<p>Conductor: persona natural que presta servicios personales de transporte de pasajeros, por cuenta propia, con el vehículo registrado en la aplicación. Pasajero: persona natural transportada por el Conductor. Servicio efectivamente prestado: el trayecto que se inicia cuando el Conductor recoge al Pasajero en el punto de origen y termina cuando este desciende en el destino.</p>
+<h4>4. Obligaciones del Conductor</h4>
+<p>4.1. Mantener vigentes su licencia de conducir, la documentación y los seguros del vehículo, en particular el Seguro Obligatorio de Accidentes Personales (SOAP) vigente, que cubre a los ocupantes, y el seguro de responsabilidad civil frente a terceros, y cumplir toda exigencia legal aplicable al transporte remunerado de pasajeros, incluida la inscripción que exija la Ley N° 21.553 y su reglamento, cuando corresponda.</p>
+<p>4.2. Responder de sus impuestos y cotizaciones previsionales como trabajador independiente, de las multas y de los daños derivados de su conducción o de su vehículo. El Conductor exime a Rumbo de las sanciones que provengan de su incumplimiento.</p>
+<p>4.3. Encontrarse inscrito ante el Servicio de Impuestos Internos con la actividad que corresponda a un trabajador independiente y emitir la boleta de honorarios por las sumas que perciba. Rumbo podrá informar a dicho Servicio los honorarios pagados.</p>
+<p>4.4. La cuenta es personal e intransferible, y se prohíbe delegar la conducción en terceros. El Conductor debe mantener actualizados sus datos, en especial los del vehículo, la patente y la cuenta bancaria.</p>
+<p>4.5. Usar la aplicación de buena fe y solo para fines lícitos, tratar con respeto a los pasajeros, no transportar elementos peligrosos o prohibidos, no pedir al Pasajero actos contrarios a la ley y no revelar los datos personales a que acceda por la prestación del servicio. Su incumplimiento constituye falta grave.</p>
+<h4>5. Información previa y asignación de viajes</h4>
+<p>5.1. Antes de que el Conductor acepte un viaje, la aplicación le informa el origen y el destino, el valor que percibirá o el valor del viaje, y el medio de pago que utilizará el Pasajero.</p>
+<p>5.2. Las solicitudes se ofrecen a los Conductores conectados y disponibles, con prioridad para el Conductor al que el Pasajero se vinculó mediante su código QR; si no se encontrare disponible, el viaje podrá ofrecerse a otro Conductor para no dejar al Pasajero sin servicio.</p>
+<p>5.3. Rumbo adoptará los resguardos razonables para evitar la discriminación arbitraria entre Conductores en la asignación de viajes, la oferta de incentivos y el cálculo de los honorarios. Los pasajeros califican al Conductor, y dichas calificaciones se utilizan para resguardar la calidad del servicio.</p>
+<h4>6. Desarrollo de los viajes</h4>
+<p>6.1. PIN de inicio: el Pasajero recibe un PIN, que el Conductor debe solicitarle antes de que aborde el vehículo. Sin el PIN correcto, el viaje no podrá iniciarse.</p>
+<p>6.2. Contacto: el Conductor no tiene acceso al teléfono ni al correo electrónico del Pasajero; la comunicación se realiza a través del chat de Rumbo. Los datos del Pasajero solo podrán utilizarse para la ejecución del viaje.</p>
+<p>6.3. Se prohíbe acordar viajes, precios o pagos al margen de la aplicación con pasajeros conocidos a través de Rumbo.</p>
+<p>6.4. Precio: el Conductor cobrará el valor calculado por Rumbo, con los ajustes y esperas que correspondan, sin que pueda cobrar un monto distinto.</p>
+<h4>7. Zona geográfica y valor de los viajes</h4>
+<p>7.1. Zona geográfica: los viajes se ofrecen dentro del territorio de Chile, en las zonas informadas en la aplicación.</p>
+<p>7.2. El valor de cada viaje se expresa en pesos chilenos y se calcula según la distancia y el tiempo del trayecto, los peajes, las esperas y los ajustes informados en la aplicación antes de cada viaje. Su variación depende únicamente de esas condiciones objetivas y no queda al arbitrio de Rumbo.</p>
+<h4>8. Ingresos del Conductor</h4>
+<p>8.1. Los ingresos del Conductor corresponden a lo cobrado por los viajes que realiza, según el tiempo y la distancia recorridos, en concepto de arriendo del vehículo con conductor, y se le transfieren como honorarios, por los cuales debe emitir la boleta de honorarios correspondiente.</p>
+<p>8.2. El monto que percibe por cada viaje, expresado en pesos chilenos, se le informa en la aplicación. Los incentivos y promociones, cuando existan, se informan previamente y su aceptación es voluntaria.</p>
+<h4>9. Membresía</h4>
+<p>El Conductor paga una membresía por el uso de Rumbo, equivalente a un porcentaje del valor neto de cada viaje (excluidos los peajes), sujeta a un tope mensual: alcanzado el tope, no se cobra membresía por el resto del mes. Si no se alcanza el tope, se paga únicamente lo acumulado, sin generarse deuda por inactividad. La membresía se calcula una sola vez por cada viaje. El acumulado y el saldo pueden consultarse en la aplicación, en la sección "Mi dinero". Los porcentajes y topes corresponden a valores de lanzamiento: pueden modificarse previo aviso y solo se aplicarán a los viajes posteriores.</p>
+<h4>10. Cargo por uso de la aplicación</h4>
+<p>El precio informado al Pasajero incluye un cargo por uso de la aplicación, que no forma parte del ingreso del Conductor y pertenece a Rumbo. Cuando el Pasajero paga en efectivo o por transferencia, el Conductor percibe el monto íntegro y adeuda a Rumbo la membresía y dicho cargo; cuando paga con tarjeta, el Conductor no se ve afectado.</p>
+<h4>11. Pagos y liquidación</h4>
+<p>11.1. Los pagos con tarjeta se procesan a través de Mercado Pago e ingresan a la cuenta de Rumbo. Rumbo calcula el saldo del Conductor y se lo transfiere periódicamente a la cuenta bancaria registrada por este en "Mi dinero → Recibo de pagos".</p>
+<p>11.2. El saldo corresponde a lo cobrado con tarjeta, menos la membresía, menos lo adeudado por viajes pagados en efectivo o por transferencia, y menos lo ya transferido. Si el saldo resultare negativo, se descontará de los siguientes cobros con tarjeta.</p>
+<p>11.3. El Conductor es responsable de que los datos bancarios registrados le pertenezcan y sean correctos. Rumbo podrá solicitar la confirmación de todo cambio de cuenta y podrá retener o diferir una liquidación si detectare datos alterados, un reclamo, una devolución o un contracargo, hasta su aclaración. La alteración de los registros constituye causal de suspensión.</p>
+<h4>12. Conexión, desconexión y seguridad</h4>
+<p>Por razones de seguridad y de resguardo de la salud del Conductor, Rumbo aplica los siguientes criterios: el PIN de inicio de cada viaje, el aviso de cada viaje con su origen y destino antes de aceptarlo, y un límite de horas de conducción continuas con la aplicación conectada. Cumplido el límite, el Conductor queda desconectado y recupera su tiempo completo tras un descanso mínimo. El viaje en curso se finaliza con normalidad. La aplicación avisa cuando restan pocas horas. Los tiempos máximos de conexión y de desconexión vigentes se informan en la aplicación. El Conductor no es sancionado por rechazar viajes ni por no conectarse.</p>
+<h4>13. Datos personales</h4>
+<p>13.1. Rumbo trata los datos del Conductor (identidad, documentos, vehículo, cuenta bancaria y ubicación mientras permanece conectado) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya desde que recibe su solicitud, y el Conductor solo podrá utilizarla para llegar al punto de recogida.</p>
+<p>13.2. El Conductor puede ejercer sus derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo, en los términos de la ley de protección de datos personales aplicable, escribiendo a Rumbo. Las solicitudes se atienden desde la sección "Ayuda y reclamos" de la aplicación.</p>
+<h4>14. Suspensión y término</h4>
+<p>14.1. La relación tiene vigencia indefinida. El Conductor puede ponerle término en cualquier momento, sin expresar causa, previo pago de lo que adeude.</p>
+<p>14.2. Rumbo podrá dar de baja la cuenta, con aviso en la aplicación, por documentación vencida o falsa, fraude o alteración de registros, acuerdos al margen de la aplicación, incumplimiento grave de las reglas de uso, conductas violentas o de acoso, o riesgo para los pasajeros.</p>
+<p>14.3. Rumbo podrá suspender temporalmente la cuenta cuando reciba una denuncia por una conducta susceptible de sanción penal, mientras se esclarecen los hechos. Salvo riesgo inmediato, se informará el motivo antes de la baja definitiva y el Conductor podrá reclamar conforme a la cláusula 15.</p>
+<h4>15. Canal oficial y reclamos</h4>
+<p>15.1. El Conductor podrá formular consultas, objeciones y reclamos respecto de los pagos, el registro de sus labores, la oferta de viajes y las calificaciones a través de la sección "Ayuda y reclamos" de la aplicación, que es el canal oficial.</p>
+<p>15.2. Por el mismo canal, el Conductor podrá reclamar del término de la relación o de la suspensión de su cuenta. Rumbo registrará el reclamo y responderá por el mismo canal. Si el Conductor no queda conforme, podrá ejercer las acciones que correspondan ante los tribunales competentes.</p>
+<h4>16. Propiedad intelectual</h4>
+<p>Los derechos de propiedad intelectual e industrial sobre Rumbo (código fuente, diseños, marcas, logotipos y textos) pertenecen a BTo Innova SpA o se encuentran licenciados a su favor. El Conductor dispone únicamente de una licencia de uso personal, revocable, no exclusiva e intransferible, mientras su cuenta permanezca vigente. Se prohíbe su reproducción, modificación, descompilación o cualquier explotación no autorizada.</p>
+<h4>17. Contrato escrito, firma electrónica y copia visible</h4>
+<p>Estos Términos constituyen el contrato escrito entre Rumbo y el Conductor independiente y se aceptan de manera electrónica. El Conductor queda habilitado para operar solo después de aceptarlos expresamente, y una copia vigente de este texto permanece siempre visible en la aplicación, en la sección "Términos y condiciones". Cualquier modificación se informará en la aplicación.</p>
+<h4>18. Responsabilidad, modificaciones y legislación aplicable</h4>
+<p>Rumbo se proporciona en el estado en que se encuentra, sin garantía respecto de la cantidad de viajes ni de los ingresos. Rumbo no responde por la conducción, el vehículo ni los daños ocurridos durante los viajes, salvo en lo que la ley no permita excluir. Estos Términos y las condiciones comerciales (membresía, topes, cargos, plazos de liquidación, límites de horas y beneficios) pueden cambiar más adelante. Las modificaciones serán informadas en la aplicación antes de su entrada en vigencia; se aplicarán únicamente a los viajes posteriores al aviso. Estos Términos se rigen por la ley chilena y las partes se someten a la competencia de los tribunales ordinarios de Santiago. Cada estipulación se interpretará en el contexto de las demás; si alguna fuere declarada nula o inaplicable, las restantes mantendrán plena vigencia.</p>
+<!--TYC-CONDUCTOR-FIN-->
+    </div></section>
+    </div></details>
     <details class="acordeon simple"><summary>Mi cuenta</summary><div class="acordeon-cuerpo">
     <!-- Cerrar sesión solo desde acá, a propósito: la sesión queda abierta
          (hasta 5 dispositivos) y no debe cerrarse por un toque accidental. -->
@@ -1635,33 +1802,38 @@
 <aside class="menu-lateral" id="menuLateral" aria-hidden="true" aria-label="Menú">
   <div class="menu-lateral-cab">
     <span class="menu-lateral-avatar" id="menuAvatar" aria-hidden="true">C</span>
-    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span id="menuPlataforma">Rumbo Conductor</span></div>
+    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span id="menuPlataforma">Rumbo Driver</span></div>
     <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuCond" aria-label="Cerrar el menú">&times;</button>
   </div>
   <!-- Administrador: cada sección es una pantalla propia (sin scroll de página). -->
-  <button type="button" class="menu-lateral-item solo-red" data-adm="conductores"><svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>Conductores</button>
-  <button type="button" class="menu-lateral-item solo-red" data-adm="pagos"><svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>Historial de pagos</button>
-  <button type="button" class="menu-lateral-item solo-red" data-adm="pedidos"><svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Registro de pedidos</button>
-  <button type="button" class="menu-lateral-item solo-red" data-adm="tarifas"><svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>Tarifas de la red</button>
-  <button type="button" class="menu-lateral-item solo-red" data-adm="cuenta"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Mi cuenta</button>
-  <button type="button" class="menu-lateral-item solo-conductor solo-con-viaje" data-menu="encurso">
-    <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>Viaje en curso
-  </button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="pedidos">
-    <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Pedidos pendientes<span class="menu-punto" id="puntoItemPedidos" hidden></span>
-  </button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-menu="ajustes">
-    <svg class="ico" aria-hidden="true"><use href="#i-engranaje"/></svg>Ajustes
-  </button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="tarifas">
-    <svg class="ico" aria-hidden="true"><use href="#i-precio"/></svg>Ajustar tarifas
-  </button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="horarios">
-    <svg class="ico" aria-hidden="true"><use href="#i-lista"/></svg>Cambiar horarios
-  </button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="qr">
-    <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Compartir mi QR
-  </button>
+  <div class="menu-lateral-seccion solo-red">Operación</div>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="conductores">Conductores</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="pedidos">Registro de pedidos</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="reclamos">Reclamos<span class="menu-punto" id="puntoItemReclamos" hidden></span></button>
+  <div class="menu-lateral-seccion solo-red">Dinero</div>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="pagos">Historial de pagos</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="liquidaciones">Liquidaciones</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="mp">Mercado Pago de la empresa</button>
+  <div class="menu-lateral-seccion solo-red">Configuración</div>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="tarifas">Tarifas de la red</button>
+  <div class="menu-lateral-seccion solo-red">Cuenta</div>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="cuenta">Mi cuenta</button>
+  <div class="menu-lateral-seccion solo-conductor">Trabajo</div>
+  <button type="button" class="menu-lateral-item solo-conductor solo-con-viaje" data-menu="encurso">Viaje en curso</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="pedidos">Pedidos pendientes<span class="menu-punto" id="puntoItemPedidos" hidden></span></button>
+  <div class="menu-lateral-seccion solo-conductor">Mi dinero</div>
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonHistorial">Historial de pagos</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonMembresia">Membresía y pagos</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonRecibo">Recibo de pagos</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonCobroTarjeta">Cobro con tarjeta</button>
+  <div class="menu-lateral-seccion solo-conductor">Mi actividad</div>
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="tarifas">Ajustar tarifas</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="horarios">Cambiar horarios</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="qr">Compartir mi QR</button>
+  <div class="menu-lateral-seccion solo-conductor">Cuenta</div>
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonVehiculo">Mi vehículo</button>
+  <button type="button" class="menu-lateral-item solo-conductor" data-menu="ajustes">Ajustes y cuenta</button>
 </aside>
 
 <!-- Viaje en curso (solo conductor, estilo Uber/DiDi): arriba la ruta; abajo UN botón con la próxima acción y la pestaña
@@ -1831,7 +2003,108 @@
   // Sube a mano cada vez que se compila y distribuye una nueva APK de esta
   // app (ver VERSIONES_APP en el backend). Si el backend informa una mayor,
   // se muestra el aviso de actualizar con el link de descarga de esta app.
-  var APP_VERSION = 62;
+
+  // ---- Alertas y confirmaciones: SIEMPRE pop-up flotante (regla de Alberto, 18-oct-2026). Reemplaza alert/confirm/prompt nativos y
+  // las notas en linea ".nota/.msg" con clase error u ok (se ocultan por CSS y su texto sale en el pop-up). ----
+  var rbPop = (function () {
+    var cola = [], abierto = false, raiz = null, caja, texto, campo, btnSi, btnNo, actual = null;
+    function armar() {
+      if (raiz) return;
+      raiz = document.createElement("div");
+      raiz.className = "rb-pop"; raiz.hidden = true;
+      raiz.setAttribute("role", "alertdialog"); raiz.setAttribute("aria-modal", "true");
+      raiz.innerHTML = '<div class="rb-pop-caja"><p class="rb-pop-texto"></p><input class="rb-pop-campo" hidden>' +
+        '<div class="rb-pop-botones"><button type="button" class="rb-pop-no">No</button><button type="button" class="rb-pop-si">Entendido</button></div></div>';
+      document.body.appendChild(raiz);
+      caja = raiz.firstChild; texto = caja.querySelector(".rb-pop-texto"); campo = caja.querySelector(".rb-pop-campo");
+      btnNo = caja.querySelector(".rb-pop-no"); btnSi = caja.querySelector(".rb-pop-si");
+      btnSi.addEventListener("click", function () { cerrar(true); });
+      btnNo.addEventListener("click", function () { cerrar(false); });
+      raiz.addEventListener("click", function (e) { if (e.target === raiz && actual && actual.tipoDlg === "alerta") cerrar(true); });
+      document.addEventListener("keydown", function (e) {
+        if (!actual) return;
+        if (e.key === "Escape") cerrar(actual.tipoDlg === "alerta");
+        else if (e.key === "Enter" && e.target !== btnNo) cerrar(true);
+      });
+    }
+    function cerrar(si) {
+      if (!actual) return;
+      var a = actual; actual = null; abierto = false; raiz.hidden = true;
+      var valor = a.tipoDlg === "pedir" ? (si ? campo.value : null) : si;
+      if (a.fin) a.fin(valor);
+      siguiente();
+    }
+    function siguiente() {
+      if (abierto || !cola.length) return;
+      armar();
+      actual = cola.shift(); abierto = true;
+      caja.className = "rb-pop-caja " + (actual.tipo || "info");
+      texto.textContent = actual.texto;
+      var conNo = actual.tipoDlg !== "alerta";
+      btnNo.hidden = !conNo; btnNo.textContent = actual.no || "No";
+      btnSi.textContent = actual.si || (conNo ? "Sí" : "Entendido");
+      campo.hidden = actual.tipoDlg !== "pedir";
+      if (!campo.hidden) { campo.type = actual.clave ? "password" : "text"; campo.value = actual.valor || ""; campo.readOnly = !!actual.soloLectura; }
+      raiz.hidden = false;
+      setTimeout(function () { try { (campo.hidden ? btnSi : campo).focus(); if (!campo.hidden && actual && actual.soloLectura) campo.select(); } catch (e) {} }, 30);
+    }
+    function poner(item) {
+      if (item.tipoDlg === "alerta") {
+        var igual = function (x) { return x.tipoDlg === "alerta" && x.texto === item.texto; };
+        if ((actual && igual(actual)) || cola.some(igual)) return;
+      }
+      cola.push(item); siguiente();
+    }
+    return {
+      alerta: function (t, tipo) {
+        t = String(t == null ? "" : t); if (!t.trim()) return;
+        if (!tipo) tipo = /^(error|no se pudo|no se |no pudimos)/i.test(t) ? "error" : "info";
+        poner({ tipoDlg: "alerta", texto: t, tipo: tipo });
+      },
+      confirmar: function (t, o) {
+        o = o || {};
+        return new Promise(function (res) { poner({ tipoDlg: "confirmar", texto: String(t), tipo: o.tipo || "info", si: o.si, no: o.no, fin: res }); });
+      },
+      pedir: function (t, o) {
+        o = o || {};
+        return new Promise(function (res) { poner({ tipoDlg: "pedir", texto: String(t), tipo: "info", clave: o.clave, valor: o.valor, soloLectura: o.soloLectura, si: o.si || "Aceptar", no: o.no || "Cancelar", fin: res }); });
+      }
+    };
+  })();
+  function rbAlerta(texto, tipo) { rbPop.alerta(texto, tipo); }
+  function rbConfirmar(texto, opciones) { return rbPop.confirmar(texto, opciones); }
+  function rbPedir(texto, opciones) { return rbPop.pedir(texto, opciones); }
+  (function () {
+    if (typeof MutationObserver === "undefined") return;
+    var SEL = ".nota.error, .nota.ok, .msg.error, .msg.ok", pend = [], timer = null, ultimo = [];
+    function elDe(n) { while (n && n.nodeType !== 1) n = n.parentNode; return n; }
+    function revisar() {
+      timer = null;
+      var lista = pend; pend = [];
+      lista.forEach(function (el) {
+        if (!el.matches || !el.matches(SEL) || (el.closest && el.closest(".rb-pop"))) return;
+        // Los textos de ESTADO que se refrescan solos (p. ej. "Compartiendo ubicación en vivo", cada 15 s) no son alertas:
+        // no se muestran como pop-up si están marcados data-sin-popup o si el usuario no los está viendo (sección oculta).
+        if (el.closest("[data-sin-popup]") || !el.getClientRects().length) return;
+        var t = (el.textContent || "").trim(); if (!t) return;
+        var k = t + "|" + el.className, ahora = Date.now();
+        for (var i = 0; i < ultimo.length; i++) if (ultimo[i].el === el && ultimo[i].k === k && ahora - ultimo[i].t < 1500) return;
+        ultimo = ultimo.filter(function (u) { return u.el !== el; }); ultimo.push({ el: el, k: k, t: ahora });
+        rbPop.alerta(t, el.classList.contains("error") ? "error" : "ok");
+      });
+    }
+    function marcar(n) {
+      var el = elDe(n); if (!el) return;
+      var c = el.closest ? el.closest(".nota, .msg") : null; if (!c) return;
+      if (pend.indexOf(c) < 0) pend.push(c);
+      if (!timer) timer = setTimeout(revisar, 40);
+    }
+    new MutationObserver(function (ms) {
+      ms.forEach(function (m) { marcar(m.target); });
+    }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
+  })();
+
+  var APP_VERSION = 63;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -1867,8 +2140,8 @@
 
   // Cada panel solo acepta su tipo de cuenta.
   function cuentaPermitida(c) {
-    if (MODO === "admin" && !c.es_admin) return "Esta app es solo para administradores. Si eres conductor, usa Rumbo Conductor.";
-    if (MODO === "conductor" && c.solo_admin) return "Esta cuenta es de administración. Usa Rumbo Administrador.";
+    if (MODO === "admin" && !c.es_admin) return "Esta app es solo para administradores. Si eres conductor, usa Rumbo Driver.";
+    if (MODO === "conductor" && c.solo_admin) return "Esta cuenta es de administración. Usa Rumbo Admin.";
     return "";
   }
 
@@ -1895,7 +2168,7 @@
   (function prepararModo() {
     var esAdmin = MODO === "admin";
     document.body.classList.toggle("modo-admin", esAdmin);
-    document.title = esAdmin ? "Rumbo Administrador" : "Rumbo — Conductor";
+    document.title = esAdmin ? "Rumbo Admin" : "Rumbo Driver";
     var ico = esAdmin ? "img/favicon-admin-192.png?v=65" : "img/favicon-conductor-192.png?v=65";
     [].forEach.call(document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]'), function (l) { l.href = ico; });
     [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
@@ -1905,7 +2178,7 @@
     document.getElementById("bloqueCrearCuenta").style.display = esAdmin ? "none" : "";
     var link = document.getElementById("linkDescargaApp");
     link.href = URL_APK;
-    link.textContent = esAdmin ? "Descargar app Rumbo Administrador (Android)" : "Descargar app Rumbo Conductor (Android)";
+    link.textContent = esAdmin ? "Descargar app Rumbo Admin (Android)" : "Descargar app Rumbo Driver (Android)";
   })();
   // Una clave por panel: conductor.html y admin.html comparten el mismo
   // dominio en la web, y con una sola clave entrar a uno borraba la sesión
@@ -2204,6 +2477,7 @@
       abrirMenuCond(false);
       if (b.getAttribute("data-menu") === "ajustes") mostrarPestana("ajustes");   // los data-tablero los atiende el manejador general
       if (b.getAttribute("data-adm")) abrirPantallaAdmin(b.getAttribute("data-adm"));
+      if (b.getAttribute("data-ajuste")) irASeccionAjustes(b.getAttribute("data-ajuste"));
       if (b.getAttribute("data-menu") === "encurso") mostrarPestana("enCurso");
     });
   });
@@ -2275,8 +2549,10 @@
         // las consultas sueltas para no dejar la pantalla vacía.
         revisarActualizacion(res.version_app);
         if (!res.ok || !res.pendientes) { cargarPedidos(); cargarViajesEnCurso(); return; }
+        ubicacionesVivas = res.ubicaciones || {};   // pasajeros que ya comparten su ubicación (también en solicitudes pendientes)
         pintarPedidos({ ok: true, pedidos: res.pendientes });
-        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso, cobro_real: res.cobro_real }, res.ubicaciones || {});
+        pintarViajesEnCurso({ ok: true, pedidos: res.en_curso, cobro_real: res.cobro_real, pin_activo: res.pin_activo }, res.ubicaciones || {});
+        if (res.jornada) { jornadaActual = res.jornada; if (res.jornada.agotada) conectadoManual = false; if (conexionCargada) pintarEstadoTablero(); }
         Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
         // En esta respuesta ya vino el historial completo de cada viaje en
         // curso: lo que llegue desde ahora es nuevo. Solo se limpian ESTOS
@@ -2309,6 +2585,14 @@
   document.getElementById("btnIrRegistro").addEventListener("click", function () { mostrarRegistro(true); });
   document.getElementById("btnVolverIngreso").addEventListener("click", function () { mostrarRegistro(false); });
 
+  // Versión de los T&C del conductor que se aceptan al registrarse (ver legal/tyc-conductor.md).
+  var VERSION_TYC_CONDUCTOR = "2026-10-19-tyc4";
+  // Muestra los T&C debajo de la casilla, sin salir del registro (el texto es el mismo de Ajustes).
+  document.getElementById("verTycConductor").addEventListener("click", function () {
+    var caja = document.getElementById("tycRegistro");
+    if (!caja.innerHTML) caja.innerHTML = document.querySelector("#acordeonTycConductor .tyc-cuerpo").innerHTML;
+    caja.hidden = !caja.hidden;
+  });
   document.getElementById("btnRegistrar").addEventListener("click", function () {
     var boton = this, msg = document.getElementById("regMsg");
     function v(id) { return document.getElementById(id).value.trim(); }
@@ -2319,7 +2603,8 @@
       email: v("regEmail"), clave: document.getElementById("regClave").value,
       vehiculo_patente: v("regPatente"), vehiculo_color: v("regColor"),
       vehiculo_marca: v("regMarca"), vehiculo_modelo: v("regModelo"),
-      acepta_terminos: document.getElementById("regTerminos").checked
+      acepta_terminos: document.getElementById("regTerminos").checked,
+      terminos_version: VERSION_TYC_CONDUCTOR
     }).then(function (res) {
       boton.disabled = false;
       if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
@@ -2379,12 +2664,14 @@
               c.solicitud_tarifa === "PENDIENTE" ? '<p class="msg" style="margin:2px 0 0;font-size:12px;color:var(--accent);">Pidió tarifa propia — activa para autorizar</p>' : "");
           }
         }
-        return '<div class="pedido-card" style="margin-bottom:10px;">' +
-          '<div class="pedido-cliente">' + escapar(c.nombre) + (c.conductor_id === yo ? " (tú)" : "") + '</div>' +
-          '<div style="margin:4px 0 6px;">' + etiqueta + '</div>' +
-          '<div class="msg" style="margin:0 0 8px;font-size:13.5px;">' + escapar(c.email) + ' · +' + escapar(c.telefono) + (c.vehiculo ? '<br>' + escapar(c.vehiculo) : '') + '</div>' +
+        var iniciales = String(c.nombre || "?").trim().split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); }).join("");
+        return '<div class="cond-card">' +
+          '<div class="cond-cab"><span class="cond-avatar" aria-hidden="true">' + escapar(iniciales) + '</span>' +
+            '<div class="cond-datos"><div class="cond-nombre">' + escapar(c.nombre) + (c.conductor_id === yo ? " (tú)" : "") + '</div>' +
+            '<div class="cond-sub">' + escapar(c.email) + ' · +' + escapar(c.telefono) + '</div>' +
+            (c.vehiculo ? '<div class="cond-sub">' + escapar(c.vehiculo) + '</div>' : '') + '</div>' + etiqueta + '</div>' +
           (botones ? '<div class="btn-row">' + botones + '</div>' : '') +
-          switchTarifa +
+          (switchTarifa ? '<div class="cond-switches">' + switchTarifa + '</div>' : '') +
         '</div>';
       }).join("") || '<p class="vacio">No hay conductores.</p>';
     });
@@ -2398,12 +2685,12 @@
     sw.disabled = true;
     apiPost({ accion: "cambiar_modo_tarifa", conductor_id: sw.dataset.modo, modo_tarifa: valorNuevo }).then(function (res) {
       sw.disabled = false;
-      if (!res.ok) { alert(res.error); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
+      if (!res.ok) { rbAlerta(res.error); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
       cargarConductoresAdmin();
     });
   });
 
-  document.getElementById("listaConductores").addEventListener("change", function (ev) {
+  document.getElementById("listaConductores").addEventListener("change", async function (ev) {
     var b = ev.target.closest("[data-activo],[data-red]");
     if (!b) return;
     var esActivo = b.hasAttribute("data-activo");
@@ -2411,16 +2698,16 @@
     var valor = b.checked ? "SI" : "NO";
     var pregunta = esActivo ? (b.checked ? "¿Habilitar a este conductor?" : "¿Suspender a este conductor? No podrá recibir viajes.")
       : (b.checked ? "¿Agregarlo a la red? Podrá recibir viajes de otros conductores." : "¿Sacarlo de la red? Solo recibirá viajes de sus pasajeros.");
-    if (!confirm(pregunta)) { b.checked = !b.checked; return; }
+    if (!(await rbConfirmar(pregunta))) { b.checked = !b.checked; return; }
     b.disabled = true;
     apiPost(esActivo
       ? { accion: "cambiar_activo", conductor_id: id, activo: valor }
       : { accion: "cambiar_en_red", conductor_id: id, en_red: valor }
     ).then(function (res) {
       b.disabled = false;
-      if (!res.ok) { alert(res.error); b.checked = !b.checked; return; }
+      if (!res.ok) { rbAlerta(res.error); b.checked = !b.checked; return; }
       cargarConductoresAdmin();
-    }).catch(function (err) { b.disabled = false; b.checked = !b.checked; alert("Error de red: " + err.message); });
+    }).catch(function (err) { b.disabled = false; b.checked = !b.checked; rbAlerta("Error de red: " + err.message); });
   });
 
   // Qué ve cada tipo de cuenta. Solo-admin: únicamente administración (no
@@ -2429,12 +2716,29 @@
   // Lo que se ve depende del PANEL (MODO), no de la cuenta: aunque una cuenta
   // de conductor tenga permisos de admin, el panel de conductor no muestra
   // administración, y el panel admin no muestra pedidos ni cobros propios.
-  var SECCIONES_ADMIN = ["acordeonConductores", "acordeonHistorial", "acordeonRegistroPedidos"];
+  // Ajustes del conductor, ordenados por categoría (se reacomodan al arrancar; los id y manejadores no cambian).
+  var GRUPOS_AJUSTES = [
+    ["Mi dinero", ["Historial de pagos", "Mi membresía y pagos", "Recibo de pagos", "Cobro con tarjeta"]],
+    ["Mi actividad", ["Tarifas y costos", "Disponibilidad (cuándo no trabajas)", "QR para pasajeros", "Visibilidad en la red"]],
+    ["Preferencias", ["Compartir mi ubicación", "Navegación GPS"]],
+    ["Cuenta", ["Ayuda y reclamos", "Mi vehículo", "Mi cuenta", "Términos y condiciones"]]
+  ];
+  function ordenarAjustesConductor() {
+    var panel = document.getElementById("panelAjustes");
+    if (!panel || panel.querySelector(".ajustes-grupo")) return;
+    var porTitulo = {};
+    [].forEach.call(panel.querySelectorAll(":scope > details"), function (d) { porTitulo[d.querySelector("summary").textContent.trim()] = d; });
+    GRUPOS_AJUSTES.forEach(function (g) {
+      var h = document.createElement("h3"); h.className = "ajustes-grupo"; h.textContent = g[0]; panel.appendChild(h);
+      g[1].forEach(function (t) { if (porTitulo[t]) panel.appendChild(porTitulo[t]); });
+    });
+  }
+  var SECCIONES_ADMIN = ["acordeonConductores", "acordeonHistorial", "acordeonRegistroPedidos", "acordeonReclamosAdmin"];
   var TITULOS_ADMIN = ["Tarifas y costos", "Mi cuenta"];
   function aplicarPermisos() {
     [].forEach.call(document.querySelectorAll("#panelAjustes > details"), function (d) {
       var titulo = d.querySelector("summary").textContent;
-      var esDeAdmin = d.id === "acordeonConductores" || d.id === "acordeonRegistroPedidos";
+      var esDeAdmin = d.id === "acordeonConductores" || d.id === "acordeonRegistroPedidos" || d.id === "acordeonLiquidaciones" || d.id === "acordeonMpEmpresa" || d.id === "acordeonReclamosAdmin";
       var visible = MODO === "admin"
         ? (SECCIONES_ADMIN.indexOf(d.id) !== -1 || d.id === "acordeonTarifas" || TITULOS_ADMIN.indexOf(titulo) !== -1)
         : !esDeAdmin;
@@ -2443,6 +2747,7 @@
     document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Tarifas y costos";
     [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
     [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { el.style.display = MODO === "admin" ? "none" : ""; });
+    if (MODO !== "admin") ordenarAjustesConductor();
     if (MODO === "admin") {
       // Mismo formato que las otras dos apps: mapa completo + ventana + menú lateral (sin barra de abajo).
       document.body.classList.add("modo-admin");
@@ -2450,8 +2755,9 @@
       document.getElementById("tabEnCurso").style.display = "none";
       document.getElementById("tabAjustes").style.display = "none";
       document.getElementById("flotaAdmin").hidden = false;
-      document.getElementById("menuPlataforma").textContent = "Rumbo Administrador";
+      document.getElementById("menuPlataforma").textContent = "Rumbo Admin";
       armarPantallasAdmin();
+      setTimeout(cargarReclamosAdmin, 1500);   // pinta el punto de "reclamos abiertos" al entrar
     }
   }
 
@@ -2460,7 +2766,7 @@
      (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
      Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
      --------------------------------------------------------------- */
-  var PANTALLAS_ADMIN = { conductores: "Conductores", pagos: "Historial de pagos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  var PANTALLAS_ADMIN = { conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
   function crearPantallaAdmin(id) {
     var p = document.createElement("section");
     p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
@@ -2517,6 +2823,17 @@
     envolver(pp, "adm-kpis", [kpiDe("kpiFacturado")]);
     envolver(pp, "adm-fijo", [cuerpoH[0], cuerpoH[1]]);
     envolver(pp, "adm-scroll", [cuerpoH[2]]);
+    // Liquidaciones: saldo de cada conductor (lo calcula el servidor) y el botón de transferido.
+    var pl = crearPantallaAdmin("liquidaciones");
+    var cuerpoL = hijosDe("#acordeonLiquidaciones > .acordeon-cuerpo");   // ayuda, lista
+    envolver(pl, "adm-fijo", [cuerpoL[0]]);
+    envolver(pl, "adm-scroll", [cuerpoL[1]]);
+    // Mercado Pago de la empresa: estado de la conexión y botón para conectarla (solo admin).
+    var pm = crearPantallaAdmin("mp");
+    envolver(pm, "adm-scroll", hijosDe("#acordeonMpEmpresa > .acordeon-cuerpo"));
+    // Reclamos: bandeja de consultas de pasajeros y conductores.
+    var prc = crearPantallaAdmin("reclamos");
+    envolver(prc, "adm-scroll", hijosDe("#acordeonReclamosAdmin > .acordeon-cuerpo"));
     // Registro de pedidos: igual.
     var pr = crearPantallaAdmin("pedidos");
     var cuerpoR = hijosDe("#acordeonRegistroPedidos > .acordeon-cuerpo");
@@ -2561,6 +2878,9 @@
       cargarConductoresAdmin();
       sondeoAdminTimer = setInterval(function () { if (!document.hidden) cargarConductoresAdmin(); }, SONDEO_MS);
     } else if (id === "pagos") abrirHistorial();
+    else if (id === "liquidaciones") cargarLiquidaciones();
+    else if (id === "mp") cargarMpEmpresa();
+    else if (id === "reclamos") cargarReclamosAdmin();
     else if (id === "pedidos") cargarRegistroPedidos();
     else if (id === "tarifas") cargarTarifas();
   }
@@ -2761,11 +3081,11 @@
     ev.target.disabled = true;
     apiPost({ accion: "cambiar_mi_red", en_red: deseado }).then(function (res) {
       ev.target.disabled = false;
-      if (!res.ok) { ev.target.checked = !deseado; alert("No se pudo cambiar: " + res.error); return; }
+      if (!res.ok) { ev.target.checked = !deseado; rbAlerta("No se pudo cambiar: " + res.error); return; }
       pintarEstadoRed(res.en_red);
     }).catch(function (err) {
       ev.target.disabled = false; ev.target.checked = !deseado;
-      alert("Error de red: " + err.message);
+      rbAlerta("Error de red: " + err.message);
     });
   });
 
@@ -2790,8 +3110,8 @@
     var anterior = gpsPreferido;
     pintarGps(valor); // optimista: se nota al toque
     apiPost({ accion: "cambiar_mi_gps", gps: valor }).then(function (res) {
-      if (!res.ok) { pintarGps(anterior); alert("No se pudo cambiar: " + res.error); }
-    }).catch(function (err) { pintarGps(anterior); alert("Error de red: " + err.message); });
+      if (!res.ok) { pintarGps(anterior); rbAlerta("No se pudo cambiar: " + res.error); }
+    }).catch(function (err) { pintarGps(anterior); rbAlerta("Error de red: " + err.message); });
   }
   document.getElementById("chkGps").addEventListener("change", function () { elegirGps(this.checked ? "GOOGLE_MAPS" : "WAZE"); });
   document.querySelectorAll("#grupoGps .gps-lado").forEach(function (b) {
@@ -2809,38 +3129,26 @@
     grupo.addEventListener("pointercancel", function () { x0 = null; });
   })();
 
+  // Cobro con tarjeta del conductor: lo recibe la cuenta de BTo Innova; el conductor solo puede pausarlo.
   function cargarEstadoMp() {
     var estado = document.getElementById("mpEstado");
-    var boton = document.getElementById("btnVincularMp");
     api({ accion: "mi_mercadopago" }).then(function (res) {
       if (!res.ok) { estado.textContent = "No se pudo revisar: " + res.error; return; }
-      if (!res.configurado) {
-        estado.textContent = "El cobro con Mercado Pago todavía no está habilitado en la red.";
-        boton.style.display = "none";
+      mpMostrarControles(res);
+      if (!res.configurado || !res.vinculado) {
+        estado.textContent = "El cobro con tarjeta todavía no está habilitado: por ahora cobra en efectivo o por transferencia.";
+        estado.className = "msg";
         return;
       }
-      mpMostrarControles(res);
-      if (res.vinculado) {
-        estado.textContent = res.pausado ? "Tu cuenta está vinculada, pero el cobro con tarjeta está en pausa: el pasajero no ve esa opción." : "✓ Tu cuenta está vinculada. Ya puedes cobrar viajes por Mercado Pago.";
-        estado.className = res.pausado ? "msg" : "msg ok";
-        // Un conductor tiene UNA sola cuenta de Mercado Pago vinculada, no
-        // varias — este botón re-autoriza esa misma cuenta (útil si se le
-        // revocó el permiso sin querer), nunca agrega una cuenta distinta.
-        boton.textContent = "Reconectar mi Mercado Pago";
-      } else {
-        estado.textContent = "Todavía no vinculaste tu cuenta: por ahora solo puedes cobrar en efectivo.";
-        estado.className = "msg";
-        boton.textContent = "Vincular mi Mercado Pago";
-      }
-      boton.style.display = "flex";
+      estado.textContent = res.pausado ? "El cobro con tarjeta está en pausa: el pasajero no ve esa opción." : "✓ Cobro con tarjeta activo: el pasajero paga a través de Rumbo y BTo Innova te lo transfiere.";
+      estado.className = res.pausado ? "msg" : "msg ok";
     });
   }
 
-  // Interruptor "Cobrar con tarjeta" (pausa) y botón para desconectar: solo con la cuenta vinculada.
+  // Interruptor "Cobrar con tarjeta" (pausa): solo cuando el cobro con tarjeta está habilitado.
   function mpMostrarControles(res) {
-    var fila = document.getElementById("mpPausaFila"), chk = document.getElementById("chkMpActivo"), des = document.getElementById("btnDesconectarMp");
+    var fila = document.getElementById("mpPausaFila"), chk = document.getElementById("chkMpActivo");
     fila.style.display = res.vinculado ? "flex" : "none";
-    des.style.display = res.vinculado ? "block" : "none";
     chk.checked = !res.pausado;
     fila.classList.toggle("activo", !res.pausado);
     document.getElementById("mpPausaTexto").textContent = res.pausado ? "En pausa: el pasajero no ve la opción de tarjeta." : "Activo: el pasajero puede elegir pagar con tarjeta.";
@@ -2850,33 +3158,35 @@
     chk.disabled = true;
     apiPost({ accion: "cambiar_mp_pausa", pausado: pausar }).then(function (res) {
       chk.disabled = false;
-      if (!res.ok) { alert(res.error); chk.checked = pausar; return; }
+      if (!res.ok) { rbAlerta(res.error); chk.checked = pausar; return; }
       cargarEstadoMp();
-    }).catch(function (err) { chk.disabled = false; chk.checked = pausar; alert("Error de red: " + err.message); });
+    }).catch(function (err) { chk.disabled = false; chk.checked = pausar; rbAlerta("Error de red: " + err.message); });
   });
-  document.getElementById("btnDesconectarMp").addEventListener("click", function () {
-    var b = this;
-    if (!confirm("¿Desconectar tu Mercado Pago? Dejarás de cobrar con tarjeta hasta que lo vincules de nuevo. Para quitar también el permiso, revócalo desde tu cuenta de Mercado Pago.")) return;
-    b.disabled = true;
-    apiPost({ accion: "desconectar_mp" }).then(function (res) {
-      b.disabled = false;
-      if (!res.ok) { alert(res.error); return; }
-      cargarEstadoMp();
-    }).catch(function (err) { b.disabled = false; alert("Error de red: " + err.message); });
-  });
+  // Admin: estado de la conexión de la cuenta de la empresa.
+  function cargarMpEmpresa() {
+    var estado = document.getElementById("mpEmpresaEstado"), boton = document.getElementById("btnMpEmpresa");
+    api({ accion: "mi_mercadopago" }).then(function (res) {
+      if (!res.ok) { estado.textContent = "No se pudo revisar: " + res.error; estado.className = "msg"; return; }
+      if (!res.configurado) { estado.textContent = "Mercado Pago todavía no está configurado en el sistema (faltan las credenciales de la aplicación)."; estado.className = "msg"; boton.style.display = "none"; return; }
+      boton.style.display = "";
+      estado.textContent = res.empresa_vinculada ? "✓ Conectada: los pagos con tarjeta entran a la cuenta de BTo Innova." : "Todavía no hay una cuenta conectada: los pagos con tarjeta no se pueden cobrar.";
+      estado.className = res.empresa_vinculada ? "msg ok" : "msg";
+      boton.textContent = res.empresa_vinculada ? "Reconectar Mercado Pago de la empresa" : "Conectar Mercado Pago de la empresa";
+    }).catch(function (err) { estado.textContent = "Error de red: " + err.message; estado.className = "msg"; });
+  }
 
-  document.getElementById("btnVincularMp").addEventListener("click", function () {
+  // Solo admin: conecta la cuenta Mercado Pago de BTo Innova, que recauda todos los cobros.
+  document.getElementById("btnMpEmpresa").addEventListener("click", async function () {
     var boton = this;
+    if (!(await rbConfirmar("Se abrirá Mercado Pago: autoriza con la sesión de la cuenta de BTo Innova SpA (no una personal). El link vence en 15 minutos. ¿Continuar?"))) return;
     boton.disabled = true;
-    api({ accion: "mp_link_vinculacion" }).then(function (res) {
+    apiPost({ accion: "mp_link_empresa" }).then(function (res) {
       boton.disabled = false;
-      if (!res.ok) { alert(res.error); return; }
-      // Se abre en el navegador: Mercado Pago no permite autorizar dentro de
-      // una vista embebida, y la vuelta llega a mp-vuelta.html en la web.
+      if (!res.ok) { rbAlerta(res.error); return; }
       window.open(res.url, "_blank");
-      document.getElementById("mpEstado").textContent =
-        "Autoriza en Mercado Pago y vuelve acá. Si ya lo hiciste, toca Ajustes de nuevo para actualizar.";
-    });
+      document.getElementById("mpEmpresaEstado").textContent =
+        "Autoriza en Mercado Pago con la cuenta de la empresa y vuelve acá. Después entra de nuevo a esta pantalla para actualizar.";
+    }).catch(function (err) { boton.disabled = false; rbAlerta("Error de red: " + err.message); });
   });
 
   function pintarMiQr(c) {
@@ -3015,6 +3325,134 @@
     } catch (e) {}
   }
 
+  // Membresía del conductor: se pide al abrir la sección (no va en los sondeos). Todo lo calcula el servidor.
+  function fechaCorta(v) { var d = new Date(v); return isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" }); }
+  function textoSaldoMembresia(res) {
+    var html;
+    if (res.en_revision) html = "<strong>En revisión</strong>Tu saldo lo está revisando el administrador.";
+    else if (res.saldo > 0) html = "<strong>" + fmt(res.saldo) + "</strong>Por recibir en tu próxima transferencia" + (res.cuenta_completa ? "." : ": completa tu cuenta bancaria para poder recibirla.");
+    else if (res.saldo < 0) html = "<strong>" + fmt(-res.saldo) + "</strong>Membresía pendiente de viajes en efectivo o transferencia: se descuenta sola de tus próximos cobros con tarjeta.";
+    else html = "<strong>$0</strong>Estás al día.";
+    if (res.en_espera > 0) html += "<br>Esperando pago con tarjeta: " + fmt(res.en_espera) + ".";
+    return html;
+  }
+  function cargarMembresia() {
+    var acum = document.getElementById("memAcumulado"), saldo = document.getElementById("memSaldo");
+    api({ accion: "mi_membresia" }).then(function (res) {
+      if (!res.ok) { acum.textContent = "No se pudo revisar: " + res.error; return; }
+      var rel = document.getElementById("memRelleno");
+      rel.style.width = Math.min(100, Math.round(res.acumulado / res.tope * 100)) + "%";
+      rel.classList.toggle("lleno", !!res.liberado);
+      acum.textContent = res.liberado ? "✓ Llegaste al tope de " + fmt(res.tope) + ": el resto del mes pagas 0 %."
+        : "Este mes llevas " + fmt(res.acumulado) + " de " + fmt(res.tope) + ". Te faltan " + fmt(res.falta) + " para pagar 0 %.";
+      saldo.innerHTML = textoSaldoMembresia(res);
+      saldo.classList.toggle("debe", res.saldo < 0);
+      document.getElementById("memUltimas").innerHTML = (res.ultimas || []).length ? '<div class="flota-titulo">Últimas transferencias</div>' +
+        res.ultimas.map(function (u) { return '<div class="mem-fila"><span>' + escapar(fechaCorta(u.fecha)) + '</span><span>' + fmt(u.monto) + '</span></div>'; }).join("") : "";
+    }).catch(function (err) { acum.textContent = "Error de red: " + err.message; });
+  }
+  document.getElementById("acordeonMembresia").addEventListener("toggle", function () { if (this.open) cargarMembresia(); });
+  document.getElementById("btnMemActualizar").addEventListener("click", cargarMembresia);
+
+  // Admin: liquidaciones. El monto lo pone el servidor; acá solo se confirma el saldo que se vio.
+  /* Ayuda y reclamos: el conductor escribe y ve la respuesta; el admin los ve todos y responde. */
+  function cargarMisReclamos() {
+    var caja = document.getElementById("listaMisReclamos");
+    apiPost({ accion: "mis_reclamos_conductor" }).then(function (res) {
+      if (!res.ok || !res.reclamos.length) { caja.innerHTML = ""; return; }
+      caja.innerHTML = '<h3 class="ajustes-grupo">Tus reclamos</h3>' + res.reclamos.map(function (r) {
+        return '<div class="cond-card"><div class="cond-sub">' + (r.estado === "RESUELTO" ? "Respondido" : "En revisión") + " · " + escapar(fechaCorta(r.creado_en)) + '</div>' +
+          '<div style="margin:4px 0;">' + escapar(r.texto) + '</div>' +
+          (r.respuesta ? '<div class="liq-aviso">Rumbo: ' + escapar(r.respuesta) + '</div>' : '') + '</div>';
+      }).join("");
+    }).catch(function () {});
+  }
+  document.getElementById("acordeonReclamos").addEventListener("toggle", function () { if (this.open) cargarMisReclamos(); });
+  document.getElementById("btnEnviarReclamo").addEventListener("click", function () {
+    var txt = document.getElementById("reclamoTexto"), btn = this;
+    if (txt.value.trim().length < 5) { rbAlerta("Cuéntanos un poco más para poder ayudarte."); return; }
+    btn.disabled = true;
+    apiPost({ accion: "enviar_reclamo_conductor", tipo: document.getElementById("reclamoTipo").value, texto: txt.value.trim() }).then(function (res) {
+      btn.disabled = false;
+      if (!res.ok) { rbAlerta(res.error || "No se pudo enviar. Intenta de nuevo."); return; }
+      txt.value = ""; rbAlerta("Recibimos tu mensaje. La respuesta aparecerá en esta sección."); cargarMisReclamos();
+    }).catch(function (e) { btn.disabled = false; rbAlerta("Error de red: " + e.message); });
+  });
+  function cargarReclamosAdmin() {
+    var lista = document.getElementById("listaReclamosAdmin");
+    lista.innerHTML = '<p class="vacio">Cargando...</p>';
+    apiPost({ accion: "reclamos_admin" }).then(function (res) {
+      if (!res.ok) { lista.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
+      var punto = document.getElementById("puntoItemReclamos"); if (punto) punto.hidden = !res.abiertos;
+      if (!res.reclamos.length) { lista.innerHTML = '<p class="vacio">No hay reclamos.</p>'; return; }
+      lista.innerHTML = res.reclamos.map(function (r) {
+        var quien = (r.quien === "PASAJERO" ? "Pasajero" : "Conductor") + " · " + escapar(r.nombre || "");
+        return '<div class="cond-card"><div class="cond-cab"><div class="cond-datos"><div class="cond-nombre">' + quien + '</div>' +
+          '<div class="cond-sub">' + escapar(r.tipo) + (r.pedido_id ? " · viaje " + escapar(r.pedido_id) : "") + " · " + escapar(fechaCorta(r.creado_en)) + " · " + (r.estado === "RESUELTO" ? "Respondido" : "Abierto") + '</div></div></div>' +
+          '<div style="margin:6px 0;">' + escapar(r.texto) + '</div>' +
+          (r.respuesta ? '<div class="liq-aviso">Respuesta: ' + escapar(r.respuesta) + '</div>' :
+            '<textarea data-rec-resp="' + escapar(r.reclamo_id) + '" rows="2" maxlength="1000" placeholder="Escribe la respuesta" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px;background:var(--surface);color:var(--text);font:inherit;"></textarea>' +
+            '<button class="btn btn-medio" type="button" data-rec-enviar="' + escapar(r.reclamo_id) + '" style="margin-top:8px;">Responder y cerrar</button>') + '</div>';
+      }).join("");
+    }).catch(function (err) { lista.innerHTML = '<p class="vacio">Error de red: ' + escapar(err.message) + '</p>'; });
+  }
+  document.getElementById("listaReclamosAdmin").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-rec-enviar]"); if (!b) return;
+    var id = b.getAttribute("data-rec-enviar"), caja = this.querySelector('[data-rec-resp="' + id + '"]');
+    if (!caja || caja.value.trim().length < 2) { rbAlerta("Escribe la respuesta."); return; }
+    b.disabled = true;
+    apiPost({ accion: "responder_reclamo", reclamo_id: id, respuesta: caja.value.trim() }).then(function (res) {
+      if (!res.ok) { b.disabled = false; rbAlerta(res.error || "No se pudo responder."); return; }
+      cargarReclamosAdmin();
+    }).catch(function (e) { b.disabled = false; rbAlerta("Error de red: " + e.message); });
+  });
+
+  function cargarLiquidaciones() {
+    var lista = document.getElementById("listaLiquidaciones");
+    if (!lista) return;
+    lista.innerHTML = '<p class="vacio">Cargando...</p>';
+    apiPost({ accion: "liquidaciones_admin" }).then(function (res) {
+      if (!res.ok) { lista.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
+      if (!res.conductores.length) { lista.innerHTML = '<p class="vacio">Nadie tiene saldo pendiente.</p>'; return; }
+      lista.innerHTML = res.conductores.map(function (c) {
+        var cu = c.cuenta;
+        var iniciales = String(c.nombre || "?").trim().split(/\s+/).slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); }).join("");
+        var clase = c.saldo > 0 ? "a-favor" : c.saldo < 0 ? "debe" : "";
+        var saldoTxt = c.saldo < 0 ? "Debe " + fmt(-c.saldo) : fmt(c.saldo);
+        var saldoSub = c.saldo > 0 ? "por transferir" : c.saldo < 0 ? "se descuenta de sus cobros" : "al día";
+        var aviso = c.alterado ? '<p class="liq-aviso mal">Datos alterados en la planilla: ' + escapar(c.motivos.join("; ")) + '</p>'
+          : c.saldo < 0 ? '<p class="liq-aviso">Debe ' + fmt(-c.saldo) + ' de membresía de viajes en efectivo: se descuenta de sus próximos cobros con tarjeta.</p>' : "";
+        var cuentaTxt = cu ? escapar(cu.titular + " · " + cu.rut + " · " + cu.banco + " · " + cu.tipo + " " + cu.numero) : '<span style="color:var(--danger);font-weight:600;">Sin cuenta bancaria</span>';
+        var boton = (c.saldo > 0 && cu && !c.alterado) ? '<button class="btn btn-medio" type="button" data-liquidar="' + escapar(c.conductor_id) + '" data-saldo="' + c.saldo + '" data-nombre="' + escapar(c.nombre) + '" style="width:100%;margin-top:10px;">Marcar transferido ' + fmt(c.saldo) + '</button>' : "";
+        return '<div class="cond-card">' +
+          '<div class="cond-cab"><span class="cond-avatar" aria-hidden="true">' + escapar(iniciales) + '</span>' +
+          '<div class="cond-datos"><div class="cond-nombre">' + escapar(c.nombre) + '</div>' +
+          '<div class="cond-sub">Membresía del mes: ' + fmt(c.acumulado_mes) + (c.en_espera > 0 ? ' · esperando pago con tarjeta: ' + fmt(c.en_espera) : '') + '</div>' +
+          (c.ultima ? '<div class="cond-sub">Última transferencia: ' + escapar(fechaCorta(c.ultima.fecha)) + ' por ' + fmt(c.ultima.monto) + '</div>' : '') + '</div>' +
+          '<div class="liq-saldo ' + clase + '">' + saldoTxt + '<small>' + saldoSub + '</small></div></div>' +
+          '<div class="liq-cuenta">' + cuentaTxt + (c.cuenta_cambio ? ' <strong style="color:var(--warn);">(cuenta cambiada)</strong>' : '') + '</div>' +
+          aviso + boton + '</div>';
+      }).join("");
+    }).catch(function (err) { lista.innerHTML = '<p class="vacio">Error de red: ' + escapar(err.message) + '</p>'; });
+  }
+  function liquidar(b, confirmaCuentaNueva) {
+    b.disabled = true;
+    apiPost({ accion: "registrar_liquidacion", conductor_id: b.getAttribute("data-liquidar"), saldo_visto: Number(b.getAttribute("data-saldo")), confirma_cuenta_nueva: !!confirmaCuentaNueva }).then(function (res) {
+      b.disabled = false;
+      if (res.ok) { rbAlerta("Transferencia registrada: " + fmt(res.monto) + ".", "ok"); cargarLiquidaciones(); return; }
+      if (res.cuenta_cambio) {
+        rbConfirmar("La cuenta bancaria cambió desde la última transferencia. ¿Ya confirmaste la cuenta nueva con el conductor?").then(function (si) { if (si) liquidar(b, true); });
+        return;
+      }
+      rbAlerta(res.error); cargarLiquidaciones();
+    }).catch(function (err) { b.disabled = false; rbAlerta("Error de red: " + err.message); });
+  }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-liquidar]");
+    if (!b) return;
+    rbConfirmar("¿Confirmas que ya transferiste " + fmt(Number(b.getAttribute("data-saldo"))) + " a " + b.getAttribute("data-nombre") + "? Esto queda registrado y no se puede deshacer.").then(function (si) { if (si) liquidar(b, false); });
+  });
+
   // Datos para cobrar por transferencia: bancos y tipo de cuenta se ELIGEN de una lista (no se escriben).
   var CAMPOS_TR = { titular: "trTitular", rut: "trRut", banco: "trBanco", tipo: "trTipo", numero: "trNumero", email: "trEmail" };
   function cargarTransferencia() {
@@ -3131,9 +3569,9 @@
     if (bioActivada()) { P.setCredentials({ username: usuario, password: clave, server: BIO_SERVER }).catch(function () {}); return; }
     if (bioLeer("rumbo_bio_no") === "1" && !bioPedida) return;
     bioPedida = false;
-    bioDisponible().then(function (ok) {
+    bioDisponible().then(async function (ok) {
       if (!ok) return;
-      if (!confirm("¿Quieres ingresar con tu huella la próxima vez, sin escribir la clave?")) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
+      if (!(await rbConfirmar("¿Quieres ingresar con tu huella la próxima vez, sin escribir la clave?"))) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
       return P.verifyIdentity({ reason: "Confirma con tu huella", title: "Activar ingreso con huella", negativeButtonText: "Cancelar", useFallback: false })
         .then(function () { return P.setCredentials({ username: usuario, password: clave, server: BIO_SERVER }); })
         .then(function () { bioGuardarLocal("rumbo_bio", "1"); pintarBotonHuella(); })
@@ -3228,8 +3666,8 @@
     }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
   });
 
-  document.getElementById("btnCerrarSesion").addEventListener("click", function () {
-    if (!confirm("¿Cerrar sesión en este dispositivo? Tendrás que volver a ingresar con tu usuario y clave.")) return;
+  document.getElementById("btnCerrarSesion").addEventListener("click", async function () {
+    if (!(await rbConfirmar("¿Cerrar sesión en este dispositivo? Tendrás que volver a ingresar con tu usuario y clave."))) return;
     apiPost({ accion: "cerrar_sesion" }).catch(function () {});
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     if (sondeoTimer) clearInterval(sondeoTimer);
@@ -3245,7 +3683,9 @@
   // Lo que se cobra de un viaje: el monto final si ya se calculó, si no el
   // cotizado. cobroRealActivo lo informa el servidor (interruptor del backend).
   var cobroRealActivo = false;
-  function montoP(p) { return Number(p.total_final) > 0 ? Number(p.total_final) : Number(p.total); }
+  var pinActivoServ = false;   // el servidor exige el PIN de inicio (propiedad PIN_ACTIVO)
+  // Lo que paga el pasajero (incluye el cargo de la app): el servidor lo manda en total_cobrar.
+  function montoP(p) { return Number(p.total_cobrar) > 0 ? Number(p.total_cobrar) : (Number(p.total_final) > 0 ? Number(p.total_final) : Number(p.total)); }
   function horaDe(iso) {
     var d = new Date(iso);
     return isNaN(d.getTime()) ? "" : d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
@@ -3296,11 +3736,11 @@
     });
   }
 
-  document.getElementById("btnSolicitarTarifa").addEventListener("click", function () {
-    if (!confirm("¿Pedir al administrador que autorice tu tarifa propia?")) return;
+  document.getElementById("btnSolicitarTarifa").addEventListener("click", async function () {
+    if (!(await rbConfirmar("¿Pedir al administrador que autorice tu tarifa propia?"))) return;
     var boton = this; boton.disabled = true;
     apiPost({ accion: "solicitar_tarifa_propia" }).then(function (res) {
-      if (!res.ok) { alert(res.error); boton.disabled = false; return; }
+      if (!res.ok) { rbAlerta(res.error); boton.disabled = false; return; }
       pintarModoTarifa("GENERAL", "PENDIENTE");
     });
   });
@@ -3417,7 +3857,7 @@
       // Cambiar la clave invalida el token actual del lado del servidor
       // (ver cambiarClave en Codigo.gs) — se cierra sesión acá también
       // para no dejar la pantalla mostrando algo que ya no puede usarse.
-      alert("Clave cambiada. Vuelve a ingresar con tu clave nueva.");
+      rbAlerta("Clave cambiada. Vuelve a ingresar con tu clave nueva.");
       bioDesactivar();   // la clave guardada para la huella ya no sirve; se reactiva al ingresar
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
       if (sondeoTimer) clearInterval(sondeoTimer);
@@ -3638,6 +4078,7 @@
   // de 1 min o si el conductor se movió más de 200 m (el servidor además lo
   // guarda en caché para no gastar consultas de Google).
   var etaPorPedido = {};
+  var ubicacionesVivas = {};   // ubicación en vivo del pasajero por pedido (la manda el servidor al conductor al que le toca)
 
   function metrosEntre(a, b) {
     var R = 6371000, rad = Math.PI / 180;
@@ -3678,6 +4119,8 @@
         e.t = Date.now(); e.lat = pos.lat; e.lng = pos.lng;
         var tiempo = res.minutos >= 60 ? Math.floor(res.minutos / 60) + " h " + (res.minutos % 60) + " min" : res.minutos + " min";
         e.texto = "A " + String(res.km).replace(".", ",") + " km del pasajero · llegas en " + tiempo;
+        var uv = ubicacionesVivas[id];   // si el pasajero comparte su ubicación, también se ve a cuánto está en línea recta
+        if (uv && uv.lat && uv.lng && (Date.now() - new Date(uv.actualizado_en).getTime()) < 180000) e.texto += " · el pasajero te comparte su ubicación en vivo";
         pintarEtas();
       }).catch(function () { e.pidiendo = false; });
     });
@@ -3806,7 +4249,7 @@
       }
       if (p.cambio_por === "CONDUCTOR" && (p.cambio_estado === "ACEPTADO" || p.cambio_estado === "RECHAZADO") && cambioVisto(p) !== String(p.cambio_en)) {
         marcarCambioVisto(p);
-        alert(p.cambio_estado === "ACEPTADO" ? "El pasajero aceptó el cambio del viaje." : "El pasajero no aceptó el cambio: el viaje sigue como estaba.");
+        rbAlerta(p.cambio_estado === "ACEPTADO" ? "El pasajero aceptó el cambio del viaje." : "El pasajero no aceptó el cambio: el viaje sigue como estaba.");
       }
     });
   }
@@ -3828,10 +4271,10 @@
     a.disabled = r.disabled = true;
     apiPost({ accion: "responder_cambio", pedido_id: cambioPasId, acepta: acepta }).then(function (res) {
       a.disabled = r.disabled = false;
-      if (!res.ok) { alert(res.error); return; }
+      if (!res.ok) { rbAlerta(res.error); return; }
       document.getElementById("modalCambioPas").hidden = true; cambioPasId = "";
       refrescarViajes();
-    }).catch(function (err) { a.disabled = r.disabled = false; alert("Error de red: " + err.message); });
+    }).catch(function (err) { a.disabled = r.disabled = false; rbAlerta("Error de red: " + err.message); });
   }
   document.getElementById("cambioPasAceptar").addEventListener("click", function () { responderCambioPas(true); });
   document.getElementById("cambioPasRechazar").addEventListener("click", function () { responderCambioPas(false); });
@@ -3901,7 +4344,7 @@
     apiPost(d).then(function (r) {
       if (!r.ok) { btn.disabled = false; msg.textContent = r.error || "No se pudo enviar."; return; }
       document.getElementById("modalEditarC").hidden = true;
-      if (!r.aplicado) alert("Cambio enviado: esperando que el pasajero lo acepte.");
+      if (!r.aplicado) rbAlerta("Cambio enviado: esperando que el pasajero lo acepte.");
       refrescarViajes();
     }).catch(function (err) { btn.disabled = false; msg.textContent = "Error de red: " + err.message; });
   });
@@ -4001,7 +4444,7 @@
   function navActiva() { return !!nav; }
 
   function iniciarNavegacion(dest) {
-    if (!miPosicionConductor) { alert("Todavía no tengo tu ubicación. Revisa que el GPS esté encendido y vuelve a intentar."); return; }
+    if (!miPosicionConductor) { rbAlerta("Todavía no tengo tu ubicación. Revisa que el GPS esté encendido y vuelve a intentar."); return; }
     detenerNavegacion(true);
     nav = { dest: dest, pasos: [], pts: [], cum: [], acum: [], idx: 0, linea: null, ultimaConsulta: 0, fuera: 0, anunciado: {}, voz: true, fin: false, pidiendo: false };
     document.body.classList.add("cond-navegando");
@@ -4312,10 +4755,10 @@
   function llegadaPendiente(id, errorServidor) {
     marcarLlegoLocal(id);
     refrescarViajes();
-    if (errorServidor && errorServidor !== "sesion invalida") { alert("No se pudo avisar al pasajero: " + errorServidor); return; }
+    if (errorServidor && errorServidor !== "sesion invalida") { rbAlerta("No se pudo avisar al pasajero: " + errorServidor); return; }
     if (llegadasPendientes[id]) return;
     llegadasPendientes[id] = true;
-    alert("No se pudo avisar al pasajero que llegaste (sin conexión con el servidor). Sigo intentando cada pocos segundos: no cierres la app.");
+    rbAlerta("No se pudo avisar al pasajero que llegaste (sin conexión con el servidor). Sigo intentando cada pocos segundos: no cierres la app.");
     (function intentar() {
       apiPost({ accion: "llegue_recogida", pedido_id: id }).then(function (res) {
         if (res && res.ok) { delete llegadasPendientes[id]; refrescarViajes(); return; }
@@ -4599,7 +5042,7 @@
     return promesa.then(function (r) { tvOcupado = false; pintarTarjetaViaje(); return r; },
                         function (e) { tvOcupado = false; pintarTarjetaViaje(); throw e; });
   }
-  function accionViaje(tipo, id, siguiente) {
+  async function accionViaje(tipo, id, siguiente) {
     var p = pedidoEnCurso(id);
     if (tipo === "cerrar") { abrirCierre(id); return; }
     if (tipo === "llegue-parada") {
@@ -4627,9 +5070,14 @@
       return;
     }
     if (tipo === "iniciar") {
-      if (!confirm("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales.")) return;
-      conBotonOcupado(apiPost({ accion: "iniciar_viaje", pedido_id: id }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); return; }
+      // PIN de inicio: el pasajero se lo dice al subir (lo ve en su app). Sin el PIN correcto el servidor no inicia.
+      var pinIngresado = "";
+      if (pinActivoServ) {
+        pinIngresado = await rbPedir("Pídele al pasajero su PIN de 4 dígitos (lo ve en su app) y escríbelo para iniciar el viaje.", { si: "Iniciar viaje" });
+        if (pinIngresado === null) return;
+      } else if (!(await rbConfirmar("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales."))) return;
+      conBotonOcupado(apiPost({ accion: "iniciar_viaje", pedido_id: id, pin: String(pinIngresado || "").trim() }).then(function (res) {
+        if (!res.ok) { rbAlerta("Error: " + res.error); return; }
         refrescarViajes();
         // Con el pasajero ya arriba se navega solo: Google Maps recibe la ruta completa con TODAS las
         // paradas; Waze solo admite un destino por enlace, así que va a la primera parada (o al destino).
@@ -4638,33 +5086,33 @@
           var urlGps = gpsPreferido === "GOOGLE_MAPS" ? urlMapsDesde(puntos, 1) : urlWazePunto(puntos[1]);
           if (urlGps) window.open(urlGps, "_system");
         }
-      })).catch(function (err) { alert("Error de red: " + err.message); });
+      })).catch(function (err) { rbAlerta("Error de red: " + err.message); });
       return;
     }
     if (tipo === "llegue-destino") {
       // Ida y vuelta, etapa 1: llegó al destino → empieza a correr la espera.
       conBotonOcupado(apiPost({ accion: "llegue_destino", pedido_id: id }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); return; }
+        if (!res.ok) { rbAlerta("Error: " + res.error); return; }
         refrescarViajes();
-      })).catch(function (err) { alert("Error de red: " + err.message); });
+      })).catch(function (err) { rbAlerta("Error de red: " + err.message); });
       return;
     }
     if (tipo === "iniciar-regreso") {
       // Etapa 2: termina la espera y sale de regreso (abre la navegación al origen).
       conBotonOcupado(apiPost({ accion: "iniciar_regreso", pedido_id: id }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); return; }
+        if (!res.ok) { rbAlerta("Error: " + res.error); return; }
         refrescarViajes();
         if (p) {
           var reg = puntoRegreso(p, puntosDelViaje(p));
           if (reg) abrirNavegacion([reg], 0);
         }
-      })).catch(function (err) { alert("Error de red: " + err.message); });
+      })).catch(function (err) { rbAlerta("Error de red: " + err.message); });
       return;
     }
     if (tipo === "efectivo") {
-      if (!confirm("¿Recibiste el pago de este viaje? Se cierra el cobro.")) return;
+      if (!(await rbConfirmar("¿Recibiste el pago de este viaje? Se cierra el cobro."))) return;
       conBotonOcupado(apiPost({ accion: "marcar_pagado_efectivo", pedido_id: id }).then(function (res) {
-        if (!res.ok) { alert("Error: " + res.error); return; }
+        if (!res.ok) { rbAlerta("Error: " + res.error); return; }
         refrescarViajes();
       }));
     }
@@ -4721,7 +5169,7 @@
     if (r.espera_recogida_valor > 0) filas.push(["Espera en la recogida", Math.round(r.espera_recogida_min) + " min (3 sin costo) · +" + fmt(r.espera_recogida_valor), "extra"]);
     if (r.minutos_reales > 0) filas.push(["Tiempo total del viaje", Math.round(r.minutos_reales) + " min", ""]);
     if (r.km_reales > 0) filas.push(["Distancia medida", String(r.km_reales).replace(".", ",") + " km", ""]);
-    filas.push(["Valor a cobrar", fmt(r.a_cobrar), "total"]);
+    filas.push(["Valor a cobrar", fmt(r.a_cobrar_pasajero || r.a_cobrar), "total"]);
     return filas;
   }
 
@@ -4765,18 +5213,19 @@
   function finalizarViaje(pedidoId, forma, boton) {
     boton.disabled = true;
     apiPost({ accion: "finalizar_pedido", pedido_id: pedidoId, forma_pago: forma }).then(function (res) {
-      if (!res.ok) { alert("Error: " + res.error); boton.disabled = false; return; }
+      if (!res.ok) { rbAlerta("Error: " + res.error); boton.disabled = false; return; }
       cerrarCierre();
       // Si el monto final es mayor que lo cotizado, el conductor tiene que
       // saber cuánto cobrar (sobre todo en efectivo).
       if (res.ajuste > 0) {
-        alert("Monto final: " + fmt(res.total_final) + "\n(cotizado " + fmt(res.total_cotizado) + " + " + fmt(res.ajuste) + " por tiempo y km reales)\n\n" +
-          (forma === "EFECTIVO" ? "Cóbrale " + fmt(res.total_final) + " en efectivo." : forma === "POR_ELEGIR" ? "El pasajero verá " + fmt(res.total_final) + " y elegirá cómo pagar." : "El pasajero pagará " + fmt(res.total_final) + " por Mercado Pago."));
+        var aCobrar = res.total_cobrar || res.total_final;   // incluye el cargo de la app: es lo que paga el pasajero
+        rbAlerta("Monto final: " + fmt(aCobrar) + " (subió por tiempo y km reales).\n\n" +
+          (forma === "EFECTIVO" ? "Cóbrale " + fmt(aCobrar) + " en efectivo." : forma === "POR_ELEGIR" ? "El pasajero verá " + fmt(aCobrar) + " y elegirá cómo pagar." : "El pasajero pagará " + fmt(aCobrar) + " por Mercado Pago."));
       }
       document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
       cargarViajesEnCurso();
       abrirCalificarPasajero(pedidoId);
-    }).catch(function (err) { alert("Error de red: " + err.message); boton.disabled = false; });
+    }).catch(function (err) { rbAlerta("Error de red: " + err.message); boton.disabled = false; });
   }
 
   function pedidoCard(p) {
@@ -4952,12 +5401,12 @@
     boton.disabled = true;
     apiPost({ accion: accion, pedido_id: id }).then(function (res) {
       boton.disabled = false;
-      if (!res || !res.ok) { alert("Error: " + ((res && res.error) || "no se pudo")); return; }
+      if (!res || !res.ok) { rbAlerta("Error: " + ((res && res.error) || "no se pudo")); return; }
       emergenteDescartado[id] = true;
       cerrarEmergente();
       cargarPedidos(); cargarViajesEnCurso();
       if (accion === "confirmar_pedido") { ultimoAceptar = Date.now(); cerrarDetalleViaje(); mostrarPestana("enCurso"); ponerHoja("medio"); }
-    }).catch(function (err) { boton.disabled = false; alert("Error de red: " + err.message); });
+    }).catch(function (err) { boton.disabled = false; rbAlerta("Error de red: " + err.message); });
   }
   document.getElementById("peAceptar").addEventListener("click", function () { responderEmergente("confirmar_pedido", this); });
   document.getElementById("peRechazar").addEventListener("click", function () { responderEmergente("rechazar_pedido", this); });
@@ -5031,6 +5480,7 @@
       var antesViajes = pedidosEnCursoActuales.length;
       pedidosEnCursoActuales = res.pedidos || [];
       if (res.cobro_real !== undefined) cobroRealActivo = !!res.cobro_real;
+      if (res.pin_activo !== undefined) pinActivoServ = !!res.pin_activo;
       alternarSegunViaje(antesViajes, pedidosEnCursoActuales.length);
       var vacio = document.getElementById("sinViajesEnCurso");
       if (!res.pedidos.length) {
@@ -5102,7 +5552,7 @@
         if (!res || !res.ok) return;
         if (res.estado_pago === "PAGADO" && res.forma_pago === "MERCADOPAGO") {
           sonarAviso();
-          alert("Pago recibido por Mercado Pago: " + fmt(res.total));
+          rbAlerta("Pago recibido por Mercado Pago: " + fmt(res.total));
         }
       });
     });
@@ -5119,14 +5569,14 @@
     if (!t) return "";
     return '<a class="pedido-tel" href="tel:+' + escapar(t) + '">' + (rotulo ? escapar(rotulo) + " " : "") + "+" + escapar(t) + "</a>";
   }
+  // El teléfono del pasajero ya no llega a esta app (lo quita el servidor): el contacto es por el chat de Rumbo.
   function htmlContacto(p) {
+    var chat = '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);">Contacto: chat de Rumbo</div>';
     if (!p.solicitante) {
-      return '<div class="pedido-cliente">' + escapar(p.nombre) + "</div>" + enlaceTel(p.telefono, "");
+      return '<div class="pedido-cliente">' + escapar(p.nombre) + "</div>" + (enlaceTel(p.telefono, "") || chat);
     }
     return '<div class="pedido-cliente">Viaja: ' + escapar(p.nombre) + "</div>" +
-      (enlaceTel(p.telefono_viajero, "") || '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);">Sin teléfono de quien viaja</div>') +
-      '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);margin-top:4px;">Lo pidió: ' + escapar(p.solicitante) + "</div>" +
-      enlaceTel(p.telefono, "");
+      '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);margin-top:4px;">Lo pidió: ' + escapar(p.solicitante) + "</div>" + chat;
   }
 
   function tarjetaEnCurso(p) {
@@ -5435,9 +5885,9 @@
     apiPost({ accion: "calificar_pasajero", pedido_id: pedidoACalificar, estrellas: estrellaPasajeroElegida })
       .then(function (res) {
         boton.disabled = false;
-        if (!res.ok) { alert("No se pudo calificar: " + res.error); return; }
+        if (!res.ok) { rbAlerta("No se pudo calificar: " + res.error); return; }
         cerrarCalificarPasajero();
-      }).catch(function (err) { boton.disabled = false; alert("Error de red: " + err.message); });
+      }).catch(function (err) { boton.disabled = false; rbAlerta("Error de red: " + err.message); });
   });
 
   function cargarMensajesConductor(pedidoId) {
@@ -5668,7 +6118,7 @@
     if (boton) boton.disabled = true;
     input.value = ""; input.style.height = "auto";
     apiPost({ accion: "enviar_mensaje_conductor", pedido_id: pedidoId, texto: texto }).then(function (res) {
-      if (!res.ok) { input.value = texto; alert("No se pudo enviar: " + res.error); return; }
+      if (!res.ok) { input.value = texto; rbAlerta("No se pudo enviar: " + res.error); return; }
       pintarMensajeConductor(pedidoId, res.mensaje, true);
       ultimoMensajePorPedido[pedidoId] = res.mensaje.creado_en;
     }).catch(function () { input.value = texto; })
@@ -5891,10 +6341,12 @@
   // quiere recibir viajes. Bloquea TODO pedido nuevo en el backend (ver
   // estaConectado en Codigo.gs), incluso el de su propia clientela.
   var conexionCargada = false, conectadoManual = true;
+  var jornadaActual = null;   // horas de conducción restantes (las calcula el servidor, ver JORNADA en Codigo.gs)
+  function textoHoras(min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + " h " : "") + m + " min"; }
   function cargarMiConexion() {
     api({ accion: "mi_conexion" }).then(function (res) {
       conexionCargada = true;
-      if (res.ok) conectadoManual = res.conectado;
+      if (res.ok) { conectadoManual = res.conectado; if (res.jornada) jornadaActual = res.jornada; }
       pintarEstadoTablero();
     }).catch(function () {});
   }
@@ -5903,6 +6355,12 @@
     if (!disponibilidadCargada) { cargarDisponibilidad(); return; }
     if (!conexionCargada) { cargarMiConexion(); return; }
     var badge = document.getElementById("tabEstadoBadge");
+    if (jornadaActual && jornadaActual.agotada) {
+      badge.className = "btn-estado-conexion desconectado";
+      var hasta = jornadaActual.descanso_hasta ? new Date(jornadaActual.descanso_hasta) : null;
+      badge.textContent = "Descanso hasta las " + (hasta ? ("0" + hasta.getHours()).slice(-2) + ":" + ("0" + hasta.getMinutes()).slice(-2) : "--:--");
+      return;
+    }
     if (!conectadoManual) {
       badge.className = "btn-estado-conexion desconectado";
       badge.textContent = "Desconectado";
@@ -5911,7 +6369,7 @@
       badge.textContent = "No disponible ahora";
     } else {
       badge.className = "btn-estado-conexion";
-      badge.textContent = "Disponible ahora";
+      badge.textContent = "Disponible ahora" + (jornadaActual && jornadaActual.restante_min < 12 * 60 ? " · quedan " + textoHoras(jornadaActual.restante_min) : "");
     }
   }
 
@@ -5920,7 +6378,8 @@
     conectadoManual = deseado; // optimista: se nota al toque, sin esperar la red
     pintarEstadoTablero();
     apiPost({ accion: "cambiar_mi_conexion", conectado: deseado }).then(function (res) {
-      if (!res || !res.ok) { conectadoManual = !deseado; pintarEstadoTablero(); }
+      if (res && res.jornada) jornadaActual = res.jornada;
+      if (!res || !res.ok) { conectadoManual = !deseado; pintarEstadoTablero(); if (res && res.error) rbAlerta(res.error); }
     }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); });
   });
 
@@ -6267,7 +6726,7 @@
     if (!btn) return;
     btn.disabled = true;
     apiPost({ accion: btn.dataset.accion, pedido_id: btn.dataset.id }).then(function (res) {
-      if (!res.ok) { alert("Error: " + res.error); btn.disabled = false; return; }
+      if (!res.ok) { rbAlerta("Error: " + res.error); btn.disabled = false; return; }
       cargarPedidos();
     });
   });
@@ -6279,7 +6738,7 @@
   var ultimoEnvio = 0;
   var UBICACION_MIN_MS = 15000;
 
-  document.getElementById("chkUbicacion").addEventListener("change", function (ev) {
+  document.getElementById("chkUbicacion").addEventListener("change", async function (ev) {
     var msg = document.getElementById("ubicacionMsg");
     var caja = document.getElementById("estadoConductor");
     if (ev.target.checked) {
@@ -6322,7 +6781,7 @@
       // Encendido por defecto (decisión de Alberto): se pregunta solo al
       // APAGARLO, porque sin ubicación el pasajero no ve el auto, no recibe
       // el aviso "tu vehículo está llegando" ni el tiempo real de llegada.
-      if (!confirm("¿Dejar de compartir tu ubicación?\n\nTus pasajeros no verán dónde vienes ni recibirán el aviso de que estás llegando.")) {
+      if (!(await rbConfirmar("¿Dejar de compartir tu ubicación?\n\nTus pasajeros no verán dónde vienes ni recibirán el aviso de que estás llegando."))) {
         ev.target.checked = true;
         return;
       }
