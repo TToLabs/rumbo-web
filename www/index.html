@@ -3536,6 +3536,7 @@
       if (!res.ok) throw new Error(res.error || "error desconocido");
       if (esParaOtro) guardarContacto(document.getElementById("nombreTercero").value, document.getElementById("telefonoTercero").value.trim());
       pedidoActualId = res.pedido_id;
+      compartirMiUbicacion();   // desde que pide el viaje: el conductor ve dónde está antes de aceptar
       tokenSeguimientoActual = res.token_seguimiento || "";
       document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
       viajeActualInfo = {
@@ -4091,7 +4092,6 @@
         if (!res.ok) return;
         procesarCambioDeViaje(res);
         pintarPinInicio(res);
-        if (res.estado === "CONFIRMADO" || res.estado === "PENDIENTE") ajustarComparticionUbicacion(res.compartir_ubicacion === true);   // el servidor decide la ventana
         if (res.estado === "CONFIRMADO") {
           // En cada sondeo: pasa de "va hacia ti" a "en viaje" cuando el
           // conductor toca "Iniciar viaje".
@@ -4112,6 +4112,7 @@
           viajeConfirmadoMostrado = true;
           mostrarMapaConductor();
           abrirChat();
+          compartirMiUbicacion();
         } else if (res.estado === "COMPLETADO") {
           pintarPasos(4);
           document.getElementById("etaConductor").style.display = "none";
@@ -4121,6 +4122,7 @@
           // Sigue esperando conductor (también tras abrir la app con el viaje guardado: se reemplaza el texto neutro).
           var eb = document.getElementById("estadoBox");
           if (eb.className.indexOf("pendiente") >= 0) eb.textContent = "Esperando confirmación del conductor";
+          compartirMiUbicacion();   // (idempotente) también al reabrir la app con el pedido pendiente
         } else if (res.estado === "CANCELADO") {
           viajeInvalido(false);
         } else if (res.estado === "SIN_CONDUCTOR") {
@@ -4660,11 +4662,6 @@
   var watchIdPasajero = null;
   var ultimoEnvioUbic = 0;
   var UBIC_MIN_MS = 15000; // no más de un envío cada 15s, para no gastar cuota
-
-  // El servidor decide cuándo (5 min antes de la hora reservada, o conductor a 5 min de llegar) y la app obedece en cada sondeo.
-  function ajustarComparticionUbicacion(permitida) {
-    if (permitida) compartirMiUbicacion(); else dejarDeCompartirUbicacion();
-  }
 
   function compartirMiUbicacion() {
     if (!navigator.geolocation || watchIdPasajero !== null) return;
