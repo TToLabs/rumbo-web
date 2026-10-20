@@ -1230,7 +1230,7 @@
 <p>Si el Pasajero ingresa mediante el código QR de un Conductor, su solicitud se ofrecerá en primer lugar a este. Si no se encontrare disponible o no respondiere, se ofrecerá a otro Conductor disponible, con el fin de evitar esperas prolongadas. Al término del viaje, el Pasajero podrá calificar al Conductor.</p>
 <h4>9. Comunicaciones y protección de datos personales</h4>
 <p>9.1. El Conductor no tiene acceso al teléfono ni al correo electrónico del Pasajero. La comunicación se realiza a través del chat de Rumbo. Se prohíbe acordar viajes o pagos al margen de la aplicación; toda propuesta en tal sentido deberá ser reportada.</p>
-<p>9.2. La ubicación del Pasajero se comparte en tiempo real, desde que solicita el viaje, con el Conductor que recibe la solicitud y durante el desarrollo del viaje. Se utiliza únicamente para la localización y el seguimiento, y se elimina al término o cancelación del viaje, conservándose solo los kilómetros y minutos medidos. El Pasajero puede denegar el permiso de ubicación sin que ello impida el funcionamiento del servicio.</p>
+<p>9.2. La ubicación del Pasajero se comparte en tiempo real con el Conductor solo desde cinco minutos antes de la hora reservada o, en los viajes inmediatos, cuando el Conductor se encuentra a cinco minutos o menos del punto de recogida, y hasta que el viaje finaliza y el Pasajero desciende del vehículo. Se utiliza únicamente para la localización y el seguimiento, y se elimina al término o cancelación del viaje, conservándose solo los kilómetros y minutos medidos. El Pasajero puede denegar el permiso de ubicación sin que ello impida el funcionamiento del servicio.</p>
 <p>9.3. Los datos personales se tratan para administrar la cuenta y los viajes, procesar los pagos, remitir avisos, brindar seguridad y soporte, y cumplir la normativa vigente. Adicionalmente, la aplicación registra un identificador anónimo de esta instalación (sin nombre ni datos personales) con fines estadísticos. Los datos de la tarjeta son procesados por un proveedor externo y Rumbo no los almacena. El tratamiento se funda en la ejecución del contrato de intermediación, en el consentimiento del Pasajero y en el cumplimiento de obligaciones legales. Los datos no se comercializan ni se transfieren a terceros ajenos a la prestación del servicio, salvo mandato legal o requerimiento de autoridad competente. El Pasajero puede ejercer sus derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo, en los términos de la ley de protección de datos personales aplicable, desde la sección "Mi cuenta" o mediante el canal de soporte de la aplicación.</p>
 <h4>10. Responsabilidad</h4>
 <p>El Conductor es responsable del estado y mantenimiento del vehículo, de la vigencia de su documentación, de la contratación de los seguros exigidos por la normativa vigente (entre ellos el Seguro Obligatorio de Accidentes Personales, que cubre por muerte y lesiones a los ocupantes del vehículo en un accidente) y del cumplimiento de las normas de tránsito durante la conducción. Rumbo responde por el funcionamiento de la plataforma y por el proceso de cobro, así como por aquello que la ley no permita excluir. Nada de lo dispuesto en estos Términos limita los derechos que la ley reconoce al Pasajero en su calidad de consumidor. El Pasajero es responsable de los daños que cause al vehículo.</p>
@@ -2184,7 +2184,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 65;
+  var APP_VERSION = 66;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3536,7 +3536,6 @@
       if (!res.ok) throw new Error(res.error || "error desconocido");
       if (esParaOtro) guardarContacto(document.getElementById("nombreTercero").value, document.getElementById("telefonoTercero").value.trim());
       pedidoActualId = res.pedido_id;
-      compartirMiUbicacion();   // desde que pide el viaje: el conductor ve dónde está antes de aceptar
       tokenSeguimientoActual = res.token_seguimiento || "";
       document.getElementById("btnCompartirViaje").style.display = tokenSeguimientoActual ? "block" : "none";
       viajeActualInfo = {
@@ -4092,6 +4091,7 @@
         if (!res.ok) return;
         procesarCambioDeViaje(res);
         pintarPinInicio(res);
+        if (res.estado === "CONFIRMADO" || res.estado === "PENDIENTE") ajustarComparticionUbicacion(res.compartir_ubicacion === true);   // el servidor decide la ventana
         if (res.estado === "CONFIRMADO") {
           // En cada sondeo: pasa de "va hacia ti" a "en viaje" cuando el
           // conductor toca "Iniciar viaje".
@@ -4112,7 +4112,6 @@
           viajeConfirmadoMostrado = true;
           mostrarMapaConductor();
           abrirChat();
-          compartirMiUbicacion();
         } else if (res.estado === "COMPLETADO") {
           pintarPasos(4);
           document.getElementById("etaConductor").style.display = "none";
@@ -4122,7 +4121,6 @@
           // Sigue esperando conductor (también tras abrir la app con el viaje guardado: se reemplaza el texto neutro).
           var eb = document.getElementById("estadoBox");
           if (eb.className.indexOf("pendiente") >= 0) eb.textContent = "Esperando confirmación del conductor";
-          compartirMiUbicacion();   // (idempotente) también al reabrir la app con el pedido pendiente
         } else if (res.estado === "CANCELADO") {
           viajeInvalido(false);
         } else if (res.estado === "SIN_CONDUCTOR") {
@@ -4662,6 +4660,11 @@
   var watchIdPasajero = null;
   var ultimoEnvioUbic = 0;
   var UBIC_MIN_MS = 15000; // no más de un envío cada 15s, para no gastar cuota
+
+  // El servidor decide cuándo (5 min antes de la hora reservada, o conductor a 5 min de llegar) y la app obedece en cada sondeo.
+  function ajustarComparticionUbicacion(permitida) {
+    if (permitida) compartirMiUbicacion(); else dejarDeCompartirUbicacion();
+  }
 
   function compartirMiUbicacion() {
     if (!navigator.geolocation || watchIdPasajero !== null) return;

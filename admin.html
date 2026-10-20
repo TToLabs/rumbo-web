@@ -1703,7 +1703,7 @@
 <h4>12. Conexión, desconexión y seguridad</h4>
 <p>Por razones de seguridad y de resguardo de la salud del Conductor, Rumbo aplica los siguientes criterios: el PIN de inicio de cada viaje, el aviso de cada viaje con su origen y destino antes de aceptarlo, y un límite de horas de conducción continuas con la aplicación conectada. Cumplido el límite, el Conductor queda desconectado y recupera su tiempo completo tras un descanso mínimo. El viaje en curso se finaliza con normalidad. La aplicación avisa cuando restan pocas horas. Los tiempos máximos de conexión y de desconexión vigentes se informan en la aplicación. El Conductor no es sancionado por rechazar viajes ni por no conectarse.</p>
 <h4>13. Datos personales</h4>
-<p>13.1. Rumbo trata los datos del Conductor (identidad, documentos, vehículo, cuenta bancaria y ubicación mientras permanece conectado) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya desde que recibe su solicitud, y el Conductor solo podrá utilizarla para llegar al punto de recogida.</p>
+<p>13.1. Rumbo trata los datos del Conductor (identidad, documentos, vehículo, cuenta bancaria y ubicación mientras permanece conectado) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya solo desde cinco minutos antes de la hora reservada o, en los viajes inmediatos, cuando el Conductor está a cinco minutos o menos del punto de recogida, y el Conductor solo podrá utilizarla para llegar a ese punto.</p>
 <p>13.2. El Conductor puede ejercer sus derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo, en los términos de la ley de protección de datos personales aplicable, escribiendo a Rumbo. Las solicitudes se atienden desde la sección "Ayuda y reclamos" de la aplicación.</p>
 <h4>14. Suspensión y término</h4>
 <p>14.1. La relación tiene vigencia indefinida. El Conductor puede ponerle término en cualquier momento, sin expresar causa, previo pago de lo que adeude.</p>
@@ -2104,7 +2104,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 63;
+  var APP_VERSION = 64;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
