@@ -9,11 +9,10 @@
 <title>Rumbo Driver</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#16333F">
-<link rel="icon" type="image/png" href="img/favicon-conductor-192.png?v=65">
-<link rel="apple-touch-icon" href="img/favicon-conductor-192.png?v=65">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="img/favicon-conductor-192.png?v=66">
+<link rel="apple-touch-icon" href="img/favicon-conductor-192.png?v=66">
+<!-- Montserrat va DENTRO de la app (www/fonts, licencia SIL OFL de Google Fonts): sin internet el splash y la app no cambian de letra. -->
+<style>@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("fonts/Montserrat-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }</style>
 <style>
   /* Centro de control del administrador: mismo esquema de tokens que el
      resto de Rumbo, pero con el gris de fondo aún más neutro (#F8F9FA) y
@@ -24,7 +23,9 @@
     --bg: #F8F9FA; --bg-grad-1: #F8F9FA; --bg-grad-2: #F8F9FA;
     --surface: #FFFFFF; --surface-2: #F4F6F8;
     --border: #E2E6EA; --border-strong: #C9D0D7;
-    --text: #101828; --text-2: #56606D; --text-3: #8A94A0;
+    --text: #101828; --text-2: #4A5462; --text-3: #66717D;
+    /* Naranja de la marca (el del logo, medido en img/logo-carita.png) y su versión oscura para texto sobre claro (contraste AA). */
+    --naranja: #EF6D19; --naranja-texto: #C2410C; --naranja-soft: #FFF1E6;
     --primary: #11304A; --primary-hover: #0E2637; --primary-ink: #FFFFFF;
     --acento: #0EA5B0; --acento-claro: #5FD3DB; /* turquesa de la marca: solo detalles */
     --primary-soft: #E6EEF2; --primary-soft-hover: #D6E1E8; --primary-soft-ink: #11304A;
@@ -196,31 +197,31 @@
   .ruta-pto-acciones .btn-ok { flex: 1 1 100%; }
   /* Espera en el destino (ida y vuelta): reloj contra los minutos que contrató el pasajero. */
   .espera-panel { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; background: var(--surface-2); }
-  .espera-panel.excedida { border-color: #F97316; background: #FFF4EA; }
+  .espera-panel.excedida { border-color: var(--naranja); background: var(--naranja-soft); }
   .espera-titulo { font-size: 13.5px; font-weight: 600; color: var(--text-2); }
   .espera-reloj { font-size: 40px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
-  .espera-panel.excedida .espera-reloj { color: #C2410C; }
+  .espera-panel.excedida .espera-reloj { color: var(--naranja-texto); }
   .espera-barra { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
   .espera-barra-llena { height: 100%; background: var(--primary); transition: width 0.4s linear; }
-  .espera-panel.excedida .espera-barra-llena { background: #F97316; }
+  .espera-panel.excedida .espera-barra-llena { background: var(--naranja); }
   .espera-texto { font-size: 14px; margin-top: 8px; color: var(--text-2); }
-  .espera-panel.excedida .espera-texto { color: #C2410C; font-weight: 600; }
+  .espera-panel.excedida .espera-texto { color: var(--naranja-texto); font-weight: 600; }
   /* Espera en la recogida: cuenta regresiva en verde (3 min sin costo) y, al pasar, cuenta desde cero en rojo (se cobra). */
   .ed-fila { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
   .ed-fila input { flex: 1; min-width: 0; }
   .ed-precio { margin: 10px 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 14px; line-height: 1.4; }
-  .espera-panel.gratis { border-color: #16A34A; background: #EAF7EF; }
-  .espera-panel.gratis .espera-reloj { color: #15803D; }
-  .espera-panel.gratis .espera-barra-llena { background: #16A34A; }
-  .espera-panel.gratis .espera-texto { color: #15803D; font-weight: 600; }
-  .espera-panel.cobrando { border-color: #DC2626; background: #FDECEC; }
-  .espera-panel.cobrando .espera-reloj { color: #B91C1C; }
-  .espera-panel.cobrando .espera-barra-llena { background: #DC2626; }
-  .espera-panel.cobrando .espera-texto { color: #B91C1C; font-weight: 600; }
+  .espera-panel.gratis { border-color: var(--accent); background: #EAF7EF; }
+  .espera-panel.gratis .espera-reloj { color: var(--accent); }
+  .espera-panel.gratis .espera-barra-llena { background: var(--accent); }
+  .espera-panel.gratis .espera-texto { color: var(--accent); font-weight: 600; }
+  .espera-panel.cobrando { border-color: var(--danger); background: #FDECEC; }
+  .espera-panel.cobrando .espera-reloj { color: var(--danger); }
+  .espera-panel.cobrando .espera-barra-llena { background: var(--danger); }
+  .espera-panel.cobrando .espera-texto { color: var(--danger); font-weight: 600; }
   /* Ventana de cierre del viaje. */
   .cierre-detalle { display: flex; flex-direction: column; gap: 8px; }
   .cierre-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
-  .cierre-fila.extra strong { color: #C2410C; }
+  .cierre-fila.extra strong { color: var(--naranja-texto); }
   .cierre-fila.total { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; font-size: 18px; }
   .cierre-fila.total strong { font-size: 22px; }
   .pedido-linea { font-size: 15px; }
@@ -231,7 +232,7 @@
   .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
   .fila.full { grid-template-columns: 1fr; }
   input[type="number"], input[type="text"], input[type="time"],
-  input[type="password"], input[type="email"], input[type="month"], select {
+  input[type="password"], input[type="email"], input[type="month"], input[type="date"], select {
     width: 100%; background: var(--surface); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--r-input);
     padding: 11px 13px; font: inherit; font-size: 17px;
@@ -505,6 +506,40 @@
   .adm-pantalla .tabla-historial td.monto { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .adm-pantalla .hist-cabecera { margin-bottom: 8px; }
   .adm-pantalla .card-title { font-size: 16px; }
+  /* Documentos: el recorrido para quedar habilitado. Reutiliza el lenguaje de la ruta del pedido (paradas .ruta-pto). */
+  .docs-avance { display: flex; flex-direction: column; gap: 8px; }
+  .docs-avance-texto { font-size: 14px; color: var(--text-2); line-height: 1.4; }
+  .docs-avance-texto strong { display: block; color: var(--text); font-size: 16px; }
+  .docs-grupo { margin: 18px 2px 8px; font-size: 15px; font-weight: 700; color: var(--text); }
+  .docs-grupo:first-child { margin-top: 4px; }
+  .docs-grupo small { display: block; font-size: 13px; font-weight: 400; color: var(--text-2); }
+  .docs-lista { display: flex; flex-direction: column; gap: 8px; }
+  .docs-item .ruta-pto-tope { justify-content: space-between; align-items: center; }
+  .docs-item .ruta-pto-dir { font-weight: 600; }
+  .docs-item .pedido-programa, .docs-item .pedido-aviso { margin: 8px 0 0; padding: 7px 10px; font-size: 13.5px; }
+  .docs-nota { margin: 6px 0 0; font-size: 13.5px; color: var(--text-2); }
+  .docs-form[hidden], .docs-pie[hidden] { display: none; }
+  .docs-item.hecho { opacity: .78; }
+  .docs-form { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+  .docs-form .campo { margin: 0; }
+  .docs-form input[type=date], .docs-form input[type=text], .docs-form select { width: 100%; }
+  .docs-archivo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .docs-archivo span { font-size: 13.5px; color: var(--text-2); overflow-wrap: anywhere; }
+  .docs-listo { text-align: center; padding: 18px 8px; }
+  .docs-listo strong { display: block; font-size: 17px; color: var(--accent); margin-bottom: 4px; }
+  .docs-pie { display: flex; flex-direction: column; gap: 8px; }
+  /* Admin: tarjeta por conductor con sus documentos. */
+  .docs-adm-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .docs-adm-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); }
+  .docs-adm-item:first-child { border-top: none; }
+  .docs-adm-item .nombre { font-size: 14px; font-weight: 600; }
+  .docs-adm-item .sub { font-size: 12.5px; color: var(--text-2); }
+  .docs-adm-acciones { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .docs-visor { position: fixed; inset: 0; z-index: 90; background: rgba(9,20,32,.92); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; gap: 12px; }
+  .docs-visor[hidden] { display: none; }
+  .docs-visor img { max-width: 100%; max-height: 78vh; border-radius: 10px; background: #fff; }
+  .docs-visor .btn { min-width: 160px; }
+  body.alta-pendiente #btnMenuCond { visibility: hidden; }
   /* Conductores (administrador): tarjeta con avatar y lista de interruptores */
   .cond-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin: 0 0 12px; box-shadow: var(--shadow-sm); }
   .cond-cab { display: flex; align-items: flex-start; gap: 12px; }
@@ -577,7 +612,7 @@
   .flota-detalle[hidden] { display: none; }
   .flota-detalle h3 { margin: 0 0 4px; font-size: 16px; }
   .flota-detalle p { margin: 2px 0; color: var(--text-2); }
-  .flota-detalle .flota-malo { color: #B42318; font-weight: 700; }
+  .flota-detalle .flota-malo { color: var(--danger); font-weight: 700; }
   .flota-detalle .flota-bueno { color: #0B7A4B; font-weight: 700; }
   .flota-detalle .btn { margin-top: 8px; }
   /* Pedido emergente: pantalla completa con lo esencial para decidir al instante. */
@@ -684,6 +719,10 @@
     position: sticky; bottom: -12px; background: var(--surface-2); padding: 10px 0 4px; margin-top: 6px;
   }
   body.cond-pantalla .pedido-card > .btn-row:last-child .btn { min-height: 52px; font-size: 16px; }
+  /* Confirmar grande; Rechazar aparte, más chico y debajo: con el auto en movimiento no se confunden. */
+  .btn-row.btn-row-pedido { grid-template-columns: 1fr; gap: 6px; }
+  .btn-row-pedido .btn-rechazar { background: none; color: var(--danger); border: 1px solid var(--border); box-shadow: none; }
+  body.cond-pantalla .pedido-card > .btn-row:last-child .btn-rechazar { min-height: 42px; font-size: 14px; }
   /* Viaje en curso (conductor, como Uber): el mapa de fondo + UNA tarjeta flotante con la próxima acción.
      La ventana arrastrable se oculta mientras hay viaje; el detalle (contacto, ruta, chat) es una pantalla aparte. */
   body.con-viaje #panelEnCurso { display: none !important; }
@@ -715,7 +754,7 @@
     display: block; width: 100%; min-height: 58px; border: none; border-radius: 16px;
     background: var(--primary); color: var(--primary-ink); font: inherit; font-size: 19px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 12px rgba(17, 48, 74, 0.35);
   }
-  .tv-accion.naranja { background: #F97316; color: #fff; }
+  .tv-accion.naranja { background: var(--naranja); color: #fff; }
   .tv-accion.verde { background: #0B7A4B; color: #fff; }
   .tv-accion:disabled { opacity: 0.6; }
   .tv-sec, .tv-otros, .tv-editar-rapido { display: block; width: 100%; margin-top: 4px; min-height: 38px; border: none; border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; box-shadow: 0 1px 8px rgba(17, 48, 74, 0.2); }
@@ -738,7 +777,7 @@
   .itinerario-viaje .card { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
   /* Aviso de pedidos pendientes ahora que no hay barra: un punto en el botón del menú y en su opción. */
   .btn-menu-cond { position: relative; }
-  .menu-punto { position: absolute; top: 5px; right: 5px; width: 12px; height: 12px; border-radius: 50%; background: #EF4444; border: 2px solid #11304A; }
+  .menu-punto { position: absolute; top: 5px; right: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--danger); border: 2px solid #11304A; }
   .menu-punto[hidden] { display: none; }
   .menu-lateral-item .menu-punto { position: static; display: inline-block; width: 10px; height: 10px; margin-left: 6px; border-color: var(--surface); }
   .solo-con-viaje { display: none !important; }
@@ -792,8 +831,8 @@
   .burbuja-chat {
     position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 60;
     width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; touch-action: none;
-    background: linear-gradient(145deg, #FB923C, #EA580C); color: #FFFFFF;
-    box-shadow: 0 8px 22px rgba(234, 88, 12, 0.38), 0 2px 6px rgba(0, 0, 0, 0.18);
+    background: var(--naranja); color: #FFFFFF;
+    box-shadow: 0 8px 22px rgba(239, 109, 25, 0.38), 0 2px 6px rgba(0, 0, 0, 0.18);
     display: flex; align-items: center; justify-content: center;
   }
   .burbuja-chat[hidden] { display: none; }
@@ -801,14 +840,14 @@
   .burbuja-chat:active { transform: scale(0.94); }
   .burbuja-chat-n {
     position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
-    border-radius: 11px; background: #DC2626; color: #FFFFFF; font-size: 12.5px; font-weight: 700;
+    border-radius: 11px; background: var(--danger); color: #FFFFFF; font-size: 12.5px; font-weight: 700;
     line-height: 18px; text-align: center; border: 2px solid #FFFFFF; box-sizing: border-box;
   }
   .burbuja-chat-n[hidden] { display: none; }
   .burbuja-chat.nuevo { animation: burbujaLatido 1.2s ease-out 2; }
   @keyframes burbujaLatido {
-    0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.55), 0 8px 22px rgba(234, 88, 12, 0.38); }
-    100% { box-shadow: 0 0 0 18px rgba(249, 115, 22, 0), 0 8px 22px rgba(234, 88, 12, 0.38); }
+    0% { box-shadow: 0 0 0 0 rgba(239, 109, 25, 0.55), 0 8px 22px rgba(239, 109, 25, 0.38); }
+    100% { box-shadow: 0 0 0 18px rgba(239, 109, 25, 0), 0 8px 22px rgba(239, 109, 25, 0.38); }
   }
   .chat-vista-previa {
     position: fixed; z-index: 61; max-width: min(260px, 70vw); padding: 10px 13px; border-radius: 14px;
@@ -843,8 +882,8 @@
     flex: none; border: 1px solid var(--border); background: var(--surface); color: var(--text);
     border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; position: relative;
   }
-  .chat-tab.activo { background: #FFF1E6; border-color: #F97316; color: #9A3412; }
-  .chat-tab .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #DC2626; margin-left: 6px; vertical-align: middle; }
+  .chat-tab.activo { background: var(--naranja-soft); border-color: var(--naranja); color: var(--naranja-texto); }
+  .chat-tab .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); margin-left: 6px; vertical-align: middle; }
   .chat-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .chat-panel[hidden] { display: none; }
   .ventana-chat .chat-mensajes { flex: 1; max-height: none; margin: 0; padding: 14px 12px; background: var(--surface-2); }
@@ -855,12 +894,12 @@
     border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
     font: inherit; font-size: 16px; line-height: 1.4; background: var(--surface); color: var(--text);
   }
-  .chat-entrada textarea:focus { outline: none; border-color: #F97316; }
+  .chat-entrada textarea:focus { outline: none; border-color: var(--naranja); }
   .chat-entrada textarea { scrollbar-width: none; }
   .chat-entrada textarea::-webkit-scrollbar { display: none; }
   .btn-enviar-chat {
     width: 48px; height: 48px; flex: none; border-radius: 50%; border: none; cursor: pointer;
-    background: linear-gradient(145deg, #FB923C, #EA580C); color: #FFFFFF;
+    background: var(--naranja); color: #FFFFFF;
     display: flex; align-items: center; justify-content: center;
   }
   .btn-enviar-chat svg { width: 22px; height: 22px; }
@@ -918,35 +957,40 @@
   .btn.enviando { opacity: 0.7; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { .btn:active, .nav-item:active { transform: none; } }
 
-  /* ---------- Pantalla "Ingresando" (con sesión ya abierta) ---------- */
-  /* Fondo petróleo (--primary) con viñeta suave y marca dorada: el emblema late y brilla mientras se ingresa. */
-  .splash {
-    position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 18px; padding: 32px;
-    background: radial-gradient(ellipse at 50% 38%, #1B466B 0%, #11304A 60%, #0B2236 100%); color: #fff; text-align: center;
-    transition: opacity 0.35s ease;
+  /* ---------- Splash (decisión de Alberto, 23-oct-2026) ----------
+     La carita aparece primero (viene del splash del sistema, en la MISMA medida y lugar) y no se mueve ni cambia de tamaño;
+     debajo aparecen "Rumbo" y el eslogan, y mientras carga un auto avanza dejando puntitos naranjas, como la ruta del logo.
+     --sb / --nb (barra de estado y de navegación, en dp) los pone MainActivity: el splash del sistema se centra en la
+     ventana completa y el WebView no. Sin ellos (web), queda centrado en la página. */
+  .splash { position: fixed; inset: 0; z-index: 100; background: #11304A; color: #fff; text-align: center; transition: opacity 0.35s ease; }
+  .splash .splash-centro { position: absolute; left: 50%; top: calc(50% + (var(--nb, 0px) - var(--sb, 0px)) / 2); width: 132px; transform: translate(-50%, -50%); }
+  .splash #splashLogo { display: block; width: 132px; height: auto; }
+  .splash .splash-bajo { position: absolute; left: 50%; top: calc(100% + 26px); transform: translateX(-50%); width: 280px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .splash .splash-palabra { width: 150px; height: auto; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .12s forwards; }
+  .splash .splash-titulo { display: none; }
+  .splash .splash-texto { font-size: 17px; font-weight: 600; letter-spacing: .01em; color: #C9D3DE; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .32s forwards; }
+  .splash .splash-carga { position: relative; width: 132px; height: 22px; margin-top: 8px; opacity: 0; animation: splashAparece .3s ease .5s forwards; }
+  .splash .splash-puntitos { position: absolute; left: 4px; right: 18px; top: 50%; display: flex; justify-content: space-between; transform: translateY(-50%); }
+  .splash .splash-puntitos i { width: 6px; height: 6px; border-radius: 50%; background: #EF6D19; opacity: 0; animation: splashPuntito 1.6s linear infinite; }
+  .splash .splash-puntitos i:nth-child(1) { animation-delay: .15s; } .splash .splash-puntitos i:nth-child(2) { animation-delay: .42s; }
+  .splash .splash-puntitos i:nth-child(3) { animation-delay: .69s; } .splash .splash-puntitos i:nth-child(4) { animation-delay: .96s; }
+  .splash .splash-puntitos i:nth-child(5) { animation-delay: 1.23s; }
+  .splash .splash-auto { position: absolute; left: 0; top: 0; width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; animation: splashAuto 1.6s linear infinite; }
+  @keyframes splashAparece { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes splashAuto { 0% { transform: translateX(0); opacity: 1; } 85% { transform: translateX(110px); opacity: 1; } 100% { transform: translateX(110px); opacity: 0; } }
+  @keyframes splashPuntito { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .splash .splash-palabra, .splash .splash-texto, .splash .splash-carga { animation: none; opacity: 1; }
+    .splash .splash-auto { animation: none; transform: translateX(110px); }
+    .splash .splash-puntitos i { animation: none; opacity: 1; }
   }
-  /* By BTo Innova soluciones (regla de marca): al pie del splash y en el pie de la cuenta. El logo es azul oscuro: va sobre un recuadro claro. */
-  .splash .by { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
-  .splash .by span { font: 400 16px system-ui, sans-serif; color: #B9C4D0; }
+  /* By BTo Innova soluciones (regla de marca): al pie del splash, a la misma altura que en el splash del sistema (80 dp sobre el borde de la ventana). El logo es azul oscuro: va sobre un recuadro claro. */
+  .splash .by { position: absolute; left: 0; right: 0; bottom: calc(80px - var(--nb, 58px) + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
+  .splash .by span { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
   .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 10px; padding: 3px 8px; }
   .by-pie { text-align: center; color: #4E5A6C; font-size: 13px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
-  .splash img { width: min(70vw, 300px); height: min(70vw, 300px); filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)); animation: splashLatido 1.6s ease-in-out infinite, splashBrillo 2.4s ease-in-out infinite; }
-  .splash .splash-titulo { font-size: clamp(20px, 6vw, 26px); font-weight: 700; line-height: 1.1; letter-spacing: 0.14em; text-transform: uppercase; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.35); }
-  .splash .splash-texto { font-size: 18px; line-height: 1.4; max-width: 300px; color: #C9D3DE; }
-  .splash .splash-puntos { display: flex; gap: 6px; margin-top: 6px; }
-  .splash .splash-puntos span { width: 8px; height: 8px; border-radius: 50%; background: var(--acento-claro); opacity: 0.35; animation: splashPunto 1.2s infinite; }
-  .splash .splash-puntos span:nth-child(2) { animation-delay: 0.2s; }
-  .splash .splash-puntos span:nth-child(3) { animation-delay: 0.4s; }
-    .splash #splashLogo { width: min(46vw, 190px); height: auto; }
-    .splash .splash-palabra { width: min(64vw, 270px); height: auto; filter: none; animation: none; }
-  .splash .splash-titulo:empty { display: none; }
-  @keyframes splashLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-  @keyframes splashBrillo { 0%, 100% { filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)) drop-shadow(0 0 14px rgba(95,211,219,0.10)) brightness(1); } 50% { filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45)) drop-shadow(0 0 26px rgba(95,211,219,0.38)) brightness(1.12); } }
-  @keyframes splashPunto { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .splash img, .splash .splash-puntos span { animation: none; } }
 
   /* ---------- Actualización obligatoria (pantalla completa, no se puede
      cerrar hasta descargar) — mismo criterio que DAOMA. ---------- */
@@ -970,10 +1014,9 @@
   .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
   .brand-wordmark { height: 26px; filter: none; }
   .brand-texto { min-height: 72px; gap: 4px; }
-  .brand-lema { font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+  .brand-lema { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
   .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
   .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
-  .splash .splash-titulo::after { content: ""; display: block; width: 52px; height: 2px; background: var(--acento); margin: 10px auto 0; border-radius: 2px; }
   .tv-asa span { background: var(--acento); }
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):hover, select, select:hover, textarea, textarea:hover { border-color: var(--acento); }
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, select:focus, textarea:focus, .chat-entrada input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):focus, .chat-entrada textarea:focus { border-color: var(--acento); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 28%, transparent); }
@@ -989,13 +1032,18 @@
     box-shadow: 0 18px 48px rgba(0,0,0,0.35); border-top: 6px solid var(--acento, #0EA5B0); max-height: 80vh; overflow-y: auto; }
   .rb-pop-caja.error { border-top-color: #B3392B; }
   .rb-pop-caja.ok { border-top-color: #0B7A4B; }
-  .rb-pop-texto { margin: 0 0 18px; font: 500 16px/1.45 system-ui, sans-serif; white-space: pre-line; word-wrap: break-word; }
-  .rb-pop-campo { width: 100%; box-sizing: border-box; margin: 0 0 18px; padding: 11px 12px; font: 16px system-ui, sans-serif;
+  .rb-pop-texto { margin: 0 0 18px; font: 500 16px/1.45 "Montserrat", system-ui, sans-serif; white-space: pre-line; word-wrap: break-word; }
+  .rb-pop-campo { width: 100%; box-sizing: border-box; margin: 0 0 18px; padding: 11px 12px; font: 16px "Montserrat", system-ui, sans-serif;
     border: 1px solid #C9D3DE; border-radius: 10px; }
   .rb-pop-botones { display: flex; gap: 10px; justify-content: flex-end; }
-  .rb-pop-botones button { min-width: 96px; padding: 11px 16px; border-radius: 12px; font: 600 15px system-ui, sans-serif; cursor: pointer; border: 0; }
+  .rb-pop-botones button { min-width: 96px; padding: 11px 16px; border-radius: 12px; font: 600 15px "Montserrat", system-ui, sans-serif; cursor: pointer; border: 0; }
   .rb-pop-si { background: #11304A; color: #fff; }
   .rb-pop-no { background: #E8EEF3; color: #11304A; }
+  .rb-pop-si:disabled { opacity: .45; cursor: default; }
+  /* Autorización de datos (documentos): texto con scroll propio y casilla "Leí y acepto". */
+  .rb-pop-caja.autorizacion .rb-pop-texto { max-height: 46vh; overflow-y: auto; font-size: 14.5px; font-weight: 400; margin-bottom: 14px; }
+  .rb-pop-check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 16px; font: 600 15px/1.35 "Montserrat", system-ui, sans-serif; color: #11304A; cursor: pointer; }
+  .rb-pop-check input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: #11304A; }
 </style>
 </head>
 <body>
@@ -1008,11 +1056,15 @@
   </div>
 </div>
 <div class="splash" id="splashIngresando">
-  <img src="img/logo-carita.png" alt="" id="splashLogo">
-  <img src="img/rumbo-palabra-blanco.png" alt="Rumbo" class="splash-palabra">
-  <div class="splash-titulo" id="splashTitulo"></div>
-  <div class="splash-texto" id="splashTexto"></div>
-  <div class="splash-puntos" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="splash-centro">
+    <img src="img/logo-carita.png" alt="" id="splashLogo">
+    <div class="splash-bajo">
+      <img src="img/rumbo-palabra-blanco.png" alt="Rumbo" class="splash-palabra">
+      <div class="splash-titulo" id="splashTitulo"></div>
+      <div class="splash-texto" id="splashTexto">Sigue tu Rumbo</div>
+      <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 0 24 24"><use href="#i-auto"></use></svg></div>
+    </div>
+  </div>
   <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
 </div>
 <script>
@@ -1024,14 +1076,7 @@
     var ses = null;
     try { ses = JSON.parse(localStorage.getItem(clave) || localStorage.getItem("rumbo_conductor_sesion") || "null"); } catch (e) {}
     var el = document.getElementById("splashIngresando");
-    if (!(ses && ses.token)) { el.hidden = true; return; }
-    if (MODO === "admin") {
-      document.getElementById("splashTitulo").textContent = "Administrador";
-      document.getElementById("splashTexto").textContent = "Ingresando al sistema de Administración Rumbo.";
-    } else {
-      document.getElementById("splashTitulo").textContent = "Conductor";
-      document.getElementById("splashTexto").textContent = "Ingresando a Rumbo Driver, para que puedas coordinar tus viajes.";
-    }
+    if (!(ses && ses.token)) { el.hidden = true; return; }   // el eslogan ("Sigue tu Rumbo") ya viene en el HTML, igual en conductor y admin
   })();
 </script>
 
@@ -1660,7 +1705,7 @@
     <section class="card"><div class="tyc-cuerpo" tabindex="0">
 <!--TYC-CONDUCTOR-INICIO-->
 <p>Plataforma: Rumbo, aplicación desarrollada y operada por BTo Innova SpA, RUT 78.533.592-9 (nombre comercial "BTo Innova soluciones"), titular de las obligaciones que estos Términos atribuyen a Rumbo. En adelante, "Rumbo".</p>
-<p>Versión: 2026-10-19-tyc4 · 19 de octubre de 2026.</p>
+<p>Versión: 2026-10-23-tyc5 · 23 de octubre de 2026.</p>
 <p>Al registrarse y marcar la casilla "Acepto", el Conductor declara haber leído y aceptado íntegramente los presentes Términos y Condiciones, que constituyen el contrato de prestación de servicios de trabajador independiente de plataformas digitales entre Rumbo y el Conductor. Rumbo conservará registro de la fecha, la hora y la versión aceptadas. Estos Términos y las condiciones comerciales pueden cambiar más adelante, lo que será informado oportunamente a través de la aplicación.</p>
 <h4>1. Partes y domicilio</h4>
 <p>1.1. Las partes son Rumbo, individualizada arriba, y el Conductor, persona natural cuyos datos de identificación (nombre completo, RUT, teléfono y correo electrónico) constan en su registro en la aplicación.</p>
@@ -1672,11 +1717,12 @@
 <h4>3. Definiciones</h4>
 <p>Conductor: persona natural que presta servicios personales de transporte de pasajeros, por cuenta propia, con el vehículo registrado en la aplicación. Pasajero: persona natural transportada por el Conductor. Servicio efectivamente prestado: el trayecto que se inicia cuando el Conductor recoge al Pasajero en el punto de origen y termina cuando este desciende en el destino.</p>
 <h4>4. Obligaciones del Conductor</h4>
-<p>4.1. Mantener vigentes su licencia de conducir, la documentación y los seguros del vehículo, en particular el Seguro Obligatorio de Accidentes Personales (SOAP) vigente, que cubre a los ocupantes, y el seguro de responsabilidad civil frente a terceros, y cumplir toda exigencia legal aplicable al transporte remunerado de pasajeros, incluida la inscripción que exija la Ley N° 21.553 y su reglamento, cuando corresponda.</p>
+<p>4.1. Mantener vigentes su licencia de conducir, de la clase que exija la normativa aplicable al servicio, el permiso de circulación, el certificado de revisión técnica y de gases, el certificado de inscripción del vehículo y los seguros del vehículo, en particular el Seguro Obligatorio de Accidentes Personales (SOAP) vigente, que cubre a los ocupantes, y el seguro de responsabilidad civil frente a terceros, y cumplir toda exigencia legal aplicable al transporte remunerado de pasajeros, incluida la inscripción que exija la Ley N° 21.553 y su reglamento, cuando corresponda.</p>
 <p>4.2. Responder de sus impuestos y cotizaciones previsionales como trabajador independiente, de las multas y de los daños derivados de su conducción o de su vehículo. El Conductor exime a Rumbo de las sanciones que provengan de su incumplimiento.</p>
 <p>4.3. Encontrarse inscrito ante el Servicio de Impuestos Internos con la actividad que corresponda a un trabajador independiente y emitir la boleta de honorarios por las sumas que perciba. Rumbo podrá informar a dicho Servicio los honorarios pagados.</p>
 <p>4.4. La cuenta es personal e intransferible, y se prohíbe delegar la conducción en terceros. El Conductor debe mantener actualizados sus datos, en especial los del vehículo, la patente y la cuenta bancaria.</p>
 <p>4.5. Usar la aplicación de buena fe y solo para fines lícitos, tratar con respeto a los pasajeros, no transportar elementos peligrosos o prohibidos, no pedir al Pasajero actos contrarios a la ley y no revelar los datos personales a que acceda por la prestación del servicio. Su incumplimiento constituye falta grave.</p>
+<p>4.6. Para quedar habilitado, el Conductor debe acreditar su identidad con su cédula de identidad y una fotografía de su rostro, previa autorización expresa y separada (cláusula 13.3), y entregar en la aplicación su licencia de conducir, un certificado de antecedentes para fines especiales del Registro General de Condenas en el formato PDF que emite el Registro Civil, y los documentos del vehículo indicados en la cláusula 4.1. El certificado debe renovarse cada seis meses y no registrar anotaciones por delitos sexuales, por infracciones a la Ley N° 20.000, por las conductas sancionadas en los artículos 193, 195 y 196 de la Ley de Tránsito ni por delitos violentos contra las personas. Rumbo verifica su autenticidad con el folio y el código de verificación del emisor, conserva solo el resultado, el folio y la fecha, y elimina el archivo dentro de los siete días siguientes a su verificación. La activación de cada cuenta la decide Rumbo después de revisar los documentos.</p>
 <h4>5. Información previa y asignación de viajes</h4>
 <p>5.1. Antes de que el Conductor acepte un viaje, la aplicación le informa el origen y el destino, el valor que percibirá o el valor del viaje, y el medio de pago que utilizará el Pasajero.</p>
 <p>5.2. Las solicitudes se ofrecen a los Conductores conectados y disponibles, con prioridad para el Conductor al que el Pasajero se vinculó mediante su código QR; si no se encontrare disponible, el viaje podrá ofrecerse a otro Conductor para no dejar al Pasajero sin servicio.</p>
@@ -1703,19 +1749,21 @@
 <h4>12. Conexión, desconexión y seguridad</h4>
 <p>Por razones de seguridad y de resguardo de la salud del Conductor, Rumbo aplica los siguientes criterios: el PIN de inicio de cada viaje, el aviso de cada viaje con su origen y destino antes de aceptarlo, y un límite de horas de conducción continuas con la aplicación conectada. Cumplido el límite, el Conductor queda desconectado y recupera su tiempo completo tras un descanso mínimo. El viaje en curso se finaliza con normalidad. La aplicación avisa cuando restan pocas horas. Los tiempos máximos de conexión y de desconexión vigentes se informan en la aplicación. El Conductor no es sancionado por rechazar viajes ni por no conectarse.</p>
 <h4>13. Datos personales</h4>
-<p>13.1. Rumbo trata los datos del Conductor (identidad, documentos, vehículo, cuenta bancaria y ubicación mientras permanece conectado) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya solo desde cinco minutos antes de la hora reservada o, en los viajes inmediatos, cuando el Conductor está a cinco minutos o menos del punto de recogida, y el Conductor solo podrá utilizarla para llegar a ese punto.</p>
+<p>13.1. Rumbo trata los datos del Conductor (identidad, cédula, imagen facial, licencia, certificado de antecedentes, documentos del vehículo, cuenta bancaria y ubicación mientras permanece conectado) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya solo desde cinco minutos antes de la hora reservada o, en los viajes inmediatos, cuando el Conductor está a cinco minutos o menos del punto de recogida, y el Conductor solo podrá utilizarla para llegar a ese punto.</p>
 <p>13.2. El Conductor puede ejercer sus derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo, en los términos de la ley de protección de datos personales aplicable, escribiendo a Rumbo. Las solicitudes se atienden desde la sección "Ayuda y reclamos" de la aplicación.</p>
+<p>13.3. Las imágenes de la cédula de identidad y la fotografía del rostro son datos personales sensibles. Solo se tratan con la autorización expresa del Conductor, otorgada en forma separada de estos Términos, con la finalidad exclusiva de verificar que es el titular de la cuenta, mediante comparación visual efectuada por personal autorizado de Rumbo, sin reconocimiento facial automatizado. Se almacenan con acceso restringido, no se comparten con los pasajeros y se eliminan dentro de los treinta días siguientes a su revisión, conservándose solo el resultado, su fecha y el número del documento. El Conductor puede revocar esta autorización por la sección "Ayuda y reclamos"; sin ella no es posible habilitar la cuenta.</p>
 <h4>14. Suspensión y término</h4>
 <p>14.1. La relación tiene vigencia indefinida. El Conductor puede ponerle término en cualquier momento, sin expresar causa, previo pago de lo que adeude.</p>
 <p>14.2. Rumbo podrá dar de baja la cuenta, con aviso en la aplicación, por documentación vencida o falsa, fraude o alteración de registros, acuerdos al margen de la aplicación, incumplimiento grave de las reglas de uso, conductas violentas o de acoso, o riesgo para los pasajeros.</p>
 <p>14.3. Rumbo podrá suspender temporalmente la cuenta cuando reciba una denuncia por una conducta susceptible de sanción penal, mientras se esclarecen los hechos. Salvo riesgo inmediato, se informará el motivo antes de la baja definitiva y el Conductor podrá reclamar conforme a la cláusula 15.</p>
+<p>14.4. La aplicación avisa al Conductor con treinta días de anticipación cuando un documento esté por vencer. Llegado el vencimiento sin renovación, el Conductor no podrá conectarse hasta acreditar el documento vigente; si el documento vencido es del vehículo, ese vehículo queda inhabilitado y el Conductor podrá renovarlo o registrar otro vehículo con sus documentos al día. Si el certificado de antecedentes registrare alguna de las anotaciones indicadas en la cláusula 4.6, la cuenta será suspendida, se informará el motivo y el Conductor podrá reclamar conforme a la cláusula 15 antes de la baja definitiva.</p>
 <h4>15. Canal oficial y reclamos</h4>
 <p>15.1. El Conductor podrá formular consultas, objeciones y reclamos respecto de los pagos, el registro de sus labores, la oferta de viajes y las calificaciones a través de la sección "Ayuda y reclamos" de la aplicación, que es el canal oficial.</p>
 <p>15.2. Por el mismo canal, el Conductor podrá reclamar del término de la relación o de la suspensión de su cuenta. Rumbo registrará el reclamo y responderá por el mismo canal. Si el Conductor no queda conforme, podrá ejercer las acciones que correspondan ante los tribunales competentes.</p>
 <h4>16. Propiedad intelectual</h4>
 <p>Los derechos de propiedad intelectual e industrial sobre Rumbo (código fuente, diseños, marcas, logotipos y textos) pertenecen a BTo Innova SpA o se encuentran licenciados a su favor. El Conductor dispone únicamente de una licencia de uso personal, revocable, no exclusiva e intransferible, mientras su cuenta permanezca vigente. Se prohíbe su reproducción, modificación, descompilación o cualquier explotación no autorizada.</p>
 <h4>17. Contrato escrito, firma electrónica y copia visible</h4>
-<p>Estos Términos constituyen el contrato escrito entre Rumbo y el Conductor independiente y se aceptan de manera electrónica. El Conductor queda habilitado para operar solo después de aceptarlos expresamente, y una copia vigente de este texto permanece siempre visible en la aplicación, en la sección "Términos y condiciones". Cualquier modificación se informará en la aplicación.</p>
+<p>Estos Términos constituyen el contrato escrito entre Rumbo y el Conductor independiente y se aceptan de manera electrónica. El Conductor queda habilitado para operar solo después de aceptarlos expresamente y de que Rumbo valide los documentos de la cláusula 4.6, y una copia vigente de este texto permanece siempre visible en la aplicación, en la sección "Términos y condiciones". Cualquier modificación se informará en la aplicación.</p>
 <h4>18. Responsabilidad, modificaciones y legislación aplicable</h4>
 <p>Rumbo se proporciona en el estado en que se encuentra, sin garantía respecto de la cantidad de viajes ni de los ingresos. Rumbo no responde por la conducción, el vehículo ni los daños ocurridos durante los viajes, salvo en lo que la ley no permita excluir. Estos Términos y las condiciones comerciales (membresía, topes, cargos, plazos de liquidación, límites de horas y beneficios) pueden cambiar más adelante. Las modificaciones serán informadas en la aplicación antes de su entrada en vigencia; se aplicarán únicamente a los viajes posteriores al aviso. Estos Términos se rigen por la ley chilena y las partes se someten a la competencia de los tribunales ordinarios de Santiago. Cada estipulación se interpretará en el contexto de las demás; si alguna fuere declarada nula o inaplicable, las restantes mantendrán plena vigencia.</p>
 <!--TYC-CONDUCTOR-FIN-->
@@ -1808,6 +1856,7 @@
   <!-- Administrador: cada sección es una pantalla propia (sin scroll de página). -->
   <div class="menu-lateral-seccion solo-red">Operación</div>
   <button type="button" class="menu-lateral-item solo-red" data-adm="conductores">Conductores</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="documentos">Documentos<span class="menu-punto" id="puntoItemDocsAdm" hidden></span></button>
   <button type="button" class="menu-lateral-item solo-red" data-adm="pedidos">Registro de pedidos</button>
   <button type="button" class="menu-lateral-item solo-red" data-adm="reclamos">Reclamos<span class="menu-punto" id="puntoItemReclamos" hidden></span></button>
   <div class="menu-lateral-seccion solo-red">Dinero</div>
@@ -1830,7 +1879,8 @@
   <button type="button" class="menu-lateral-item solo-conductor" data-tablero="tarifas">Ajustar tarifas</button>
   <button type="button" class="menu-lateral-item solo-conductor" data-tablero="horarios">Cambiar horarios</button>
   <button type="button" class="menu-lateral-item solo-conductor" data-tablero="qr">Compartir mi QR</button>
-  <div class="menu-lateral-seccion solo-conductor">Cuenta</div>
+  <div class="menu-lateral-seccion solo-conductor">Configuración</div>
+  <button type="button" class="menu-lateral-item solo-conductor docs-menu" data-adm="documentos">Documentos<span class="menu-punto" id="puntoItemDocs" hidden></span></button>
   <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
   <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonVehiculo">Mi vehículo</button>
   <button type="button" class="menu-lateral-item solo-conductor" data-menu="ajustes">Ajustes y cuenta</button>
@@ -2072,6 +2122,8 @@
     };
   })();
   function rbAlerta(texto, tipo) { rbPop.alerta(texto, tipo); }
+  // Un solo texto para fallas de red (antes se mostraba el error técnico del navegador, p. ej. "Failed to fetch").
+  var TEXTO_SIN_CONEXION = "Sin conexión. Revisa tu internet e inténtalo de nuevo.";
   function rbConfirmar(texto, opciones) { return rbPop.confirmar(texto, opciones); }
   function rbPedir(texto, opciones) { return rbPop.pedir(texto, opciones); }
   (function () {
@@ -2104,7 +2156,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 64;
+  var APP_VERSION = 65;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2169,7 +2221,7 @@
     var esAdmin = MODO === "admin";
     document.body.classList.toggle("modo-admin", esAdmin);
     document.title = esAdmin ? "Rumbo Admin" : "Rumbo Driver";
-    var ico = esAdmin ? "img/favicon-admin-192.png?v=65" : "img/favicon-conductor-192.png?v=65";
+    var ico = esAdmin ? "img/favicon-admin-192.png?v=66" : "img/favicon-conductor-192.png?v=66";
     [].forEach.call(document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]'), function (l) { l.href = ico; });
     [].forEach.call(document.querySelectorAll(".brand-sub"), function (s) {
       if (s.id !== "brandSubConductor" || esAdmin) s.textContent = esAdmin ? "Administración" : "Conductor";
@@ -2300,6 +2352,7 @@
   }
 
   function mostrarPantalla(cual) {
+    if (cual !== "app") { document.body.classList.remove("alta-pendiente"); if (typeof cerrarPantallasAdmin === "function") cerrarPantallasAdmin(); }
     if (cual !== "app") { document.body.classList.remove("cond-pantalla"); document.body.style.paddingBottom = ""; if (typeof cerrarEmergente === "function") cerrarEmergente(); }
     document.getElementById("pantallaLogin").style.display = cual === "login" ? "block" : "none";
     if (cual === "login" && typeof pintarBotonHuella === "function") pintarBotonHuella();
@@ -2475,6 +2528,7 @@
   [].forEach.call(document.querySelectorAll("#menuLateral .menu-lateral-item"), function (b) {
     b.addEventListener("click", function () {
       abrirMenuCond(false);
+      if (!b.getAttribute("data-adm") && admAbierta) cerrarPantallasAdmin();
       if (b.getAttribute("data-menu") === "ajustes") mostrarPestana("ajustes");   // los data-tablero los atiende el manejador general
       if (b.getAttribute("data-adm")) abrirPantallaAdmin(b.getAttribute("data-adm"));
       if (b.getAttribute("data-ajuste")) irASeccionAjustes(b.getAttribute("data-ajuste"));
@@ -2500,6 +2554,15 @@
     aplicarPermisos();
     // Junto al logo: la plataforma y el saludo (después de aplicarPermisos, que pone el texto genérico).
     document.getElementById("brandSubConductor").textContent = (MODO === "admin" ? "Admin" : "Conductor") + " · Hola " + String(sesion.conductor.nombre || "").split(" ")[0];
+    if (MODO !== "admin" && sesion.conductor.pendiente_activacion) {
+      // Cuenta nueva sin activar: solo Documentos (y cerrar sesión). Rumbo Admin decide la activación.
+      document.body.classList.add("alta-pendiente");
+      document.getElementById("menuNombre").textContent = sesion.conductor.nombre || "Conductor";
+      document.getElementById("menuAvatar").textContent = String(sesion.conductor.nombre || "C").trim().charAt(0).toUpperCase() || "C";
+      pedirPermisoNotificaciones();
+      abrirPantallaAdmin("documentos");
+      return;
+    }
     if (MODO === "admin") {
       // Pantalla de inicio del administrador: el mapa con toda la flota. La administración
       // (conductores, tarifas, historial) abre desde el menú lateral. Sin pedidos propios.
@@ -2553,6 +2616,7 @@
         pintarPedidos({ ok: true, pedidos: res.pendientes });
         pintarViajesEnCurso({ ok: true, pedidos: res.en_curso, cobro_real: res.cobro_real, pin_activo: res.pin_activo }, res.ubicaciones || {});
         if (res.jornada) { jornadaActual = res.jornada; if (res.jornada.agotada) conectadoManual = false; if (conexionCargada) pintarEstadoTablero(); }
+        if (res.documentos) { var antes = docsResumen && docsResumen.habilitado; recibirResumenDocs(res.documentos); if (conexionCargada && antes !== res.documentos.habilitado) pintarEstadoTablero(); }
         Object.keys(res.mensajes || {}).forEach(function (id) { pintarMensajesDe(id, res.mensajes[id]); });
         // En esta respuesta ya vino el historial completo de cada viaje en
         // curso: lo que llegue desde ahora es nuevo. Solo se limpian ESTOS
@@ -2586,7 +2650,7 @@
   document.getElementById("btnVolverIngreso").addEventListener("click", function () { mostrarRegistro(false); });
 
   // Versión de los T&C del conductor que se aceptan al registrarse (ver legal/tyc-conductor.md).
-  var VERSION_TYC_CONDUCTOR = "2026-10-19-tyc4";
+  var VERSION_TYC_CONDUCTOR = "2026-10-23-tyc5";
   // Muestra los T&C debajo de la casilla, sin salir del registro (el texto es el mismo de Ajustes).
   document.getElementById("verTycConductor").addEventListener("click", function () {
     var caja = document.getElementById("tycRegistro");
@@ -2608,13 +2672,13 @@
     }).then(function (res) {
       boton.disabled = false;
       if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
-      msg.textContent = "Solicitud enviada. Cuando el administrador apruebe tu cuenta, podrás ingresar con tu correo y clave.";
+      msg.textContent = "Cuenta creada. Ingresa con tu correo y clave para subir tus documentos; Rumbo los revisa y activa tu cuenta.";
       msg.className = "msg ok";
       ["regNombre","regTelefono","regEmail","regClave","regPatente","regColor","regMarca","regModelo"].forEach(function (id) { document.getElementById(id).value = ""; });
       document.getElementById("regTerminos").checked = false;
     }).catch(function (err) {
       boton.disabled = false;
-      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+      msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error";
     });
   });
 
@@ -2707,7 +2771,7 @@
       b.disabled = false;
       if (!res.ok) { rbAlerta(res.error); b.checked = !b.checked; return; }
       cargarConductoresAdmin();
-    }).catch(function (err) { b.disabled = false; b.checked = !b.checked; rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { b.disabled = false; b.checked = !b.checked; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   // Qué ve cada tipo de cuenta. Solo-admin: únicamente administración (no
@@ -2758,6 +2822,12 @@
       document.getElementById("menuPlataforma").textContent = "Rumbo Admin";
       armarPantallasAdmin();
       setTimeout(cargarReclamosAdmin, 1500);   // pinta el punto de "reclamos abiertos" al entrar
+      setTimeout(function () {   // y el de "documentos por revisar"
+        apiPost({ accion: "documentos_admin" }).then(function (res) {
+          var punto = document.getElementById("puntoItemDocsAdm");
+          if (punto && res.ok) punto.hidden = !res.conductores.some(function (c) { return c.por_revisar > 0; });
+        }).catch(function () {});
+      }, 2500);
     }
   }
 
@@ -2766,7 +2836,7 @@
      (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
      Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
      --------------------------------------------------------------- */
-  var PANTALLAS_ADMIN = { conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  var PANTALLAS_ADMIN = { documentos: "Documentos", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
   function crearPantallaAdmin(id) {
     var p = document.createElement("section");
     p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
@@ -2864,8 +2934,290 @@
     envolver(pq, "adm-fijo", [cerrar]);
   }
 
+  /* ---------------------------------------------------------------
+     DOCUMENTOS (conductor y admin). Una pantalla propia, no un acordeón más de Ajustes.
+     Conductor: su recorrido para quedar habilitado (las 10 paradas). Admin: revisar y validar.
+     La foto se achica en el teléfono antes de subirla (las cámaras dan 3-12 MB; el límite es 3 MB).
+     --------------------------------------------------------------- */
+  var DOCS_TEXTO_ESTADO = { FALTA: "Falta", EN_REVISION: "En revisión", VALIDADO: "Validado", POR_VENCER: "Por vencer", VENCIDO: "Vencido", RECHAZADO: "Rechazado" };
+  var DOCS_BADGE = { FALTA: "badge-gris", EN_REVISION: "badge-azul", VALIDADO: "badge-verde", POR_VENCER: "badge-ambar", VENCIDO: "badge-rojo", RECHAZADO: "badge-rojo" };
+  var DOCS_CONSENTIMIENTO = "Autorizo a Rumbo, marca y aplicación de BTo Innova SpA (RUT 78.533.592-9), a tratar las imágenes de mi cédula de identidad y una fotografía de mi rostro, datos personales sensibles, solo para verificar que soy el titular de la cuenta en el servicio Rumbo, sin usarlas para otros fines. Las revisa a ojo personal autorizado de Rumbo; no se usa reconocimiento facial automático. Se eliminan dentro de los 30 días siguientes a su revisión y se conserva solo el resultado, la fecha y el número de documento. Puedo revocar esta autorización por Ayuda y reclamos.";
+  var DOCS_CONSENTIMIENTO_ANTECEDENTES = "Autorizo a Rumbo, marca y aplicación de BTo Innova SpA (RUT 78.533.592-9), a revisar el certificado de antecedentes que yo mismo obtengo y entrego, solo para habilitarme y mantenerme habilitado como conductor. Se conserva solo el resultado de la revisión, su folio y su fecha; el archivo se elimina dentro de los 7 días siguientes a su verificación. Se me pedirá uno actualizado cada seis meses. Puedo revocar esta autorización por Ayuda y reclamos; sin ella no es posible habilitar la cuenta.";
+  var docsDatos = null, docsAbierto = "";
+
+  function armarPantallaDocs() {
+    if (document.getElementById("adm-documentos")) return;
+    var p = crearPantallaAdmin("documentos");
+    p.insertAdjacentHTML("beforeend",
+      '<div class="adm-fijo docs-avance" id="docsAvance"></div>' +
+      '<div class="adm-scroll" id="docsCuerpo"><p class="vacio">Cargando...</p></div>' +
+      '<div class="adm-fijo docs-pie" id="docsPie" hidden><button class="btn btn-secundario" type="button" id="docsCerrarSesion">Cerrar sesión</button></div>');
+    document.getElementById("docsCerrarSesion").addEventListener("click", function () { document.getElementById("btnCerrarSesion").click(); });
+    var visor = document.createElement("div");
+    visor.className = "docs-visor"; visor.id = "docsVisor"; visor.hidden = true;
+    visor.innerHTML = '<img alt="Documento" id="docsVisorImg"><button class="btn btn-secundario" type="button" id="docsVisorCerrar">Cerrar</button>';
+    document.body.appendChild(visor);
+    document.getElementById("docsVisorCerrar").addEventListener("click", function () { visor.hidden = true; document.getElementById("docsVisorImg").removeAttribute("src"); });
+    document.getElementById("docsCuerpo").addEventListener("click", clicDocs);
+  }
+
+  function cargarDocumentos() {
+    var cuerpo = document.getElementById("docsCuerpo");
+    if (!cuerpo) return;
+    var esAdmin = MODO === "admin";
+    apiPost({ accion: esAdmin ? "documentos_admin" : "mis_documentos" }).then(function (res) {
+      if (!res.ok) { cuerpo.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
+      docsDatos = res;
+      if (esAdmin) pintarDocsAdmin(res); else pintarDocsConductor(res);
+    }).catch(function () { cuerpo.innerHTML = '<p class="vacio">Sin conexión. Revisa tu internet y vuelve a abrir Documentos.</p>'; });
+  }
+
+  function fechaLarga(iso) {
+    if (!iso) return "";
+    var d = new Date(String(iso).slice(0, 10) + "T12:00:00");
+    return d.toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" });
+  }
+  function diasHasta(fecha) { return Math.ceil((new Date(String(fecha).slice(0, 10) + "T23:59:59").getTime() - Date.now()) / 86400000); }
+
+  function pintarDocsConductor(res) {
+    var docs = res.documentos, total = docs.length;
+    var listos = docs.filter(function (d) { return d.estado === "VALIDADO" || d.estado === "POR_VENCER"; }).length;
+    var pendiente = !!(res.resumen && res.resumen.pendiente_activacion);
+    var faltan = total - listos;
+    var avance = document.getElementById("docsAvance");
+    avance.innerHTML =
+      '<div class="mem-barra"><div class="mem-relleno' + (listos === total ? " lleno" : "") + '" style="width:' + Math.round(listos * 100 / total) + '%"></div></div>' +
+      '<p class="docs-avance-texto"><strong>' + listos + ' de ' + total + ' validados</strong>' +
+      (pendiente ? 'Sube tus documentos. Rumbo los revisa y activa tu cuenta.'
+        : faltan ? 'Te ' + (faltan === 1 ? 'falta 1' : 'faltan ' + faltan) + ' para recibir viajes.' : 'Estás habilitado para recibir viajes.') + '</p>';
+    var html = "";
+    [["PERSONA", "Tú", "Tu identidad, licencia y antecedentes."], ["VEHICULO", "Tu auto", "Si uno vence, el auto queda inhabilitado hasta renovarlo."]].forEach(function (g) {
+      html += '<h3 class="docs-grupo">' + g[1] + '<small>' + g[2] + '</small></h3><div class="docs-lista">';
+      var primero = true;
+      docs.filter(function (d) { return d.grupo === g[0]; }).forEach(function (d) {
+        var pend = d.estado === "FALTA" || d.estado === "RECHAZADO" || d.estado === "VENCIDO";
+        html += itemDocConductor(d, pend && primero);
+        if (pend) primero = false;
+      });
+      html += "</div>";
+    });
+    if (listos === total) html = '<div class="docs-listo"><strong>Estás habilitado en la red</strong><span class="docs-nota">Te avisaremos 30 días antes de que venza algún documento.</span></div>' + html;
+    document.getElementById("docsCuerpo").innerHTML = html;
+    document.getElementById("docsPie").hidden = !pendiente;
+    document.querySelector("#adm-documentos [data-adm-volver]").hidden = pendiente;
+    if (docsAbierto) abrirFormDoc(docsAbierto);
+    pintarPuntoDocs(res.resumen, docs);
+    // Activado mientras tenía la app abierta: pasa al panel normal sin pedirle que vuelva a ingresar.
+    var ses = obtenerSesion();
+    if (ses && ses.conductor && ses.conductor.pendiente_activacion && !pendiente) {
+      ses.conductor.pendiente_activacion = false; guardarSesion(ses);
+      rbAlerta("Rumbo activó tu cuenta. Ya puedes recibir viajes.", "ok");
+      document.body.classList.remove("alta-pendiente"); cerrarPantallasAdmin(); entrar(ses);
+    }
+  }
+
+  function itemDocConductor(d, siguiente) {
+    var clase = "ruta-pto docs-item" + (d.estado === "VALIDADO" ? " hecho" : "") + (siguiente ? " siguiente" : "");
+    var h = '<div class="' + clase + '" data-doc="' + d.tipo + '"><div class="ruta-pto-tope"><span class="ruta-pto-dir">' + escapar(d.nombre) + '</span>' +
+      '<span class="badge ' + DOCS_BADGE[d.estado] + '">' + DOCS_TEXTO_ESTADO[d.estado] + '</span></div>';
+    if (d.vence_en && d.estado !== "FALTA") {
+      var dias = diasHasta(d.vence_en);
+      h += '<div class="pedido-programa' + (dias <= 30 ? " cercano" : "") + '"><strong>' + (dias < 0 ? "Venció" : "Vence") + ' ' + fechaLarga(d.vence_en) + '</strong>' +
+        (dias >= 0 ? '<span class="faltan">' + (dias === 0 ? "hoy" : "faltan " + dias + " días") + '</span>' : "") + '</div>';
+    }
+    if (d.tipo === "LICENCIA_FRENTE" && d.clase) h += '<p class="docs-nota">Clase ' + escapar(d.clase) + '</p>';
+    if (d.estado === "RECHAZADO" && d.motivo) h += '<div class="pedido-aviso">' + escapar(d.motivo) + '</div>';
+    if (d.estado === "EN_REVISION") h += '<p class="docs-nota">Rumbo lo está revisando.</p>';
+    var subir = d.estado === "FALTA" ? (d.pdf ? "Subir PDF" : "Subir foto") : d.estado === "EN_REVISION" ? "" : d.estado === "VALIDADO" ? "Reemplazar" : "Subir uno al día";
+    if (subir) h += '<div class="ruta-pto-acciones"><button class="btn ' + (d.estado === "VALIDADO" ? "btn-chico" : "btn-ok") + '" type="button" data-doc-abrir="' + d.tipo + '">' + subir + '</button></div>';
+    h += '<div class="docs-form" data-doc-form="' + d.tipo + '" hidden></div></div>';
+    return h;
+  }
+
+  function abrirFormDoc(tipo) {
+    var d = (docsDatos && docsDatos.documentos || []).filter(function (x) { return x.tipo === tipo; })[0];
+    var caja = document.querySelector('[data-doc-form="' + tipo + '"]');
+    if (!d || !caja) return;
+    [].forEach.call(document.querySelectorAll("[data-doc-form]"), function (f) { if (f !== caja) { f.hidden = true; f.innerHTML = ""; } });
+    docsAbierto = tipo;
+    var h = "";
+    if (d.vence === "FECHA") h += '<div class="campo"><label class="campo-label" for="docVence">Fecha de vencimiento</label><input type="date" id="docVence"></div>';
+    if (d.tipo === "LICENCIA_FRENTE") h += '<div class="campo"><label class="campo-label" for="docClase">Clase de licencia</label><select id="docClase"><option value="B">B</option><option>A1</option><option>A2</option><option>A3</option><option>A4</option><option>A5</option><option>C</option><option>D</option></select></div>';
+    if (d.vence === "EMISION_6M") {
+      h += '<p class="docs-nota">Descárgalo gratis en registrocivil.cl (para fines especiales); te llega en PDF al correo. Vale 6 meses desde su emisión.</p>' +
+        '<div class="campo"><label class="campo-label" for="docEmision">Fecha de emisión</label><input type="date" id="docEmision"></div>' +
+        '<div class="campo"><label class="campo-label" for="docFolio">Folio</label><input type="text" id="docFolio" inputmode="numeric" autocomplete="off"></div>' +
+        '<div class="campo"><label class="campo-label" for="docCodigo">Código de verificación</label><input type="text" id="docCodigo" autocomplete="off"></div>';
+    }
+    var acepta = d.pdf ? "application/pdf" : "image/*";
+    var captura = d.pdf ? "" : (d.tipo === "SELFIE" ? ' capture="user"' : "");
+    h += '<div class="docs-archivo"><label class="btn btn-secundario" for="docArchivo">' + (d.pdf ? "Elegir el PDF" : (d.tipo === "SELFIE" ? "Tomar selfie" : "Tomar o elegir foto")) + '</label>' +
+      '<input type="file" id="docArchivo" accept="' + acepta + '"' + captura + ' hidden><span id="docArchivoNombre">' + (d.pdf ? "Ningún PDF elegido" : "Sin foto todavía") + '</span></div>' +
+      '<button class="btn btn-ok" type="button" data-doc-enviar="' + d.tipo + '">Enviar a revisión</button>' +
+      '<button class="btn btn-chico" type="button" data-doc-cancelar>Cancelar</button>';
+    caja.innerHTML = h;
+    caja.hidden = false;
+    document.getElementById("docArchivo").addEventListener("change", function () {
+      var f = this.files && this.files[0];
+      document.getElementById("docArchivoNombre").textContent = f ? f.name : "";
+    });
+  }
+
+  // Achica la foto a 1600 px por lado y JPEG 0,82: legible para el admin y bajo el límite de 3 MB.
+  function achicarFoto(archivo) {
+    return new Promise(function (ok, mal) {
+      var lector = new FileReader();
+      lector.onerror = function () { mal(new Error("no se pudo leer la foto")); };
+      lector.onload = function () {
+        var img = new Image();
+        img.onerror = function () { mal(new Error("no se pudo abrir la foto")); };
+        img.onload = function () {
+          var max = 1600, e = Math.min(1, max / Math.max(img.width, img.height));
+          var c = document.createElement("canvas");
+          c.width = Math.round(img.width * e); c.height = Math.round(img.height * e);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          ok(c.toDataURL("image/jpeg", 0.82));
+        };
+        img.src = lector.result;
+      };
+      lector.readAsDataURL(archivo);
+    });
+  }
+  function leerPdf(archivo) {
+    return new Promise(function (ok, mal) {
+      if (archivo.size > 3 * 1024 * 1024) { mal(new Error("el PDF pesa más de 3 MB")); return; }
+      var lector = new FileReader();
+      lector.onerror = function () { mal(new Error("no se pudo leer el PDF")); };
+      lector.onload = function () { ok(String(lector.result).replace(/^data:[^;]*;/, "data:application/pdf;")); };
+      lector.readAsDataURL(archivo);
+    });
+  }
+
+  function enviarDoc(tipo, boton) {
+    var d = docsDatos.documentos.filter(function (x) { return x.tipo === tipo; })[0];
+    var input = document.getElementById("docArchivo");
+    var archivo = input.files && input.files[0];
+    if (!archivo) { rbAlerta(d.pdf ? "Elige el PDF del certificado." : "Toma o elige la foto del documento."); return; }
+    function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+    // La autorización (dato sensible / antecedentes) se pide en un pop-up aparte, nunca escrita en la pantalla.
+    (d.consentimiento ? pedirAutorizacion(d.sensible ? DOCS_CONSENTIMIENTO : DOCS_CONSENTIMIENTO_ANTECEDENTES) : Promise.resolve(true)).then(function (autoriza) {
+      if (!autoriza) return;
+      subirDocConArchivo(d, tipo, archivo, boton, val);
+    });
+  }
+  // Pop-up de autorización con casilla "Leí y acepto": "Autorizo" se habilita solo al marcarla (consentimiento expreso).
+  function pedirAutorizacion(texto) {
+    return new Promise(function (listo) {
+      var raiz = document.createElement("div");
+      raiz.className = "rb-pop"; raiz.setAttribute("role", "dialog"); raiz.setAttribute("aria-modal", "true");
+      raiz.innerHTML = '<div class="rb-pop-caja autorizacion"><p class="rb-pop-texto"></p>' +
+        '<label class="rb-pop-check"><input type="checkbox"> Leí y acepto las condiciones de esta autorización</label>' +
+        '<div class="rb-pop-botones"><button type="button" class="rb-pop-no">Cancelar</button><button type="button" class="rb-pop-si" disabled>Autorizo</button></div></div>';
+      raiz.querySelector(".rb-pop-texto").textContent = texto;
+      var check = raiz.querySelector("input"), si = raiz.querySelector(".rb-pop-si");
+      check.addEventListener("change", function () { si.disabled = !check.checked; });
+      function fin(v) { raiz.remove(); listo(v); }
+      si.addEventListener("click", function () { if (check.checked) fin(true); });
+      raiz.querySelector(".rb-pop-no").addEventListener("click", function () { fin(false); });
+      document.body.appendChild(raiz);
+    });
+  }
+  function subirDocConArchivo(d, tipo, archivo, boton, val) {
+    boton.disabled = true; boton.textContent = "Enviando...";
+    (d.pdf ? leerPdf(archivo) : achicarFoto(archivo)).then(function (dataUrl) {
+      return apiPost({ accion: "subir_documento", tipo: tipo, archivo_data_url: dataUrl, vence_en: val("docVence"), emitido_en: val("docEmision"),
+        folio: val("docFolio"), codigo: val("docCodigo"), clase: val("docClase"), consentimiento: d.consentimiento ? true : undefined });
+    }).then(function (res) {
+      boton.disabled = false; boton.textContent = "Enviar a revisión";
+      if (!res.ok) { rbAlerta(res.error); return; }
+      docsAbierto = "";
+      rbAlerta(d.nombre + " quedó en revisión. Te avisaremos cuando Rumbo lo valide.", "ok");
+      cargarDocumentos();
+    }).catch(function (err) {
+      boton.disabled = false; boton.textContent = "Enviar a revisión";
+      rbAlerta(err && /PDF|foto/.test(err.message) ? "No se pudo enviar: " + err.message + "." : TEXTO_SIN_CONEXION);
+    });
+  }
+
+  function pintarPuntoDocs(resumen, docs) {
+    var punto = document.getElementById("puntoItemDocs");
+    if (!punto || !resumen) return;
+    var urgente = !resumen.ok || (docs || []).some(function (d) { return d.estado === "POR_VENCER" || d.estado === "VENCIDO" || d.estado === "RECHAZADO"; });
+    if (!docs && resumen.vence_min) urgente = urgente || diasHasta(resumen.vence_min) <= 30;
+    punto.hidden = !urgente;
+  }
+
+  function pintarDocsAdmin(res) {
+    var total = res.total;
+    var porRevisar = res.conductores.reduce(function (a, c) { return a + c.por_revisar; }, 0);
+    document.getElementById("docsAvance").innerHTML = '<p class="docs-avance-texto"><strong>' + (porRevisar ? porRevisar + (porRevisar === 1 ? " documento por revisar" : " documentos por revisar") : "Nada por revisar") + '</strong>' +
+      'Verifica el certificado de antecedentes con su folio y código en el sitio del Registro Civil. La activación de una cuenta nueva se hace en Conductores.</p>';
+    var punto = document.getElementById("puntoItemDocsAdm");
+    if (punto) punto.hidden = !porRevisar;
+    if (!res.conductores.length) { document.getElementById("docsCuerpo").innerHTML = '<p class="vacio">No hay conductores todavía.</p>'; return; }
+    document.getElementById("docsCuerpo").innerHTML = res.conductores.map(function (c) {
+      var chips = '<span class="badge ' + (c.validados === total ? "badge-verde" : "badge-gris") + '">' + c.validados + ' de ' + total + ' validados</span>' +
+        (c.por_revisar ? '<span class="badge badge-azul">' + c.por_revisar + ' por revisar</span>' : "") +
+        (c.pendiente_activacion ? '<span class="badge badge-ambar">Cuenta pendiente de activar</span>' : "") +
+        (!c.habilitado ? '<span class="badge badge-rojo">No puede conectarse</span>' : "");
+      var items = c.documentos.map(function (d) {
+        var sub = DOCS_TEXTO_ESTADO[d.estado] + (d.vence_en ? " · vence " + fechaLarga(d.vence_en) : "") + (d.clase ? " · clase " + escapar(d.clase) : "") +
+          (d.folio ? " · folio " + escapar(d.folio) + " · código " + escapar(d.codigo) : "");
+        var acc = "";
+        if (d.tiene_archivo) acc += '<button class="btn btn-chico" type="button" data-doc-ver="' + d.documento_id + '"' + (d.pdf ? ' data-doc-pdf' : '') + '>Ver</button>';
+        if (d.pdf && d.folio) acc += '<button class="btn btn-chico" type="button" data-doc-verificar>Verificar</button>';
+        if (d.estado === "EN_REVISION") acc += '<button class="btn btn-chico" type="button" data-doc-validar="' + d.documento_id + '">Validar</button><button class="btn btn-chico" type="button" data-doc-rechazar="' + d.documento_id + '">Rechazar</button>';
+        return '<div class="docs-adm-item"><div><div class="nombre">' + escapar(d.nombre) + '</div><div class="sub">' + sub + '</div></div><div class="docs-adm-acciones">' + acc + '</div></div>';
+      }).join("");
+      return '<div class="cond-card"><div class="cond-cab"><div class="cond-avatar">' + escapar(String(c.nombre || "?").trim().charAt(0).toUpperCase()) + '</div><div class="cond-datos"><div class="cond-nombre">' + escapar(c.nombre) + '</div>' +
+        '<div class="cond-sub">' + escapar(c.email || "") + '</div><div class="docs-adm-chips">' + chips + '</div></div></div>' +
+        '<details class="acordeon simple" style="margin-top:10px;"' + (c.por_revisar ? " open" : "") + '><summary>Documentos</summary><div class="acordeon-cuerpo">' + items + '</div></details></div>';
+    }).join("");
+  }
+
+  function clicDocs(ev) {
+    var b = ev.target.closest("button");
+    if (!b) return;
+    if (b.dataset.docAbrir) { abrirFormDoc(b.dataset.docAbrir); return; }
+    if (b.hasAttribute("data-doc-cancelar")) { docsAbierto = ""; var f = b.closest("[data-doc-form]"); f.hidden = true; f.innerHTML = ""; return; }
+    if (b.dataset.docEnviar) { enviarDoc(b.dataset.docEnviar, b); return; }
+    if (b.hasAttribute("data-doc-verificar")) { window.open("https://www.registrocivil.cl/OficinaInternet/verificacion/verificacioncertificado.srcei", "_system"); return; }
+    if (b.dataset.docVer) {
+      b.disabled = true;
+      apiPost({ accion: "ver_documento", documento_id: b.dataset.docVer }).then(function (res) {
+        b.disabled = false;
+        if (!res.ok) { rbAlerta(res.error); return; }
+        if (b.hasAttribute("data-doc-pdf")) {
+          // El visor del teléfono no muestra PDF: ahí se usa Verificar (el Registro Civil muestra el certificado original).
+          var nativa = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
+          if (nativa) { rbAlerta("En el teléfono el PDF no se puede mostrar. Usa Verificar con el folio y el código: el Registro Civil muestra el certificado original. Para ver el PDF subido, abre el panel admin en el computador."); return; }
+          var bin = atob(res.data_url.split(",")[1]), bytes = new Uint8Array(bin.length);
+          for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          window.open(URL.createObjectURL(new Blob([bytes], { type: "application/pdf" })), "_blank");
+          return;
+        }
+        document.getElementById("docsVisorImg").src = res.data_url;
+        document.getElementById("docsVisor").hidden = false;
+      }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
+      return;
+    }
+    if (b.dataset.docValidar || b.dataset.docRechazar) {
+      var aprobado = !!b.dataset.docValidar, id = b.dataset.docValidar || b.dataset.docRechazar;
+      (aprobado ? Promise.resolve("") : rbPedir("¿Qué debe corregir el conductor? (lo verá tal cual)", { si: "Rechazar" })).then(function (motivo) {
+        if (motivo === null) return;
+        b.disabled = true;
+        return apiPost({ accion: "revisar_documento", documento_id: id, aprobado: aprobado, motivo: motivo }).then(function (res) {
+          b.disabled = false;
+          if (!res.ok) { rbAlerta(res.error); return; }
+          cargarDocumentos();
+        });
+      }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
+    }
+  }
+
   var admAbierta = "";
   function abrirPantallaAdmin(id) {
+    if (id === "documentos") armarPantallaDocs();
     var p = document.getElementById("adm-" + id);
     if (!p) return;
     var tb = document.querySelector("#pantallaApp .topbar");
@@ -2883,6 +3235,7 @@
     else if (id === "reclamos") cargarReclamosAdmin();
     else if (id === "pedidos") cargarRegistroPedidos();
     else if (id === "tarifas") cargarTarifas();
+    else if (id === "documentos") cargarDocumentos();
   }
   function cerrarPantallasAdmin() {
     [].forEach.call(document.querySelectorAll(".adm-pantalla"), function (x) { x.hidden = true; });
@@ -3030,7 +3383,7 @@
       cuerpo.innerHTML = filasInstalaciones(r).map(function (f) {
         return '<div class="cierre-fila"><span>' + escapar(f[0]) + '</span><strong>' + escapar(f[1]) + '</strong></div>';
       }).join("");
-    }).catch(function (err) { cuerpo.textContent = "Error de red: " + err.message; });
+    }).catch(function (err) { cuerpo.textContent = TEXTO_SIN_CONEXION; });
   });
   document.getElementById("instCerrar").addEventListener("click", function () { document.getElementById("modalInstalaciones").hidden = true; });
   document.getElementById("acordeonRegistroPedidos").addEventListener("toggle", function () {
@@ -3085,7 +3438,7 @@
       pintarEstadoRed(res.en_red);
     }).catch(function (err) {
       ev.target.disabled = false; ev.target.checked = !deseado;
-      rbAlerta("Error de red: " + err.message);
+      rbAlerta(TEXTO_SIN_CONEXION);
     });
   });
 
@@ -3111,7 +3464,7 @@
     pintarGps(valor); // optimista: se nota al toque
     apiPost({ accion: "cambiar_mi_gps", gps: valor }).then(function (res) {
       if (!res.ok) { pintarGps(anterior); rbAlerta("No se pudo cambiar: " + res.error); }
-    }).catch(function (err) { pintarGps(anterior); rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { pintarGps(anterior); rbAlerta(TEXTO_SIN_CONEXION); });
   }
   document.getElementById("chkGps").addEventListener("change", function () { elegirGps(this.checked ? "GOOGLE_MAPS" : "WAZE"); });
   document.querySelectorAll("#grupoGps .gps-lado").forEach(function (b) {
@@ -3160,7 +3513,7 @@
       chk.disabled = false;
       if (!res.ok) { rbAlerta(res.error); chk.checked = pausar; return; }
       cargarEstadoMp();
-    }).catch(function (err) { chk.disabled = false; chk.checked = pausar; rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { chk.disabled = false; chk.checked = pausar; rbAlerta(TEXTO_SIN_CONEXION); });
   });
   // Admin: estado de la conexión de la cuenta de la empresa.
   function cargarMpEmpresa() {
@@ -3172,7 +3525,7 @@
       estado.textContent = res.empresa_vinculada ? "✓ Conectada: los pagos con tarjeta entran a la cuenta de BTo Innova." : "Todavía no hay una cuenta conectada: los pagos con tarjeta no se pueden cobrar.";
       estado.className = res.empresa_vinculada ? "msg ok" : "msg";
       boton.textContent = res.empresa_vinculada ? "Reconectar Mercado Pago de la empresa" : "Conectar Mercado Pago de la empresa";
-    }).catch(function (err) { estado.textContent = "Error de red: " + err.message; estado.className = "msg"; });
+    }).catch(function (err) { estado.textContent = TEXTO_SIN_CONEXION; estado.className = "msg"; });
   }
 
   // Solo admin: conecta la cuenta Mercado Pago de BTo Innova, que recauda todos los cobros.
@@ -3186,7 +3539,7 @@
       window.open(res.url, "_blank");
       document.getElementById("mpEmpresaEstado").textContent =
         "Autoriza en Mercado Pago con la cuenta de la empresa y vuelve acá. Después entra de nuevo a esta pantalla para actualizar.";
-    }).catch(function (err) { boton.disabled = false; rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   function pintarMiQr(c) {
@@ -3349,7 +3702,7 @@
       saldo.classList.toggle("debe", res.saldo < 0);
       document.getElementById("memUltimas").innerHTML = (res.ultimas || []).length ? '<div class="flota-titulo">Últimas transferencias</div>' +
         res.ultimas.map(function (u) { return '<div class="mem-fila"><span>' + escapar(fechaCorta(u.fecha)) + '</span><span>' + fmt(u.monto) + '</span></div>'; }).join("") : "";
-    }).catch(function (err) { acum.textContent = "Error de red: " + err.message; });
+    }).catch(function (err) { acum.textContent = TEXTO_SIN_CONEXION; });
   }
   document.getElementById("acordeonMembresia").addEventListener("toggle", function () { if (this.open) cargarMembresia(); });
   document.getElementById("btnMemActualizar").addEventListener("click", cargarMembresia);
@@ -3376,7 +3729,7 @@
       btn.disabled = false;
       if (!res.ok) { rbAlerta(res.error || "No se pudo enviar. Intenta de nuevo."); return; }
       txt.value = ""; rbAlerta("Recibimos tu mensaje. La respuesta aparecerá en esta sección."); cargarMisReclamos();
-    }).catch(function (e) { btn.disabled = false; rbAlerta("Error de red: " + e.message); });
+    }).catch(function (e) { btn.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
   function cargarReclamosAdmin() {
     var lista = document.getElementById("listaReclamosAdmin");
@@ -3394,7 +3747,7 @@
             '<textarea data-rec-resp="' + escapar(r.reclamo_id) + '" rows="2" maxlength="1000" placeholder="Escribe la respuesta" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px;background:var(--surface);color:var(--text);font:inherit;"></textarea>' +
             '<button class="btn btn-medio" type="button" data-rec-enviar="' + escapar(r.reclamo_id) + '" style="margin-top:8px;">Responder y cerrar</button>') + '</div>';
       }).join("");
-    }).catch(function (err) { lista.innerHTML = '<p class="vacio">Error de red: ' + escapar(err.message) + '</p>'; });
+    }).catch(function (err) { lista.innerHTML = '<p class="vacio">' + TEXTO_SIN_CONEXION + '</p>'; });
   }
   document.getElementById("listaReclamosAdmin").addEventListener("click", function (ev) {
     var b = ev.target.closest("[data-rec-enviar]"); if (!b) return;
@@ -3404,7 +3757,7 @@
     apiPost({ accion: "responder_reclamo", reclamo_id: id, respuesta: caja.value.trim() }).then(function (res) {
       if (!res.ok) { b.disabled = false; rbAlerta(res.error || "No se pudo responder."); return; }
       cargarReclamosAdmin();
-    }).catch(function (e) { b.disabled = false; rbAlerta("Error de red: " + e.message); });
+    }).catch(function (e) { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   function cargarLiquidaciones() {
@@ -3433,7 +3786,7 @@
           '<div class="liq-cuenta">' + cuentaTxt + (c.cuenta_cambio ? ' <strong style="color:var(--warn);">(cuenta cambiada)</strong>' : '') + '</div>' +
           aviso + boton + '</div>';
       }).join("");
-    }).catch(function (err) { lista.innerHTML = '<p class="vacio">Error de red: ' + escapar(err.message) + '</p>'; });
+    }).catch(function (err) { lista.innerHTML = '<p class="vacio">' + TEXTO_SIN_CONEXION + '</p>'; });
   }
   function liquidar(b, confirmaCuentaNueva) {
     b.disabled = true;
@@ -3445,7 +3798,7 @@
         return;
       }
       rbAlerta(res.error); cargarLiquidaciones();
-    }).catch(function (err) { b.disabled = false; rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   }
   document.addEventListener("click", function (ev) {
     var b = ev.target.closest("[data-liquidar]");
@@ -3474,7 +3827,7 @@
     apiPost(cuerpo).then(function (res) {
       msg.textContent = res.ok ? "Datos guardados." : ("Error: " + res.error);
       msg.className = "msg " + (res.ok ? "ok" : "error");
-    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
+    }).catch(function (err) { msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error"; });
   });
 
   document.getElementById("btnGuardarVehiculo").addEventListener("click", function () {
@@ -3491,7 +3844,7 @@
       msg.className = "msg " + (res.ok ? "ok" : "error");
       if (res.ok) fijarAspectoMiAuto(document.getElementById("vehColor").value, document.getElementById("vehMarca").value, document.getElementById("vehModelo").value);
     }).catch(function (err) {
-      msg.textContent = "Error de red: " + err.message;
+      msg.textContent = TEXTO_SIN_CONEXION;
       msg.className = "msg error";
     });
   });
@@ -3518,7 +3871,7 @@
         var sesion = obtenerSesion();
         if (sesion) { sesion.conductor.vehiculo_foto_url = res.vehiculo_foto_url; guardarSesion(sesion); }
       }).catch(function (err) {
-        msg.textContent = "Error de red: " + err.message;
+        msg.textContent = TEXTO_SIN_CONEXION;
         msg.className = "msg error";
       });
     };
@@ -3615,7 +3968,7 @@
       bioTrasLogin(usuario, clave);
       entrar(res);
     }).catch(function (err) {
-      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+      msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error";
     });
   });
 
@@ -3646,7 +3999,7 @@
       msg.textContent = res.mensaje || res.error || "Listo.";
       msg.className = "msg " + (res.ok ? "ok" : "error");
       if (res.ok) document.getElementById("recuperarPaso2").style.display = "block";
-    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
+    }).catch(function (err) { msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error"; });
   });
 
   document.getElementById("btnConfirmarCodigo").addEventListener("click", function () {
@@ -3663,7 +4016,7 @@
       document.getElementById("loginUsuario").value = res.usuario || usuario;
       document.getElementById("loginClave").value = "";
       setTimeout(function () { mostrarRecuperar(false); }, 1500);
-    }).catch(function (err) { msg.textContent = "Error de red: " + err.message; msg.className = "msg error"; });
+    }).catch(function (err) { msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error"; });
   });
 
   document.getElementById("btnCerrarSesion").addEventListener("click", async function () {
@@ -3786,7 +4139,7 @@
       msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
       msg.className = "msg " + (res.ok ? "ok" : "error");
     }).catch(function (err) {
-      msg.textContent = "Error de red: " + err.message;
+      msg.textContent = TEXTO_SIN_CONEXION;
       msg.className = "msg error";
     });
   });
@@ -3842,7 +4195,7 @@
       document.getElementById("modalCombustible").hidden = true;
     }).catch(function (err) {
       campo.value = anterior;
-      msg.textContent = "Error de red: " + err.message; msg.className = "msg error";
+      msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error";
     }).then(function () { boton.disabled = false; });
   });
 
@@ -3866,7 +4219,7 @@
       conexionCargada = false;
       mostrarPantalla("login");
     }).catch(function (err) {
-      msg.textContent = "Error de red: " + err.message;
+      msg.textContent = TEXTO_SIN_CONEXION;
       msg.className = "msg error";
     });
   });
@@ -3885,7 +4238,7 @@
       var sesion = obtenerSesion();
       if (sesion) { sesion.conductor.email = res.email; guardarSesion(sesion); }
     }).catch(function (err) {
-      msg.textContent = "Error de red: " + err.message;
+      msg.textContent = TEXTO_SIN_CONEXION;
       msg.className = "msg error";
     });
   });
@@ -4013,7 +4366,7 @@
       msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
       msg.className = "msg " + (res.ok ? "ok" : "error");
     }).catch(function (err) {
-      msg.textContent = "Error de red: " + err.message;
+      msg.textContent = TEXTO_SIN_CONEXION;
       msg.className = "msg error";
     });
   });
@@ -4274,7 +4627,7 @@
       if (!res.ok) { rbAlerta(res.error); return; }
       document.getElementById("modalCambioPas").hidden = true; cambioPasId = "";
       refrescarViajes();
-    }).catch(function (err) { a.disabled = r.disabled = false; rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { a.disabled = r.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   }
   document.getElementById("cambioPasAceptar").addEventListener("click", function () { responderCambioPas(true); });
   document.getElementById("cambioPasRechazar").addEventListener("click", function () { responderCambioPas(false); });
@@ -4335,7 +4688,7 @@
         "<br>" + (r.requiere_pasajero ? "El valor sube más de 30 % sobre el primero: el pasajero tiene que aceptarlo." : "Se aplica de inmediato y se avisa al pasajero.");
       pr.style.display = "block";
       document.getElementById("edcEnviar").disabled = false;
-    }).catch(function (err) { btn.disabled = false; msg.textContent = "Error de red: " + err.message; });
+    }).catch(function (err) { btn.disabled = false; msg.textContent = TEXTO_SIN_CONEXION; });
   });
   document.getElementById("edcEnviar").addEventListener("click", function () {
     var msg = document.getElementById("edcMsg"), btn = this, d = edcDatos();
@@ -4346,7 +4699,7 @@
       document.getElementById("modalEditarC").hidden = true;
       if (!r.aplicado) rbAlerta("Cambio enviado: esperando que el pasajero lo acepte.");
       refrescarViajes();
-    }).catch(function (err) { btn.disabled = false; msg.textContent = "Error de red: " + err.message; });
+    }).catch(function (err) { btn.disabled = false; msg.textContent = TEXTO_SIN_CONEXION; });
   });
 
   function abrirNavegacion(puntos, indice) {
@@ -5086,7 +5439,7 @@
           var urlGps = gpsPreferido === "GOOGLE_MAPS" ? urlMapsDesde(puntos, 1) : urlWazePunto(puntos[1]);
           if (urlGps) window.open(urlGps, "_system");
         }
-      })).catch(function (err) { rbAlerta("Error de red: " + err.message); });
+      })).catch(function (err) { rbAlerta(TEXTO_SIN_CONEXION); });
       return;
     }
     if (tipo === "llegue-destino") {
@@ -5094,7 +5447,7 @@
       conBotonOcupado(apiPost({ accion: "llegue_destino", pedido_id: id }).then(function (res) {
         if (!res.ok) { rbAlerta("Error: " + res.error); return; }
         refrescarViajes();
-      })).catch(function (err) { rbAlerta("Error de red: " + err.message); });
+      })).catch(function (err) { rbAlerta(TEXTO_SIN_CONEXION); });
       return;
     }
     if (tipo === "iniciar-regreso") {
@@ -5106,7 +5459,7 @@
           var reg = puntoRegreso(p, puntosDelViaje(p));
           if (reg) abrirNavegacion([reg], 0);
         }
-      })).catch(function (err) { rbAlerta("Error de red: " + err.message); });
+      })).catch(function (err) { rbAlerta(TEXTO_SIN_CONEXION); });
       return;
     }
     if (tipo === "efectivo") {
@@ -5205,7 +5558,7 @@
       document.getElementById("btnCierreMp").disabled = false;
       document.getElementById("btnCierreEfectivo").disabled = false;
       document.getElementById("btnCierrePasajero").disabled = false;
-    }).catch(function () { cont.innerHTML = '<p class="msg error">Error de red. Intenta de nuevo.</p>'; });
+    }).catch(function () { cont.innerHTML = '<p class="msg error">' + TEXTO_SIN_CONEXION + '</p>'; });
   }
 
   function cerrarCierre() { cierrePedidoId = ""; document.getElementById("modalCierre").hidden = true; }
@@ -5225,7 +5578,7 @@
       document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
       cargarViajesEnCurso();
       abrirCalificarPasajero(pedidoId);
-    }).catch(function (err) { rbAlerta("Error de red: " + err.message); boton.disabled = false; });
+    }).catch(function (err) { rbAlerta(TEXTO_SIN_CONEXION); boton.disabled = false; });
   }
 
   function pedidoCard(p) {
@@ -5273,9 +5626,9 @@
         '<a class="btn btn-chico ir-maps" target="_blank" rel="noopener" ' +
           'href="' + escapar(urlMapsPunto(puntosCard[0])) + '">Ir con Maps</a>' +
       '</div>' +
-      '<div class="btn-row">' +
-        '<button class="btn btn-ok" data-accion="confirmar_pedido" data-id="' + escapar(p.pedido_id) + '">Confirmar</button>' +
-        '<button class="btn btn-danger" data-accion="rechazar_pedido" data-id="' + escapar(p.pedido_id) + '">Rechazar</button>' +
+      '<div class="btn-row btn-row-pedido">' +
+        '<button class="btn btn-ok" data-accion="confirmar_pedido" data-id="' + escapar(p.pedido_id) + '">Confirmar viaje</button>' +
+        '<button class="btn btn-rechazar" data-accion="rechazar_pedido" data-id="' + escapar(p.pedido_id) + '">Rechazar</button>' +
       '</div>';
     return div;
   }
@@ -5406,7 +5759,7 @@
       cerrarEmergente();
       cargarPedidos(); cargarViajesEnCurso();
       if (accion === "confirmar_pedido") { ultimoAceptar = Date.now(); cerrarDetalleViaje(); mostrarPestana("enCurso"); ponerHoja("medio"); }
-    }).catch(function (err) { boton.disabled = false; rbAlerta("Error de red: " + err.message); });
+    }).catch(function (err) { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   }
   document.getElementById("peAceptar").addEventListener("click", function () { responderEmergente("confirmar_pedido", this); });
   document.getElementById("peRechazar").addEventListener("click", function () { responderEmergente("rechazar_pedido", this); });
@@ -5708,7 +6061,7 @@
   }
   refrescarEstiloMapas();   // deja la marca de día/noche desde el arranque
   setInterval(refrescarEstiloMapas, 120000);
-  var NARANJO = "#F97316", NARANJO_BORDE = "#9A3412";
+  var NARANJO = "#EF6D19", NARANJO_BORDE = "#C2410C";   // naranja de la marca (mismo que --naranja)
 
   function dibujarRutaNaranja(mapaDestino, puntos) {
     var borde = new google.maps.Polyline({ map: mapaDestino, path: puntos, strokeColor: NARANJO_BORDE, strokeOpacity: 0.45, strokeWeight: 10, zIndex: 1 });
@@ -5887,7 +6240,7 @@
         boton.disabled = false;
         if (!res.ok) { rbAlerta("No se pudo calificar: " + res.error); return; }
         cerrarCalificarPasajero();
-      }).catch(function (err) { boton.disabled = false; rbAlerta("Error de red: " + err.message); });
+      }).catch(function (err) { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   function cargarMensajesConductor(pedidoId) {
@@ -6342,11 +6695,17 @@
   // estaConectado en Codigo.gs), incluso el de su propia clientela.
   var conexionCargada = false, conectadoManual = true;
   var jornadaActual = null;   // horas de conducción restantes (las calcula el servidor, ver JORNADA en Codigo.gs)
+  var docsResumen = null;     // documentos: si puede conectarse (lo decide el servidor, ver DOCUMENTOS en Codigo.gs)
+  function recibirResumenDocs(r) { docsResumen = r; pintarPuntoDocs(r, null); }
+  function avisarDocsPendientes(texto) {
+    rbConfirmar(texto || "Para conectarte necesitas tus documentos validados y al día.", { si: "Ver documentos", no: "Ahora no", tipo: "error" })
+      .then(function (si) { if (si) abrirPantallaAdmin("documentos"); });
+  }
   function textoHoras(min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + " h " : "") + m + " min"; }
   function cargarMiConexion() {
     api({ accion: "mi_conexion" }).then(function (res) {
       conexionCargada = true;
-      if (res.ok) { conectadoManual = res.conectado; if (res.jornada) jornadaActual = res.jornada; }
+      if (res.ok) { conectadoManual = res.conectado; if (res.jornada) jornadaActual = res.jornada; if (res.documentos) recibirResumenDocs(res.documentos); }
       pintarEstadoTablero();
     }).catch(function () {});
   }
@@ -6359,6 +6718,11 @@
       badge.className = "btn-estado-conexion desconectado";
       var hasta = jornadaActual.descanso_hasta ? new Date(jornadaActual.descanso_hasta) : null;
       badge.textContent = "Descanso hasta las " + (hasta ? ("0" + hasta.getHours()).slice(-2) + ":" + ("0" + hasta.getMinutes()).slice(-2) : "--:--");
+      return;
+    }
+    if (docsResumen && !docsResumen.habilitado) {
+      badge.className = "btn-estado-conexion bloqueado";
+      badge.textContent = "Documentos pendientes";
       return;
     }
     if (!conectadoManual) {
@@ -6374,13 +6738,22 @@
   }
 
   document.getElementById("tabEstadoBadge").addEventListener("click", function () {
+    if (docsResumen && !docsResumen.habilitado) { avisarDocsPendientes(); return; }
     var deseado = !conectadoManual;
-    conectadoManual = deseado; // optimista: se nota al toque, sin esperar la red
-    pintarEstadoTablero();
-    apiPost({ accion: "cambiar_mi_conexion", conectado: deseado }).then(function (res) {
-      if (res && res.jornada) jornadaActual = res.jornada;
-      if (!res || !res.ok) { conectadoManual = !deseado; pintarEstadoTablero(); if (res && res.error) rbAlerta(res.error); }
-    }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); });
+    // Conectarse es seguro y se deshace solo; desconectarse corta los viajes nuevos: se confirma.
+    (deseado ? Promise.resolve(true) : rbConfirmar("¿Desconectarte? Dejarás de recibir viajes nuevos hasta que vuelvas a conectarte.", { si: "Sí, desconectarme", no: "Seguir conectado" }))
+      .then(function (si) {
+        if (!si) return;
+        conectadoManual = deseado; // optimista: se nota al toque, sin esperar la red
+        pintarEstadoTablero();
+        apiPost({ accion: "cambiar_mi_conexion", conectado: deseado }).then(function (res) {
+          if (res && res.jornada) jornadaActual = res.jornada;
+          if (!res || !res.ok) {
+            conectadoManual = !deseado; pintarEstadoTablero();
+            if (res && res.documentos) avisarDocsPendientes(res.error); else if (res && res.error) rbAlerta(res.error);
+          }
+        }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); rbAlerta(TEXTO_SIN_CONEXION); });
+      });
   });
 
   function pintarMapaEspera() {
@@ -6414,10 +6787,10 @@
      Al tocar un auto o un pasajero en viaje / en busca del pasajero se ven AMBOS (más el
      destino y la línea entre ellos) y, del conductor, la evaluación de sus llegadas.
      --------------------------------------------------------------- */
-  var COLOR_ESTADO_FLOTA = { DISPONIBLE: "#16A34A", EN_VIAJE: "#F97316", DESCONECTADO: "#8A949E", SIN_SENAL: "#8A949E" };
+  var COLOR_ESTADO_FLOTA = { DISPONIBLE: "#16A34A", EN_VIAJE: "#EF6D19", DESCONECTADO: "#8A949E", SIN_SENAL: "#8A949E" };
   var NOMBRE_ESTADO_FLOTA = { DISPONIBLE: "Disponible", EN_VIAJE: "En viaje", DESCONECTADO: "Desconectado", SIN_SENAL: "Sin señal" };
   var ORDEN_ESTADO_FLOTA = { EN_VIAJE: 0, DISPONIBLE: 1, DESCONECTADO: 2, SIN_SENAL: 3 };
-  var COLOR_ESTADO_PAS = { BUSCANDO: "#EAB308", A_RECOGER: "#F97316", CON_PASAJERO: "#2563EB" };
+  var COLOR_ESTADO_PAS = { BUSCANDO: "#EAB308", A_RECOGER: "#EF6D19", CON_PASAJERO: "#2563EB" };
   var NOMBRE_ESTADO_PAS = { BUSCANDO: "Buscando conductor", A_RECOGER: "Esperando su auto", CON_PASAJERO: "En viaje" };
   var flotaDatos = [], flotaPas = [], flotaMarcas = {}, flotaMarcasPas = {}, flotaTimer = null, flotaEncuadrada = false, flotaCargando = false;
   var flotaVer = { conductores: true, pasajeros: true }, flotaSel = null, flotaDestino = null, flotaLinea = null;
@@ -6602,7 +6975,7 @@
         var aPasajero = par.p.estado !== "CON_PASAJERO" && conPosicionFlota(par.p);
         var hasta = aPasajero ? new google.maps.LatLng(par.p.lat, par.p.lng) : dest;
         flotaLinea = new google.maps.Polyline({
-          map: mapaEspera, path: [new google.maps.LatLng(par.c.lat, par.c.lng), hasta], geodesic: true, strokeColor: "#F97316", strokeOpacity: 0, zIndex: 1,
+          map: mapaEspera, path: [new google.maps.LatLng(par.c.lat, par.c.lng), hasta], geodesic: true, strokeColor: "#EF6D19", strokeOpacity: 0, zIndex: 1,
           icons: [{ icon: { path: "M 0,-1 0,1", strokeOpacity: 0.95, strokeWeight: 3, scale: 3 }, offset: "0", repeat: "12px" }]
         });
       }
@@ -6800,7 +7173,7 @@
   var ubicacionApagadaAMano = false;
   function compartirUbicacionPorDefecto() {
     var chk = document.getElementById("chkUbicacion");
-    if (chk.checked || ubicacionApagadaAMano || !obtenerSesion() || MODO === "admin") return;
+    if (chk.checked || ubicacionApagadaAMano || !obtenerSesion() || MODO === "admin" || document.body.classList.contains("alta-pendiente")) return;
     chk.checked = true;
     chk.dispatchEvent(new Event("change"));
   }
