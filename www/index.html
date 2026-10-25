@@ -17,7 +17,7 @@
   /* =====================================================================
      SISTEMA VISUAL
      ---------------------------------------------------------------------
-     Un solo color de marca (near-black para acciones, como Uber/Cabify) y
+     Un solo color de marca (near-black para acciones, referentes de mercado) y
      el verde reservado SOLO para estados positivos. Nada de degradados ni
      de varios acentos compitiendo: eso es lo que hace ver amateur una app.
      Ritmo de espaciado en múltiplos de 4/8. Iconos: un solo set SVG con
@@ -588,7 +588,23 @@
   .menu-punto.contador { display: inline-block; margin-left: 8px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; color: #fff; background: var(--acento, #ef6d19); }
   .menu-punto[hidden] { display: none; }
   #btnMenuP.con-mensajes { position: relative; }
-  #btnMenuP.con-mensajes::after { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
+  #btnMenuP.con-mensajes::after { content: attr(data-n); position: absolute; top: 2px; right: 2px; box-sizing: border-box; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 12px; font-weight: 700; line-height: 14px; text-align: center; color: #fff; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
+  .modal-opc.pagina#modalMensajeLeer { z-index: 71; }
+  .msg-fila { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 56px; padding: 12px 6px; text-align: left; font: inherit; color: var(--text); background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .msg-fila:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .msg-punto { flex: none; width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; background: transparent; }
+  .msg-fila.nuevo .msg-punto { background: var(--naranja, #ef6d19); }
+  .msg-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .msg-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .msg-cab strong { font-size: 15px; font-weight: 600; }
+  .msg-fila.nuevo .msg-cab strong { font-weight: 700; }
+  .msg-fecha { flex: none; font-size: 13px; color: var(--text-2); }
+  .msg-previa { font-size: 14px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-leer { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 8px 4px; }
+  .msg-titulo { margin: 0 0 4px; font-size: 20px; line-height: 1.3; }
+  .msg-hora { margin: 0 0 16px; font-size: 13px; color: var(--text-2); }
+  .msg-texto { margin: 0; font-size: 16px; line-height: 1.55; white-space: pre-line; }
+  .modal-opc.pagina #listaMensajesP { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
   .mensaje-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
   .mensaje-item strong { display: block; font-size: 16px; }
   .mensaje-item span { font-size: 13px; color: var(--text-3); }
@@ -628,7 +644,12 @@
   @media (min-width: 900px) {
     body.pas-pantalla { padding: 0; display: block; }
     body.pas-pantalla .app { max-width: none; }
-    body.pas-pantalla .topbar { margin: 0; border-radius: 0; padding-left: 32px; padding-right: 32px; }
+    body.pas-pantalla .topbar { margin: 0; border-radius: 0; padding: 10px 32px; }
+    /* Header compacto (~64 px): logo menor y nombre + lema + rol en una sola línea. */
+    body.pas-pantalla .brand-mark { width: 44px; height: 44px; }
+    body.pas-pantalla .brand-texto { flex-direction: row; align-items: center; gap: 12px; min-height: 0; }
+    body.pas-pantalla .brand-wordmark { height: 22px; }
+    body.pas-pantalla .brand-sub::before { content: "\00b7"; margin-right: 12px; color: #fff; }
     body.pas-pantalla .wiz-hoja {
       left: 0; transform: none; width: 420px; max-width: none;
       top: var(--topbar-h, 72px); bottom: var(--nav-h, 0px); height: auto !important;
@@ -751,7 +772,7 @@
   /* De noche el fondo del mapa también es oscuro (mientras cargan las baldosas). */
   body.mapa-noche #mapaCotizar, body.mapa-noche #mapaConductor, body.mapa-noche .radar-buscando { background: #17212B; border-color: #2E3F52; }
 
-  /* ---------- Seguimiento: mapa grande + hoja (como Uber/DiDi) ---------- */
+  /* ---------- Seguimiento: mapa grande + hoja (patrón de referentes de mercado) ---------- */
   .wiz-mapa { position: relative; }
   .radar-buscando {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -1180,7 +1201,7 @@
   </div>
 
   <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
-   <!-- Pedir un viaje en 2 pantallas, sin scroll (como Uber/DiDi): el mapa queda
+   <!-- Pedir un viaje en 2 pantallas, sin scroll (patrón de referentes de mercado): el mapa queda
         arriba y abajo una hoja que cambia. Paso 1 "¿A dónde vas?"; paso 2 "Confirma
         tu viaje". Cuándo / tipo de viaje / para quién se eligen en mini-ventanas
         que reutilizan los mismos campos de siempre (mismos id). -->
@@ -1348,6 +1369,13 @@
      </div>
    </div>
 
+   <div class="modal-opc pagina" id="modalMensajeLeer" hidden role="dialog" aria-labelledby="modalMensajeLeerTit">
+     <div class="modal-opc-hoja">
+       <div class="pagina-cab"><button type="button" data-cierra="modalMensajeLeer" aria-label="Volver">&#8249;</button><h3 id="modalMensajeLeerTit">Mensaje</h3></div>
+       <div class="msg-leer" id="mensajeLeerCuerpo"><h4 class="msg-titulo" id="mensajeLeerTitulo"></h4><p class="msg-hora" id="mensajeLeerHora"></p><p class="msg-texto" id="mensajeLeerTexto"></p></div>
+     </div>
+   </div>
+
    <div class="modal-opc pagina" id="modalMensajes" hidden role="dialog" aria-labelledby="modalMensajesTit">
      <div class="modal-opc-hoja">
        <div class="pagina-cab"><button type="button" data-cierra="modalMensajes" aria-label="Volver">&#8249;</button><h3 id="modalMensajesTit">Mensajes</h3></div>
@@ -1468,7 +1496,7 @@
   </div>
 
   <div id="vistaEstado" role="tabpanel" aria-labelledby="tabSeguimiento" style="display:none;">
-   <!-- Seguimiento como Uber/DiDi: mapa grande arriba (con un radar mientras se
+   <!-- Seguimiento, patrón de referentes de mercado: mapa grande arriba (con un radar mientras se
         busca conductor) y una hoja que sube con el estado, el conductor y el cobro. -->
    <div class="wiz seg" id="seg">
     <div class="wiz-mapa">
@@ -1542,7 +1570,7 @@
     </div>
     <div class="cambio-banner" id="cambioBanner" role="status"></div>
     <div class="espera-recogida" id="esperaRecogida" role="status"><span class="er-reloj" id="erReloj">03:00</span><span class="er-texto" id="erTexto"></span></div>
-    <!-- Tiempo estimado de llegada del conductor (como Uber/DiDi): aparece
+    <!-- Tiempo estimado de llegada del conductor (patrón de referentes de mercado): aparece
          mientras el conductor va a buscarte. -->
     <div class="eta" id="etaConductor" style="display:none;" aria-live="polite"></div>
     <!-- PIN de inicio: el pasajero se lo dice al conductor al subir; sin él el viaje no inicia. -->
@@ -1581,8 +1609,8 @@
       <div class="desglose" id="desgloseFinal"></div>
       <p class="desglose-motivo" id="motivoDesglose" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
     </div>
-    <!-- Chat: aparece recién cuando el viaje queda confirmado, igual que
-         en Uber/DiDi — antes de eso no hay conductor asignado con quien
+    <!-- Chat: aparece recién cuando el viaje queda confirmado, como en los referentes de mercado:
+         antes de eso no hay conductor asignado con quien
          hablar. -->
     <div id="cardChat" style="display:none;">
       <button type="button" class="burbuja-chat" id="burbujaChat" aria-label="Abrir el chat con tu conductor">
@@ -2443,7 +2471,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 74;
+  var APP_VERSION = 75;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3307,7 +3335,7 @@
     });
     document.getElementById("chipOtros").style.display = "";
   }
-  // Un lugar guardado va al DESTINO (como en Uber); si el destino ya está escrito, al campo activo.
+  // Un lugar guardado va al DESTINO (patrón de referentes de mercado); si el destino ya está escrito, al campo activo.
   function aplicarLugar(l) {
     var id = !document.getElementById("destino").value.trim() ? "destino" : campoDireccionActivo;
     var inp = document.getElementById(id);
@@ -4077,7 +4105,7 @@
 
   /* ---------------------------------------------------------------
      Seguimiento del viaje: pasos, tiempo de llegada, recorrido y paradas
-     en el mapa (como Uber y DiDi).
+     en el mapa (patrón de referentes de mercado).
      --------------------------------------------------------------- */
   var viajeActualInfo = null;       // lo que se pidió: origen, paradas, destino, fecha y hora
   var viajeIniciadoActual = false;  // el conductor ya tocó "Iniciar viaje"
@@ -5846,37 +5874,83 @@ function svgAuto(rumbo, color, tipo) {
     });
   });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuP(false); });
-  /* Mensajes: los avisos que te llegan (conductor en camino, pago, cambios del viaje...). Lo leído se recuerda en este teléfono; el contador
-     son los que llegaron después de la última vez que abriste la bandeja. */
-  var MENSAJES_VISTO_KEY = "rumbo_mensajes_visto";
+  /* Mensajes: los avisos que te llegan (conductor en camino, pago, cambios del viaje...). Cada mensaje se abre en su propia pantalla; lo leído se
+     guarda POR MENSAJE (lista de ids) en este teléfono. La marca antigua (un solo instante) sigue valiendo: lo anterior a ella cuenta como leído. */
+  var MENSAJES_VISTO_KEY = "rumbo_mensajes_visto", MENSAJES_LEIDOS_KEY = "rumbo_mensajes_leidos";
+  var mensajesCache = [], mensajesLeidosMem = [];
   function mensajesVisto() { try { return localStorage.getItem(MENSAJES_VISTO_KEY) || ""; } catch (e) { return ""; } }
+  function mensajesLeidos() {
+    var a = [];
+    try { a = JSON.parse(localStorage.getItem(MENSAJES_LEIDOS_KEY) || "[]"); } catch (e) {}
+    return (Array.isArray(a) ? a : []).concat(mensajesLeidosMem);
+  }
+  function marcarMensajeLeido(id) {
+    id = String(id);
+    if (mensajesLeidosMem.indexOf(id) < 0) mensajesLeidosMem.push(id);
+    try { localStorage.setItem(MENSAJES_LEIDOS_KEY, JSON.stringify(mensajesLeidos().filter(function (x, i, arr) { return arr.indexOf(x) === i; }).slice(-300))); } catch (e) {}
+  }
+  function mensajeLeido(n) { return mensajesLeidos().indexOf(String(n.id)) >= 0 || String(n.creado_en) <= mensajesVisto(); }
+  function fechaMensajeP(v, larga) {
+    var fe = new Date(v);
+    if (isNaN(fe.getTime())) return "";
+    return larga ? fe.toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" }) + ", " + fe.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })
+                 : fe.toLocaleDateString("es-CL", { day: "numeric", month: "short" });
+  }
+  // El número de «sin abrir»: pastilla junto a «Mensajes» en el menú y en el botón del menú (9+ como tope, anunciado por lector de pantalla).
+  function pintarContadorMensajesP() {
+    var sinLeer = mensajesCache.filter(function (n) { return !mensajeLeido(n); }).length, txt = sinLeer > 9 ? "9+" : String(sinLeer);
+    var punto = document.getElementById("puntoMensajesP"), btn = document.getElementById("btnMenuP");
+    if (punto) { punto.hidden = sinLeer === 0; punto.textContent = txt; }
+    btn.classList.toggle("con-mensajes", sinLeer > 0);
+    if (sinLeer > 0) btn.setAttribute("data-n", txt); else btn.removeAttribute("data-n");
+    btn.setAttribute("aria-label", sinLeer > 0 ? "Abrir el menú, " + sinLeer + (sinLeer === 1 ? " mensaje sin leer" : " mensajes sin leer") : "Abrir el menú");
+  }
+  function pintarListaMensajesP() {
+    var lista = document.getElementById("listaMensajesP");
+    if (!lista) return;
+    lista.textContent = "";
+    if (!mensajesCache.length) { var vacio = document.createElement("p"); vacio.className = "tyc-p"; vacio.textContent = "No tienes mensajes."; lista.appendChild(vacio); return; }
+    mensajesCache.forEach(function (n) {
+      var nuevo = !mensajeLeido(n);
+      var b = document.createElement("button"); b.type = "button"; b.className = "msg-fila" + (nuevo ? " nuevo" : ""); b.setAttribute("data-mensaje", String(n.id));
+      var pt = document.createElement("span"); pt.className = "msg-punto"; pt.setAttribute("aria-hidden", "true");
+      var cu = document.createElement("span"); cu.className = "msg-cuerpo";
+      var cab = document.createElement("span"); cab.className = "msg-cab";
+      var t = document.createElement("strong"); t.textContent = n.titulo;
+      var f = document.createElement("span"); f.className = "msg-fecha"; f.textContent = fechaMensajeP(n.creado_en, false);
+      var pv = document.createElement("span"); pv.className = "msg-previa"; pv.textContent = n.texto;
+      cab.appendChild(t); cab.appendChild(f); cu.appendChild(cab); cu.appendChild(pv); b.appendChild(pt); b.appendChild(cu);
+      if (nuevo) { var sr = document.createElement("span"); sr.className = "sr-only"; sr.textContent = "Sin leer"; b.appendChild(sr); }
+      lista.appendChild(b);
+    });
+  }
+  // Lectura de un mensaje: pantalla propia con título, fecha y hora y el texto completo.
+  function abrirMensajeP(id) {
+    var n = mensajesCache.filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!n) return;
+    document.getElementById("mensajeLeerTitulo").textContent = n.titulo;
+    document.getElementById("mensajeLeerHora").textContent = fechaMensajeP(n.creado_en, true);
+    document.getElementById("mensajeLeerTexto").textContent = n.texto;
+    document.getElementById("mensajeLeerCuerpo").scrollTop = 0;
+    marcarMensajeLeido(n.id);
+    pintarContadorMensajesP();
+    pintarListaMensajesP();
+    abrirModalOpc("modalMensajeLeer");
+  }
+  document.getElementById("listaMensajesP").addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest("[data-mensaje]");
+    if (b) abrirMensajeP(b.getAttribute("data-mensaje"));
+  });
   function cargarMensajesP(abierta) {
     var ses = obtenerSesionPasajero();
-    var lista = document.getElementById("listaMensajesP"), punto = document.getElementById("puntoMensajesP");
-    if (!ses || !ses.token) {
-      if (punto) punto.hidden = true;
-      if (abierta && lista) lista.innerHTML = '<p class="tyc-p">Ingresa a tu cuenta para ver tus mensajes.</p>';
-      return;
-    }
-    apiPost({ accion: "mis_mensajes_pasajero", pasajero_token: ses.token }).then(function (res) {
+    var lista = document.getElementById("listaMensajesP");
+    // Sin cuenta también se ven las noticias generales de Rumbo (no los avisos personales, que necesitan sesión).
+    var pedido = ses && ses.token ? apiPost({ accion: "mis_mensajes_pasajero", pasajero_token: ses.token }) : api({ accion: "noticias_pasajeros" });
+    pedido.then(function (res) {
       if (!res || !res.ok) { if (abierta && lista) lista.innerHTML = '<p class="tyc-p">No se pudieron cargar tus mensajes. Intenta de nuevo.</p>'; return; }
-      var msgs = res.notificaciones || [], visto = mensajesVisto();
-      var sinLeer = msgs.filter(function (n) { return String(n.creado_en) > visto; }).length;
-      document.getElementById("btnMenuP").classList.toggle("con-mensajes", sinLeer > 0 && !abierta);
-      if (abierta && lista) {
-        lista.textContent = "";
-        if (!msgs.length) { var vacio = document.createElement("p"); vacio.className = "tyc-p"; vacio.textContent = "No tienes mensajes."; lista.appendChild(vacio); }
-        msgs.forEach(function (n) {
-          var d = document.createElement("div"); d.className = "mensaje-item" + (String(n.creado_en) > visto ? " nuevo" : "");
-          var t = document.createElement("strong"); t.textContent = n.titulo;
-          var f = document.createElement("span"); var fe = new Date(n.creado_en);
-          f.textContent = fe.toLocaleDateString("es-CL", { day: "numeric", month: "short" }) + " " + fe.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
-          var x = document.createElement("p"); x.textContent = n.texto;
-          d.appendChild(t); d.appendChild(f); d.appendChild(x); lista.appendChild(d);
-        });
-        if (msgs.length) { try { localStorage.setItem(MENSAJES_VISTO_KEY, msgs[0].creado_en); } catch (e) {} }
-        if (punto) punto.hidden = true;
-      } else if (punto) { punto.hidden = sinLeer === 0; punto.textContent = sinLeer > 9 ? "9+" : String(sinLeer); }
+      mensajesCache = (res.notificaciones || []).map(function (n) { if (n.id === undefined || n.id === null || n.id === "") n.id = n.creado_en; return n; });
+      pintarContadorMensajesP();
+      if (abierta || !document.getElementById("modalMensajes").hidden) pintarListaMensajesP();
     }).catch(function () {});
   }
   setInterval(function () { if (!document.hidden) cargarMensajesP(false); }, 120000);

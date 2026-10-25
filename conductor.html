@@ -352,9 +352,32 @@
   .menu-punto.contador[hidden] { display: none; }
   .menu-punto.contador { width: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; color: #fff; background: var(--acento, #ef6d19); }
   #btnMenuCond.con-mensajes { position: relative; }
-  #btnMenuCond.con-mensajes::after { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
+  #btnMenuCond.con-mensajes::after { content: attr(data-n); position: absolute; top: 2px; right: 2px; box-sizing: border-box; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 12px; font-weight: 700; line-height: 14px; text-align: center; color: #fff; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
   .docs-correo { padding: 12px 16px; border-bottom: 1px solid var(--border); }
   .docs-correo p { margin: 0 0 8px; } .docs-correo p span { display: block; font-size: 14px; color: var(--text-2); }
+  .notif-form { display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; }
+  .notif-form .nota { margin: 0 0 4px; }
+  .notif-form input, .notif-form textarea { width: 100%; }
+  .notif-form select { width: 100%; min-height: 48px; border: 1.5px solid var(--border); border-radius: 12px; padding: 0 12px; background: var(--surface); color: var(--text); font: inherit; }
+  .notif-pie { padding: 10px 2px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); }
+  .notif-pie .btn { width: 100%; min-height: 48px; }
+  .msg-fila { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 56px; padding: 12px 6px; text-align: left; font: inherit; color: var(--text); background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .msg-fila:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+  .msg-punto { flex: none; width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; background: transparent; }
+  .msg-fila.nuevo .msg-punto { background: var(--acento, #ef6d19); }
+  .msg-cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .msg-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .msg-cab strong { font-size: 15px; font-weight: 600; }
+  .msg-fila.nuevo .msg-cab strong { font-weight: 700; }
+  .msg-fecha { flex: none; font-size: 13px; color: var(--text-2); }
+  .msg-previa { font-size: 14px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-leer { padding: 8px 4px; }
+  .msg-titulo { margin: 0 0 4px; font-size: 20px; line-height: 1.3; }
+  .msg-hora { margin: 0 0 16px; font-size: 13px; color: var(--text-2); }
+  .msg-texto { margin: 0 0 20px; font-size: 16px; line-height: 1.55; white-space: pre-line; }
+  .msg-sub { margin: 20px 0 4px; font-size: 15px; }
+  .msg-env { padding: 10px 2px; border-bottom: 1px solid var(--border); }
+  .msg-para { font-size: 13px; color: var(--text-2); }
   .docs-correo-fila { display: flex; gap: 8px; margin-bottom: 8px; } .docs-correo-fila input { flex: 1; min-width: 0; }
   .pedido-desglose { margin: -4px 0 8px; font-size: 14px; color: var(--text-2); }
   .mem-barra { position: relative; }
@@ -501,7 +524,7 @@
   .tablero-mapa .btn-centrar { position: absolute; left: 10px; top: 10px; z-index: 2; min-height: 44px; box-shadow: var(--shadow-md); }
   .tablero-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14px; white-space: nowrap; }
-  /* ---------- Conductor: mapa grande + hoja inferior (como Uber/DiDi) ---------- */
+  /* ---------- Conductor: mapa grande + hoja inferior (patrón de referentes de mercado) ---------- */
   /* Solo en Pedidos y En Rumbo del conductor (body.cond-pantalla); Ajustes y el
      admin siguen como antes. Alturas las fija ajustarCond() para llenar la pantalla. */
   .cond-mapa { display: none; }
@@ -800,7 +823,7 @@
   .btn-row.btn-row-pedido { grid-template-columns: 1fr; gap: 6px; }
   .btn-row-pedido .btn-rechazar { background: none; color: var(--danger); border: 1px solid var(--border); box-shadow: none; }
   body.cond-pantalla .pedido-card > .btn-row:last-child .btn-rechazar { min-height: 48px; font-size: 15px; }
-  /* Viaje en curso (conductor, como Uber): el mapa de fondo + UNA tarjeta flotante con la próxima acción.
+  /* Viaje en curso (conductor, patrón de referentes de mercado): el mapa de fondo + UNA tarjeta flotante con la próxima acción.
      La ventana arrastrable se oculta mientras hay viaje; el detalle (contacto, ruta, chat) es una pantalla aparte. */
   body.con-viaje #panelEnCurso { display: none !important; }
   body:not(.cond-pantalla) .tarjeta-viaje, body:not(.cond-pantalla) .accion-viaje, body:not(.cond-pantalla) .itinerario-viaje { display: none !important; }
@@ -848,8 +871,8 @@
   .accion-viaje .tv-sec, .accion-viaje .tv-otros, .accion-viaje .tv-editar-rapido { display: none !important; }
   /* "Opciones del viaje" vive en la pestaña de arriba; "Editar viaje" va dentro de esas opciones (no suelto). */
   #itinerarioViaje #tvEditar { display: none !important; }
-  /* Fila de acciones de la tarjeta de arriba (como Uber): navegar, chat, editar y más. Cuatro botones iguales de 56 px. */
-  /* Como Uber: una línea compacta con tiempo y distancia sobre el botón, y "Navegar" flotando sobre el mapa. */
+  /* Fila de acciones de la tarjeta de arriba (patrón de referentes de mercado): navegar, chat, editar y más. Cuatro botones iguales de 56 px. */
+  /* Patrón de referentes de mercado: una línea compacta con tiempo y distancia sobre el botón, y "Navegar" flotando sobre el mapa. */
   .tv-info { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 0 8px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); text-align: center; }
   .tv-info strong { font-size: 18px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
   .tv-info span { font-size: 14px; color: var(--text-2); }
@@ -1334,7 +1357,7 @@
   </header>
 
 
-  <!-- Mapa grande fijo arriba (solo conductor, en Pedidos y En Rumbo), como Uber/DiDi:
+  <!-- Mapa grande fijo arriba (solo conductor, en Pedidos y En Rumbo), patrón de referentes de mercado:
        mi auto en vivo; las hojas de abajo (pedidos / viaje en curso) suben sobre él. -->
   <div class="cond-mapa" id="condMapa">
     <div class="tablero-mapa">
@@ -1968,7 +1991,7 @@
   </div>
 </div>
 
-<!-- Pedido nuevo EMERGENTE (como Uber/DiDi): ocupa la pantalla con lo esencial, un cronómetro
+<!-- Pedido nuevo EMERGENTE (patrón de referentes de mercado): ocupa la pantalla con lo esencial, un cronómetro
      para responder y dos botones grandes, para decidir sin buscar nada mientras se maneja. -->
 <div class="pedido-emergente solo-conductor" id="pedidoEmergente" hidden role="alertdialog" aria-live="assertive" aria-labelledby="peTitulo">
   <div class="pe-hoja">
@@ -2042,7 +2065,7 @@
   <button type="button" class="menu-lateral-item aj-oculto" data-menu="ajustes" hidden>Ajustes y cuenta</button>
 </aside>
 
-<!-- Viaje en curso (solo conductor, estilo Uber/DiDi): arriba la ruta; abajo UN botón con la próxima acción y la pestaña
+<!-- Viaje en curso (solo conductor, patrón de referentes de mercado): arriba la ruta; abajo UN botón con la próxima acción y la pestaña
      que sube con todo el itinerario. El mapa de fondo queda libre. -->
 <div class="tarjeta-viaje solo-conductor" id="tarjetaViaje" hidden>
   <div class="tv-fila">
@@ -2348,7 +2371,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 71;
+  var APP_VERSION = 72;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2766,7 +2789,7 @@
     var modales = document.querySelectorAll(".modal-fondo:not([hidden])");
     if (modales.length) { modales[modales.length - 1].hidden = true; return true; }
     if (document.getElementById("menuLateral").classList.contains("abierto")) { abrirMenuCond(false); return true; }
-    if (admAbierta) { cerrarPantallasAdmin(); return true; }
+    if (admAbierta) { volverAdmin(); return true; }
     if (document.body.classList.contains("aj-solo")) { document.getElementById("btnVolverAjustes").click(); return true; }
     return false;
   };
@@ -2788,7 +2811,7 @@
     if (MODO !== "admin" && sesion.conductor.bienvenida) {
       sesion.conductor.bienvenida = false; guardarSesion(sesion);
       setTimeout(function () {
-        rbAlerta("¡Bienvenido a Rumbo! Tu cuenta está activa. Conéctate con el botón de arriba y te avisamos apenas llegue un viaje.", "ok");
+        rbAlerta("¡Bienvenido a Rumbo! Tu cuenta está activa. Conéctate con el botón de arriba y te avisamos apenas llegue un viaje. ¡Mucho éxito!", "ok");
         apiPost({ accion: "bienvenida_vista" }).catch(function () {});
       }, 700);
     }
@@ -3084,7 +3107,7 @@
      (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
      Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
      --------------------------------------------------------------- */
-  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", documentos: "Documentos", notificaciones: "Mensajes", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", documentos: "Documentos", notificaciones: "Mensajes", publicar: "Publicar noticia", leer: "Mensaje", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
   function crearPantallaAdmin(id) {
     var p = document.createElement("section");
     p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
@@ -3288,7 +3311,7 @@
     var ses = obtenerSesion();
     if (ses && ses.conductor && ses.conductor.pendiente_activacion && !pendiente) {
       ses.conductor.pendiente_activacion = false; guardarSesion(ses);
-      rbAlerta("¡Bienvenido a Rumbo! Rumbo activó tu cuenta. Ya puedes recibir viajes.", "ok");
+      rbAlerta("¡Bienvenido a Rumbo! Activamos tu cuenta: ya puedes recibir viajes. ¡Mucho éxito!", "ok");
       apiPost({ accion: "bienvenida_vista" }).catch(function () {});
       document.body.classList.remove("alta-pendiente"); cerrarPantallasAdmin(); entrar(ses);
     }
@@ -3498,6 +3521,7 @@
     if (id === "documentos") armarPantallaDocs();
     if ((id === "solicitudes" || id === "reservas" || id === "viajes") && !document.getElementById("adm-" + id)) crearPantallaMisViajes(id);
     if (id === "notificaciones" && !document.getElementById("adm-" + id)) armarPantallaNotificaciones();
+    if (id === "publicar" && MODO === "admin" && !document.getElementById("adm-" + id)) armarPantallaPublicar();
     if (id === "ganancias" && !document.getElementById("adm-" + id)) {
       var pg = crearPantallaAdmin("ganancias");
       var cg = document.createElement("div"); cg.className = "adm-scroll"; cg.id = "mv-ganancias"; pg.appendChild(cg);
@@ -3523,56 +3547,125 @@
     else if (id === "solicitudes" || id === "reservas" || id === "viajes") cargarMisViajes(id);
     else if (id === "ganancias") cargarMisGanancias();
     else if (id === "notificaciones") cargarNotificaciones(true);
+    else if (id === "publicar") cargarEnviadas();
   }
 
-  /* Bandeja de mensajes: bienvenida, documentos y noticias del admin. El admin también publica desde acá. Lo leído se recuerda en el teléfono. */
+  /* Bandeja de mensajes: bienvenida, documentos y noticias del admin. Cada mensaje se abre en su propia pantalla; lo leído se guarda
+     POR MENSAJE (lista de ids) en el teléfono. La marca antigua (un solo instante) sigue valiendo: lo anterior a ella cuenta como leído. */
   var NOTIF_VISTO_KEY = "rumbo_notif_visto_" + MODO;
+  var NOTIF_LEIDOS_KEY = "rumbo_notif_leidos_" + MODO;
+  var notifCache = [], notifLeidosMem = [];
   function leerNotifVisto() { try { return localStorage.getItem(NOTIF_VISTO_KEY) || ""; } catch (e) { return ""; } }
-  function guardarNotifVisto(v) { try { localStorage.setItem(NOTIF_VISTO_KEY, v); } catch (e) {} }
+  function leerNotifLeidos() {
+    var a = [];
+    try { a = JSON.parse(localStorage.getItem(NOTIF_LEIDOS_KEY) || "[]"); } catch (e) {}
+    return (Array.isArray(a) ? a : []).concat(notifLeidosMem);
+  }
+  function marcarNotifLeida(id) {
+    id = String(id);
+    if (notifLeidosMem.indexOf(id) < 0) notifLeidosMem.push(id);
+    try { localStorage.setItem(NOTIF_LEIDOS_KEY, JSON.stringify(leerNotifLeidos().filter(function (x, i, arr) { return arr.indexOf(x) === i; }).slice(-300))); } catch (e) {}
+  }
+  function notifLeida(n) { return leerNotifLeidos().indexOf(String(n.id)) >= 0 || String(n.creado_en) <= leerNotifVisto(); }
+  function fechaHoraLarga(v) {
+    var d = new Date(v);
+    return isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "numeric", month: "long", year: "numeric" }) + ", " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+  }
+  var DESTINO_TXT = { CONDUCTORES: "Conductores", PASAJEROS: "Pasajeros", TODOS: "Ambos" };
   function armarPantallaNotificaciones() {
     var p = crearPantallaAdmin("notificaciones");
     p.insertAdjacentHTML("beforeend",
-      (MODO === "admin" ? '<div class="adm-fijo docs-correo"><p><strong>Publicar una noticia</strong><span>Elige si la ven los conductores, los pasajeros o ambos.</span></p>' +
-        '<input type="text" id="notifTitulo" maxlength="80" placeholder="Título" style="width:100%;margin-bottom:8px;">' +
-        '<textarea id="notifTexto" maxlength="500" rows="3" placeholder="Mensaje" style="width:100%;margin-bottom:8px;"></textarea>' +
+      '<div class="adm-scroll" id="notifLista"><p class="vacio">Cargando...</p></div>' +
+      (MODO === "admin" ? '<div class="adm-fijo notif-pie"><button class="btn btn-ok" type="button" id="notifIrPublicar">Publicar noticia</button></div>' : ""));
+    var ir = document.getElementById("notifIrPublicar");
+    if (ir) ir.addEventListener("click", function () { abrirPantallaAdmin("publicar"); });
+  }
+  /* Publicar una noticia: pantalla propia del admin (la bandeja no lleva formulario). Debajo queda «Enviadas», el respaldo de lo publicado. */
+  function armarPantallaPublicar() {
+    var p = crearPantallaAdmin("publicar");
+    p.insertAdjacentHTML("beforeend",
+      '<div class="adm-scroll notif-form"><p class="nota">Elige si la ven los conductores, los pasajeros o ambos.</p>' +
+        '<input type="text" id="notifTitulo" maxlength="80" placeholder="Título">' +
+        '<textarea id="notifTexto" maxlength="500" rows="4" placeholder="Mensaje"></textarea>' +
         '<label class="campo-label" for="notifDestino">Para quién es</label>' +
-        '<select id="notifDestino" style="width:100%;min-height:48px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--text);font:inherit;">' +
-          '<option value="CONDUCTORES">Conductores</option><option value="PASAJEROS">Pasajeros</option><option value="TODOS">Conductores y pasajeros</option></select>' +
-        '<button class="btn btn-ok" type="button" id="notifPublicar">Publicar</button></div>' : "") +
-      '<div class="adm-scroll" id="notifLista"><p class="vacio">Cargando...</p></div>');
+        '<select id="notifDestino"><option value="CONDUCTORES">Conductores</option><option value="PASAJEROS">Pasajeros</option><option value="TODOS">Conductores y pasajeros</option></select>' +
+        '<h3 class="msg-sub">Enviadas</h3><div id="notifEnviadas"><p class="vacio">Cargando...</p></div></div>' +
+      '<div class="adm-fijo notif-pie"><button class="btn btn-ok" type="button" id="notifPublicar">Publicar</button></div>');
     var b = document.getElementById("notifPublicar");
-    if (b) b.addEventListener("click", function () {
+    b.addEventListener("click", function () {
       var t = document.getElementById("notifTitulo"), x = document.getElementById("notifTexto");
       b.disabled = true;
       apiPost({ accion: "publicar_notificacion", titulo: t.value, texto: x.value, destino: document.getElementById("notifDestino").value }).then(function (res) {
         b.disabled = false;
         if (!res.ok) { rbAlerta(res.error || "No se pudo publicar."); return; }
-        t.value = ""; x.value = ""; rbAlerta("Publicada.", "ok"); cargarNotificaciones(true);
+        t.value = ""; x.value = ""; rbAlerta("Publicada.", "ok"); cargarEnviadas();
       }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
     });
+  }
+  function cargarEnviadas() {
+    var el = document.getElementById("notifEnviadas");
+    if (!el) return;
+    return apiPost({ accion: "noticias_publicadas" }).then(function (res) {
+      var l = res && res.ok ? (res.publicadas || []) : null;
+      el.innerHTML = !l ? '<p class="vacio">No se pudo cargar lo enviado.</p>' : l.length ? l.map(function (n) {
+        return '<div class="msg-env"><div class="msg-cab"><strong>' + escapar(n.titulo) + '</strong><span class="msg-fecha">' + escapar(fechaCorta(n.creado_en)) + '</span></div>' +
+          '<span class="msg-para">' + escapar(DESTINO_TXT[String(n.destino || "").toUpperCase()] || "") + '</span></div>';
+      }).join("") : '<p class="vacio">Aún no has enviado noticias.</p>';
+    }).catch(function () { el.innerHTML = '<p class="vacio">No se pudo cargar lo enviado.</p>'; });
+  }
+  /* Lectura de un mensaje: pantalla propia con título, fecha y hora, texto completo y, en el admin, «Ir a …» si el mensaje es una tarea. */
+  function armarPantallaLeer() {
+    var p = crearPantallaAdmin("leer");
+    p.insertAdjacentHTML("beforeend", '<div class="adm-scroll msg-leer" id="notifLeer"></div>');
+  }
+  function abrirMensaje(id) {
+    var n = notifCache.filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!n) return;
+    if (!document.getElementById("adm-leer")) armarPantallaLeer();
+    var tarea = MODO === "admin" && n.accion && PANTALLAS_ADMIN[n.accion];
+    var cuerpo = document.getElementById("notifLeer");
+    cuerpo.innerHTML = '<h3 class="msg-titulo">' + escapar(n.titulo) + '</h3><p class="msg-hora">' + escapar(fechaHoraLarga(n.creado_en)) + '</p>' +
+      '<p class="msg-texto">' + escapar(n.texto) + '</p>' +
+      (tarea ? '<button class="btn btn-ok" type="button" data-notif-abrir="' + escapar(n.accion) + '">Ir a ' + escapar(PANTALLAS_ADMIN[n.accion]) + '</button>' : '');
+    cuerpo.scrollTop = 0;
+    marcarNotifLeida(n.id);
+    pintarContadorNotif();
+    abrirPantallaAdmin("leer");
   }
   document.addEventListener("click", function (ev) {
     var b = ev.target.closest && ev.target.closest("[data-notif-abrir]");
     if (b) abrirPantallaAdmin(b.getAttribute("data-notif-abrir"));
+    var m = ev.target.closest && ev.target.closest("[data-notif-leer]");
+    if (m) abrirMensaje(m.getAttribute("data-notif-leer"));
   });
+  // El número de «sin abrir»: pastilla junto a «Mensajes» en el menú y en el botón del menú (9+ como tope, anunciado por lector de pantalla).
+  function pintarContadorNotif() {
+    var sinLeer = notifCache.filter(function (n) { return !notifLeida(n); }).length, txt = sinLeer > 9 ? "9+" : String(sinLeer);
+    var punto = document.getElementById("puntoItemNotif"), btn = document.getElementById("btnMenuCond");
+    if (punto) { punto.hidden = sinLeer === 0; punto.textContent = txt; }
+    if (btn) {
+      btn.classList.toggle("con-mensajes", sinLeer > 0);
+      if (sinLeer > 0) btn.setAttribute("data-n", txt); else btn.removeAttribute("data-n");
+      btn.setAttribute("aria-label", sinLeer > 0 ? "Abrir el menú, " + sinLeer + (sinLeer === 1 ? " mensaje sin leer" : " mensajes sin leer") : "Abrir el menú");
+    }
+  }
+  function pintarListaNotif() {
+    var el = document.getElementById("notifLista");
+    if (!el) return;
+    el.innerHTML = notifCache.length ? notifCache.map(function (n) {
+      var nuevo = !notifLeida(n);
+      return '<button type="button" class="msg-fila' + (nuevo ? ' nuevo' : '') + '" data-notif-leer="' + escapar(String(n.id)) + '">' +
+        '<span class="msg-punto" aria-hidden="true"></span><span class="msg-cuerpo"><span class="msg-cab"><strong>' + escapar(n.titulo) + '</strong>' +
+        '<span class="msg-fecha">' + escapar(fechaCorta(n.creado_en)) + '</span></span><span class="msg-previa">' + escapar(n.texto) + '</span></span>' +
+        (nuevo ? '<span class="sr-only">Sin leer</span>' : '') + '</button>';
+    }).join("") : '<p class="vacio" style="margin:16px;">No tienes mensajes.</p>';
+  }
   function cargarNotificaciones(pintar) {
     return apiPost({ accion: "mis_notificaciones" }).then(function (res) {
       if (!res || !res.ok) { if (pintar) { var l0 = document.getElementById("notifLista"); if (l0) l0.innerHTML = '<p class="msg error" style="margin:16px;">' + escapar((res && res.error) || "No se pudo cargar") + '</p>'; } return; }
-      var lista = res.notificaciones || [], visto = leerNotifVisto();
-      var punto = document.getElementById("puntoItemNotif");
-      var sinLeer = lista.filter(function (n) { return String(n.creado_en) > visto; }).length;
-      var btnMenu = document.getElementById("btnMenuCond");
-      if (btnMenu) btnMenu.classList.toggle("con-mensajes", sinLeer > 0 && !pintar);
-      if (pintar) {
-        var el = document.getElementById("notifLista");
-        if (el) el.innerHTML = lista.length ? lista.map(function (n) {
-          var tarea = MODO === "admin" && n.accion && PANTALLAS_ADMIN[n.accion];
-          return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(n.titulo) + '</strong><span>' + escapar(fechaCorta(n.creado_en)) + '</span></div><div class="mv-ruta">' + escapar(n.texto) + '</div>' +
-            (tarea ? '<div class="mv-acciones"><button class="btn btn-chico" type="button" data-notif-abrir="' + escapar(n.accion) + '">Ir a ' + escapar(PANTALLAS_ADMIN[n.accion]) + '</button></div>' : '') + '</div>';
-        }).join("") : '<p class="vacio" style="margin:16px;">No tienes mensajes.</p>';
-        if (lista.length) guardarNotifVisto(lista[0].creado_en);
-        if (punto) punto.hidden = true;
-      } else if (punto) { punto.hidden = sinLeer === 0; punto.textContent = sinLeer > 9 ? "9+" : String(sinLeer); }
+      notifCache = (res.notificaciones || []).map(function (n) { if (n.id === undefined || n.id === null || n.id === "") n.id = n.creado_en; return n; });
+      pintarContadorNotif();
+      if (pintar || admAbierta === "notificaciones") pintarListaNotif();
     }).catch(function () {});
   }
   setInterval(function () { if (!document.hidden && obtenerSesion() && !document.body.classList.contains("alta-pendiente")) cargarNotificaciones(false); }, 120000);
@@ -3648,7 +3741,7 @@
             return '<div class="gan-barra' + (d.dia === hoyTxt ? " hoy" : "") + '"><i style="height:' + Math.max(2, Math.round(d.ganancia / max * 64)) + 'px"></i><span>' + d.letra + '</span></div>';
           }).join("") + '</div>' +
           '<span class="gan-sub">' + escapar(plural(s.viajes)) + " · neto " + escapar(fmt(s.neto)) + (s.retencion > 0 ? " · retención SII " + escapar(fmt(s.retencion)) + " (es tuya)" : "") + '</span></div>' +
-        // Viajes de hoy (como la lista de Uber): hora, ruta y lo que ganó en cada uno
+        // Viajes de hoy (lista al estilo de los referentes de mercado): hora, ruta y lo que ganó en cada uno
         (function () {
           var hoyViajes = (r.historial || []).filter(function (v) { var f = new Date(v.fecha); return !isNaN(f.getTime()) && f.getFullYear() + "-" + ("0" + (f.getMonth() + 1)).slice(-2) + "-" + ("0" + f.getDate()).slice(-2) === hoyTxt; });
           if (!hoyViajes.length) return "";
@@ -3676,8 +3769,10 @@
     if (sondeoAdminTimer) { clearInterval(sondeoAdminTimer); sondeoAdminTimer = null; }
   }
   document.addEventListener("click", function (ev) {
-    if (ev.target.closest("[data-adm-volver]")) cerrarPantallasAdmin();
+    if (ev.target.closest("[data-adm-volver]")) volverAdmin();
   });
+  // «Publicar noticia» vuelve a Mensajes; las demás pantallas vuelven al inicio.
+  function volverAdmin() { if (admAbierta === "publicar" || admAbierta === "leer") abrirPantallaAdmin("notificaciones"); else cerrarPantallasAdmin(); }
 
   /* ---------------------------------------------------------------
      Historial de pagos por mes (solo monto, estado y forma de pago).
@@ -3874,7 +3969,7 @@
     });
   });
 
-  // Con qué app se navega automático al tocar "Iniciar viaje" (como Uber:
+  // Con qué app se navega automático al tocar "Iniciar viaje" (patrón de referentes de mercado:
   // se elige una vez acá, no se pregunta cada viaje). gpsPreferido vive en
   // este cierre y lo usa el handler de data-iniciar más abajo.
   var gpsPreferido = "WAZE";
@@ -5444,7 +5539,7 @@
     return { reloj: mmss(transcurridoSeg), pct: pct, texto: texto, excedida: excedida };
   }
 
-  // Espera del conductor en la recogida (como Uber): 3 min sin costo en cuenta regresiva (verde); al pasar, el reloj
+  // Espera del conductor en la recogida (patrón de referentes de mercado): 3 min sin costo en cuenta regresiva (verde); al pasar, el reloj
   // vuelve a empezar desde cero en rojo y se va cobrando. Función pura (se prueba aparte).
   var ESPERA_RECOGIDA_GRATIS_MIN = 3;
   function estadoEsperaRecogida(transcurridoSeg, valorHora) {
@@ -5538,7 +5633,7 @@
   }
 
   /* ---------------------------------------------------------------
-     Tarjeta flotante del viaje (como Uber). Una función PURA decide qué mostrar y cuál es el
+     Tarjeta flotante del viaje (patrón de referentes de mercado). Una función PURA decide qué mostrar y cuál es el
      único botón de la próxima acción (modeloTarjeta); otra elige qué viaje es el "foco" cuando
      hay varios (elegirFoco). Todo el resto vive en el detalle (pantalla aparte).
      --------------------------------------------------------------- */
@@ -5664,7 +5759,7 @@
     })[0];
   }
 
-  /* Línea de información sobre el botón (como Uber): "3 min · 1,2 km" y "Llegar por Judith". El tiempo y la distancia salen de eta_a_pedido
+  /* Línea de información sobre el botón (patrón de referentes de mercado): "3 min · 1,2 km" y "Llegar por Judith". El tiempo y la distancia salen de eta_a_pedido
      (hasta la recogida); en las demás etapas solo se dice con quién va. Se pide cada 60 s o si el auto se movió más de 200 m. */
   var etaInfo = {};
   function actualizarInfoViaje(p, m) {
@@ -5692,7 +5787,7 @@
   }
   document.getElementById("tvNavegar").addEventListener("click", function () { document.getElementById("tvIr").click(); });
 
-  /* Fila de acciones de la tarjeta de arriba (como Uber). Los botones originales (Ir con Waze, Editar viaje, Finalizar sin iniciar y la
+  /* Fila de acciones de la tarjeta de arriba (patrón de referentes de mercado). Los botones originales (Ir con Waze, Editar viaje, Finalizar sin iniciar y la
      burbuja del chat) siguen siendo los que mandan: la fila copia su estado y les pasa el toque. */
   function actualizarOpcionesViaje() {
     var q = function (id) { return document.getElementById(id); };
@@ -6430,7 +6525,7 @@
     } catch (e) {}
   }
 
-  /* Pedido emergente (como Uber/DiDi): al llegar un pedido sin responder, se abre una
+  /* Pedido emergente (patrón de referentes de mercado): al llegar un pedido sin responder, se abre una
      pantalla con lo esencial (precio, cuándo, de dónde a dónde, cuánto demoras), un
      cronómetro y dos botones grandes. Suena y vibra cada pocos segundos hasta que
      se responde. "Ver detalle" lo cierra y abre la ventana con toda la información. */
