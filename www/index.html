@@ -623,6 +623,22 @@
   body.pas-pantalla.hoja-medio #cardRecorrido, body.pas-pantalla.hoja-medio #btnCompartirViaje,
   body.pas-pantalla.hoja-medio #distanciaConductor, body.pas-pantalla.hoja-medio .pasos,
   body.pas-pantalla.hoja-medio #avisoDerivado, body.pas-pantalla.hoja-medio #estadoDetalle { display: none; }
+  /* Escritorio (web): header de tope a tope, panel de viaje flotante a la izquierda y todo lo demás mapa.
+     Sin asa ni alturas: el panel siempre va completo (el JS no pone hoja-* ni alto en línea aquí). */
+  @media (min-width: 900px) {
+    body.pas-pantalla { padding: 0; display: block; }
+    body.pas-pantalla .app { max-width: none; }
+    body.pas-pantalla .topbar { margin: 0; border-radius: 0; padding-left: 32px; padding-right: 32px; }
+    body.pas-pantalla .wiz-hoja {
+      left: 0; transform: none; width: 420px; max-width: none;
+      top: var(--topbar-h, 72px); bottom: var(--nav-h, 0px); height: auto !important;
+      border-radius: 0; border: none; border-right: 1px solid var(--border); padding: 0 20px 16px;
+      box-shadow: none; transition: none;
+    }
+    body.pas-pantalla .hoja-asa { display: none; }
+    body.pas-pantalla .wiz-titulo { margin-top: 18px; }
+    body.pas-pantalla .burbuja-chat { bottom: calc(var(--nav-h, 0px) + 20px); }
+  }
   /* Viaje terminado: la ventana sube del todo y muestra solo lo que importa (valor, detalle, pago, calificación, Nuevo viaje). */
   .fin-viaje { text-align: center; padding: 6px 4px 14px; }
   .fin-icono { width: 52px; height: 52px; margin: 2px auto 6px; border-radius: 50%; background: #0B7A4B; color: #fff; display: flex; align-items: center; justify-content: center; }
@@ -2427,7 +2443,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 73;
+  var APP_VERSION = 74;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -5528,7 +5544,14 @@ function svgAuto(rumbo, color, tipo) {
     var nav = document.querySelector(".nav-inferior"), tb = document.querySelector(".topbar");
     return medidasHoja(window.innerHeight, nav ? nav.offsetHeight : 0, tb ? tb.offsetHeight : 60);
   }
+  var ESCRITORIO = window.matchMedia("(min-width: 900px)");   // panel lateral: sin alturas ni asa
+  var PANEL_ESC = 420;                                        // ancho del panel + márgenes, para encuadrar el mapa
   function fijarAlturaHoja(vis) {
+    if (ESCRITORIO.matches) {
+      document.body.style.setProperty("--hoja-vis", "0px");
+      HOJAS_PAS.forEach(function (id) { var h = document.getElementById(id); if (h) h.style.height = ""; });
+      return;
+    }
     document.body.style.setProperty("--hoja-vis", vis + "px");
     HOJAS_PAS.forEach(function (id) { var h = document.getElementById(id); if (h) h.style.height = vis + "px"; });
   }
@@ -5538,7 +5561,7 @@ function svgAuto(rumbo, color, tipo) {
     var nav = document.querySelector(".nav-inferior"), tb = document.querySelector(".topbar");
     var barra = nav ? nav.offsetHeight : 0, arriba = tb ? tb.offsetHeight : 60;
     var m = medidasHoja(window.innerHeight, barra, arriba);
-    HOJA_ESTADOS.forEach(function (e) { b.classList.toggle("hoja-" + e, e === hojaEstado); });
+    HOJA_ESTADOS.forEach(function (e) { b.classList.toggle("hoja-" + e, e === hojaEstado && !ESCRITORIO.matches); });
     b.style.setProperty("--nav-h", barra + "px");
     b.style.setProperty("--topbar-h", arriba + "px");
     fijarAlturaHoja(m[hojaEstado]);
@@ -5550,6 +5573,7 @@ function svgAuto(rumbo, color, tipo) {
     } catch (e) {}
   }
   function ponerHojaP(estado) { hojaEstado = estado; aplicarHojaP(); }
+  try { ESCRITORIO.addEventListener("change", aplicarHojaP); } catch (e) {}
 
   [].forEach.call(document.querySelectorAll("[data-asa]"), function (asa) {
     var y0 = 0, t0 = 0, vis0 = 0, m = null, activo = false, movio = false;
@@ -5587,7 +5611,7 @@ function svgAuto(rumbo, color, tipo) {
     // Con la hoja desplegada, top + bottom podían superar el alto del mapa: Google alejaba el zoom hasta mostrar medio continente.
     // Se deja siempre libre al menos el 25 % del alto para la ruta.
     var libre = window.innerHeight * 0.75 - top - 24;
-    return { top: top + 24, bottom: Math.max(24, Math.min(vis + 24, libre)), left: 28, right: 28 };
+    return { top: top + 24, bottom: Math.max(24, Math.min(vis + 24, libre)), left: ESCRITORIO.matches ? PANEL_ESC + 28 : 28, right: 28 };
   }
   function centrarMapaVisible(m, pos, suave) {
     if (!m || !window.google) return;
@@ -5597,7 +5621,8 @@ function svgAuto(rumbo, color, tipo) {
     var destino = new google.maps.LatLng(pos.lat, pos.lng), proy = m.getProjection && m.getProjection();
     if (proy && desvio) {
       var p = proy.fromLatLngToPoint(destino), escala = Math.pow(2, m.getZoom());
-      destino = proy.fromPointToLatLng(new google.maps.Point(p.x, p.y + desvio / escala));
+      var dx = ESCRITORIO.matches ? -PANEL_ESC / 2 : 0;   // zona visible = a la derecha del panel
+      destino = proy.fromPointToLatLng(new google.maps.Point(p.x + dx / escala, p.y + desvio / escala));
     }
     if (suave) m.panTo(destino); else m.setCenter(destino);
   }

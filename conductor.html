@@ -349,6 +349,7 @@
     box-shadow: var(--shadow-md);
   }
   .pedido-total-nota { display: block; font-size: 12px; font-weight: 500; color: var(--text-2); text-align: right; }
+  .menu-punto.contador[hidden] { display: none; }
   .menu-punto.contador { width: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; color: #fff; background: var(--acento, #ef6d19); }
   #btnMenuCond.con-mensajes { position: relative; }
   #btnMenuCond.con-mensajes::after { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
@@ -2347,7 +2348,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 70;
+  var APP_VERSION = 71;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2557,7 +2558,7 @@
   // otro lugar), se vuelve a la pantalla de login en vez de dejar al
   // conductor viendo un panel que ya no puede usar.
   function verificarSesionValida(res) {
-    if (res && res.requiere_login) { borrarSesion(); mostrarPantalla("login"); }
+    if (res && res.requiere_login) { res.error = "Tu sesión venció o se abrió en otro dispositivo. Ingresa de nuevo."; borrarSesion(); mostrarPantalla("login"); }
     return res;
   }
 
@@ -3531,22 +3532,29 @@
   function armarPantallaNotificaciones() {
     var p = crearPantallaAdmin("notificaciones");
     p.insertAdjacentHTML("beforeend",
-      (MODO === "admin" ? '<div class="adm-fijo docs-correo"><p><strong>Publicar una noticia</strong><span>La ven todos los conductores en su bandeja.</span></p>' +
+      (MODO === "admin" ? '<div class="adm-fijo docs-correo"><p><strong>Publicar una noticia</strong><span>Elige si la ven los conductores, los pasajeros o ambos.</span></p>' +
         '<input type="text" id="notifTitulo" maxlength="80" placeholder="Título" style="width:100%;margin-bottom:8px;">' +
         '<textarea id="notifTexto" maxlength="500" rows="3" placeholder="Mensaje" style="width:100%;margin-bottom:8px;"></textarea>' +
+        '<label class="campo-label" for="notifDestino">Para quién es</label>' +
+        '<select id="notifDestino" style="width:100%;min-height:48px;margin-bottom:8px;border:1.5px solid var(--border);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--text);font:inherit;">' +
+          '<option value="CONDUCTORES">Conductores</option><option value="PASAJEROS">Pasajeros</option><option value="TODOS">Conductores y pasajeros</option></select>' +
         '<button class="btn btn-ok" type="button" id="notifPublicar">Publicar</button></div>' : "") +
       '<div class="adm-scroll" id="notifLista"><p class="vacio">Cargando...</p></div>');
     var b = document.getElementById("notifPublicar");
     if (b) b.addEventListener("click", function () {
       var t = document.getElementById("notifTitulo"), x = document.getElementById("notifTexto");
       b.disabled = true;
-      apiPost({ accion: "publicar_notificacion", titulo: t.value, texto: x.value }).then(function (res) {
+      apiPost({ accion: "publicar_notificacion", titulo: t.value, texto: x.value, destino: document.getElementById("notifDestino").value }).then(function (res) {
         b.disabled = false;
         if (!res.ok) { rbAlerta(res.error || "No se pudo publicar."); return; }
-        t.value = ""; x.value = ""; rbAlerta("Publicada: ya la ven los conductores.", "ok"); cargarNotificaciones(true);
+        t.value = ""; x.value = ""; rbAlerta("Publicada.", "ok"); cargarNotificaciones(true);
       }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
     });
   }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest("[data-notif-abrir]");
+    if (b) abrirPantallaAdmin(b.getAttribute("data-notif-abrir"));
+  });
   function cargarNotificaciones(pintar) {
     return apiPost({ accion: "mis_notificaciones" }).then(function (res) {
       if (!res || !res.ok) { if (pintar) { var l0 = document.getElementById("notifLista"); if (l0) l0.innerHTML = '<p class="msg error" style="margin:16px;">' + escapar((res && res.error) || "No se pudo cargar") + '</p>'; } return; }
@@ -3558,7 +3566,9 @@
       if (pintar) {
         var el = document.getElementById("notifLista");
         if (el) el.innerHTML = lista.length ? lista.map(function (n) {
-          return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(n.titulo) + '</strong><span>' + escapar(fechaCorta(n.creado_en)) + '</span></div><div class="mv-ruta">' + escapar(n.texto) + '</div></div>';
+          var tarea = MODO === "admin" && n.accion && PANTALLAS_ADMIN[n.accion];
+          return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(n.titulo) + '</strong><span>' + escapar(fechaCorta(n.creado_en)) + '</span></div><div class="mv-ruta">' + escapar(n.texto) + '</div>' +
+            (tarea ? '<div class="mv-acciones"><button class="btn btn-chico" type="button" data-notif-abrir="' + escapar(n.accion) + '">Ir a ' + escapar(PANTALLAS_ADMIN[n.accion]) + '</button></div>' : '') + '</div>';
         }).join("") : '<p class="vacio" style="margin:16px;">No tienes mensajes.</p>';
         if (lista.length) guardarNotifVisto(lista[0].creado_en);
         if (punto) punto.hidden = true;
