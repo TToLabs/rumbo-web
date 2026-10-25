@@ -2401,7 +2401,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 71;
+  var APP_VERSION = 72;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -5548,7 +5548,10 @@ function svgAuto(rumbo, color, tipo) {
   function paddingMapa() {
     var cs = getComputedStyle(document.body);
     var vis = parseFloat(cs.getPropertyValue("--hoja-vis")) || 0, top = parseFloat(cs.getPropertyValue("--topbar-h")) || 0;
-    return { top: top + 24, bottom: vis + 24, left: 28, right: 28 };
+    // Con la hoja desplegada, top + bottom podían superar el alto del mapa: Google alejaba el zoom hasta mostrar medio continente.
+    // Se deja siempre libre al menos el 25 % del alto para la ruta.
+    var libre = window.innerHeight * 0.75 - top - 24;
+    return { top: top + 24, bottom: Math.max(24, Math.min(vis + 24, libre)), left: 28, right: 28 };
   }
   function centrarMapaVisible(m, pos, suave) {
     if (!m || !window.google) return;
@@ -5781,6 +5784,17 @@ function svgAuto(rumbo, color, tipo) {
     });
   });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuP(false); });
+  // Botón «atrás» del teléfono (lo llama MainActivity): cierra lo de arriba y devuelve true; false = no hay nada que cerrar.
+  window.rumboAtras = function () {
+    var pop = document.querySelector(".rb-pop:not([hidden])");
+    if (pop) { var no = pop.querySelector(".rb-pop-no"); (no && !no.hidden ? no : pop.querySelector(".rb-pop-si")).click(); return true; }
+    var modal = document.querySelector(".modal-opc:not([hidden])");
+    if (modal) { cerrarModalOpc(modal.id); return true; }
+    if (document.getElementById("menuLateral").classList.contains("abierto")) { abrirMenuP(false); return true; }
+    if (document.body.classList.contains("cta-solo") || document.body.classList.contains("cta-viajes") || document.body.classList.contains("cta-cuenta")) { document.getElementById("btnVolverCuenta").click(); return true; }
+    if (pasoPedir === 2) { irAPaso(1); return true; }
+    return false;
+  };
   document.getElementById("btnVolverCuenta").addEventListener("click", function () {
     document.body.classList.remove("cta-solo", "cta-viajes", "cta-cuenta");
     mostrarPestana(document.getElementById("tabSeguimiento").disabled ? "cotizar" : "seguimiento");
