@@ -2026,6 +2026,30 @@
   }
 
   // marcador: "origen" | "destino" | null (paradas no llevan marcador propio).
+  /* Las sugerencias de Google se colocan UNA vez, al abrirse. Si después sube el teclado o la hoja se mueve, el campo cambia de lugar y la
+     lista queda donde estaba (arriba, fuera de la pantalla o sobre el encabezado). Mientras se escribe una dirección se vuelve a pegar la lista
+     justo debajo del campo, con el alto que queda hasta el borde de la pantalla. */
+  var timerSugerencias = null;
+  function alinearSugerencias() {
+    var inp = document.activeElement;
+    if (!inp || inp.tagName !== "INPUT" || !inp.closest || !inp.closest(".ruta-input-wrap, .parada-input-wrap")) return;
+    var r = inp.getBoundingClientRect();
+    [].forEach.call(document.querySelectorAll(".pac-container"), function (c) {
+      if (c.style.display === "none" || !c.querySelector(".pac-item")) return;
+      c.style.setProperty("position", "fixed", "important");
+      c.style.setProperty("left", Math.round(r.left) + "px", "important");
+      c.style.setProperty("top", Math.round(r.bottom) + "px", "important");
+      c.style.setProperty("width", Math.round(r.width) + "px", "important");
+      c.style.setProperty("max-height", Math.max(96, Math.round(window.innerHeight - r.bottom - 8)) + "px", "important");
+    });
+  }
+  function seguirSugerencias(si) {
+    if (si && !timerSugerencias) timerSugerencias = setInterval(alinearSugerencias, 120);
+    else if (!si && timerSugerencias) { clearInterval(timerSugerencias); timerSugerencias = null; }
+  }
+  window.addEventListener("resize", alinearSugerencias);
+  if (window.visualViewport) { window.visualViewport.addEventListener("resize", alinearSugerencias); window.visualViewport.addEventListener("scroll", alinearSugerencias); }
+
   function configurarAutocompleteInput(input, marcador) {
     var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry", "name"] };
     var auto = new google.maps.places.Autocomplete(input, opciones);
@@ -2034,6 +2058,7 @@
     // El teclado tarda unos 300 ms en subir: se reintenta una vez más después.
     input.addEventListener("focus", function () {
       document.body.classList.add("escribiendo-direccion");
+      seguirSugerencias(true);
       [350, 800].forEach(function (ms) {
         setTimeout(function () {
           if (document.activeElement === input) input.scrollIntoView({ block: "start", behavior: "smooth" });
@@ -2047,6 +2072,7 @@
         var activo = document.activeElement;
         if (!activo || !activo.closest || !activo.closest(".ruta-input-wrap, .parada-input-wrap")) {
           document.body.classList.remove("escribiendo-direccion");
+          seguirSugerencias(false);
         }
       }, 300);
     });
@@ -2471,7 +2497,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 75;
+  var APP_VERSION = 76;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
