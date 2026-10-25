@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rumbo — Traslados privados</title>
+<title>Rumbo — Traslado móvil</title>
 <meta name="description" content="Cotiza y solicita traslados privados dentro y fuera de Santiago. Tarifa inicial estimada con la ruta real y valor final según el viaje efectivo.">
 <meta name="apple-mobile-web-app-title" content="Rumbo">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -49,10 +49,10 @@
     --accent-soft: #E6F4ED;
     --danger: #B3392B;
     --danger-soft: #FBEDEB;
-    --shadow-sm: 0 1px 2px rgba(16,26,32,0.05);
-    --shadow-md: 0 1px 2px rgba(16,26,32,0.04), 0 6px 16px rgba(16,26,32,0.07);
+    --shadow-sm: none;
+    --shadow-md: none;
     --r-card: 14px;
-    --r-input: 10px;
+    --r-input: 12px;
     --r-btn: 12px;
   }
   /* Por ahora la app es de tema único (claro): fondo blanco/gris perlado
@@ -66,7 +66,7 @@
     color: var(--text);
     font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, sans-serif;
     font-weight: 400;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
@@ -93,7 +93,7 @@
     /* El body tiene padding lateral (16px) para el resto del contenido;
        este margen negativo hace que el fondo azul llegue de borde a
        borde de la pantalla en vez de quedar como una isla angosta. */
-    margin: 0 -16px 16px; border-radius: 0 0 18px 18px;
+    margin: 0 -16px 16px; border-radius: 0 0 14px 14px;
     border-bottom: 2px solid var(--acento);
   }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -125,13 +125,13 @@
     mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 92%);
     -webkit-mask-image: linear-gradient(to bottom, black 0%, black 55%, transparent 92%);
   }
-  .brand-sub { font-size: 13.5px; color: var(--acento-claro); line-height: 1.3; }
+  .brand-sub { font-size: 14px; color: var(--acento-claro); line-height: 1.3; }
   .topbar-spacer { flex: 1; }
 
   /* ---------- Menú desplegable ---------- */
   .menu-wrap { position: relative; }
   .icon-btn {
-    width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
+    width: 36px; height: 36px; border-radius: 12px; border: 1px solid var(--border);
     background: var(--surface); color: var(--text-2); cursor: pointer;
     display: none; align-items: center; justify-content: center; padding: 0;
   }
@@ -146,7 +146,7 @@
   .menu-item {
     display: flex; align-items: center; gap: 10px; width: 100%;
     background: none; border: none; text-align: left; cursor: pointer;
-    padding: 10px; border-radius: 8px; font: inherit; font-size: 16px; color: var(--text);
+    padding: 10px; border-radius: 12px; font: inherit; font-size: 16px; color: var(--text);
   }
   .menu-item:hover { background: var(--surface-2); }
 
@@ -158,8 +158,8 @@
   }
   .tab {
     border: none; background: none; cursor: pointer; font: inherit;
-    font-size: 15px; font-weight: 500; color: var(--text-2);
-    padding: 9px 8px; border-radius: 9px; display: flex; align-items: center;
+    font-size: 16px; font-weight: 500; color: var(--text-2);
+    padding: 9px 8px; border-radius: 12px; display: flex; align-items: center;
     justify-content: center; gap: 7px;
   }
   .tab[aria-selected="true"] {
@@ -184,7 +184,7 @@
     display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
     color: var(--text-2);
   }
-  .card-title { font-size: 15px; font-weight: 600; letter-spacing: 0.01em; color: var(--text); }
+  .card-title { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; color: var(--text); }
   /* Mi cuenta: grupos y tarjetas plegables, como "Ajustes y cuenta" del conductor. */
   .ajustes-grupo { margin: 22px 2px 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
   .card.plegable > .card-head { margin-bottom: 0; cursor: pointer; }
@@ -195,12 +195,12 @@
 
   /* ---------- Precio ---------- */
   .precio-card { padding: 22px 20px 18px; }
-  .precio-label { font-size: 15px; color: var(--text-2); margin-bottom: 4px; }
+  .precio-label { font-size: 16px; color: var(--text-2); margin-bottom: 4px; }
   .precio-valor {
     font-size: 46px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1;
     font-variant-numeric: tabular-nums; color: var(--primary);
   }
-  .precio-card { box-shadow: var(--shadow-md); border-radius: 18px; }
+  .precio-card { box-shadow: var(--shadow-md); border-radius: 14px; }
   .precio-detalle { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: grid; gap: 10px; }
   .detalle-fila { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
   .detalle-fila dt { color: var(--text-2); margin: 0; }
@@ -224,6 +224,8 @@
     display: grid; grid-template-columns: 20px 1fr; gap: 0 12px; align-items: center; margin: 10px 0;
     grid-column: 1 / -1;
   }
+  .reordenando, .reordenando input { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .fila-arrastrando { outline: 2px solid #EF6D19; outline-offset: 2px; border-radius: 12px; box-shadow: 0 6px 18px rgba(17, 48, 74, .28); transform: scale(1.02); position: relative; z-index: 3; transition: transform .12s; }
   .parada-fila .ruta-marca { display: flex; align-items: center; justify-content: center; }
   .parada-quitar-celda { display: flex; }
   .parada-input-wrap, .ruta-input-wrap { position: relative; }
@@ -249,7 +251,7 @@
   .btn-quitar-parada, .btn-borrar-direccion {
     position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
     width: 26px; height: 26px; border: none; background: none; cursor: pointer;
-    color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 8px;
+    color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 12px;
   }
   .btn-quitar-parada:hover, .btn-borrar-direccion:hover { background: var(--surface-2); color: var(--text-2); }
   .btn-borrar-direccion { display: none; }
@@ -263,7 +265,7 @@
   .btn-mi-ubicacion {
     position: absolute; right: 34px; top: 50%; transform: translateY(-50%);
     width: 26px; height: 26px; border: none; background: none; cursor: pointer;
-    color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 8px;
+    color: var(--text-3); display: flex; align-items: center; justify-content: center; border-radius: 12px;
   }
   .btn-mi-ubicacion:hover { background: var(--surface-2); color: var(--primary); }
   .btn-mi-ubicacion.cargando { animation: girar 0.9s linear infinite; }
@@ -272,14 +274,14 @@
   .btn-agregar-parada {
     display: flex; align-items: center; gap: 6px; margin-top: 4px;
     border: none; background: none; cursor: pointer; font: inherit;
-    font-size: 15px; font-weight: 600; color: var(--primary); padding: 6px 2px;
+    font-size: 16px; font-weight: 600; color: var(--primary); padding: 6px 2px;
   }
   .btn-agregar-parada:hover { text-decoration: underline; }
 
   .btn-direcciones-recientes {
     display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-bottom: 12px;
     border: 1.5px solid var(--primary); background: var(--surface); cursor: pointer; font: inherit;
-    font-size: 15px; font-weight: 600; color: var(--primary); padding: 12px 14px; border-radius: var(--r-input);
+    font-size: 16px; font-weight: 600; color: var(--primary); padding: 12px 14px; border-radius: var(--r-input);
   }
   .btn-direcciones-recientes:active { background: var(--border); }
 
@@ -291,7 +293,7 @@
   input[type="email"], input[type="password"] {
     width: 100%; background: var(--surface); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--r-input);
-    padding: 12px 14px; font: inherit; font-size: 17px; font-weight: 400;
+    padding: 12px 14px; font: inherit; font-size: 16px; font-weight: 400;
     transition: border-color 0.12s ease;
   }
   input::placeholder { color: var(--text-3); }
@@ -301,7 +303,7 @@
   textarea {
     width: 100%; background: var(--surface); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--r-input);
-    padding: 12px 14px; font: inherit; font-size: 15px; font-weight: 400;
+    padding: 12px 14px; font: inherit; font-size: 16px; font-weight: 400;
     resize: vertical; margin-bottom: 12px; transition: border-color 0.12s ease;
   }
   textarea::placeholder { color: var(--text-3); }
@@ -328,8 +330,8 @@
   }
   .seg-btn {
     border: none; background: none; cursor: pointer; font: inherit;
-    font-size: 15px; font-weight: 500; color: var(--text-2);
-    padding: 9px 8px; border-radius: 8px;
+    font-size: 16px; font-weight: 500; color: var(--text-2);
+    padding: 9px 8px; border-radius: 12px;
   }
   .seg-btn.active {
     background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600; box-shadow: var(--shadow-sm);
@@ -337,7 +339,7 @@
   /* Botonera de preajustes de espera: 5 opciones no entran cómodas en un
      grid de 2 columnas fijo como "Ida y vuelta" — se envuelve en filas. */
   .segmentado-espera { display: flex; flex-wrap: wrap; grid-template-columns: none; }
-  .segmentado-espera .seg-btn { flex: 1 1 auto; padding: 8px 10px; font-size: 13.5px; text-align: center; }
+  .segmentado-espera .seg-btn { flex: 1 1 auto; padding: 8px 10px; font-size: 14px; text-align: center; }
 
   /* Chips de contactos frecuentes ("Para otra persona"): aparecen con un
      fade-in suave, uno por contacto ya usado antes, para completar nombre
@@ -349,7 +351,7 @@
   @keyframes chips-entrada { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   .chip-contacto {
     border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2);
-    font: inherit; font-size: 13.5px; font-weight: 500; padding: 7px 14px;
+    font: inherit; font-size: 14px; font-weight: 500; padding: 7px 14px;
     border-radius: 999px; cursor: pointer;
   }
   .chip-contacto:hover { background: var(--primary-soft); color: var(--primary-soft-ink); border-color: transparent; }
@@ -371,13 +373,13 @@
     padding: 12px 0; border-bottom: 1px solid var(--border);
   }
   .viaje-fila:last-child { border-bottom: none; }
-  .viaje-ruta { font-size: 14.5px; font-weight: 600; color: var(--text); }
-  .viaje-detalle { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .viaje-ruta { font-size: 14px; font-weight: 600; color: var(--text); }
+  .viaje-detalle { font-size: 14px; color: var(--text-2); margin-top: 2px; }
 
   /* ---------- Botones ---------- */
   .btn {
     width: 100%; border: none; border-radius: var(--r-btn); cursor: pointer;
-    font: inherit; font-size: 17px; font-weight: 600; padding: 14px 16px;
+    font: inherit; font-size: 16px; font-weight: 600; padding: 14px 16px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: background-color 0.12s ease, opacity 0.12s ease;
   }
@@ -395,7 +397,7 @@
   .btn:disabled { opacity: 0.45; cursor: default; }
   .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-  .nota { margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: var(--text-2); }
+  .nota { margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: var(--text-2); }
   .nota:empty { display: none; }
   .nota.error { color: var(--danger); }
 
@@ -405,7 +407,7 @@
   }
   .confianza-item {
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    gap: 6px; font-size: 12.5px; line-height: 1.3; color: var(--text-2);
+    gap: 6px; font-size: 12px; line-height: 1.3; color: var(--text-2);
   }
   .confianza-item svg { width: 24px; height: 24px; color: var(--primary); }
 
@@ -420,7 +422,7 @@
   .estado-box {
     display: flex; align-items: center; gap: 12px;
     padding: 18px; border-radius: var(--r-card); margin-bottom: 12px;
-    font-size: 17px; font-weight: 600; border: 1px solid var(--border);
+    font-size: 16px; font-weight: 600; border: 1px solid var(--border);
     background: var(--surface);
   }
   .estado-box::before {
@@ -442,7 +444,7 @@
   .ed-fila { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
   .ed-fila input { flex: 1; min-width: 0; }
   .ed-precio { margin: 10px 0; padding: 10px 12px; border-radius: 12px; background: var(--surface-2, #F1F5F6); font-size: 14px; line-height: 1.4; }
-  .ed-precio strong { font-size: 17px; }
+  .ed-precio strong { font-size: 16px; }
   .estado-box.confirmado { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
   .estado-box.confirmado::before { background-color: var(--accent-soft); }
   .estado-box.rechazado { border-color: color-mix(in srgb, var(--danger) 35%, var(--border)); }
@@ -464,7 +466,7 @@
   .mapa-cotizar-wrap { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
   .mapa-cotizar-cabecera {
     display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
-    font-size: 13px; font-weight: 600; color: var(--text-2);
+    font-size: 14px; font-weight: 600; color: var(--text-2);
   }
   .mapa-cotizar-cabecera svg { color: var(--primary); }
   #mapaCotizar {
@@ -486,7 +488,7 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
     padding: 14px; box-shadow: var(--shadow-md);
   }
-  .wiz-titulo { font-size: 19px; font-weight: 600; margin: 0 0 10px; color: var(--primary); }
+  .wiz-titulo { font-size: 18px; font-weight: 600; margin: 0 0 10px; color: var(--primary); }
   .wiz-cabeza { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .wiz-atras {
     border: none; background: var(--primary-soft); color: var(--primary-soft-ink); border-radius: 999px;
@@ -510,19 +512,25 @@
   .wiz-hoja .ruta-linea-celda { padding: 1px 0; }
   .wiz-hoja .btn-direcciones-recientes {
     width: auto; margin: 0 0 6px; padding: 2px 0; border: none; background: none;
-    justify-content: flex-start; font-size: 13px; color: var(--text-2);
+    justify-content: flex-start; font-size: 14px; color: var(--text-2);
   }
   .wiz-hoja .btn-agregar-parada { font-size: 14px; margin-top: 2px; padding: 4px 2px; }
   .wiz-chips-fijos { margin: 0 0 10px; flex: none; justify-content: center; gap: 8px; }
   /* Más a la vista (Alberto, 19-oct): centrados, más grandes y con borde y fondo de la marca. */
-  .wiz-chips-fijos .chip-opc { min-height: 48px; padding: 10px 16px; font-size: 15px; font-weight: 700; border: 2px solid var(--acento); background: var(--primary-soft); color: var(--primary); box-shadow: 0 2px 6px rgba(17, 48, 74, 0.12); }
+  .wiz-chips-fijos .chip-opc { min-height: 48px; padding: 10px 16px; font-size: 16px; font-weight: 700; border: 2px solid var(--acento); background: var(--primary-soft); color: var(--primary); box-shadow: 0 0 0 1px var(--border); }
   .wiz-chips-fijos .chip-opc .ico { width: 18px; height: 18px; color: var(--acento); }
+  /* Los tres botones (cuándo, tipo de viaje, para quién) van SIEMPRE en una sola fila, aunque la pantalla sea angosta: se reparten el ancho,
+     se achican y el texto largo se corta con "…". */
+  .wiz-chips-fijos { flex-wrap: nowrap; }
+  .wiz-chips-fijos .chip-opc { flex: 1 1 0; min-width: 0; justify-content: center; gap: 4px; padding: 8px 6px; font-size: 14px; white-space: nowrap; }
+  .wiz-chips-fijos .chip-opc span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .wiz-chips-fijos .chip-opc .ico { width: 16px; height: 16px; flex: none; }
   /* Tarjeta de precio compacta para que la hoja 2 quepa sin scroll. */
   .wiz-hoja .precio-card { padding: 10px 14px; margin-bottom: 0; box-shadow: none; border: 1px solid var(--border); }
-  .wiz-hoja .precio-label { margin: 0; font-size: 13px; }
+  .wiz-hoja .precio-label { margin: 0; font-size: 14px; }
   .wiz-hoja .precio-valor { margin: 0; font-size: 28px; line-height: 1.1; }
   .wiz-hoja .precio-detalle { margin-top: 6px; padding-top: 6px; gap: 2px 16px; grid-template-columns: 1fr 1fr; }
-  .wiz-hoja .detalle-fila { font-size: 13px; flex-direction: column; align-items: flex-start; gap: 0; }
+  .wiz-hoja .detalle-fila { font-size: 14px; flex-direction: column; align-items: flex-start; gap: 0; }
   .wiz-hoja .precio-nota { font-size: 12px; line-height: 1.35; margin: 6px 0 0; padding-top: 6px; }
   .wiz-cuerpo { scrollbar-width: none; }
   .wiz-cuerpo::-webkit-scrollbar { display: none; }
@@ -538,16 +546,33 @@
   }
   .modal-opc[hidden] { display: none; }
   .modal-opc-hoja {
-    width: 100%; max-width: 448px; background: var(--surface); border-radius: 18px 18px 0 0;
+    width: 100%; max-width: 448px; background: var(--surface); border-radius: 14px 14px 0 0;
     padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); max-height: 85vh; overflow-y: auto;
   }
   .modal-opc-hoja h3 { margin: 0 0 12px; font-size: 18px; color: var(--primary); }
+  /* Forma de pago: fila de 56 px sobre el botón y hoja con 3 opciones de 64 px (marca de selección calipso). */
+  .precio-detalle[hidden] { display: none; }
+  .precio-resumen { margin: 4px 0 0; font-size: 14px; color: var(--text-2); }
+  .wiz-hoja .precio-valor { font-size: 40px; }
+  .pago-fila { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 16px; margin: 0 0 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font: inherit; font-size: 16px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; }
+  .pago-fila .ico { width: 24px; height: 24px; color: var(--primary); flex: none; }
+  .pago-fila .pago-cambiar { margin-left: auto; font-size: 14px; font-weight: 600; color: var(--primary); }
+  .fp-lista { display: flex; flex-direction: column; gap: 8px; }
+  .pago-opcion { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 8px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font: inherit; color: var(--text); text-align: left; cursor: pointer; }
+  .pago-opcion .ico { width: 24px; height: 24px; color: var(--primary); flex: none; }
+  .pago-opcion .pago-op-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .pago-opcion strong { font-size: 16px; font-weight: 600; }
+  .pago-opcion small { font-size: 14px; color: var(--text-2); }
+  .pago-opcion .pago-check { margin-left: auto; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-strong); flex: none; }
+  .pago-opcion.elegida { border-color: #1FB3BF; }
+  .pago-opcion.elegida .pago-check { border-color: #1FB3BF; background: #1FB3BF; box-shadow: inset 0 0 0 5px var(--surface); }
+  .pago-opcion:disabled { opacity: .55; cursor: not-allowed; }
   .tyc-cuerpo { max-height: 62vh; overflow-y: auto; font-size: 14px; line-height: 1.5; color: var(--text); padding-right: 4px; }
-  .tyc-cuerpo h4 { margin: 14px 0 4px; font-size: 15px; color: var(--primary); }
+  .tyc-cuerpo h4 { margin: 14px 0 4px; font-size: 16px; color: var(--primary); }
   .tyc-cuerpo p { margin: 0 0 6px; }
   .tyc-cuerpo .tyc-sub { margin-left: 14px; color: var(--text-2); }
-  .tyc-p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.5; }
-  .acepta-arriendo { margin: 0 2px 10px; font-size: 12.5px; line-height: 1.4; color: var(--text-2); }
+  .tyc-p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+  .acepta-arriendo { margin: 0 2px 10px; font-size: 12px; line-height: 1.4; color: var(--text-2); }
   .acepta-arriendo .link-inline { font-size: inherit; }
 
   #mapaConductor {
@@ -574,14 +599,14 @@
   body.pas-pantalla .wiz-hoja {
     position: fixed; left: 50%; bottom: var(--nav-h, 0px); width: 100%; max-width: 448px; z-index: 20;
     transform: translateX(-50%); transition: height .28s cubic-bezier(.2, .8, .2, 1);
-    border-radius: 20px 20px 0 0; border-bottom: none; padding: 0 14px calc(12px + env(safe-area-inset-bottom)); overflow: hidden;
-    box-shadow: 0 -6px 24px rgba(10, 20, 40, 0.18); display: flex; flex-direction: column;
+    border-radius: 14px 14px 0 0; border-bottom: none; padding: 0 14px calc(12px + env(safe-area-inset-bottom)); overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border); display: flex; flex-direction: column;
   }
   body.pas-pantalla #segHoja { display: block; overflow-y: auto; overscroll-behavior: contain; }
   body.pas-pantalla.arrastrando .wiz-hoja { transition: none; }
   body.pas-pantalla .hoja-asa {
     display: flex; justify-content: center; align-items: center; height: 44px; margin: 0 -14px; flex: none;
-    position: sticky; top: 0; z-index: 6; background: var(--surface); border-radius: 20px 20px 0 0;
+    position: sticky; top: 0; z-index: 6; background: var(--surface); border-radius: 14px 14px 0 0;
     touch-action: none; cursor: grab;
   }
   .hoja-asa span { width: 56px; height: 6px; border-radius: 3px; background: var(--border-strong); }
@@ -597,13 +622,13 @@
   .pago-card { margin: 0 0 12px; }
   .pago-titulo { font-size: 16px; font-weight: 700; margin: 0 0 10px; }
   .pago-conf { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 12px; background: var(--primary-soft); color: var(--primary-soft-ink); border-left: 5px solid var(--primary-soft-ink); }
-  .pago-conf strong { font-size: 17px; }
+  .pago-conf strong { font-size: 16px; }
   .pago-conf span { font-size: 14px; line-height: 1.35; }
-  .pago-conf .pago-nota { font-size: 12.5px; opacity: .85; margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(17,48,74,.18); }
+  .pago-conf .pago-nota { font-size: 12px; opacity: .85; margin-top: 4px; padding-top: 8px; border-top: 1px solid rgba(17,48,74,.18); }
   .pago-opciones { display: flex; flex-direction: row; gap: 8px; margin-bottom: 12px; }
   .pago-op { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 12px 2px; border-radius: 12px; border: 2px solid var(--border, rgba(127,127,127,.35)); background: var(--surface, #fff); color: inherit; font: inherit; cursor: pointer; text-align: center; }
-  .pago-op strong { font-size: 13px; letter-spacing: -.1px; white-space: nowrap; }
-  .pago-op small { font-size: 11px; opacity: .7; line-height: 1.2; }
+  .pago-op strong { font-size: 14px; letter-spacing: -.1px; white-space: nowrap; }
+  .pago-op small { font-size: 12px; opacity: .7; line-height: 1.2; }
   .pago-op.activa { background: var(--primary-soft-ink); border-color: var(--primary-soft-ink); color: #fff; }
   .pago-op.activa small { opacity: .85; }
   .pago-alt { width: 100%; margin-top: 10px; }
@@ -611,13 +636,13 @@
   .transf-fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border, rgba(127,127,127,.25)); }
   .transf-dato { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
   .transf-et { font-size: 12px; opacity: .7; }
-  .transf-dato strong { font-size: 15px; overflow-wrap: anywhere; user-select: all; }
+  .transf-dato strong { font-size: 16px; overflow-wrap: anywhere; user-select: all; }
   .transf-fila .transf-copiar { flex: none; width: auto; min-width: 84px; }
   .fin-total { font-size: 28px; font-weight: 700; line-height: 1.2; margin: 2px 0 2px; font-variant-numeric: tabular-nums; }
-  .fin-sub { font-size: 15px; color: var(--text-2); }
+  .fin-sub { font-size: 16px; color: var(--text-2); }
   body.viaje-terminado #etaConductor, body.viaje-terminado .pasos, body.viaje-terminado #estadoDetalle, body.viaje-terminado #distanciaConductor,
   body.viaje-terminado #avisoDerivado, body.viaje-terminado #tarjetaConductorAsignado, body.viaje-terminado #cardRecorrido, body.viaje-terminado #btnCompartirViaje { display: none !important; }
-  body.viaje-terminado #btnNuevoPedido { position: sticky; bottom: 0; width: 100%; margin-top: 8px; min-height: 54px; font-size: 17px; z-index: 5; background: var(--surface); box-shadow: 0 -10px 10px var(--surface); }
+  body.viaje-terminado #btnNuevoPedido { position: sticky; bottom: 0; width: 100%; margin-top: 8px; min-height: 54px; font-size: 16px; z-index: 5; background: var(--surface); box-shadow: 0 0 0 1px var(--border); }
   body.viaje-terminado #estadoBox.confirmado { display: none; }   /* ya lo dice la tarjeta grande de arriba */
   /* Sin barra de pestañas (como el conductor): el viaje toma la pantalla solo y lo demás está en el menú de 3 rayas.
      Los botones de pestaña siguen en el DOM porque el código los usa. */
@@ -634,7 +659,7 @@
   .menu-lateral-fondo[hidden] { display: none; }
   .menu-lateral {
     position: fixed; top: 0; bottom: 0; right: 0; z-index: 90; width: min(82vw, 330px);
-    background: var(--surface); box-shadow: -8px 0 28px rgba(10, 20, 40, 0.25);
+    background: var(--surface); box-shadow: 0 0 0 1px var(--border);
     transform: translateX(105%); transition: transform .26s cubic-bezier(.2, .8, .2, 1);
     padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); overflow-y: auto;
   }
@@ -642,19 +667,45 @@
   .menu-lateral-cab { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
   .menu-lateral-avatar {
     width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: #fff; flex: none;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 19px;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px;
   }
   .menu-lateral-quien { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .menu-lateral-quien strong { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .menu-lateral-quien span { font-size: 13px; color: var(--text-3); }
+  .menu-lateral-quien strong { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-lateral-quien span { font-size: 14px; color: var(--text-3); }
   .menu-lateral-cerrar { width: 40px; height: 40px; border: none; background: none; font-size: 30px; line-height: 1; color: var(--text-2); cursor: pointer; }
   .menu-lateral-item {
     display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 8px; border: none; background: none;
-    font: inherit; font-size: 17px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
+    font: inherit; font-size: 16px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
   }
   .menu-lateral-item:active { background: var(--surface-2); }
-  .menu-lateral-seccion { margin: 14px 8px 2px; padding: 0 0 6px; border-bottom: 1px solid var(--border); font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+  .menu-lateral-seccion { margin: 14px 8px 2px; padding: 0 0 6px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
   .menu-lateral-item .ico { color: var(--primary); width: 24px; height: 24px; }
+  /* Pantallas del menú (Mis lugares, Ayuda, Términos, Medios de pago): página completa con flecha atrás, no hoja desplegable. */
+  .modal-opc.pagina { align-items: stretch; background: var(--bg); z-index: 70; }
+  .modal-opc.pagina .modal-opc-hoja { max-width: none; width: 100%; max-height: none; height: 100%; border-radius: 0; background: var(--bg); padding-top: calc(12px + env(safe-area-inset-top)); }
+  /* Sin scroll de página: la pantalla es fija y solo el contenido largo (términos, lista de lugares recientes) se desplaza dentro de su zona. */
+  .modal-opc.pagina .modal-opc-hoja { display: flex; flex-direction: column; overflow: hidden; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .modal-opc.pagina .tyc-cuerpo { flex: 1 1 auto; max-height: none; min-height: 0; }
+  .modal-opc.pagina #listaOtrosLugares, .modal-opc.pagina #listaReclamosP { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+  .lugar-tarjeta .lugar-accion-btn { margin-left: auto; }
+  #lugarEditor[hidden] { display: none !important; }
+  #listaOtrosNombrados .lugar-item { margin-bottom: 0; }
+  .modal-opc.pagina .lugar-otro .lugar-info { flex: 1; min-width: 0; cursor: pointer; }
+  .mp-campo { height: 48px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); margin-bottom: 10px; }
+  .mp-campo iframe { height: 46px !important; }
+  #tarjetaBloque[hidden], #tarjetaInactiva[hidden], #pagoGuardada[hidden], #tarjetaGuardada[hidden], #tarjetaForm[hidden], #pagoCvvForm[hidden] { display: none !important; }
+  .pagina-cab { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
+  .pagina-cab h3 { margin: 0; font-size: 22px; }
+  .pagina-cab button { width: 44px; height: 44px; border: none; background: var(--surface-2); border-radius: 12px; font-size: 28px; line-height: 1; color: var(--text); cursor: pointer; }
+  /* Mi cuenta y Mis viajes: cada una su pantalla, con sus bloques ya abiertos (sin desplegables). */
+  body.cta-solo .card.plegable > .card-head { pointer-events: none; }
+  body.cta-solo .card.plegable > .card-head::after { display: none; }
+  body.cta-viajes #vistaCuenta > section:not(#cardViajes) { display: none !important; }
+  /* En estas pantallas el título de la página ya dice de qué se trata: sin subtítulos de grupo ni título repetido del bloque. */
+  body.cta-solo #vistaCuenta .ajustes-grupo { display: none !important; }
+  body.cta-viajes #cardViajes > .card-head { display: none; }
+  body.cta-viajes #cardViajes { padding-top: 4px; }
+  body.cta-cuenta #vistaCuenta > #cardViajes { display: none !important; }
   .cuenta-cab { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
   .cuenta-cab h2 { margin: 0; font-size: 22px; }
   .cuenta-cab button { width: 44px; height: 44px; border: none; background: var(--surface-2); border-radius: 12px; font-size: 28px; line-height: 1; color: var(--text); cursor: pointer; }
@@ -665,12 +716,12 @@
   .lugar-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .lugar-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .lugar-info strong { font-size: 16px; }
-  .lugar-info span { font-size: 13.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lugar-item .btn { width: auto; min-height: 40px; padding: 6px 12px; font-size: 13.5px; }
+  .lugar-info span { font-size: 14px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lugar-item .btn { width: auto; min-height: 40px; padding: 6px 12px; font-size: 14px; }
   .lugares-sub { margin: 16px 0 4px; font-size: 14px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .04em; }
   .lugar-otro { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .lugar-otro .lugar-info { flex: 1; }
-  .lugar-otro .btn { width: auto; min-height: 36px; padding: 4px 10px; font-size: 13px; }
+  .lugar-otro .btn { width: auto; min-height: 36px; padding: 4px 10px; font-size: 14px; }
   .wiz-hoja .btn-direcciones-recientes { display: none !important; }   /* ahora viven en "Otros" */
   /* De noche el fondo del mapa también es oscuro (mientras cargan las baldosas). */
   body.mapa-noche #mapaCotizar, body.mapa-noche #mapaConductor, body.mapa-noche .radar-buscando { background: #17212B; border-color: #2E3F52; }
@@ -703,8 +754,8 @@
   .pin-inicio[hidden] { display: none; }
   .pin-inicio .pin-et { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
   .pin-inicio strong { font-size: 34px; letter-spacing: .3em; line-height: 1.1; }
-  .pin-inicio .pin-ayuda { font-size: 12.5px; opacity: .8; }
-  .pin-inicio .btn-link { background: none; border: 0; padding: 4px; font-size: 12.5px; text-decoration: underline; color: inherit; opacity: .8; }
+  .pin-inicio .pin-ayuda { font-size: 12px; opacity: .8; }
+  .pin-inicio .btn-link { background: none; border: 0; padding: 4px; font-size: 12px; text-decoration: underline; color: inherit; opacity: .8; }
   @media (prefers-reduced-motion: reduce) {
     .radar-buscando span { animation: none; opacity: .25; transform: scale(2); }
     #tarjetaConductorAsignado, #etaConductor, #btnPagarMp, #cardDesgloseFinal, #cardCalificar { animation: none; }
@@ -728,10 +779,10 @@
 
   /* Recorrido con paradas. */
   .recorrido { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-  .recorrido li { display: flex; gap: 10px; align-items: baseline; font-size: 15px; overflow-wrap: anywhere; }
+  .recorrido li { display: flex; gap: 10px; align-items: baseline; font-size: 16px; overflow-wrap: anywhere; }
   .recorrido .rec-etiqueta { flex: none; min-width: 66px; font-size: 12px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--text-3); }
 
-  .pie { text-align: center; color: var(--text-3); font-size: 13.5px; margin-top: 24px; line-height: 1.5; }
+  .pie { text-align: center; color: var(--text-3); font-size: 14px; margin-top: 24px; line-height: 1.5; }
 
   .conductor-banner { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
   .conductor-banner img {
@@ -739,13 +790,13 @@
        object-fit:cover en un cuadro chico se recortaba el auto.
        object-fit:contain muestra la foto completa sin recortar, cada
        conductor puede subir con distinta proporción. */
-    width: 96px; height: 60px; border-radius: 10px; object-fit: contain; object-position: center;
+    width: 96px; height: 60px; border-radius: 12px; object-fit: contain; object-position: center;
     background: var(--surface-2); border: 1px solid var(--border); flex: none;
   }
   .conductor-banner .nombre { font-weight: 700; font-size: 16px; }
   .conductor-banner .patente {
-    display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 6px;
-    border: 2px solid var(--text); font-weight: 700; letter-spacing: 0.08em; font-size: 15px;
+    display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 12px;
+    border: 2px solid var(--text); font-weight: 700; letter-spacing: 0.08em; font-size: 16px;
   }
   .conductor-banner .vehiculo { color: var(--text-2); font-size: 14px; margin-top: 2px; }
 
@@ -756,19 +807,19 @@
   }
   .chat-vacio { color: var(--text-3); font-size: 14px; text-align: center; padding: 18px 0; }
   .chat-burbuja {
-    max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 15px; line-height: 1.4;
+    max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 16px; line-height: 1.4;
     word-break: break-word;
   }
   .chat-burbuja.mia { align-self: flex-end; background: var(--primary); color: var(--primary-ink); border-bottom-right-radius: 4px; }
   .chat-burbuja.suya { align-self: flex-start; background: var(--surface-2); color: var(--text); border-bottom-left-radius: 4px; }
-  .chat-hora { display: block; font-size: 11.5px; opacity: 0.7; margin-top: 3px; }
+  .chat-hora { display: block; font-size: 12px; opacity: 0.7; margin-top: 3px; }
   .chat-entrada { display: flex; gap: 8px; }
   .chat-entrada input {
     flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: var(--r-input);
-    padding: 12px 14px; font: inherit; font-size: 15px; background: var(--surface); color: var(--text);
+    padding: 12px 14px; font: inherit; font-size: 16px; background: var(--surface); color: var(--text);
   }
   .chat-entrada input:focus { outline: none; border-color: var(--primary); }
-  .chat-entrada .btn { padding: 12px 18px; font-size: 15px; }
+  .chat-entrada .btn { padding: 12px 18px; font-size: 16px; }
 
   /* ---------- Chat flotante: burbuja + ventana propia ----------
      Visible en cualquier pestaña mientras el viaje está activo, como los
@@ -777,14 +828,14 @@
     position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 60;
     width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; touch-action: none;
     background: var(--naranja); color: #FFFFFF;
-    box-shadow: 0 8px 22px rgba(239, 109, 25, 0.38), 0 2px 6px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 0 0 1px var(--border);
     display: flex; align-items: center; justify-content: center;
   }
   .burbuja-chat svg { width: 28px; height: 28px; }
   .burbuja-chat:active { transform: scale(0.94); }
   .burbuja-chat-n {
     position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
-    border-radius: 11px; background: var(--danger); color: #FFFFFF; font-size: 12.5px; font-weight: 700;
+    border-radius: 12px; background: var(--danger); color: #FFFFFF; font-size: 12px; font-weight: 700;
     line-height: 18px; text-align: center; border: 2px solid #FFFFFF; box-sizing: border-box;
   }
   .burbuja-chat-n[hidden] { display: none; }
@@ -796,7 +847,7 @@
   .chat-vista-previa {
     position: fixed; z-index: 61; max-width: min(260px, 70vw); padding: 10px 13px; border-radius: 14px;
     background: var(--surface); color: var(--text); border: 1px solid var(--border);
-    box-shadow: 0 10px 24px rgba(16, 26, 32, 0.16); font-size: 14px; line-height: 1.35; cursor: pointer;
+    box-shadow: 0 0 0 1px var(--border); font-size: 14px; line-height: 1.35; cursor: pointer;
   }
   .chat-vista-previa[hidden] { display: none; }
   .chat-vista-previa strong { display: block; font-size: 12px; color: var(--text-3); margin-bottom: 2px; }
@@ -804,24 +855,24 @@
     position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 70;
     width: min(400px, calc(100vw - 24px)); height: min(560px, calc(100vh - 110px));
     display: flex; flex-direction: column; overflow: hidden;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-    box-shadow: 0 18px 48px rgba(16, 26, 32, 0.28), 0 4px 12px rgba(16, 26, 32, 0.12);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 0 0 1px var(--border);
   }
   .ventana-chat[hidden] { display: none; }
   .ventana-chat-cab {
     display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px;
-    background: linear-gradient(135deg, var(--primary), #24485A); color: #FFFFFF;
+    background: var(--primary); color: #FFFFFF;
   }
   .ventana-chat-cab .titulo { flex: 1; min-width: 0; }
   .ventana-chat-cab .titulo strong, .ventana-chat-cab .titulo span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ventana-chat-cab .titulo strong { font-size: 16px; }
-  .ventana-chat-cab .titulo span { font-size: 12.5px; opacity: 0.8; }
+  .ventana-chat-cab .titulo span { font-size: 12px; opacity: 0.8; }
   .ventana-chat-cab button {
     width: 40px; height: 40px; flex: none; border-radius: 50%; border: none; cursor: pointer;
     background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; line-height: 1;
   }
   .ventana-chat .chat-mensajes { flex: 1; max-height: none; margin: 0; padding: 14px 12px; background: var(--surface-2); }
-  .ventana-chat .chat-burbuja.suya { background: var(--surface); box-shadow: 0 1px 2px rgba(16, 26, 32, 0.08); }
+  .ventana-chat .chat-burbuja.suya { background: var(--surface); box-shadow: 0 0 0 1px var(--border); }
   .ventana-chat .chat-entrada { padding: 10px; border-top: 1px solid var(--border); align-items: flex-end; background: var(--surface); }
   .chat-entrada textarea {
     flex: 1; min-width: 0; resize: none; min-height: 48px; max-height: 140px; box-sizing: border-box;
@@ -848,7 +899,7 @@
     display: flex; gap: 4px;
     background: var(--surface); border-top: 1px solid var(--border);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    box-shadow: 0 -2px 12px rgba(16,26,32,0.06);
+    box-shadow: 0 0 0 1px var(--border);
   }
   .nav-inferior .nav-item { flex: 1 1 0; }
   /* "En Rumbo" no aparece (ni bloqueada) mientras no haya un viaje: se muestra
@@ -858,7 +909,7 @@
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
     border: none; background: none; cursor: pointer; font: inherit;
     font-size: 12px; font-weight: 500; color: var(--text-3);
-    padding: 8px 4px; border-radius: 10px;
+    padding: 8px 4px; border-radius: 12px;
   }
   .nav-item .ico { width: 22px; height: 22px; }
   .nav-item.activo { color: var(--primary); font-weight: 600; }
@@ -870,7 +921,7 @@
   }
   .nav-badge.activo { display: block; }
 
-  .check-fila { display: flex; align-items: flex-start; gap: 10px; font-size: 15px; color: var(--text-2); line-height: 1.4; cursor: pointer; }
+  .check-fila { display: flex; align-items: flex-start; gap: 10px; font-size: 16px; color: var(--text-2); line-height: 1.4; cursor: pointer; }
   .check-fila input { margin-top: 2px; width: 18px; height: 18px; flex: none; accent-color: var(--primary); }
   .link-inline { border: none; background: none; padding: 0; color: var(--primary); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 
@@ -889,33 +940,35 @@
      debajo aparecen "Rumbo" y el eslogan, y mientras carga un auto avanza dejando puntitos naranjas, como la ruta del logo.
      --sb / --nb (barra de estado y de navegación, en dp) los pone MainActivity: el splash del sistema se centra en la
      ventana completa y el WebView no. Sin ellos (web), queda centrado en la página. */
+  /* En la app nativa el splash del HTML espera los bordes que manda MainActivity (misma posición que el del sistema): sin salto. */
+  html.nativo:not(.bordes-ok) .splash .splash-centro, html.nativo:not(.bordes-ok) .splash .splash-bajo, html.nativo:not(.bordes-ok) .splash .by { visibility: hidden; }
   .splash { position: fixed; inset: 0; z-index: 100; background: #11304A; color: #fff; text-align: center; transition: opacity 0.35s ease; }
   .splash .splash-centro { position: absolute; left: 50%; top: calc(50% + (var(--nb, 0px) - var(--sb, 0px)) / 2); width: 132px; transform: translate(-50%, -50%); }
   .splash #splashLogo { display: block; width: 132px; height: auto; }
   .splash .splash-bajo { position: absolute; left: 50%; top: calc(100% + 26px); transform: translateX(-50%); width: 280px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .splash .splash-palabra { width: 150px; height: auto; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .12s forwards; }
   .splash .splash-titulo { display: none; }
-  .splash .splash-texto { font-size: 17px; font-weight: 600; letter-spacing: .01em; color: #C9D3DE; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .32s forwards; }
+  .splash .splash-texto { position: absolute; left: -90px; right: -90px; bottom: calc(100% + 20px); font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: 0; color: #fff; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .2s forwards; }
   .splash .splash-carga { position: relative; width: 132px; height: 22px; margin-top: 8px; opacity: 0; animation: splashAparece .3s ease .5s forwards; }
-  .splash .splash-puntitos { position: absolute; left: 4px; right: 18px; top: 50%; display: flex; justify-content: space-between; transform: translateY(-50%); }
+  .splash .splash-puntitos { position: absolute; left: 4px; right: 56px; top: 50%; display: flex; justify-content: space-between; transform: translateY(-50%); }
   .splash .splash-puntitos i { width: 6px; height: 6px; border-radius: 50%; background: #EF6D19; opacity: 0; animation: splashPuntito 1.6s linear infinite; }
   .splash .splash-puntitos i:nth-child(1) { animation-delay: .15s; } .splash .splash-puntitos i:nth-child(2) { animation-delay: .42s; }
   .splash .splash-puntitos i:nth-child(3) { animation-delay: .69s; } .splash .splash-puntitos i:nth-child(4) { animation-delay: .96s; }
   .splash .splash-puntitos i:nth-child(5) { animation-delay: 1.23s; }
-  .splash .splash-auto { position: absolute; left: 0; top: 0; width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; animation: splashAuto 1.6s linear infinite; }
+  .splash .splash-auto { position: absolute; left: 0; top: 0; width: 52px; height: 20px; fill: none; stroke: #fff; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; animation: splashAuto 1.6s linear infinite; }
   @keyframes splashAparece { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @keyframes splashAuto { 0% { transform: translateX(0); opacity: 1; } 85% { transform: translateX(110px); opacity: 1; } 100% { transform: translateX(110px); opacity: 0; } }
+  @keyframes splashAuto { 0% { transform: translateX(0); opacity: 1; } 85% { transform: translateX(82px); opacity: 1; } 100% { transform: translateX(82px); opacity: 0; } }
   @keyframes splashPuntito { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) {
     .splash .splash-palabra, .splash .splash-texto, .splash .splash-carga { animation: none; opacity: 1; }
-    .splash .splash-auto { animation: none; transform: translateX(110px); }
+    .splash .splash-auto { animation: none; transform: translateX(82px); }
     .splash .splash-puntitos i { animation: none; opacity: 1; }
   }
   /* By BTo Innova soluciones (regla de marca): al pie del splash, a la misma altura que en el splash del sistema (80 dp sobre el borde de la ventana). El logo es azul oscuro: va sobre un recuadro claro. */
   .splash .by { position: absolute; left: 0; right: 0; bottom: calc(80px - var(--nb, 58px) + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
   .splash .by span { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
-  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 10px; padding: 3px 8px; }
-  .by-pie { text-align: center; color: #4E5A6C; font-size: 13px; margin: 4px 0 18px; }
+  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 12px; padding: 3px 8px; }
+  .by-pie { text-align: center; color: #4E5A6C; font-size: 14px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
 
@@ -932,8 +985,8 @@
     max-width: 340px; width: 100%; text-align: center; box-shadow: var(--shadow-md);
   }
   .actualizacion-ico { font-size: 40px; line-height: 1; margin-bottom: 10px; }
-  .actualizacion-card h2 { margin: 0 0 8px; font-size: 19px; font-weight: 700; }
-  .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
+  .actualizacion-card h2 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+  .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
   .actualizacion-card button { width: 100%; }
 
   /* ---------- Viaje en curso y cierre con recálculo ----------
@@ -944,32 +997,32 @@
   }
   .viaje-panel[hidden] { display: none; }
   .viaje-hoja {
-    background: var(--surface); border-radius: 20px 20px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+    background: var(--surface); border-radius: 14px 14px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
     width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto; box-shadow: var(--shadow-md);
     animation: hojaSube 0.28s ease;
   }
   @keyframes hojaSube { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .viaje-hoja { animation: none; } }
-  .viaje-hoja h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; }
+  .viaje-hoja h2 { margin: 0 0 4px; font-size: 18px; font-weight: 700; }
   .viaje-hoja > p.nota { margin: 0 0 18px; }
   .viaje-garantia {
     display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
     padding: 14px 16px; border-radius: 14px; background: var(--surface-2); margin-bottom: 18px;
   }
-  .viaje-garantia span { font-size: 13.5px; color: var(--text-2); }
-  .viaje-garantia strong { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .sim-titulo { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); margin: 0 0 10px; }
+  .viaje-garantia span { font-size: 14px; color: var(--text-2); }
+  .viaje-garantia strong { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sim-titulo { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); margin: 0 0 10px; }
   .sim-controles { display: grid; gap: 10px; margin-bottom: 20px; }
   .sim-fila {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 12px 14px; border: 1.5px solid var(--borde); border-radius: 12px;
   }
-  .sim-fila label { font-size: 14.5px; }
+  .sim-fila label { font-size: 14px; }
   .sim-fila input { width: 84px; text-align: right; font-variant-numeric: tabular-nums; }
   .desglose { display: grid; gap: 2px; margin-bottom: 18px; }
   .desglose-fila {
     display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-    padding: 11px 0; font-size: 15px; border-bottom: 1px solid var(--borde);
+    padding: 11px 0; font-size: 16px; border-bottom: 1px solid var(--borde);
   }
   .desglose-fila dd, .desglose-fila span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
   .desglose-fila.ajuste span:last-child { color: var(--danger); font-weight: 600; }
@@ -979,14 +1032,14 @@
   }
   .desglose-fila.final span { font-size: 16px; font-weight: 600; }
   .desglose-fila.final span:last-child { font-size: 22px; font-weight: 700; }
-  .desglose-motivo { margin: 0 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+  .desglose-motivo { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: var(--text-2); }
 
   /* ---------- Marca: dorado envejecido (solo detalles; los colores base no cambian) ---------- */
-  .brand-mark { width: 72px; height: 72px; }
+  .brand-mark { width: 50px; height: 50px; }
   .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
-  .brand-wordmark { height: 26px; filter: none; }
-  .brand-texto { min-height: 72px; gap: 4px; }
-  .brand-lema { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+  .brand-wordmark { height: 18px; filter: none; }
+  .brand-texto { min-height: 50px; gap: 4px; }
+  .brand-lema { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
   .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
   .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
   .hoja-asa span { background: var(--acento); }
@@ -1000,18 +1053,29 @@
   .rb-pop { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;
     padding: 24px; background: rgba(11,34,54,0.55); }
   .rb-pop[hidden] { display: none; }
-  .rb-pop-caja { width: 100%; max-width: 360px; background: #fff; color: #11304A; border-radius: 18px; padding: 22px 20px 16px;
-    box-shadow: 0 18px 48px rgba(0,0,0,0.35); border-top: 6px solid var(--acento, #0EA5B0); max-height: 80vh; overflow-y: auto; }
+  .rb-pop-caja { width: 100%; max-width: 360px; background: #fff; color: #11304A; border-radius: 14px; padding: 22px 20px 16px;
+    box-shadow: 0 0 0 1px var(--border); border-top: 6px solid var(--acento, #0EA5B0); max-height: 80vh; overflow-y: auto; }
   .rb-pop-caja.error { border-top-color: #B3392B; }
   .rb-pop-caja.ok { border-top-color: #0B7A4B; }
   .rb-pop-texto { margin: 0 0 18px; font: 500 16px/1.45 system-ui, sans-serif; white-space: pre-line; word-wrap: break-word; }
   .rb-pop-campo { width: 100%; box-sizing: border-box; margin: 0 0 18px; padding: 11px 12px; font: 16px system-ui, sans-serif;
-    border: 1px solid #C9D3DE; border-radius: 10px; }
+    border: 1px solid #C9D3DE; border-radius: 12px; }
   .rb-pop-botones { display: flex; gap: 10px; justify-content: flex-end; }
   .rb-pop-botones button { min-width: 96px; padding: 11px 16px; border-radius: 12px; font: 600 15px system-ui, sans-serif; cursor: pointer; border: 0; }
   .rb-pop-si { background: #11304A; color: #fff; }
   .rb-pop-no { background: #E8EEF3; color: #11304A; }
 </style>
+<script>try {
+  // __splashVis = cuándo se hace visible el splash del HTML (para que dure 4 s completos DESDE ahí, no desde que arrancó la app).
+  window.__splashVis = Date.now();
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    document.documentElement.classList.add("nativo");
+    window.__splashVis = 0;
+    var obs = new MutationObserver(function () { if (document.documentElement.classList.contains("bordes-ok")) { window.__splashVis = Date.now(); obs.disconnect(); } });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    setTimeout(function () { document.documentElement.classList.add("bordes-ok"); }, 1500);
+  }
+} catch (e) {}</script>
 </head>
 <body>
 <div class="mapa-fondo" aria-hidden="true"></div>
@@ -1025,12 +1089,12 @@
 </div>
 <div class="splash" id="splashIngresando">
   <div class="splash-centro">
+    <div class="splash-texto" id="splashTexto">Tu nuevo</div>
     <img src="img/logo-carita.png" alt="" id="splashLogo">
     <div class="splash-bajo">
       <img src="img/rumbo-palabra-blanco.png" alt="Rumbo" class="splash-palabra">
       <div class="splash-titulo" id="splashTitulo"></div>
-      <div class="splash-texto" id="splashTexto">Tu nuevo Rumbo</div>
-      <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 0 24 24"><use href="#i-auto"></use></svg></div>
+      <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 -4 160 62" aria-hidden="true"><path d="M154 42 L140 42 A14 14 0 0 0 112 42 L46 42 A14 14 0 0 0 18 42 L6 42 L5 32 Q5 24 9 19 L14 10 Q22 0 38 -1 L88 -1 Q96 -1 102 3 L138 18 L148 19 Q154 21 154 28 Z"/><path d="M22 17 L27 6 Q29 3 36 3 L57 3 L57 17 Z"/><path d="M61 3 L88 3 Q93 3 97 6 L118 17 L61 17 Z"/><path d="M119 19 L125 19" stroke-width="3"/><path d="M143 23 L149 27" stroke-width="2"/><path d="M6 24 L10 23" stroke-width="2"/><circle cx="32" cy="42" r="11"/><circle cx="32" cy="42" r="3.5"/><circle cx="126" cy="42" r="11"/><circle cx="126" cy="42" r="3.5"/></svg></div>
     </div>
   </div>
   <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
@@ -1061,6 +1125,8 @@
   <symbol id="i-etiqueta" viewBox="0 0 24 24"><path d="M20.5 13.5L13 21a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 2.6 12.6L3 4l8.6-.4a2 2 0 0 1 1.5.6l7.4 7.4a2 2 0 0 1 0 2.8Z"/><path d="M7.5 7.5h.01"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
   <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-billete" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+  <symbol id="i-banco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5M5 10v7M10 10v7M14 10v7M19 10v7M3 20h18"/></symbol>
   <symbol id="i-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></symbol>
     <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
 </svg>
@@ -1071,7 +1137,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslados privados</span>
+        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslado móvil</span>
         <span class="brand-sub" id="brandSubPasajero">Pasajero</span>
       </span>
     </div>
@@ -1173,11 +1239,11 @@
         <h2 class="wiz-titulo" style="margin:0;">Confirma tu viaje</h2>
       </div>
       <div class="wiz-cuerpo">
-        <ul class="wiz-resumen" id="wizResumen" aria-label="Resumen del viaje"></ul>
         <section class="card precio-card" id="tarjetaPrecio" aria-live="polite" style="display:none;">
           <p class="precio-label">Precio estimado</p>
           <p class="precio-valor" id="total">—</p>
-          <dl class="precio-detalle">
+          <p class="precio-resumen" id="precioResumen"></p>
+          <dl class="precio-detalle" hidden>
             <div class="detalle-fila"><dt id="lblKm">Distancia</dt><dd id="outKm">—</dd></div>
             <div class="detalle-fila"><dt id="lblMin">Tiempo</dt><dd id="outMin">—</dd></div>
             <div class="detalle-fila"><dt id="lblPeaje">Peajes</dt><dd id="outPeaje">—</dd></div>
@@ -1189,9 +1255,15 @@
             <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
           </p>
         </section>
+        <ul class="wiz-resumen" id="wizResumen" aria-label="Resumen del viaje"></ul>
       </div>
       <div class="wiz-pie">
         <p class="nota" id="pedirTexto" style="margin:0 2px 8px;"></p>
+        <button type="button" class="pago-fila" id="filaPago" aria-haspopup="dialog">
+          <svg class="ico" aria-hidden="true"><use id="pagoIcono" href="#i-billete"/></svg>
+          <span class="pago-nombre" id="pagoNombre">Efectivo</span>
+          <span class="pago-cambiar">Cambiar ›</span>
+        </button>
         <p class="acepta-arriendo" id="aceptaArriendo">Al tocar «Solicitar viaje» aceptas el <strong>contrato de arriendo de vehículo con chofer</strong> con el conductor que tome tu viaje y los <button type="button" class="link-inline" id="verTycViaje">términos y condiciones</button>.</p>
         <button class="btn btn-primario" id="btnPedir" type="button" disabled>
           Solicitar viaje
@@ -1203,13 +1275,13 @@
    </div>
 
    <!-- Términos y condiciones (texto generado desde legal/tyc-pasajero.md con scripts/generar-tyc.js) -->
-   <div class="modal-opc" id="modalTyc" hidden role="dialog" aria-labelledby="modalTycTit">
+   <div class="modal-opc pagina" id="modalTyc" hidden role="dialog" aria-labelledby="modalTycTit">
      <div class="modal-opc-hoja">
-       <h3 id="modalTycTit">Términos y condiciones</h3>
+       <div class="pagina-cab"><button type="button" data-cierra="modalTyc" aria-label="Volver">&#8249;</button><h3 id="modalTycTit">Términos y condiciones</h3></div>
        <div class="tyc-cuerpo" id="tycCuerpo" tabindex="0">
 <!--TYC-PASAJERO-INICIO-->
 <p>Plataforma: Rumbo, aplicación desarrollada y operada por BTo Innova SpA, RUT 78.533.592-9 (nombre comercial "BTo Innova soluciones"), titular de las obligaciones que estos Términos atribuyen a Rumbo. En adelante, "Rumbo".</p>
-<p>Versión: 2026-10-19-tyc4 · 19 de octubre de 2026.</p>
+<p>Versión: 2026-10-23-tyc5 · 23 de octubre de 2026.</p>
 <p>Al crear su cuenta y marcar la casilla "Acepto", el Pasajero declara haber leído y aceptado íntegramente los presentes Términos y Condiciones. Rumbo conservará registro de la fecha, la hora y la versión aceptadas. Estos Términos y las condiciones comerciales pueden cambiar más adelante, lo que será informado oportunamente a través de la aplicación.</p>
 <h4>1. Naturaleza del servicio</h4>
 <p>1.1. Rumbo es una plataforma tecnológica de intermediación que vincula a los pasajeros con conductores independientes. Rumbo no es una empresa de transportes, no presta el servicio de conducción, no es propietaria de los vehículos ni empleadora de los conductores.</p>
@@ -1219,13 +1291,13 @@
 <p>El Pasajero debe ser mayor de 18 años y proporcionar información veraz, completa y actualizada. Es responsable de la confidencialidad de su clave y de toda actividad realizada con su cuenta. Desde la sección "Mi cuenta" podrá solicitar una copia de sus datos o eliminar su cuenta.</p>
 <h4>3. Precio</h4>
 <p>3.1. Con anterioridad a solicitar el viaje, el Pasajero conocerá su valor, calculado en función de la ruta, el tiempo estimado y los peajes del trayecto.</p>
-<p>3.2. Mientras la diferencia entre el viaje efectivamente realizado y el cotizado se mantenga dentro de la tolerancia informada en la aplicación, se cobrará el valor cotizado. Fuera de ella, el valor final podrá reajustarse a la conclusión del viaje, calculándose en función del tiempo y la distancia efectivamente recorridos, únicamente por las siguientes causas: cambio del destino o del punto de recogida, paradas agregadas o suprimidas, un recorrido sustancialmente más largo o lento que el estimado, o tráfico extraordinario. El reajuste no podrá exceder el límite máximo informado previamente en la aplicación. Si el Pasajero modifica el destino o agrega paradas, se le informará el nuevo valor y, cuando el aumento sea relevante, el cambio requerirá su aceptación expresa.</p>
+<p>3.2. Dentro de la ciudad, el valor informado antes de solicitar el viaje es un precio cerrado: es el que se cobra, sin reajuste por tráfico ni por mayor duración del trayecto, salvo que el Pasajero cambie el destino, el punto de recogida o las paradas, o exceda el tiempo de espera contratado o el tiempo de espera sin costo en la recogida. Fuera de la ciudad, mientras la diferencia entre el viaje efectivamente realizado y el cotizado se mantenga dentro de la tolerancia informada en la aplicación, se cobrará el valor cotizado; fuera de ella, el valor final podrá reajustarse a la conclusión del viaje, calculándose en función del tiempo y la distancia efectivamente recorridos, únicamente por las siguientes causas: cambio del destino o del punto de recogida, paradas agregadas o suprimidas, un recorrido sustancialmente más largo o lento que el estimado, o tráfico extraordinario. El reajuste no podrá exceder el límite máximo informado previamente en la aplicación. Si el Pasajero modifica el destino o agrega paradas, se le informará el nuevo valor y, cuando el aumento sea relevante, el cambio requerirá su aceptación expresa.</p>
 <p>3.3. La espera en el punto de recogida dispone de un tiempo sin costo; excedido este, se cobrará conforme a la tarifa vigente.</p>
 <p>3.4. Si el Pasajero estima que el valor final se vio incrementado por un desvío o error de ruta del Conductor, podrá reclamarlo a través de la sección "Ayuda y reclamos" de la aplicación. Rumbo evaluará el caso y, si corresponde, ajustará el cobro.</p>
 <h4>4. Cargo por uso de la aplicación</h4>
 <p>Cada viaje comprende un cargo por el uso de la aplicación, el cual se encuentra incorporado en el precio total informado al Pasajero, sin que procedan cobros adicionales posteriores por este concepto. Dicho cargo financia el procesamiento de los pagos, la seguridad, el soporte y el funcionamiento del software. Su monto podrá ser modificado mediante notificación previa a través de la aplicación, aplicándose la modificación exclusivamente a los viajes solicitados con posterioridad a dicha notificación. En todo caso, el Pasajero conocerá el precio final antes de confirmar el viaje.</p>
 <h4>5. Formas de pago</h4>
-<p>5.1. Al término del viaje, el Pasajero podrá pagar con tarjeta de crédito o débito, a través de un procesador de pagos externo, en efectivo o mediante transferencia al Conductor.</p>
+<p>5.1. El Pasajero elige la forma de pago antes de solicitar el viaje: tarjeta de crédito o débito, a través de un procesador de pagos externo, efectivo o transferencia al Conductor. Podrá cambiarla mientras el viaje no esté pagado. Si la forma elegida no pudiera completarse (por ejemplo, el Conductor no tiene datos de transferencia), el Pasajero elegirá nuevamente al término del viaje.</p>
 <p>5.2. En los pagos con tarjeta, Rumbo recauda el monto por cuenta del Conductor y se lo traspasa. En caso de pago en cuotas, los intereses son cobrados por el banco o emisor, y no por Rumbo.</p>
 <p>5.3. En los pagos en efectivo o por transferencia, el pago se entenderá recibido cuando el Conductor lo confirme. Si el Pasajero ya hubiere pagado con tarjeta, el Conductor no podrá exigir un nuevo pago.</p>
 <h4>6. PIN de inicio</h4>
@@ -1250,9 +1322,9 @@
      </div>
    </div>
 
-   <div class="modal-opc" id="modalReclamos" hidden role="dialog" aria-labelledby="modalReclamosTit">
+   <div class="modal-opc pagina" id="modalReclamos" hidden role="dialog" aria-labelledby="modalReclamosTit">
      <div class="modal-opc-hoja">
-       <h3 id="modalReclamosTit">Ayuda y reclamos</h3>
+       <div class="pagina-cab"><button type="button" data-cierra="modalReclamos" aria-label="Volver">&#8249;</button><h3 id="modalReclamosTit">Ayuda y reclamos</h3></div>
        <p class="tyc-p">Escríbenos tu consulta o reclamo. La respuesta aparecerá en esta pantalla.</p>
        <div class="campo" style="margin-bottom:10px;">
          <label class="campo-label" for="reclamoTipoP">Tema</label>
@@ -1401,7 +1473,12 @@
       <div id="pagoTransfInfo" style="display:none;">
         <div id="transfFilas"></div>
         <button type="button" class="btn btn-primario" id="transfCopiarTodo" style="width:100%;margin-top:10px;">Copiar datos</button>
-        <p class="nota" style="margin:8px 0 0;">Pega los datos en tu banco. Cuando tu conductor vea el depósito, confirmará tu pago.</p>
+        <p class="nota" style="margin:8px 0 0;">Haz la transferencia con estos datos. Después descarga el comprobante en <strong>PDF</strong> desde tu banco (no sirve una captura de pantalla) y súbelo aquí. Tu conductor confirma el pago al verlo.</p>
+        <div class="comprobante-bloque" id="comprobanteBloque">
+          <input type="file" id="comprobanteArchivo" accept="application/pdf,.pdf" hidden>
+          <button type="button" class="btn btn-primario" id="btnSubirComprobante" style="width:100%;margin-top:10px;">Subir comprobante (PDF)</button>
+          <p class="nota" id="comprobanteMsg" style="margin:8px 0 0;"></p>
+        </div>
         <button type="button" class="btn btn-secundario pago-alt" id="pagoAltEfectivo">Prefiero pagar en efectivo</button>
       </div>
       <p class="nota" id="pagoMsg" style="margin:8px 0 0;"></p>
@@ -1409,6 +1486,18 @@
     <!-- Aparece al terminar el viaje si el conductor cobra por Mercado Pago.
          El monto lo fija el backend (precio congelado): acá no se escribe. -->
     <a class="btn btn-primario" id="btnPagarMp" target="_blank" rel="noopener" style="display:none;margin-bottom:8px;text-decoration:none;"></a>
+    <section class="card" id="pagoGuardada" hidden>
+      <button type="button" class="btn btn-primario" id="btnPagarGuardada" style="width:100%;">Pagar con mi tarjeta</button>
+      <div id="pagoCvvForm" hidden>
+        <label class="campo-label">Código de seguridad de tu <span id="pagoTarjetaTxt"></span></label>
+        <div class="mp-campo" id="mpCvvPago"></div>
+        <p class="nota error" id="pagoTarjetaError" style="margin:8px 0 0;"></p>
+        <div class="btn-row" style="margin-top:10px;">
+          <button type="button" class="btn btn-chico" id="btnCancelarCvv">Cancelar</button>
+          <button type="button" class="btn btn-medio" id="btnConfirmarPagoTarjeta">Pagar</button>
+        </div>
+      </div>
+    </section>
     <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
       Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o la plataforma de pago, no Rumbo.
     </p>
@@ -1579,6 +1668,11 @@
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-reloj"/></svg>
         <span class="card-title">Mis viajes</span>
       </div>
+      <div id="bloqueReservas" hidden>
+        <h4 class="lugares-sub" style="margin-top:0;">Reservas</h4>
+        <div id="listaReservas"></div>
+        <h4 class="lugares-sub">Historial</h4>
+      </div>
       <div id="listaViajes"><p class="nota" style="margin:0;">Todavía no tienes viajes terminados.</p></div>
     </section>
 
@@ -1627,20 +1721,24 @@
 </div>
 
 <!-- Mis lugares: Casa, Trabajo y las direcciones más usadas (sin etiqueta). Se guardan solo en este teléfono. -->
-<div class="modal-opc" id="modalLugares" hidden role="dialog" aria-labelledby="modalLugaresTit">
+<div class="modal-opc pagina" id="modalLugares" hidden role="dialog" aria-labelledby="modalLugaresTit">
   <div class="modal-opc-hoja">
-    <h3 id="modalLugaresTit">Mis lugares</h3>
-    <div class="lugar-item" data-fila="casa">
-      <div class="lugar-info"><strong>Casa</strong><span id="lugarCasaDir">Sin guardar</span></div>
-      <button type="button" class="btn btn-chico" data-lugar-accion="editar" data-cual="casa">Cambiar</button>
-      <button type="button" class="btn btn-chico" data-lugar-accion="quitar" data-cual="casa" id="quitarCasa">Quitar</button>
+    <div class="pagina-cab"><button type="button" data-cierra="modalLugares" aria-label="Volver">&#8249;</button><h3 id="modalLugaresTit">Mis lugares frecuentes</h3></div>
+    <div class="lugar-item lugar-tarjeta" data-fila="casa" data-cual="casa">
+      <div class="lugar-info"><strong>Casa</strong><span id="lugarCasaDir">Sin guardar</span></div><button type="button" class="btn btn-chico lugar-accion-btn" data-cual="casa">Agregar</button>
     </div>
-    <div class="lugar-item" data-fila="trabajo">
-      <div class="lugar-info"><strong>Trabajo</strong><span id="lugarTrabajoDir">Sin guardar</span></div>
-      <button type="button" class="btn btn-chico" data-lugar-accion="editar" data-cual="trabajo">Cambiar</button>
-      <button type="button" class="btn btn-chico" data-lugar-accion="quitar" data-cual="trabajo" id="quitarTrabajo">Quitar</button>
+    <div class="lugar-item lugar-tarjeta" data-fila="trabajo" data-cual="trabajo">
+      <div class="lugar-info"><strong>Trabajo</strong><span id="lugarTrabajoDir">Sin guardar</span></div><button type="button" class="btn btn-chico lugar-accion-btn" data-cual="trabajo">Agregar</button>
     </div>
+    <div class="lugar-item lugar-tarjeta" data-fila="otro" data-cual="otro">
+      <div class="lugar-info"><strong>Otros</strong><span>Mamá, gimnasio, oficina…</span></div><button type="button" class="btn btn-chico lugar-accion-btn" data-cual="otro">Agregar</button>
+    </div>
+    <div id="listaOtrosNombrados"></div>
     <div class="campo" id="lugarEditor" hidden style="margin:10px 0 14px;">
+      <div id="lugarEditorNombreCampo" hidden style="margin-bottom:10px;">
+        <label class="campo-label" for="lugarEditorNombreInput">Nombre del lugar</label>
+        <input type="text" id="lugarEditorNombreInput" maxlength="24" placeholder="Por ejemplo: Mamá" autocomplete="off">
+      </div>
       <label class="campo-label" for="lugarEditorInput">Dirección de <span id="lugarEditorNombre">Casa</span></label>
       <input type="text" id="lugarEditorInput" placeholder="Escribe la dirección" autocomplete="off">
       <p class="nota" id="lugarEditorMsg" style="margin:6px 2px 0;"></p>
@@ -1655,6 +1753,70 @@
   </div>
 </div>
 
+<div class="modal-opc" id="modalPago" hidden role="dialog" aria-labelledby="modalPagoTit">
+  <div class="modal-opc-hoja">
+    <h3 id="modalPagoTit">Cómo vas a pagar</h3>
+    <div class="fp-lista" id="formaPagoLista">
+      <button type="button" class="pago-opcion" data-forma="MERCADOPAGO">
+        <svg class="ico" aria-hidden="true"><use href="#i-tarjeta"/></svg>
+        <span class="pago-op-txt"><strong>Tarjeta</strong><small>Crédito o débito, al terminar el viaje</small></span>
+        <span class="pago-check" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="pago-opcion" data-forma="EFECTIVO">
+        <svg class="ico" aria-hidden="true"><use href="#i-billete"/></svg>
+        <span class="pago-op-txt"><strong>Efectivo</strong><small>Le pagas al conductor al llegar</small></span>
+        <span class="pago-check" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="pago-opcion" data-forma="TRANSFERENCIA">
+        <svg class="ico" aria-hidden="true"><use href="#i-banco"/></svg>
+        <span class="pago-op-txt"><strong>Transferencia</strong><small>A la cuenta de tu conductor</small></span>
+        <span class="pago-check" aria-hidden="true"></span>
+      </button>
+    </div>
+    <button type="button" class="btn btn-secundario" data-cierra="modalPago" style="margin-top:12px;">Cerrar</button>
+  </div>
+</div>
+
+<div class="modal-opc pagina" id="modalMediosPago" hidden role="dialog" aria-labelledby="modalMediosPagoTit">
+  <div class="modal-opc-hoja">
+    <div class="pagina-cab"><button type="button" data-cierra="modalMediosPago" aria-label="Volver">&#8249;</button><h3 id="modalMediosPagoTit">Medios de pago</h3></div>
+    <p class="nota" style="margin:0 0 12px;">Elige cómo prefieres pagar. Puedes cambiarlo en cada viaje antes de solicitarlo.</p>
+    <div class="fp-lista" id="mediosPagoLista">
+      <button type="button" class="pago-opcion" data-forma="MERCADOPAGO"><svg class="ico" aria-hidden="true"><use href="#i-tarjeta"/></svg><span class="pago-op-txt"><strong>Tarjeta</strong><small>Crédito o débito</small></span><span class="pago-check" aria-hidden="true"></span></button>
+      <button type="button" class="pago-opcion" data-forma="EFECTIVO"><svg class="ico" aria-hidden="true"><use href="#i-billete"/></svg><span class="pago-op-txt"><strong>Efectivo</strong><small>Le pagas al conductor al llegar</small></span><span class="pago-check" aria-hidden="true"></span></button>
+      <button type="button" class="pago-opcion" data-forma="TRANSFERENCIA"><svg class="ico" aria-hidden="true"><use href="#i-banco"/></svg><span class="pago-op-txt"><strong>Transferencia</strong><small>A la cuenta de tu conductor</small></span><span class="pago-check" aria-hidden="true"></span></button>
+    </div>
+    <section class="card" id="tarjetaBloque" style="margin-top:16px;" hidden>
+      <div class="card-head"><svg class="ico ico-sm" aria-hidden="true"><use href="#i-tarjeta"/></svg><span class="card-title">Mi tarjeta</span></div>
+      <div id="tarjetaGuardada" hidden>
+        <p class="nota" id="tarjetaResumen" style="margin:0 0 10px;font-size:16px;"></p>
+        <button type="button" class="btn btn-chico" id="btnQuitarTarjeta">Quitar tarjeta</button>
+      </div>
+      <button type="button" class="btn btn-primario" id="btnAgregarTarjeta" style="width:100%;">Agregar tarjeta</button>
+      <div id="tarjetaForm" hidden>
+        <label class="campo-label">Número de tarjeta</label><div class="mp-campo" id="mpNumero"></div>
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1;"><label class="campo-label">Vencimiento</label><div class="mp-campo" id="mpVence"></div></div>
+          <div style="flex:1;"><label class="campo-label">Código de seguridad</label><div class="mp-campo" id="mpCvv"></div></div>
+        </div>
+        <label class="campo-label" for="mpTitular">Nombre del titular</label>
+        <input type="text" id="mpTitular" autocomplete="cc-name" placeholder="Como aparece en la tarjeta">
+        <label class="campo-label" for="mpRut" style="margin-top:10px;">RUT del titular</label>
+        <input type="text" id="mpRut" inputmode="text" placeholder="12345678-9" autocomplete="off">
+        <p class="nota error" id="mpError" style="margin:8px 0 0;"></p>
+        <div class="btn-row" style="margin-top:10px;">
+          <button type="button" class="btn btn-chico" id="btnCancelarTarjeta">Cancelar</button>
+          <button type="button" class="btn btn-medio" id="btnGuardarTarjeta">Guardar tarjeta</button>
+        </div>
+      </div>
+      <p class="nota" style="margin:12px 0 0;">Los datos de tu tarjeta los recibe directamente Mercado Pago: Rumbo nunca los ve ni los guarda. Se te pide el código de seguridad en cada pago.</p>
+    </section>
+    <div class="card" id="tarjetaInactiva" style="margin-top:16px;" hidden>
+      <p class="nota" style="margin:0;"><strong>Tarjeta:</strong> al terminar el viaje te abrimos una página segura de Mercado Pago para pagar. Guardar tu tarjeta estará disponible pronto.</p>
+    </div>
+  </div>
+</div>
+
 <div class="menu-lateral-fondo" id="menuLateralFondo" hidden></div>
 <aside class="menu-lateral" id="menuLateral" aria-hidden="true" aria-label="Menú">
   <div class="menu-lateral-cab">
@@ -1665,7 +1827,8 @@
   <div class="menu-lateral-seccion">Cuenta</div>
   <button type="button" class="menu-lateral-item" data-menu="cuenta">Mi cuenta</button>
   <button type="button" class="menu-lateral-item" data-menu="viajes">Mis viajes</button>
-  <button type="button" class="menu-lateral-item" data-menu="lugares">Mis lugares</button>
+  <button type="button" class="menu-lateral-item" data-menu="lugares">Mis lugares frecuentes</button>
+  <button type="button" class="menu-lateral-item" data-menu="pagos">Medios de pago</button>
   <button type="button" class="menu-lateral-item" data-menu="reclamos">Ayuda y reclamos</button>
   <div class="menu-lateral-seccion">Legal</div>
   <button type="button" class="menu-lateral-item" data-menu="tyc">Términos y condiciones</button>
@@ -1790,9 +1953,18 @@
     if (!esParaOtro) usarMiUbicacionComoOrigen(true);
   };
 
+  // Un lugar con nombre propio (aeropuerto, mall, clínica) conserva el nombre que eligió el pasajero delante de la dirección:
+  // "Aeropuerto Internacional Arturo Merino Benítez, Av. Armando Cortínez Ote. 1704, Pudahuel". Antes se perdía, el conductor veía
+  // solo la calle y el servidor no reconocía el aeropuerto. Una dirección de calle ya empieza con su nombre: queda igual.
+  function direccionConNombre(lugar) {
+    var dir = lugar.formatted_address || "";
+    var nombre = String(lugar.name || "").trim();
+    return nombre && dir.indexOf(nombre) !== 0 ? nombre + ", " + dir : dir;
+  }
+
   // marcador: "origen" | "destino" | null (paradas no llevan marcador propio).
   function configurarAutocompleteInput(input, marcador) {
-    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry"] };
+    var opciones = { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry", "name"] };
     var auto = new google.maps.places.Autocomplete(input, opciones);
     // Sube el campo al borde de arriba cuando aparece el teclado, así quedan
     // visibles lo que se escribe y las sugerencias que Google despliega debajo.
@@ -1817,7 +1989,7 @@
     });
     auto.addListener("place_changed", function () {
       var lugar = auto.getPlace();
-      if (lugar && lugar.formatted_address) input.value = lugar.formatted_address;
+      if (lugar && lugar.formatted_address) input.value = direccionConNombre(lugar);
       if (marcador && lugar && lugar.geometry && lugar.geometry.location) {
         pintarMarcadorCotizar(marcador, { lat: lugar.geometry.location.lat(), lng: lugar.geometry.location.lng() });
       }
@@ -2005,7 +2177,7 @@
   // Versión del texto que se le muestra al pasajero al marcar el
   // checkbox — si el texto cambia, subir este número: así, ante un
   // reclamo, se puede probar QUÉ decía el texto que aceptó (Ley 21.719).
-  var VERSION_POLITICA = "2026-10-19-tyc4";   // versión de los T&C y la política que se aceptan al registrarse
+  var VERSION_POLITICA = "2026-10-23-tyc5";   // versión de los T&C y la política que se aceptan al registrarse
 
   // El QR/link de cada conductor trae ?c=<conductor_id>. Se guarda en
   // localStorage para que, si el pasajero cierra y vuelve a abrir sin el
@@ -2025,12 +2197,13 @@
     document.getElementById("splashTexto").textContent = texto;
     el.hidden = false; el.classList.remove("oculta");
     splashDesde = Date.now();
-    setTimeout(ocultarSplash, 1800);
+    setTimeout(ocultarSplash, 4000);
   }
   function ocultarSplash() {
     var el = document.getElementById("splashIngresando");
     if (el.hidden) return;
-    var espera = Math.max(0, 1200 - (Date.now() - splashDesde));
+    var desde = Math.max(splashDesde, window.__splashVis || 0);   // 4 s desde que se ve la carita (igual en las tres apps)
+    var espera = Math.min(4000, Math.max(0, 4000 - (Date.now() - desde)));
     setTimeout(function () {
       el.classList.add("oculta");
       setTimeout(function () { el.hidden = true; }, 380);
@@ -2078,6 +2251,13 @@
     var deLaUrl = params.get("c");
     if (deLaUrl) { localStorage.setItem(CONDUCTOR_KEY, deLaUrl); return deLaUrl; }
     return localStorage.getItem(CONDUCTOR_KEY);
+  }
+  // Primer arranque de la app instalada: pasajero.html dejó "rumbo-c:<id>" en el portapapeles al tocar «Descargar la app».
+  if (window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform() && !localStorage.getItem(CONDUCTOR_KEY) && navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(function (t) {
+      var m = /^rumbo-c:([\w-]{4,80})$/.exec(String(t || "").trim());
+      if (m) { localStorage.setItem(CONDUCTOR_KEY, m[1]); try { cargarTarifas(); } catch (e) {} }
+    }).catch(function () {});
   }
 
   /* ---------------------------------------------------------------
@@ -2192,7 +2372,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 67;
+  var APP_VERSION = 69;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2274,8 +2454,8 @@
     var brandSub = document.getElementById("brandSubPasajero");
     // Junto al logo: la plataforma y el saludo (cabe en una línea, también con el encabezado compacto).
     brandSub.textContent = hayCuenta
-      ? "Pasajero · Hola " + (sesion.pasajero.nombre || "").split(" ")[0]
-      : "Pasajero";
+      ? "Hola " + (sesion.pasajero.nombre || "").split(" ")[0]
+      : "Bienvenido";
     // Cabecera del menú lateral: nombre e inicial.
     document.getElementById("menuNombre").textContent = hayCuenta ? (sesion.pasajero.nombre || "Pasajero") : "Pasajero";
     document.getElementById("menuAvatar").textContent = hayCuenta ? (String(sesion.pasajero.nombre || "P").trim().charAt(0).toUpperCase() || "P") : "P";
@@ -2379,7 +2559,24 @@
     // la lista de la cuenta anterior (nombres de rutas, montos, fechas
     // ajenos) hasta que esa segunda cuenta tuviera algún viaje propio.
     cont.innerHTML = '<p class="nota" style="margin:0;">Todavía no tienes viajes terminados.</p>';
+    document.getElementById("bloqueReservas").hidden = true;
     api({ accion: "mis_viajes_pasajero", pasajero_token: sesion.token }).then(function (res) {
+      // Reservas: viajes agendados que todavía no empezaron (esperando conductor o ya aceptados). Se arma con DOM, sin datos directos en el HTML.
+      if (res.ok && res.reservas && res.reservas.length) {
+        var lr = document.getElementById("listaReservas");
+        lr.innerHTML = "";
+        res.reservas.forEach(function (r) {
+          var q = String(r.fecha_viaje || "").split("-");
+          var d = q.length === 3 ? new Date(parseInt(q[0], 10), parseInt(q[1], 10) - 1, parseInt(q[2], 10)) : null;
+          var cuando = d && !isNaN(d.getTime()) ? d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" }) + (r.hora_viaje ? " · " + r.hora_viaje : "") : "";
+          var fila = document.createElement("div"); fila.className = "viaje-fila";
+          var info = document.createElement("div");
+          var l1 = document.createElement("div"); l1.className = "viaje-ruta"; l1.textContent = r.origen + " → " + r.destino;
+          var l2 = document.createElement("div"); l2.className = "viaje-detalle"; l2.textContent = cuando + " · " + fmt(r.monto) + " · " + (r.estado === "CONFIRMADO" ? "Conductor confirmado" : "Esperando conductor");
+          info.appendChild(l1); info.appendChild(l2); fila.appendChild(info); lr.appendChild(fila);
+        });
+        document.getElementById("bloqueReservas").hidden = false;
+      }
       if (!res.ok || !res.viajes.length) return;
       cont.innerHTML = "";
       res.viajes.forEach(function (v) {
@@ -2677,9 +2874,44 @@
     // backend cobra el pedido. Sin conductor, la de la red.
     var cid = obtenerConductorId();
     return api(cid ? { accion: "tarifas", conductor_id: cid } : { accion: "tarifas" }).then(function (res) {
-      if (res.ok) { tarifas = res.tarifas; cargoApp = Number(res.cargo_app) || 0; revisarActualizacion(res.version_app); }
+      if (res.ok) {
+        tarifas = res.tarifas; cargoApp = Number(res.cargo_app) || 0; revisarActualizacion(res.version_app);
+        if (res.pago_opciones) { pagoOpciones = res.pago_opciones; pintarFilaPago(); }
+      }
     });
   }
+
+  /* Forma de pago: el pasajero la elige ANTES de pedir. Se recuerda la última (localStorage siempre dentro de try/catch).
+     En pantalla es "Tarjeta" (nunca el nombre del procesador). Lo que ofrece el conductor viene en pago_opciones. */
+  var PAGO_KEY = "rumbo_forma_pago";
+  var NOMBRES_PAGO = { MERCADOPAGO: "Tarjeta", EFECTIVO: "Efectivo", TRANSFERENCIA: "Transferencia" };
+  var ICONOS_PAGO = { MERCADOPAGO: "#i-tarjeta", EFECTIVO: "#i-billete", TRANSFERENCIA: "#i-banco" };
+  var pagoOpciones = { efectivo: true, tarjeta: true, transferencia: true };
+  function leerFormaPago() { try { var v = localStorage.getItem(PAGO_KEY); if (NOMBRES_PAGO[v]) return v; } catch (e) {} return "EFECTIVO"; }
+  function guardarFormaPago(v) { try { localStorage.setItem(PAGO_KEY, v); } catch (e) {} }
+  var formaPagoElegida = leerFormaPago();
+  function formaDisponible(f) { return f === "EFECTIVO" || (f === "MERCADOPAGO" && !!pagoOpciones.tarjeta) || (f === "TRANSFERENCIA" && !!pagoOpciones.transferencia); }
+  function pintarFilaPago() {
+    if (!formaDisponible(formaPagoElegida)) formaPagoElegida = "EFECTIVO";
+    document.getElementById("pagoNombre").textContent = NOMBRES_PAGO[formaPagoElegida];
+    document.getElementById("pagoIcono").setAttribute("href", ICONOS_PAGO[formaPagoElegida]);
+    [].forEach.call(document.querySelectorAll("#formaPagoLista .pago-opcion"), function (b) {
+      var f = b.getAttribute("data-forma"), libre = formaDisponible(f);
+      b.disabled = !libre;
+      b.classList.toggle("elegida", f === formaPagoElegida);
+      b.setAttribute("aria-pressed", f === formaPagoElegida ? "true" : "false");
+      var pequeno = b.querySelector("small");
+      if (pequeno && !pequeno.getAttribute("data-base")) pequeno.setAttribute("data-base", pequeno.textContent);
+      if (pequeno) pequeno.textContent = libre ? pequeno.getAttribute("data-base") : "Tu conductor no ofrece esta opción";
+    });
+  }
+  document.getElementById("filaPago").addEventListener("click", function () { pintarFilaPago(); abrirModalOpc("modalPago"); });
+  [].forEach.call(document.querySelectorAll("#formaPagoLista .pago-opcion"), function (b) {
+    b.addEventListener("click", function () {
+      formaPagoElegida = b.getAttribute("data-forma"); guardarFormaPago(formaPagoElegida); pintarFilaPago(); cerrarModalOpc("modalPago");
+    });
+  });
+  pintarFilaPago();
 
   // Feriados fijos de Chile (fecha fija; no incluye feriados móviles como Viernes/Sábado Santo)
   var FERIADOS_FIJOS = [
@@ -2731,8 +2963,22 @@
     // Mientras se escribe ("18:3") la hora está a medias: se trata como vacía.
     if (!horaValida(horaStr)) horaStr = "";
     var fecha = fechaStr ? fechaLocal(fechaStr) : new Date();
-    var punta = calcularPunta(fecha, horaStr);
-    return { punta: punta, valorHora: punta ? tarifas.valorHoraPunta : tarifas.valorHoraValle };
+    var nivel = calcularNivel(fecha, horaStr);
+    var punta = nivel !== "VALLE";
+    // La fuerte nunca queda por debajo de la punta (igual que el servidor).
+    var valorHora = nivel === "FUERTE" ? Math.max(Number(tarifas.valorHoraFuerte), Number(tarifas.valorHoraPunta)) : punta ? tarifas.valorHoraPunta : tarifas.valorHoraValle;
+    return { punta: punta, nivel: nivel, valorHora: valorHora };
+  }
+
+  // Punta fuerte (valorHoraFuerte > 0): días de diasFuerte (lunes a viernes) en su rango; gana incluso sobre el valle del viernes; un feriado no.
+  function calcularNivel(fecha, horaStr) {
+    if (tarifas && Number(tarifas.valorHoraFuerte) > 0 && horaStr) {
+      var m = fecha.getMonth() + 1, d = fecha.getDate();
+      var feriado = FERIADOS_FIJOS.some(function (f) { return f[0] === m && f[1] === d; });
+      var dias = tarifas.diasFuerte || [1, 2, 3, 4, 5];
+      if (!feriado && dias.indexOf(fecha.getDay()) !== -1 && horaEnRango(horaStr, tarifas.horaFuerteInicio || "07:00", tarifas.horaFuerteFin || "09:30")) return "FUERTE";
+    }
+    return calcularPunta(fecha, horaStr) ? "PUNTA" : "VALLE";
   }
 
   /* Núcleo del precio: mismas reglas para la cotización inicial y para el
@@ -2761,7 +3007,7 @@
     var peajeTotal = peaje * FACTOR;
 
     return {
-      fueraDeSantiago: fueraDeSantiago, punta: tarifaH.punta,
+      fueraDeSantiago: fueraDeSantiago, punta: tarifaH.punta, nivel: tarifaH.nivel,
       km: km, minutos: minutos, litros: litros, fuel: fuel,
       horas: horas, valorHora: tarifaH.valorHora, time: horas * tarifaH.valorHora,
       peaje: peajeTotal, total: fuel + (horas * tarifaH.valorHora) + peajeTotal
@@ -2776,10 +3022,11 @@
     var d = cotizarViaje(rutaActual.km, rutaActual.minutos, rutaActual.peaje);
     var peaje = d.peaje;
     // Precio al pasajero = viaje + cargo por uso de la app (lo informa el servidor; se compara al pedir).
-    var total = Math.round(d.total * (1 + cargoApp));
+    // Comisión por uso de la app: 5 % del TOTAL que paga el pasajero (peajes incluidos), en todos los viajes: total = viaje / (1 - 5 %).
+    var total = Math.round(cargoApp > 0 && cargoApp < 0.5 ? d.total / (1 - cargoApp) : d.total);
     totalCotizadoActual = total;   // es el que se le muestra: se manda al pedir para detectar cambios
 
-    document.getElementById("outTipoTarifa").textContent = (d.fueraDeSantiago ? "Fuera de Santiago" : "En ciudad") + " · " + (d.punta ? "Punta" : "Valle");
+    document.getElementById("outTipoTarifa").textContent = (d.fueraDeSantiago ? "Fuera de Santiago" : "En ciudad") + " · " + (d.nivel === "FUERTE" ? "Punta fuerte" : d.punta ? "Punta" : "Valle");
     document.getElementById("total").textContent = fmt(total);
 
     // Un solo ítem por dato: distancia y tiempo muestran el valor POR
@@ -2795,6 +3042,9 @@
 
     document.getElementById("lblPeaje").textContent = "Peajes" + (idaYVuelta ? " (ida y vuelta, total)" : "");
     document.getElementById("outPeaje").textContent = peaje ? fmt(peaje) : "—";
+    var partesResumen = [rutaActual.km.toFixed(1) + " km", rutaActual.minutos + " min"];
+    if (peaje) partesResumen.push("peajes " + fmt(peaje));
+    document.getElementById("precioResumen").textContent = partesResumen.join(" · ") + (idaYVuelta ? " · ida y vuelta" : "");
 
     return d;
   }
@@ -2993,17 +3243,21 @@
   var lugarEditando = "", lugarElegido = null, autocompletarLugar = null;
   function abrirEditorLugar(cual) {
     lugarEditando = cual; lugarElegido = null;
-    document.getElementById("lugarEditorNombre").textContent = cual === "casa" ? "Casa" : "Trabajo";
+    var filaEd = document.querySelector('.lugar-tarjeta[data-cual="' + cual + '"]');
+    if (filaEd) filaEd.parentNode.insertBefore(document.getElementById("lugarEditor"), filaEd.nextSibling);   // se despliega debajo de la fila
+    document.getElementById("lugarEditorNombreCampo").hidden = cual !== "otro";
+    document.getElementById("lugarEditorNombreInput").value = "";
+    document.getElementById("lugarEditorNombre").textContent = cual === "casa" ? "Casa" : cual === "trabajo" ? "Trabajo" : "este lugar";
     document.getElementById("lugarEditorMsg").textContent = "";
     var inp = document.getElementById("lugarEditorInput");
     inp.value = "";
     document.getElementById("lugarEditor").hidden = false;
     if (!autocompletarLugar && window.google && google.maps && google.maps.places) {
-      autocompletarLugar = new google.maps.places.Autocomplete(inp, { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry"] });
+      autocompletarLugar = new google.maps.places.Autocomplete(inp, { componentRestrictions: { country: "cl" }, fields: ["formatted_address", "geometry", "name"] });
       autocompletarLugar.addListener("place_changed", function () {
         var p = autocompletarLugar.getPlace();
         if (p && p.geometry && p.geometry.location) {
-          lugarElegido = { direccion: p.formatted_address || inp.value, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
+          lugarElegido = { direccion: p.formatted_address ? direccionConNombre(p) : inp.value, lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
           document.getElementById("lugarEditorMsg").textContent = "";
         }
       });
@@ -3012,10 +3266,25 @@
   }
   function renderLugares() {
     var l = leerLugares();
-    [["casa", "lugarCasaDir", "quitarCasa"], ["trabajo", "lugarTrabajoDir", "quitarTrabajo"]].forEach(function (c) {
-      var v = l[c[0]];
-      document.getElementById(c[1]).textContent = v && v.direccion ? v.direccion : "Sin guardar";
-      document.getElementById(c[2]).style.display = v && v.direccion ? "" : "none";
+    var cn = document.getElementById("listaOtrosNombrados");
+    cn.innerHTML = "";
+    (Array.isArray(l.otros) ? l.otros : []).forEach(function (o, i) {
+      var f = document.createElement("div"); f.className = "lugar-item";
+      var info = document.createElement("div"); info.className = "lugar-info"; info.style.cursor = "pointer";
+      var n = document.createElement("strong"); n.textContent = o.nombre;
+      var d = document.createElement("span"); d.textContent = o.direccion;
+      info.appendChild(n); info.appendChild(d);
+      info.addEventListener("click", function () { aplicarLugar(o); cerrarModalOpc("modalLugares"); });
+      var q = document.createElement("button"); q.type = "button"; q.className = "btn btn-chico"; q.textContent = "Quitar";
+      q.addEventListener("click", function () { var x = leerLugares(); x.otros = (x.otros || []).filter(function (_, k) { return k !== i; }); guardarLugares(x); renderLugares(); });
+      f.appendChild(info); f.appendChild(q); cn.appendChild(f);
+    });
+    [["casa", "lugarCasaDir"], ["trabajo", "lugarTrabajoDir"]].forEach(function (c) {
+      var v = l[c[0]], guardado = !!(v && v.direccion);
+      document.getElementById(c[1]).textContent = guardado ? v.direccion : "Sin guardar";
+      var fila = document.querySelector('.lugar-tarjeta[data-cual="' + c[0] + '"]');
+      fila.classList.toggle("guardado", guardado);
+      fila.querySelector(".lugar-accion-btn").textContent = guardado ? "Quitar" : "Agregar";
     });
     var cont = document.getElementById("listaOtrosLugares");
     cont.innerHTML = "";
@@ -3031,18 +3300,14 @@
       var dir = document.createElement("span"); dir.textContent = d.direccion; dir.title = d.direccion;
       info.appendChild(dir);
       fila.appendChild(info);
-      var acciones = [
-        ["Usar", function () { aplicarLugar(d); cerrarModalOpc("modalLugares"); }],
-        ["Casa", function () { var x = leerLugares(); x.casa = { direccion: d.direccion, lat: d.lat, lng: d.lng }; guardarLugares(x); renderLugares(); pintarChipsLugares(); }],
-        ["Trabajo", function () { var x = leerLugares(); x.trabajo = { direccion: d.direccion, lat: d.lat, lng: d.lng }; guardarLugares(x); renderLugares(); pintarChipsLugares(); }],
-        ["×", function () { borrarDireccionReciente(d.direccion); pintarChipsDirecciones(); renderLugares(); }]
-      ];
-      acciones.forEach(function (a) {
-        var b = document.createElement("button"); b.type = "button"; b.className = "btn btn-chico"; b.textContent = a[0];
-        if (a[0] === "×") b.setAttribute("aria-label", "Quitar esta dirección");
-        b.addEventListener("click", a[1]);
-        fila.appendChild(b);
-      });
+      // Tocar la dirección la usa (una sola acción por fila); la × la quita de la lista. Casa y Trabajo se completan arriba.
+      info.setAttribute("role", "button"); info.tabIndex = 0;
+      info.addEventListener("click", function () { aplicarLugar(d); cerrarModalOpc("modalLugares"); });
+      info.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); aplicarLugar(d); cerrarModalOpc("modalLugares"); } });
+      var quitar = document.createElement("button"); quitar.type = "button"; quitar.className = "btn btn-chico"; quitar.textContent = "×";
+      quitar.setAttribute("aria-label", "Quitar esta dirección");
+      quitar.addEventListener("click", function () { borrarDireccionReciente(d.direccion); pintarChipsDirecciones(); renderLugares(); });
+      fila.appendChild(quitar);
       cont.appendChild(fila);
     });
   }
@@ -3054,17 +3319,27 @@
     });
   });
   document.getElementById("chipOtros").addEventListener("click", function () { renderLugares(); abrirModalOpc("modalLugares"); });
-  [].forEach.call(document.querySelectorAll("[data-lugar-accion]"), function (b) {
+  // Un solo botón por fila: "Agregar" (abre el campo para escribir la dirección) o "Quitar" (si ya hay una; para cambiarla se quita y se vuelve a agregar).
+  [].forEach.call(document.querySelectorAll(".lugar-accion-btn"), function (b) {
     b.addEventListener("click", function () {
-      var cual = b.getAttribute("data-cual");
-      if (b.getAttribute("data-lugar-accion") === "editar") { abrirEditorLugar(cual); return; }
-      var x = leerLugares(); delete x[cual]; guardarLugares(x); renderLugares(); pintarChipsLugares();
+      var cual = b.getAttribute("data-cual"), v = cual === "otro" ? null : leerLugares()[cual];
+      if (v && v.direccion) { var x = leerLugares(); delete x[cual]; guardarLugares(x); renderLugares(); pintarChipsLugares(); }
+      else abrirEditorLugar(cual);
     });
   });
   document.getElementById("lugarEditorCancelar").addEventListener("click", function () { document.getElementById("lugarEditor").hidden = true; });
   document.getElementById("lugarEditorGuardar").addEventListener("click", function () {
     if (!lugarElegido) { document.getElementById("lugarEditorMsg").textContent = "Elige una dirección de la lista que aparece al escribir."; return; }
-    var x = leerLugares(); x[lugarEditando] = lugarElegido; guardarLugares(x);
+    var x = leerLugares();
+    if (lugarEditando === "otro") {
+      var nombre = document.getElementById("lugarEditorNombreInput").value.trim().slice(0, 24);
+      if (!nombre) { document.getElementById("lugarEditorMsg").textContent = "Escribe el nombre que quieres ponerle."; return; }
+      var lista = Array.isArray(x.otros) ? x.otros : [];
+      if (lista.length >= 5) { document.getElementById("lugarEditorMsg").textContent = "Puedes guardar hasta 5 lugares con nombre: quita uno primero."; return; }
+      lista.push({ nombre: nombre, direccion: lugarElegido.direccion, lat: lugarElegido.lat, lng: lugarElegido.lng });
+      x.otros = lista;
+    } else x[lugarEditando] = lugarElegido;
+    guardarLugares(x);
     document.getElementById("lugarEditor").hidden = true;
     renderLugares(); pintarChipsLugares();
   });
@@ -3273,6 +3548,7 @@
         '</button>' +
       '</div>';
     contenedor.appendChild(fila);
+    permitirReordenar(fila.querySelector("input"));
     fila.querySelector(".btn-quitar-parada").addEventListener("click", function () {
       fila.remove();
       quitarMarcadorCotizar(id);
@@ -3305,6 +3581,70 @@
   }
 
   document.getElementById("btnAgregarParada").addEventListener("click", agregarFilaParada);
+
+  /* Reordenar paradas y destino: mantener presionada una fila (0,45 s) y arrastrarla. El origen queda fijo.
+     Lo que se mueve es el contenido (texto y marcador del mapa), no los elementos: así el destino final puede pasar a
+     ser una parada y una parada puede pasar a ser el destino. */
+  function slotsRuta() {
+    return Array.prototype.slice.call(document.querySelectorAll("#paradasContenedor .parada-fila input")).concat([document.getElementById("destino")]);
+  }
+  function moverSlot(de, a) {
+    var slots = slotsRuta();
+    var datos = slots.map(function (inp) {
+      var m = marcadoresCotizar[inp.id];
+      return { v: inp.value, pos: m && m.getPosition ? m.getPosition() : null };
+    });
+    var x = datos.splice(de, 1)[0];
+    datos.splice(a, 0, x);
+    slots.forEach(function (inp, i) {
+      inp.value = datos[i].v;
+      if (datos[i].pos) pintarMarcadorCotizar(inp.id, datos[i].pos); else quitarMarcadorCotizar(inp.id);
+    });
+    document.getElementById("destino").dispatchEvent(new Event("input"));   // actualiza el botón de borrar
+    // El orden cambió: el precio calculado ya no vale.
+    if (lineaCotizar) { lineaCotizar.setMap(null); lineaCotizar = null; }
+    rutaActual = null;
+    document.getElementById("tarjetaPrecio").style.display = "none";
+    document.getElementById("btnPedir").disabled = true;
+  }
+  function permitirReordenar(input) {
+    var fila = input.parentElement, timer = null, activo = false, actual = -1, x0 = 0, y0 = 0;
+    function marcar() {
+      slotsRuta().forEach(function (inp, i) { inp.parentElement.classList.toggle("fila-arrastrando", activo && i === actual); });
+    }
+    function terminar() {
+      clearTimeout(timer);
+      if (!activo) return;
+      activo = false; marcar();
+      document.body.classList.remove("reordenando");
+    }
+    fila.addEventListener("touchstart", function (e) {
+      if (e.target.closest("button") || e.touches.length !== 1) return;
+      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (slotsRuta().length < 2) return;
+        activo = true;
+        actual = slotsRuta().indexOf(input);
+        input.blur();
+        document.body.classList.add("reordenando");
+        try { navigator.vibrate(18); } catch (err) {}
+        marcar();
+      }, 450);
+    }, { passive: true });
+    fila.addEventListener("touchmove", function (e) {
+      var t = e.touches[0];
+      if (!activo) { if (Math.abs(t.clientX - x0) > 10 || Math.abs(t.clientY - y0) > 10) clearTimeout(timer); return; }
+      e.preventDefault();
+      var slots = slotsRuta(), idx = -1;
+      slots.forEach(function (inp, i) { var r = inp.parentElement.getBoundingClientRect(); if (t.clientY >= r.top && t.clientY <= r.bottom) idx = i; });
+      if (idx >= 0 && idx !== actual) { moverSlot(actual, idx); actual = idx; marcar(); try { navigator.vibrate(8); } catch (err) {} }
+    }, { passive: false });
+    fila.addEventListener("touchend", terminar);
+    fila.addEventListener("touchcancel", terminar);
+    fila.addEventListener("contextmenu", function (e) { if (activo) e.preventDefault(); });
+  }
+  permitirReordenar(document.getElementById("destino"));
 
   document.getElementById("buscarAuto").addEventListener("click", async function () {
     var origen = document.getElementById("origen").value.trim();
@@ -3531,6 +3871,7 @@
       ida_vuelta: idaYVuelta ? "SI" : "NO",
       horas_espera: idaYVuelta ? obtenerHorasEspera() : 0,
       total_cotizado: Math.round(totalCotizadoActual) || 0,
+      forma_pago: formaDisponible(formaPagoElegida) ? formaPagoElegida : "EFECTIVO",
       acepta_nuevo_precio: aceptaNuevoPrecio ? "SI" : "NO"
     }).then(async function (res) {
       if (res.precio_cambio) {
@@ -4304,8 +4645,34 @@
         fila.appendChild(txt); cont.appendChild(fila);
       });
       document.getElementById("transfCopiarTodo").dataset.texto = textoTransferencia(opc.transferencia);
+      var subido = !!res.comprobante_subido;
+      document.getElementById("btnSubirComprobante").textContent = subido ? "Cambiar comprobante (PDF)" : "Subir comprobante (PDF)";
+      var cm = document.getElementById("comprobanteMsg");
+      if (subido) { cm.textContent = "Comprobante enviado ✓ Tu conductor lo revisará y confirmará tu pago."; cm.className = "nota"; }
+      else if (!cm.dataset.error) { cm.textContent = "Falta el comprobante en PDF."; cm.className = "nota"; }
     }
   }
+  // Comprobante de la transferencia: solo PDF (el que descarga del banco), hasta 3 MB.
+  document.getElementById("btnSubirComprobante").addEventListener("click", function () { document.getElementById("comprobanteArchivo").click(); });
+  document.getElementById("comprobanteArchivo").addEventListener("change", function () {
+    var inp = this, f = inp.files && inp.files[0], cm = document.getElementById("comprobanteMsg"), sesion = obtenerSesionPasajero();
+    if (!f) return;
+    cm.dataset.error = "";
+    if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) { cm.textContent = "Tiene que ser el PDF que descargas desde tu banco, no una captura de pantalla."; cm.className = "nota error"; cm.dataset.error = "1"; inp.value = ""; return; }
+    if (f.size > 3 * 1024 * 1024) { cm.textContent = "El comprobante pesa más de 3 MB."; cm.className = "nota error"; cm.dataset.error = "1"; inp.value = ""; return; }
+    if (!sesion || !sesion.token || !pedidoActualId) return;
+    cm.textContent = "Subiendo…"; cm.className = "nota";
+    var lector = new FileReader();
+    lector.onload = function () {
+      apiPost({ accion: "subir_comprobante", pasajero_token: sesion.token, pedido_id: pedidoActualId, archivo_data_url: lector.result }).then(function (r) {
+        inp.value = "";
+        if (!r.ok) { cm.textContent = r.error || "No se pudo subir. Intenta de nuevo."; cm.className = "nota error"; cm.dataset.error = "1"; return; }
+        cm.dataset.error = ""; cm.textContent = "Comprobante enviado ✓ Tu conductor lo revisará y confirmará tu pago."; cm.className = "nota";
+        if (ultimoCierre) { ultimoCierre.comprobante_subido = true; document.getElementById("btnSubirComprobante").textContent = "Cambiar comprobante (PDF)"; }
+      }).catch(function () { cm.textContent = "Sin conexión. Intenta de nuevo."; cm.className = "nota error"; cm.dataset.error = "1"; });
+    };
+    lector.readAsDataURL(f);
+  });
   function elegirPago(forma) {
     var msg = document.getElementById("pagoMsg"), res0 = ultimoCierre, sesion = obtenerSesionPasajero();
     if (!res0 || !sesion || !sesion.token || !pedidoActualId) return;
@@ -4345,6 +4712,7 @@
     mostrarFinDeViaje(res);
     pintarDesgloseFinal(res);
     pintarPago(res);
+    pintarPagoTarjetaGuardada(res);
 
     if (res.estado_pago === "PENDIENTE" && res.mp_link && !pagoCambiando) {
       box.className = "estado-box pendiente";
@@ -5184,6 +5552,155 @@ function svgAuto(rumbo, color, tipo) {
   });
 
   /* Mi cuenta: tarjetas plegables (todas cerradas al entrar, o solo la pedida abierta). */
+  // Mi cuenta / Mis viajes como pantallas propias: solo sus bloques, ya abiertos y sin desplegables.
+  function abrirPantallaCuenta(cual) {
+    document.body.classList.add("cta-solo");
+    document.body.classList.toggle("cta-viajes", cual === "viajes");
+    document.body.classList.toggle("cta-cuenta", cual === "cuenta");
+    [].forEach.call(document.querySelectorAll("#vistaCuenta .card.plegable"), function (c) { c.classList.add("abierta"); });
+    document.querySelector("#vistaCuenta .cuenta-cab h2").textContent = cual === "viajes" ? "Mis viajes" : "Mi cuenta";
+    window.scrollTo(0, 0);
+  }
+  /* Tarjeta guardada (Mercado Pago, campos seguros): el número, el vencimiento y el CVV los escribe el pasajero en campos de Mercado Pago (iframes);
+     Rumbo solo recibe un token de un uso. Se activa cuando el servidor tiene tarjetas habilitadas (mi_cuenta_pasajero → tarjetas.activas). */
+  var tarjetasInfo = { activas: false, public_key: "" }, tarjetaGuardada = null, mpSdk = null, mpCampos = {}, mpCargando = null;
+  function cargarMpSdk() {
+    if (window.MercadoPago) return Promise.resolve();
+    if (mpCargando) return mpCargando;
+    mpCargando = new Promise(function (ok, mal) {
+      var sc = document.createElement("script"); sc.src = "https://sdk.mercadopago.com/js/v2";
+      sc.onload = ok; sc.onerror = function () { mpCargando = null; mal(new Error("mp")); };
+      document.head.appendChild(sc);
+    });
+    return mpCargando;
+  }
+  function refrescarTarjeta() {
+    var sesion = obtenerSesionPasajero();
+    if (!sesion || !sesion.token) return Promise.resolve();
+    return apiPost({ accion: "mi_cuenta_pasajero", pasajero_token: sesion.token }).then(function (r) {
+      if (!r || !r.ok) return;
+      tarjetasInfo = r.tarjetas || tarjetasInfo; tarjetaGuardada = r.tarjeta || null;
+      pintarTarjetaPantalla();
+    }).catch(function () {});
+  }
+  function textoMarca(m) { return ({ visa: "Visa", master: "Mastercard", amex: "American Express", debvisa: "Visa débito", debmaster: "Mastercard débito", redcompra: "Redcompra" })[m] || "Tarjeta"; }
+  function pintarTarjetaPantalla() {
+    document.getElementById("tarjetaBloque").hidden = !tarjetasInfo.activas;
+    document.getElementById("tarjetaInactiva").hidden = !!tarjetasInfo.activas;
+    var g = !!tarjetaGuardada;
+    document.getElementById("tarjetaGuardada").hidden = !g;
+    document.getElementById("btnAgregarTarjeta").textContent = g ? "Cambiar tarjeta" : "Agregar tarjeta";
+    if (g) document.getElementById("tarjetaResumen").textContent = textoMarca(tarjetaGuardada.marca) + " ···· " + tarjetaGuardada.ultimos4 + " · vence " + tarjetaGuardada.vence;
+  }
+  function montarCamposTarjeta(ids, conTodo) {
+    return cargarMpSdk().then(function () {
+      if (!mpSdk) mpSdk = new MercadoPago(tarjetasInfo.public_key, { locale: "es-CL" });
+      var estilo = { style: { fontSize: "16px", color: "#101A20" } };
+      ids.forEach(function (c) {
+        if (mpCampos[c.clave]) { try { mpCampos[c.clave].unmount(); } catch (e) {} }
+        mpCampos[c.clave] = mpSdk.fields.create(c.tipo, Object.assign({ placeholder: c.ph }, estilo));
+        mpCampos[c.clave].mount(c.div);
+      });
+    });
+  }
+  function textoErrorMp(e) {
+    var causa = e && (Array.isArray(e) ? e[0] : (e.cause && e.cause[0]) || e);
+    var c = String((causa && (causa.code || causa.message || causa.description)) || "");
+    if (/205|number|numero/i.test(c)) return "Revisa el número de la tarjeta.";
+    if (/208|209|date|expir/i.test(c)) return "Revisa la fecha de vencimiento.";
+    if (/224|225|security|cvv|cvc/i.test(c)) return "Revisa el código de seguridad.";
+    if (/221|222|name|titular/i.test(c)) return "Escribe el nombre del titular.";
+    if (/212|213|214|324|identification|rut/i.test(c)) return "Revisa el RUT del titular.";
+    return "No se pudo validar la tarjeta. Revisa los datos e intenta de nuevo.";
+  }
+  document.getElementById("btnAgregarTarjeta").addEventListener("click", function () {
+    document.getElementById("mpError").textContent = "";
+    document.getElementById("tarjetaForm").hidden = false;
+    this.hidden = true;
+    montarCamposTarjeta([
+      { clave: "num", tipo: "cardNumber", div: "#mpNumero", ph: "1234 1234 1234 1234" },
+      { clave: "venc", tipo: "expirationDate", div: "#mpVence", ph: "MM/AA" },
+      { clave: "cvv", tipo: "securityCode", div: "#mpCvv", ph: "CVV" }
+    ]).catch(function () { document.getElementById("mpError").textContent = "No se pudo cargar el formulario seguro. Revisa tu conexión."; });
+  });
+  document.getElementById("btnCancelarTarjeta").addEventListener("click", function () { document.getElementById("tarjetaForm").hidden = true; document.getElementById("btnAgregarTarjeta").hidden = false; });
+  document.getElementById("btnGuardarTarjeta").addEventListener("click", function () {
+    var err = document.getElementById("mpError"), btn = this, sesion = obtenerSesionPasajero();
+    err.textContent = "";
+    var titular = document.getElementById("mpTitular").value.trim(), rut = document.getElementById("mpRut").value.replace(/[.\s]/g, "").toUpperCase();
+    if (!titular) { err.textContent = "Escribe el nombre del titular."; return; }
+    if (!validarRutChile(rut)) { err.textContent = "Revisa el RUT del titular."; return; }
+    if (!mpSdk || !sesion || !sesion.token) return;
+    btn.disabled = true; err.textContent = "Validando…"; err.className = "nota";
+    mpSdk.fields.createCardToken({ cardholderName: titular, identificationType: "RUT", identificationNumber: rut }).then(function (t) {
+      return apiPost({ accion: "guardar_tarjeta", pasajero_token: sesion.token, token_tarjeta: t.id });
+    }).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { err.className = "nota error"; err.textContent = r.error || "No se pudo guardar la tarjeta."; return; }
+      tarjetaGuardada = r.tarjeta; pintarTarjetaPantalla();
+      document.getElementById("tarjetaForm").hidden = true; document.getElementById("btnAgregarTarjeta").hidden = false;
+      document.getElementById("mpTitular").value = ""; document.getElementById("mpRut").value = "";
+      err.textContent = "";
+    }).catch(function (e) { btn.disabled = false; err.className = "nota error"; err.textContent = textoErrorMp(e); });
+  });
+  document.getElementById("btnQuitarTarjeta").addEventListener("click", function () {
+    var sesion = obtenerSesionPasajero();
+    if (!sesion || !sesion.token) return;
+    apiPost({ accion: "quitar_tarjeta", pasajero_token: sesion.token }).then(function (r) { if (r && r.ok) { tarjetaGuardada = null; pintarTarjetaPantalla(); } });
+  });
+  // RUT chileno: formato y dígito verificador.
+  function validarRutChile(rut) {
+    var m = /^(\d{7,8})-?([\dK])$/.exec(String(rut || ""));
+    if (!m) return false;
+    var suma = 0, mult = 2;
+    for (var i = m[1].length - 1; i >= 0; i--) { suma += parseInt(m[1][i], 10) * mult; mult = mult === 7 ? 2 : mult + 1; }
+    var dv = 11 - (suma % 11); dv = dv === 11 ? "0" : dv === 10 ? "K" : String(dv);
+    return dv === m[2];
+  }
+  // Pagar un viaje terminado con la tarjeta guardada: se pide solo el código de seguridad (un token de un uso).
+  document.getElementById("btnPagarGuardada").addEventListener("click", function () {
+    if (!tarjetaGuardada) return;
+    document.getElementById("pagoTarjetaError").textContent = "";
+    document.getElementById("pagoTarjetaTxt").textContent = textoMarca(tarjetaGuardada.marca) + " ···· " + tarjetaGuardada.ultimos4;
+    document.getElementById("pagoCvvForm").hidden = false; this.hidden = true;
+    montarCamposTarjeta([{ clave: "cvvPago", tipo: "securityCode", div: "#mpCvvPago", ph: "CVV" }])
+      .catch(function () { document.getElementById("pagoTarjetaError").textContent = "No se pudo cargar el formulario seguro. Revisa tu conexión."; });
+  });
+  document.getElementById("btnCancelarCvv").addEventListener("click", function () { document.getElementById("pagoCvvForm").hidden = true; document.getElementById("btnPagarGuardada").hidden = false; });
+  document.getElementById("btnConfirmarPagoTarjeta").addEventListener("click", function () {
+    var err = document.getElementById("pagoTarjetaError"), btn = this, sesion = obtenerSesionPasajero();
+    if (!mpSdk || !tarjetaGuardada || !sesion || !sesion.token || !pedidoActualId) return;
+    btn.disabled = true; err.className = "nota"; err.textContent = "Procesando el pago…";
+    mpSdk.fields.createCardToken({ cardId: tarjetaGuardada.id }).then(function (t) {
+      return apiPost({ accion: "pagar_con_tarjeta", pasajero_token: sesion.token, pedido_id: pedidoActualId, token_cvv: t.id });
+    }).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) { err.className = "nota error"; err.textContent = r.error || "No se pudo pagar."; return; }
+      err.className = "nota"; err.textContent = r.mensaje || "Pago recibido ✓";
+      document.getElementById("pagoCvvForm").hidden = true;
+    }).catch(function (e) { btn.disabled = false; err.className = "nota error"; err.textContent = textoErrorMp(e); });
+  });
+  // La tarjeta se ofrece en el cierre del viaje solo si hay una guardada y el viaje se paga con tarjeta.
+  function pintarPagoTarjetaGuardada(res) {
+    var ver = !!(tarjetasInfo.activas && tarjetaGuardada && res && res.estado_pago === "PENDIENTE" && res.forma_pago === "MERCADOPAGO");
+    document.getElementById("pagoGuardada").hidden = !ver;
+    if (ver) { document.getElementById("btnPagarGuardada").textContent = "Pagar " + fmt(res.total) + " con " + textoMarca(tarjetaGuardada.marca) + " ···· " + tarjetaGuardada.ultimos4; }
+  }
+  // Medios de pago: la preferencia (la misma que usa la fila de pago al pedir).
+  function pintarMediosPago() {
+    refrescarTarjeta();
+    pintarFilaPago();
+    [].forEach.call(document.querySelectorAll("#mediosPagoLista .pago-opcion"), function (b) {
+      var f = b.getAttribute("data-forma");
+      b.classList.toggle("elegida", f === formaPagoElegida);
+      var pequeno = b.querySelector("small");
+      if (pequeno && !pequeno.getAttribute("data-base")) pequeno.setAttribute("data-base", pequeno.textContent);
+      if (f === "TRANSFERENCIA") b.disabled = false;
+    });
+  }
+  [].forEach.call(document.querySelectorAll("#mediosPagoLista .pago-opcion"), function (b) {
+    b.addEventListener("click", function () { formaPagoElegida = b.getAttribute("data-forma"); guardarFormaPago(formaPagoElegida); pintarFilaPago(); pintarMediosPago(); });
+  });
   function abrirTarjetaCuenta(id) {
     [].forEach.call(document.querySelectorAll(".card.plegable"), function (c) { c.classList.toggle("abierta", c.id === id); });
     if (id) { var c = document.getElementById(id); if (c) setTimeout(function () { c.scrollIntoView({ block: "start", behavior: "smooth" }); }, 50); }
@@ -5209,8 +5726,9 @@ function svgAuto(rumbo, color, tipo) {
     b.addEventListener("click", function () {
       abrirMenuP(false);
       var cual = b.getAttribute("data-menu");
-      if (cual === "cuenta") { mostrarPestana("cuenta"); abrirTarjetaCuenta(null); }
-      else if (cual === "viajes") { mostrarPestana("cuenta"); abrirTarjetaCuenta("cardViajes"); }
+      if (cual === "cuenta") { mostrarPestana("cuenta"); abrirPantallaCuenta("cuenta"); }
+      else if (cual === "viajes") { mostrarPestana("cuenta"); abrirPantallaCuenta("viajes"); }
+      else if (cual === "pagos") { pintarMediosPago(); abrirModalOpc("modalMediosPago"); }
       else if (cual === "lugares") { renderLugares(); abrirModalOpc("modalLugares"); }
       else if (cual === "tyc") abrirModalOpc("modalTyc");
       else if (cual === "reclamos") { abrirModalOpc("modalReclamos"); cargarMisReclamosP(); }
@@ -5218,6 +5736,7 @@ function svgAuto(rumbo, color, tipo) {
   });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuP(false); });
   document.getElementById("btnVolverCuenta").addEventListener("click", function () {
+    document.body.classList.remove("cta-solo", "cta-viajes", "cta-cuenta");
     mostrarPestana(document.getElementById("tabSeguimiento").disabled ? "cotizar" : "seguimiento");
   });
 
@@ -5274,7 +5793,7 @@ function svgAuto(rumbo, color, tipo) {
     document.getElementById("hojaPaso2").style.display = n === 2 ? "flex" : "none";
     document.getElementById("wiz").classList.remove("teclado");
     document.getElementById("wiz").classList.toggle("paso2", n === 2);
-    hojaEstado = n === 1 ? "alto" : "medio";   // paso 1 ("¿A dónde vas?") siempre desplegada; el 2 (precio) a media altura
+    hojaEstado = "alto";   // las dos pantallas abren desplegadas: en "Confirma tu viaje" el precio y el pago se ven completos (pedido de Alberto, 23-oct)
     if (n === 2) pintarResumenPaso2(); else pintarChipsViaje();
     ajustarWiz();
   }
@@ -5326,7 +5845,7 @@ function svgAuto(rumbo, color, tipo) {
   pintarChipsViaje();
 
   cargarTarifas();
-  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
+  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 4000); }
   cargarGoogleMaps();
   mostrarAvisoInstalarApp();
   if (bioActivada() && !obtenerSesionPasajero()) { modoCuenta = "ingresar"; pintarModoCuenta(); }

@@ -9,8 +9,8 @@
 <title>Rumbo Driver</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#16333F">
-<link rel="icon" type="image/png" href="img/favicon-admin-192.png?v=66">
-<link rel="apple-touch-icon" href="img/favicon-admin-192.png?v=66">
+<link rel="icon" type="image/png" href="img/favicon-admin-192.png?v=69">
+<link rel="apple-touch-icon" href="img/favicon-admin-192.png?v=69">
 <!-- Montserrat va DENTRO de la app (www/fonts, licencia SIL OFL de Google Fonts): sin internet el splash y la app no cambian de letra. -->
 <style>@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("fonts/Montserrat-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }</style>
 <style>
@@ -34,9 +34,9 @@
     --danger: #B3392B; --danger-soft: #FBEDEB;
     --warn: #966A11; --warn-soft: #FBF3DC; --warn-border: #EFD99A;
     --info: #2455A4; --info-soft: #E7EFFB; --info-border: #BDD3F0;
-    --shadow-sm: 0 1px 2px rgba(10,20,40,0.05);
-    --shadow-md: 0 1px 2px rgba(10,20,40,0.04), 0 6px 16px rgba(10,20,40,0.08);
-    --r-card: 14px; --r-input: 10px; --r-btn: 12px;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --r-card: 14px; --r-input: 12px; --r-btn: 12px;
   }
   /* Tema único (claro) por ahora — ver nota en index.html. */
 
@@ -45,7 +45,7 @@
   body {
     color: var(--text); font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system, sans-serif;
     font-weight: 400;
-    font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
     min-height: 100vh; display: flex; justify-content: center;
     /* Ya no hay barra de pestañas abajo (el conductor navega por pantallas desde el menú). */
     padding: 0 16px calc(24px + env(safe-area-inset-bottom));
@@ -63,7 +63,7 @@
     body.modo-admin .app { max-width: 1080px; margin: 0 auto; }
     body.modo-admin .topbar {
       margin: 0 -32px 24px;
-      padding: 20px 32px; border-radius: 0 0 18px 18px;
+      padding: 20px 32px; border-radius: 0 0 14px 14px;
     }
     body.modo-admin #navConductor {
       position: static; display: flex; width: auto; background: none; border: none;
@@ -71,8 +71,8 @@
       border-bottom: 1px solid var(--border);
     }
     body.modo-admin .nav-item {
-      flex-direction: row; flex: none; padding: 10px 18px; border-radius: 10px 10px 0 0;
-      font-size: 14.5px;
+      flex-direction: row; flex: none; padding: 10px 18px; border-radius: 12px 12px 0 0;
+      font-size: 14px;
     }
     body.modo-admin .nav-item.activo { background: var(--primary-soft); box-shadow: none; }
     body.modo-admin .nav-badge { top: 8px; right: 8px; margin: 0; }
@@ -88,7 +88,7 @@
   /* El body tiene padding lateral para el resto del contenido; el margen
      negativo hace que el fondo azul llegue de borde a borde de la
      pantalla en vez de quedar como una isla angosta. */
-  .topbar { display: flex; align-items: center; gap: 12px; padding: calc(16px + env(safe-area-inset-top)) 16px 16px; background: var(--primary); color: var(--primary-ink); margin: 0 -16px 16px; border-radius: 0 0 18px 18px; border-bottom: 2px solid var(--acento); }
+  .topbar { display: flex; align-items: center; gap: 12px; padding: calc(16px + env(safe-area-inset-top)) 16px 16px; background: var(--primary); color: var(--primary-ink); margin: 0 -16px 16px; border-radius: 0 0 14px 14px; border-bottom: 2px solid var(--acento); }
   .topbar-spacer { flex: 1; }
   .brand { display: flex; align-items: center; gap: 10px; }
   .brand-mark {
@@ -102,7 +102,7 @@
   .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
   .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
-  .brand-sub { font-size: 13.5px; color: var(--acento-claro); line-height: 1.3; }
+  .brand-sub { font-size: 14px; color: var(--acento-claro); line-height: 1.3; }
 
   /* ---------- Estado del conductor (switch prominente) ---------- */
   .estado-conductor {
@@ -136,8 +136,8 @@
   }
   .tab {
     border: none; background: none; cursor: pointer; font: inherit;
-    font-size: 13.5px; font-weight: 500; color: var(--text-2);
-    padding: 9px 4px; border-radius: 9px;
+    font-size: 14px; font-weight: 500; color: var(--text-2);
+    padding: 9px 4px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center; gap: 5px;
   }
   .tab[aria-selected="true"] { background: var(--primary-soft); color: var(--primary-soft-ink); font-weight: 600; box-shadow: var(--shadow-sm); }
@@ -148,13 +148,13 @@
     border-radius: var(--r-card); padding: 20px; margin-bottom: 12px; box-shadow: var(--shadow-sm);
   }
   .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--text-2); }
-  .card-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .card-title { font-size: 16px; font-weight: 600; color: var(--text); }
   .card-head-spacer { flex: 1; }
 
   /* ---------- Burbuja de pendientes ---------- */
   .burbuja {
     display: none; background: var(--danger); color: #FFFFFF;
-    font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+    font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums;
     border-radius: 999px; min-width: 20px; height: 20px; padding: 0 6px;
     align-items: center; justify-content: center;
   }
@@ -168,37 +168,37 @@
   }
   .pedido-card:last-child { margin-bottom: 0; }
   .pedido-tope { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-  .pedido-cliente { font-size: 17px; font-weight: 600; }
-  .pedido-tel { font-size: 15px; color: var(--text-2); text-decoration: none; }
+  .pedido-cliente { font-size: 16px; font-weight: 600; }
+  .pedido-tel { font-size: 16px; color: var(--text-2); text-decoration: none; }
   .pedido-tel:hover { color: var(--text); text-decoration: underline; }
-  .pedido-total { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pedido-total { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .pedido-ruta { display: grid; grid-template-columns: 14px 1fr; gap: 0 10px; align-items: center; margin-bottom: 14px; }
   .pedido-punto-o { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--text-2); justify-self: center; }
   .pedido-punto-d { width: 8px; height: 8px; border-radius: 2px; background: var(--text-2); justify-self: center; }
   .pedido-linea-conector { width: 2px; height: 14px; background: var(--border-strong); justify-self: center; }
-  .pedido-dir { font-size: 15px; padding: 2px 0; overflow-wrap: anywhere; }
-  .pedido-meta { font-size: 13.5px; color: var(--text-3); margin-bottom: 14px; font-variant-numeric: tabular-nums; }
-  .pedido-aviso { font-size: 13.5px; color: var(--danger); background: var(--danger-soft); border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; }
+  .pedido-dir { font-size: 16px; padding: 2px 0; overflow-wrap: anywhere; }
+  .pedido-meta { font-size: 14px; color: var(--text-3); margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+  .pedido-aviso { font-size: 14px; color: var(--danger); background: var(--danger-soft); border-radius: 12px; padding: 8px 10px; margin-bottom: 14px; }
   /* Cuándo es el viaje: lo primero que decide un conductor al ver un pedido. */
-  .pedido-programa { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; background: var(--primary-soft); color: var(--primary-soft-ink); border-radius: 8px; padding: 9px 12px; margin-bottom: 12px; }
-  .pedido-programa strong { font-size: 17px; font-variant-numeric: tabular-nums; }
-  .pedido-programa .faltan { font-size: 13.5px; opacity: .85; }
+  .pedido-programa { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; background: var(--primary-soft); color: var(--primary-soft-ink); border-radius: 12px; padding: 9px 12px; margin-bottom: 12px; }
+  .pedido-programa strong { font-size: 16px; font-variant-numeric: tabular-nums; }
+  .pedido-programa .faltan { font-size: 14px; opacity: .85; }
   .pedido-programa.cercano { background: var(--warn-soft); color: var(--warn); }
   .pedido-punto-p { width: 8px; height: 8px; border-radius: 50%; background: var(--surface); border: 2px solid var(--text-3); justify-self: center; }
   .pedido-etiqueta { font-size: 12px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--text-3); margin-right: 6px; }
   /* Ruta del viaje con paradas: una fila por punto, el siguiente resaltado. */
   .ruta-viaje { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-  .ruta-pto { border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; }
+  .ruta-pto { border: 1px solid var(--border); border-radius: 12px; padding: 9px 12px; }
   .ruta-pto.hecho { opacity: .55; }
   .ruta-pto.siguiente { border-color: var(--primary); background: var(--primary-soft); }
   .ruta-pto-tope { display: flex; align-items: baseline; gap: 8px; }
-  .ruta-pto-dir { font-size: 15px; overflow-wrap: anywhere; }
+  .ruta-pto-dir { font-size: 16px; overflow-wrap: anywhere; }
   .ruta-pto-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
   .ruta-pto-acciones .btn-ok { flex: 1 1 100%; }
   /* Espera en el destino (ida y vuelta): reloj contra los minutos que contrató el pasajero. */
   .espera-panel { border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; background: var(--surface-2); }
   .espera-panel.excedida { border-color: var(--naranja); background: var(--naranja-soft); }
-  .espera-titulo { font-size: 13.5px; font-weight: 600; color: var(--text-2); }
+  .espera-titulo { font-size: 14px; font-weight: 600; color: var(--text-2); }
   .espera-reloj { font-size: 40px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
   .espera-panel.excedida .espera-reloj { color: var(--naranja-texto); }
   .espera-barra { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
@@ -220,11 +220,11 @@
   .espera-panel.cobrando .espera-texto { color: var(--danger); font-weight: 600; }
   /* Ventana de cierre del viaje. */
   .cierre-detalle { display: flex; flex-direction: column; gap: 8px; }
-  .cierre-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .cierre-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; font-variant-numeric: tabular-nums; }
   .cierre-fila.extra strong { color: var(--naranja-texto); }
   .cierre-fila.total { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; font-size: 18px; }
   .cierre-fila.total strong { font-size: 22px; }
-  .pedido-linea { font-size: 15px; }
+  .pedido-linea { font-size: 16px; }
 
   /* ---------- Campos ---------- */
   .campo { display: flex; flex-direction: column; gap: 6px; }
@@ -235,7 +235,7 @@
   input[type="password"], input[type="email"], input[type="month"], input[type="date"], select {
     width: 100%; background: var(--surface); color: var(--text);
     border: 1px solid var(--border); border-radius: var(--r-input);
-    padding: 11px 13px; font: inherit; font-size: 17px;
+    padding: 11px 13px; font: inherit; font-size: 16px;
     font-variant-numeric: tabular-nums; transition: border-color 0.12s ease;
   }
   input:hover { border-color: var(--border-strong); }
@@ -247,13 +247,13 @@
   /* ---------- Días de tarifa punta ---------- */
   .dias-toggle { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
   .tarifa-dia {
-    border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); border-radius: 12px;
     padding: 8px 11px; font: inherit; font-size: 14px; font-weight: 500;
     color: var(--text-2); cursor: pointer; transition: all 0.12s ease;
   }
   .tarifa-dia:hover { border-color: var(--border-strong); }
   .tarifa-dia.activo { border-color: var(--primary); background: var(--primary); color: var(--primary-ink); font-weight: 600; }
-  .tarifa-dia.chico { padding: 6px 9px; font-size: 13px; }
+  .tarifa-dia.chico { padding: 6px 9px; font-size: 14px; }
 
   /* ---------- Bloqueos de disponibilidad ---------- */
   .bloqueo-fila { border: 1px solid var(--border); border-radius: var(--r-input); padding: 14px; margin-bottom: 10px; }
@@ -261,7 +261,7 @@
   .bloqueo-todo-dia { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); margin-bottom: 10px; }
   .bloqueo-todo-dia input { width: 16px; height: 16px; accent-color: var(--primary); }
   .bloqueo-horas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .btn-quitar { border: none; background: none; color: var(--danger); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; padding: 4px; }
+  .btn-quitar { border: none; background: none; color: var(--danger); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; padding: 4px; }
 
   /* ---------- Vehículo ---------- */
   .veh-foto-fila { display: flex; align-items: center; gap: 16px; }
@@ -289,7 +289,7 @@
   }
   .acordeon > summary {
     list-style: none; cursor: pointer; padding: 18px 20px;
-    font-size: 17px; font-weight: 600; color: var(--text);
+    font-size: 16px; font-weight: 600; color: var(--text);
     display: flex; align-items: center; justify-content: space-between;
   }
   .acordeon > summary::-webkit-details-marker { display: none; }
@@ -315,9 +315,14 @@
   .modal-fondo[hidden] { display: none; }
   .modal-hoja {
     background: var(--surface); width: 100%; max-width: 480px;
-    border-radius: 18px 18px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 14px 14px 0 0; padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
     box-shadow: var(--shadow-md);
   }
+  .pedido-total-nota { display: block; font-size: 12px; font-weight: 500; color: var(--text-2); text-align: right; }
+  .pedido-desglose { margin: -4px 0 8px; font-size: 14px; color: var(--text-2); }
+  .mem-barra { position: relative; }
+  .mem-marca { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--naranja); }
+  .mem-escala { position: relative; display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; color: var(--text-2); }
   .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
   .estrella {
     border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
@@ -327,14 +332,14 @@
   .estrella.activa { color: #F5A623; }
 
   .tabla-historial { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-  .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12.5px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
+  .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
   .tabla-historial td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .tabla-historial td.monto { text-align: right; white-space: nowrap; font-weight: 600; }
   .tabla-historial th:nth-last-child(2) { text-align: right; }
-  .tabla-historial .pendiente { color: var(--text-3); font-size: 12.5px; }
+  .tabla-historial .pendiente { color: var(--text-3); font-size: 12px; }
   .tabla-historial .hist-fila { cursor: pointer; }
   .tabla-historial .hist-fila:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-  .tabla-historial .hist-detalle td { color: var(--text-3); font-size: 13px; background: color-mix(in srgb, var(--accent) 4%, transparent); }
+  .tabla-historial .hist-detalle td { color: var(--text-3); font-size: 14px; background: color-mix(in srgb, var(--accent) 4%, transparent); }
 
   /* ---------- KPIs del administrador ---------- */
   .kpi-fila {
@@ -348,13 +353,13 @@
   }
   .kpi-cabeza { display: flex; align-items: center; justify-content: space-between; color: var(--text-3); }
   .kpi-cabeza svg { color: var(--primary); }
-  .kpi-etiqueta { font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .kpi-etiqueta { font-size: 14px; font-weight: 600; color: var(--text-2); }
   .kpi-valor { font-size: 30px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
-  .kpi-nota { font-size: 12.5px; color: var(--text-3); }
+  .kpi-nota { font-size: 12px; color: var(--text-3); }
 
   /* ---------- Badges de estado ---------- */
   .badge {
-    display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;
     padding: 3px 10px; border-radius: 999px; line-height: 1.6;
   }
   .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -388,7 +393,7 @@
   .hist-cabecera .card-title { margin-right: auto; }
   .hist-filtros { display: flex; gap: 8px; flex-wrap: wrap; }
   .hist-filtros .campo { gap: 4px; min-width: 130px; }
-  .hist-filtros .campo-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .hist-filtros .campo-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
   .hist-filtros select, .hist-filtros input {
     padding: 8px 10px; font-size: 14px; border-radius: 999px; background: var(--surface-2);
   }
@@ -399,13 +404,13 @@
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
     background: var(--surface); border-top: 1px solid var(--border);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    box-shadow: 0 -2px 12px rgba(16,26,32,0.06);
+    box-shadow: 0 0 0 1px var(--border);
   }
   .nav-item {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
     border: none; background: none; cursor: pointer; font: inherit;
     font-size: 12px; font-weight: 500; color: var(--text-3);
-    padding: 8px 4px; border-radius: 10px;
+    padding: 8px 4px; border-radius: 12px;
   }
   .nav-item .ico { width: 22px; height: 22px; }
   .nav-item.activo { color: var(--primary); font-weight: 600; }
@@ -426,6 +431,22 @@
   /* ---------- Tablero del conductor cuando no hay pedidos ---------- */
   .tablero { display: none; margin-bottom: 4px; }
   .tablero.visible { display: block; }
+  /* Iniciar / Desconectar: barra fija abajo, ancho completo y centrada, en el mismo lugar y tamaño que el botón de las etapas del viaje
+     (así no se pierde en la pantalla). Azul petróleo para iniciar (decisión de Alberto, 24-oct-2026); blanco con borde rojo para desconectar. Solo en el inicio, sin viaje ni oferta. */
+  .btn-conexion { display: none; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h, 0px) + 10px + env(safe-area-inset-bottom)); z-index: 45; width: calc(100% - 40px); max-width: 428px; min-height: 56px; padding: 0 20px; border: none; border-radius: 12px; background: var(--primary); color: #fff; font: inherit; font-size: 16px; font-weight: 600; text-align: center; cursor: pointer; }
+  body.cond-pantalla:not(.con-tarjeta):not(.cond-pedido):not(.adm-abierta):not(.modo-admin) .btn-conexion { display: block; }
+  .btn-conexion.desconectar { background: var(--surface); color: var(--danger); box-shadow: inset 0 0 0 2px var(--danger); }
+  /* Mis ganancias (menú → Mi billetera): hoy y semana */
+  .gan-bloque { margin: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 4px; }
+  .gan-etiqueta { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
+  .gan-grande { font-size: 32px; font-weight: 700; line-height: 1.1; color: var(--primary); font-variant-numeric: tabular-nums; }
+  .gan-medio { font-size: 22px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+  .gan-sub { font-size: 14px; color: var(--text-2); }
+  .gan-barras { display: flex; align-items: flex-end; gap: 8px; height: 88px; margin: 12px 0 4px; }
+  .gan-barra { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+  .gan-barra i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--primary); opacity: .35; }
+  .gan-barra.hoy i { background: var(--naranja); opacity: 1; }
+  .gan-barra span { font-size: 12px; line-height: 1; color: var(--text-2); }
   .tablero-estado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; min-height: 44px; }
   .tablero .kpi-fila { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .tablero .kpi-valor { font-size: 22px; white-space: nowrap; }
@@ -437,12 +458,12 @@
   .tablero-mapa-aviso {
     position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 8px; padding: 16px; text-align: center; color: var(--text-3);
-    font-size: 13.5px; background: var(--surface-2);
+    font-size: 14px; background: var(--surface-2);
   }
   .tablero-mapa-aviso.oculto { display: none; }
   .tablero-mapa .btn-centrar { position: absolute; left: 10px; top: 10px; z-index: 2; min-height: 44px; box-shadow: var(--shadow-md); }
   .tablero-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14.5px; white-space: nowrap; }
+  .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14px; white-space: nowrap; }
   /* ---------- Conductor: mapa grande + hoja inferior (como Uber/DiDi) ---------- */
   /* Solo en Pedidos y En Rumbo del conductor (body.cond-pantalla); Ajustes y el
      admin siguen como antes. Alturas las fija ajustarCond() para llenar la pantalla. */
@@ -464,15 +485,15 @@
   body.cond-pantalla #panelPedidos, body.cond-pantalla #panelEnCurso {
     position: fixed; left: 50%; bottom: calc(var(--nav-h, 0px) + env(safe-area-inset-bottom)); width: 100%; max-width: 448px; z-index: 20;
     transform: translateX(-50%); transition: height .28s cubic-bezier(.2, .8, .2, 1);
-    background: var(--surface); border: 1px solid var(--border); border-bottom: none; border-radius: 20px 20px 0 0;
-    padding: 0 14px 12px; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 -6px 24px rgba(10, 20, 40, 0.18);
+    background: var(--surface); border: 1px solid var(--border); border-bottom: none; border-radius: 14px 14px 0 0;
+    padding: 0 14px 12px; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 0 0 1px var(--border);
   }
   body.cond-pantalla.arrastrando #panelPedidos, body.cond-pantalla.arrastrando #panelEnCurso { transition: none; }
   /* Asa para arrastrar la ventana (queda fija arriba al desplazar el contenido). */
   .hoja-asa { display: none; }
   body.cond-pantalla .hoja-asa {
     display: flex; justify-content: center; align-items: center; height: 30px; margin: 0 -14px 4px;
-    position: sticky; top: 0; z-index: 6; background: var(--surface); border-radius: 20px 20px 0 0;
+    position: sticky; top: 0; z-index: 6; background: var(--surface); border-radius: 14px 14px 0 0;
     touch-action: none; cursor: grab;
   }
   .hoja-asa span { width: 56px; height: 6px; border-radius: 3px; background: var(--border-strong); }
@@ -500,8 +521,8 @@
   .adm-pantalla .card { border: none; box-shadow: none; padding: 0; margin: 0 0 10px; background: none; }
   .adm-pantalla .card-head { margin-bottom: 8px; }
   .adm-pantalla .ajustes-cab { padding: 6px 2px 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
-  .adm-pantalla .ajustes-cab h2 { font-size: 20px; letter-spacing: -.01em; }
-  .adm-pantalla .tabla-historial th { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); padding: 8px 6px; border-bottom: 1px solid var(--border-strong); background: none; }
+  .adm-pantalla .ajustes-cab h2 { font-size: 18px; letter-spacing: -.01em; }
+  .adm-pantalla .tabla-historial th { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); padding: 8px 6px; border-bottom: 1px solid var(--border-strong); background: none; }
   .adm-pantalla .tabla-historial td { padding: 10px 6px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .adm-pantalla .tabla-historial td.monto { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .adm-pantalla .hist-cabecera { margin-bottom: 8px; }
@@ -510,53 +531,53 @@
   .docs-avance { display: flex; flex-direction: column; gap: 8px; }
   .docs-avance-texto { font-size: 14px; color: var(--text-2); line-height: 1.4; }
   .docs-avance-texto strong { display: block; color: var(--text); font-size: 16px; }
-  .docs-grupo { margin: 18px 2px 8px; font-size: 15px; font-weight: 700; color: var(--text); }
+  .docs-grupo { margin: 18px 2px 8px; font-size: 16px; font-weight: 700; color: var(--text); }
   .docs-grupo:first-child { margin-top: 4px; }
-  .docs-grupo small { display: block; font-size: 13px; font-weight: 400; color: var(--text-2); }
+  .docs-grupo small { display: block; font-size: 14px; font-weight: 400; color: var(--text-2); }
   .docs-lista { display: flex; flex-direction: column; gap: 8px; }
   .docs-item .ruta-pto-tope { justify-content: space-between; align-items: center; }
   .docs-item .ruta-pto-dir { font-weight: 600; }
-  .docs-item .pedido-programa, .docs-item .pedido-aviso { margin: 8px 0 0; padding: 7px 10px; font-size: 13.5px; }
-  .docs-nota { margin: 6px 0 0; font-size: 13.5px; color: var(--text-2); }
+  .docs-item .pedido-programa, .docs-item .pedido-aviso { margin: 8px 0 0; padding: 7px 10px; font-size: 14px; }
+  .docs-nota { margin: 6px 0 0; font-size: 14px; color: var(--text-2); }
   .docs-form[hidden], .docs-pie[hidden] { display: none; }
   .docs-item.hecho { opacity: .78; }
   .docs-form { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
   .docs-form .campo { margin: 0; }
   .docs-form input[type=date], .docs-form input[type=text], .docs-form select { width: 100%; }
   .docs-archivo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .docs-archivo span { font-size: 13.5px; color: var(--text-2); overflow-wrap: anywhere; }
+  .docs-archivo span { font-size: 14px; color: var(--text-2); overflow-wrap: anywhere; }
   .docs-listo { text-align: center; padding: 18px 8px; }
-  .docs-listo strong { display: block; font-size: 17px; color: var(--accent); margin-bottom: 4px; }
+  .docs-listo strong { display: block; font-size: 16px; color: var(--accent); margin-bottom: 4px; }
   .docs-pie { display: flex; flex-direction: column; gap: 8px; }
   /* Admin: tarjeta por conductor con sus documentos. */
   .docs-adm-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .docs-adm-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--border); }
   .docs-adm-item:first-child { border-top: none; }
   .docs-adm-item .nombre { font-size: 14px; font-weight: 600; }
-  .docs-adm-item .sub { font-size: 12.5px; color: var(--text-2); }
+  .docs-adm-item .sub { font-size: 12px; color: var(--text-2); }
   .docs-adm-acciones { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
   .docs-visor { position: fixed; inset: 0; z-index: 90; background: rgba(9,20,32,.92); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; gap: 12px; }
   .docs-visor[hidden] { display: none; }
-  .docs-visor img { max-width: 100%; max-height: 78vh; border-radius: 10px; background: #fff; }
+  .docs-visor img { max-width: 100%; max-height: 78vh; border-radius: 12px; background: #fff; }
   .docs-visor .btn { min-width: 160px; }
   body.alta-pendiente #btnMenuCond { visibility: hidden; }
   /* Conductores (administrador): tarjeta con avatar y lista de interruptores */
-  .cond-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin: 0 0 12px; box-shadow: var(--shadow-sm); }
+  .cond-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 0 0 12px; box-shadow: var(--shadow-sm); }
   .cond-cab { display: flex; align-items: flex-start; gap: 12px; }
   .cond-avatar { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; letter-spacing: .02em; }
   .cond-datos { flex: 1; min-width: 0; }
   .cond-nombre { font-weight: 700; font-size: 16px; color: var(--text); line-height: 1.25; }
-  .cond-sub { font-size: 13px; color: var(--text-2); line-height: 1.4; overflow-wrap: anywhere; }
+  .cond-sub { font-size: 14px; color: var(--text-2); line-height: 1.4; overflow-wrap: anywhere; }
   .cond-cab .badge { flex: none; margin-top: 2px; }
   #mpEmpresaEstado, #mpEstado { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 600; line-height: 1.4; }
   #mpEmpresaEstado.ok, #mpEstado.ok { background: var(--accent-soft); border-color: transparent; }
   /* Liquidaciones: tarjeta por conductor con el saldo a la derecha */
   .liq-saldo { flex: none; text-align: right; font-weight: 800; font-size: 18px; line-height: 1.15; font-variant-numeric: tabular-nums; color: var(--text); }
-  .liq-saldo small { display: block; font-size: 11.5px; font-weight: 600; color: var(--text-3); letter-spacing: 0; }
+  .liq-saldo small { display: block; font-size: 12px; font-weight: 600; color: var(--text-3); letter-spacing: 0; }
   .liq-saldo.a-favor { color: var(--accent); }
   .liq-saldo.debe { color: var(--warn); }
-  .liq-cuenta { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px; line-height: 1.45; color: var(--text-2); overflow-wrap: anywhere; }
-  .liq-aviso { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: var(--text-2); }
+  .liq-cuenta { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 14px; line-height: 1.45; color: var(--text-2); overflow-wrap: anywhere; }
+  .liq-aviso { margin: 8px 0 0; font-size: 14px; line-height: 1.4; color: var(--text-2); }
   .liq-aviso.mal { color: var(--danger); font-weight: 600; }
   .cond-switches { margin-top: 10px; border-top: 1px solid var(--border); }
   .cond-switches .estado-conductor { margin: 0 !important; padding: 11px 0; border: none; border-bottom: 1px solid var(--border); border-radius: 0; background: none; box-shadow: none; }
@@ -566,13 +587,13 @@
   .adm-kpis .kpi-card { flex: 1; min-width: 0; padding: 10px 12px; }
   .adm-kpis .kpi-valor { font-size: 22px; }
   .adm-kpis .kpi-cabeza svg { display: none; }
-  .adm-kpis .kpi-etiqueta { font-size: 12.5px; }
+  .adm-kpis .kpi-etiqueta { font-size: 12px; }
   .adm-kpis .kpi-nota { font-size: 12px; }
   .adm-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
   .adm-fijo { flex: none; }
   .adm-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface-2); flex: none; }
-  .adm-tabs button { flex: 1; min-height: 40px; border: none; border-radius: 9px; background: none; font: inherit; font-weight: 700; font-size: 14.5px; color: var(--text-2); cursor: pointer; }
-  .adm-tabs button.activo { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgba(10, 20, 40, 0.16); }
+  .adm-tabs button { flex: 1; min-height: 40px; border: none; border-radius: 12px; background: none; font: inherit; font-weight: 700; font-size: 14px; color: var(--text-2); cursor: pointer; }
+  .adm-tabs button.activo { background: var(--surface); color: var(--primary); box-shadow: 0 0 0 1px var(--border); }
   .adm-panel-tab[hidden] { display: none; }
   .adm-pantalla .plegable { border-top: none; margin: 0; }
   .adm-pantalla .plegable-btn { display: none; }
@@ -586,28 +607,28 @@
   .flota-fila:active { background: var(--surface-2); }
   .flota-punto { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--border-strong); }
   .flota-quien { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-  .flota-quien strong { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .flota-quien span { font-size: 13px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .flota-estado { flex: none; text-align: right; font-size: 13.5px; font-weight: 700; display: flex; flex-direction: column; gap: 1px; }
+  .flota-quien strong { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flota-quien span { font-size: 14px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flota-estado { flex: none; text-align: right; font-size: 14px; font-weight: 700; display: flex; flex-direction: column; gap: 1px; }
   .flota-estado span { font-size: 12px; font-weight: 500; color: var(--text-3); }
   .flota-ver { display: flex; gap: 8px; margin: 0 0 8px; }
-  .flota-ver-btn { flex: 1; min-height: 44px; border: 2px solid var(--border-strong); border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .flota-ver-btn { flex: 1; min-height: 44px; border: 2px solid var(--border-strong); border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
   .flota-ver-btn b { font-weight: 800; margin-left: 4px; }
   .flota-ver-btn.activo { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
   body.cond-pantalla.hoja-medio .flota-resumen { display: none; }   /* los botones ya muestran los totales */
-  .mem-barra { height: 10px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
+  .mem-barra { height: 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
   .mem-relleno { height: 100%; width: 0; background: var(--acento); transition: width .3s ease; }
   .mem-relleno.lleno { background: var(--accent); }
   .mem-saldo { padding: 10px 12px; border-radius: var(--r-input); background: var(--surface-2); font-size: 14px; line-height: 1.4; }
   .mem-saldo strong { font-size: 18px; display: block; }
   .mem-saldo.debe { background: var(--warn-soft); }
-  .mem-fila { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-2); padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .mem-fila { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-2); padding: 4px 0; border-bottom: 1px solid var(--border); }
   .tyc-cuerpo { font-size: 14px; line-height: 1.5; color: var(--text); }
-  .tyc-cuerpo h4 { margin: 14px 0 4px; font-size: 15px; color: var(--primary); }
+  .tyc-cuerpo h4 { margin: 14px 0 4px; font-size: 16px; color: var(--primary); }
   .tyc-cuerpo p { margin: 0 0 6px; }
   .tyc-cuerpo .tyc-sub { margin-left: 14px; color: var(--text-2); }
-  .flota-titulo { margin: 10px 0 2px; font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
-  .flota-fila.sel { background: var(--surface-2); border-radius: 10px; }
+  .flota-titulo { margin: 10px 0 2px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .flota-fila.sel { background: var(--surface-2); border-radius: 12px; }
   .flota-detalle { margin: 0 0 8px; padding: 12px; border-radius: 14px; background: var(--surface-2); font-size: 14px; line-height: 1.45; }
   .flota-detalle[hidden] { display: none; }
   .flota-detalle h3 { margin: 0 0 4px; font-size: 16px; }
@@ -622,7 +643,7 @@
   }
   .pedido-emergente[hidden] { display: none; }
   .pe-hoja {
-    width: 100%; max-width: 448px; background: var(--surface); border-radius: 22px 22px 0 0;
+    width: 100%; max-width: 448px; background: var(--surface); border-radius: 14px 14px 0 0;
     padding: 16px 18px calc(18px + env(safe-area-inset-bottom)); animation: peSube .3s cubic-bezier(.2, .8, .2, 1);
   }
   @keyframes peSube { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -639,8 +660,8 @@
   .pe-linea { display: flex; align-items: baseline; gap: 10px; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }
   .pe-pto { flex: none; width: 10px; height: 10px; border: 3px solid var(--text); border-radius: 50%; position: relative; top: 1px; }
   .pe-pto-d { border-radius: 2px; background: var(--text); }
-  .pe-eta { font-size: 15px; color: var(--text-2); margin-bottom: 14px; min-height: 22px; }
-  .pe-aceptar { width: 100%; min-height: 68px; font-size: 22px; font-weight: 700; background: var(--accent); color: #fff; border-radius: 16px; }
+  .pe-eta { font-size: 16px; color: var(--text-2); margin-bottom: 14px; min-height: 22px; }
+  .pe-aceptar { width: 100%; min-height: 68px; font-size: 22px; font-weight: 700; background: var(--accent); color: #fff; border-radius: 14px; }
   .pe-segundo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
   .pe-segundo .btn { min-height: 52px; font-size: 16px; }
   .ajustes-cab { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; }
@@ -656,7 +677,7 @@
   .menu-lateral-fondo[hidden] { display: none; }
   .menu-lateral {
     position: fixed; top: 0; bottom: 0; right: 0; z-index: 60; width: min(82vw, 330px);
-    background: var(--surface); box-shadow: -8px 0 28px rgba(10, 20, 40, 0.25);
+    background: var(--surface); box-shadow: 0 0 0 1px var(--border);
     transform: translateX(105%); transition: transform .26s cubic-bezier(.2, .8, .2, 1);
     padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); overflow-y: auto;
   }
@@ -664,18 +685,37 @@
   .menu-lateral-cab { display: flex; align-items: center; gap: 12px; padding-bottom: 14px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
   .menu-lateral-avatar {
     width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: #fff; flex: none;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 19px;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px;
   }
   .menu-lateral-quien { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .menu-lateral-quien strong { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .menu-lateral-quien span { font-size: 13px; color: var(--text-3); }
+  .menu-lateral-quien strong { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .menu-lateral-quien span { font-size: 14px; color: var(--text-3); }
   .menu-lateral-cerrar { width: 40px; height: 40px; border: none; background: none; font-size: 30px; line-height: 1; color: var(--text-2); cursor: pointer; }
+  .menu-grupo { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 0 20px; border: none; background: none; font: inherit; font-size: 16px; font-weight: 600; color: var(--text); text-align: left; cursor: pointer; }
+  .menu-grupo:active { background: var(--surface-2); }
+  .menu-grupo .menu-chev { width: 20px; height: 20px; margin-left: auto; fill: none; stroke: var(--text-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+  .menu-grupo[aria-expanded="true"] .menu-chev { transform: rotate(180deg); }
+  .menu-sub { background: var(--surface-2); }
+  .menu-sub[hidden] { display: none; }
+  .menu-sub-item { padding-left: 36px; font-weight: 500; }
+  #menuStats, #menuTiempo { display: block; font-size: 12px; color: var(--text-2); }
+  #menuTiempo[hidden] { display: none; }
+  #menuStats[hidden] { display: none; }
+  /* Pantalla individual de un ajuste (conductor): solo el bloque elegido, con su título arriba y la flecha atrás. */
+  .aj-oculto { display: none !important; }
+  body.aj-solo #panelAjustes > *:not(.ajustes-cab):not(.aj-solo-item) { display: none !important; }
+  body.aj-solo #panelAjustes > details.aj-solo-item > summary { display: none; }
+  .mv-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .mv-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; }
+  .mv-ruta { margin-top: 4px; font-size: 14px; color: var(--text); }
+  .mv-meta { margin-top: 2px; font-size: 14px; color: var(--text-2); }
+  .mv-acciones { display: flex; gap: 8px; margin-top: 10px; }
   .menu-lateral-item {
     display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 8px; border: none; background: none;
-    font: inherit; font-size: 17px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
+    font: inherit; font-size: 16px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
   }
   .menu-lateral-item:active { background: var(--surface-2); }
-  .menu-lateral-seccion { margin: 14px 8px 2px; padding: 0 0 6px; border-bottom: 1px solid var(--border); font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+  .menu-lateral-seccion { margin: 14px 8px 2px; padding: 0 0 6px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
   .ajustes-grupo { margin: 22px 2px 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
   .ajustes-grupo:first-of-type { margin-top: 6px; }
   .menu-lateral-item .ico { color: var(--primary); width: 24px; height: 24px; }
@@ -692,12 +732,12 @@
   .nav-flecha { font-size: 40px; line-height: 1; flex: none; width: 46px; text-align: center; }
   .nav-textos { min-width: 0; }
   .nav-dist { font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
-  .nav-instr { font-size: 15px; line-height: 1.25; opacity: .92; overflow-wrap: anywhere; }
+  .nav-instr { font-size: 16px; line-height: 1.25; opacity: .92; overflow-wrap: anywhere; }
   .nav-pie {
     position: absolute; left: 8px; right: 8px; bottom: calc(var(--hoja-vis, 150px) + 8px); z-index: 4; display: flex; align-items: center; gap: 8px;
     padding: 8px 10px; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-md);
   }
-  .nav-resumen { flex: 1; min-width: 0; font-size: 15px; color: var(--text-2); }
+  .nav-resumen { flex: 1; min-width: 0; font-size: 16px; color: var(--text-2); }
   .nav-resumen strong { font-size: 22px; color: var(--text); font-weight: 700; }
   .nav-pie .btn { width: auto; min-height: 44px; padding: 8px 14px; font-size: 14px; }
   /* Dentro de la hoja las tarjetas no se anidan en otra tarjeta. */
@@ -711,7 +751,7 @@
   body.cond-pantalla .tablero-estado { margin-bottom: 8px; min-height: 40px; }
   body.cond-pantalla .tablero { margin-bottom: 8px; }
   body.cond-pantalla .tablero .kpi-card { padding: 10px 12px; }
-  body.cond-pantalla .tablero .kpi-valor { font-size: 19px; }
+  body.cond-pantalla .tablero .kpi-valor { font-size: 18px; }
   body.cond-pantalla .tablero-acciones { margin-bottom: 8px; }
   body.cond-pantalla .tablero-acciones .btn { min-height: 46px; }
   /* El pedido nuevo: sus botones Confirmar / Rechazar quedan siempre a mano. */
@@ -731,13 +771,13 @@
   /* ARRIBA, bajo el encabezado: la ruta (a dónde vas) y, si hay espera, el contador. */
   .tarjeta-viaje {
     position: fixed; left: 50%; transform: translateX(-50%); top: calc(var(--topbar-h, 104px) + 8px); z-index: 30;
-    width: calc(100% - 20px); max-width: 428px; max-height: 38vh; overflow: hidden; padding: 11px 14px; border-radius: 16px;
-    background: var(--surface); border: 1px solid var(--border); box-shadow: 0 2px 14px rgba(17, 48, 74, 0.25);
+    width: calc(100% - 20px); max-width: 428px; max-height: 38vh; overflow: hidden; padding: 11px 14px; border-radius: 14px;
+    background: var(--surface); border: 1px solid var(--border); box-shadow: 0 0 0 1px var(--border);
   }
   .tarjeta-viaje[hidden], .accion-viaje[hidden], .tv-crono[hidden], .tv-sec[hidden], .tv-otros[hidden], .tv-editar-rapido[hidden] { display: none !important; }
   .tv-fila { display: flex; align-items: flex-start; gap: 8px; }
   .tv-textos { flex: 1; min-width: 0; }
-  .tv-et { font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+  .tv-et { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
   .tv-dir { margin-top: 2px; font-size: 18px; font-weight: 700; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; }
   .tv-sub { margin-top: 2px; font-size: 14px; color: var(--text-2); overflow-wrap: anywhere; }
   .tv-mas { flex: none; width: 40px; height: 40px; border: none; border-radius: 50%; background: var(--surface-2); color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -745,20 +785,58 @@
   .tv-crono { margin: 10px 0 0; padding: 10px 14px; }
   .tv-crono .espera-reloj { font-size: 34px; margin: 2px 0 6px; }
   /* ABAJO: la pestaña (asa), los accesos a la navegación y UN botón con la próxima acción. */
-  .accion-viaje { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h, 0px) + 10px + env(safe-area-inset-bottom)); z-index: 30; width: calc(100% - 20px); max-width: 428px; }
-  .tv-asa { display: flex; justify-content: center; align-items: center; width: 84px; height: 24px; margin: 0 auto 8px; border-radius: 14px; background: var(--surface); box-shadow: 0 1px 8px rgba(17, 48, 74, 0.3); touch-action: none; cursor: grab; }
+  .accion-viaje { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h, 0px) + 10px + env(safe-area-inset-bottom)); z-index: 30; width: calc(100% - 40px); max-width: 428px; }
+  .tv-asa { display: flex; justify-content: center; align-items: center; width: 84px; height: 24px; margin: 0 auto 8px; border-radius: 14px; background: var(--surface); box-shadow: 0 0 0 1px var(--border); touch-action: none; cursor: grab; }
   .tv-asa span { width: 44px; height: 5px; border-radius: 3px; background: var(--border-strong); }
   .tv-ir { width: 100%; min-height: 48px; margin: 0 0 10px; font-size: 16px; }
   .tv-ir[hidden] { display: none; }
+  /* Botón de etapa: contenedor petróleo de 56 px con tirador calipso de 48 que se arrastra hasta el final (el toque suelto no acciona). */
   .tv-accion {
-    display: block; width: 100%; min-height: 58px; border: none; border-radius: 16px;
-    background: var(--primary); color: var(--primary-ink); font: inherit; font-size: 19px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 12px rgba(17, 48, 74, 0.35);
+    position: relative; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; padding: 4px; border: none; border-radius: 12px; overflow: hidden;
+    background: var(--primary); color: var(--primary-ink); font: inherit; font-size: 16px; font-weight: 500; cursor: pointer; box-shadow: 0 0 0 1px var(--border); touch-action: pan-y;
   }
-  .tv-accion.naranja { background: var(--naranja); color: #fff; }
+  .tv-accion .tv-texto { position: relative; z-index: 1; padding: 0 56px; text-align: center; pointer-events: none; }
+  .tv-accion .tv-tirador { display: none; position: absolute; left: 4px; top: 4px; width: 48px; height: 48px; border-radius: 12px; background: var(--naranja); color: #fff; align-items: center; justify-content: center; z-index: 2; touch-action: none; cursor: grab; }
+  .tv-accion .tv-tirador svg { width: 24px; height: 24px; }
+  .tv-accion.deslizable .tv-tirador { display: flex; }
+  .tv-accion.pista .tv-tirador { animation: tvPista .6s ease; }
+  @keyframes tvPista { 0%, 100% { transform: translateX(0); } 40% { transform: translateX(28px); } }
   .tv-accion.verde { background: #0B7A4B; color: #fff; }
   .tv-accion:disabled { opacity: 0.6; }
-  .tv-sec, .tv-otros, .tv-editar-rapido { display: block; width: 100%; margin-top: 4px; min-height: 38px; border: none; border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; box-shadow: 0 1px 8px rgba(17, 48, 74, 0.2); }
-  .accion-viaje .nav-pie { position: static; margin: 0 0 8px; box-shadow: 0 1px 8px rgba(17, 48, 74, 0.3); }
+  /* PIN del pasajero: 4 casillas */
+  .pin-casillas { display: flex; justify-content: center; gap: 12px; margin: 16px 0; }
+  .pin-casillas input { width: 56px; height: 64px; text-align: center; font: inherit; font-size: 28px; font-weight: 700; color: var(--primary); border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); }
+  .pin-casillas input:focus { outline: none; border-color: #1FB3BF; box-shadow: 0 0 0 2px #1FB3BF; }
+  /* Los tres botones sueltos viven ocultos (su estado manda) y se muestran dentro de "Opciones del viaje". */
+  .accion-viaje .tv-sec, .accion-viaje .tv-otros, .accion-viaje .tv-editar-rapido { display: none !important; }
+  /* "Opciones del viaje" vive en la pestaña de arriba; "Editar viaje" va dentro de esas opciones (no suelto). */
+  #itinerarioViaje #tvEditar { display: none !important; }
+  /* Fila de acciones de la tarjeta de arriba (como Uber): navegar, chat, editar y más. Cuatro botones iguales de 56 px. */
+  /* Como Uber: una línea compacta con tiempo y distancia sobre el botón, y "Navegar" flotando sobre el mapa. */
+  .tv-info { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0 0 8px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); text-align: center; }
+  .tv-info strong { font-size: 18px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .tv-info span { font-size: 14px; color: var(--text-2); }
+  .tv-info[hidden], .tv-navegar[hidden] { display: none; }
+  .tv-navegar { position: fixed; right: 16px; bottom: calc(var(--tv-h, 120px) + 12px); z-index: 31; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 16px; border: none; border-radius: 24px; background: var(--primary); color: #fff; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .tv-navegar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  body:not(.con-tarjeta) .tv-navegar { display: none !important; }
+  #tvActNav { display: none !important; }
+  .comp-lienzo { flex: 1 1 auto; min-height: 120px; overflow: auto; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+  .comp-lienzo canvas { display: block; width: 100%; height: auto; }
+  .tv-acciones { display: flex; gap: 8px; margin-top: 12px; }
+  .tv-acciones[hidden], .tv-act[hidden] { display: none; }
+  .tv-act { flex: 1 1 0; min-width: 0; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--primary); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .tv-act svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tv-act:disabled { opacity: .55; }
+  .tv-act-punto { position: absolute; top: 4px; right: 12px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--naranja); color: #fff; font-size: 12px; font-weight: 700; font-style: normal; line-height: 18px; text-align: center; }
+  .tv-act-punto[hidden] { display: none; }
+  /* El chat ya está en la fila: la burbuja flotante se oculta mientras hay tarjeta de viaje. */
+  body.con-tarjeta .burbuja-chat { display: none !important; }
+  .opcion-viaje { display: block; width: 100%; min-height: 56px; margin-bottom: 8px; padding: 0 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font: inherit; font-size: 16px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; }
+  .opcion-viaje:disabled { opacity: .55; }
+  .opcion-viaje.peligro { color: var(--danger); }
+  .tv-sec, .tv-otros, .tv-editar-rapido { display: block; width: 100%; margin-top: 4px; min-height: 38px; border: none; border-radius: 12px; background: var(--surface); color: var(--text-2); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; box-shadow: 0 0 0 1px var(--border); }
+  .accion-viaje .nav-pie { position: static; margin: 0 0 8px; box-shadow: 0 0 0 1px var(--border); }
   /* El chat flotante va justo encima del botón, a la derecha (JS fija --tv-bub). */
   body.con-tarjeta .burbuja-chat { bottom: var(--tv-bub, 150px); }
   /* El itinerario se despliega HACIA ABAJO desde la tarjeta de arriba (se toca "Recoger a …"): todas las direcciones, el mapa
@@ -769,11 +847,11 @@
   .itinerario-viaje {
     position: fixed; left: 50%; top: calc(var(--topbar-h, 104px) + var(--tvtop-h, 0px) - 2px); width: calc(100% - 20px); max-width: 428px; z-index: 29;
     max-height: calc(100vh - var(--topbar-h, 104px) - var(--tvtop-h, 0px) - var(--tv-h, 130px) - 52px); overflow-y: auto; overscroll-behavior: contain;
-    padding: 18px 14px 4px; border-radius: 0 0 18px 18px; background: var(--surface); border: 1px solid var(--border); border-top: none; box-shadow: 0 8px 22px rgba(17, 48, 74, 0.3);
+    padding: 18px 14px 4px; border-radius: 0 0 14px 14px; background: var(--surface); border: 1px solid var(--border); border-top: none; box-shadow: 0 0 0 1px var(--border);
     transform: translate(-50%, -112%); visibility: hidden; transition: transform .26s cubic-bezier(.2, .8, .2, 1), visibility 0s .26s;
   }
   .itinerario-viaje.abierto { transform: translate(-50%, 0); visibility: visible; transition: transform .26s cubic-bezier(.2, .8, .2, 1); }
-  .itinerario-viaje .tv-asa { position: sticky; bottom: 0; z-index: 2; width: 100%; height: 30px; margin: 0; border-radius: 0 0 18px 18px; box-shadow: none; background: var(--surface); }
+  .itinerario-viaje .tv-asa { position: sticky; bottom: 0; z-index: 2; width: 100%; height: 30px; margin: 0; border-radius: 0 0 14px 14px; box-shadow: none; background: var(--surface); }
   .itinerario-viaje .card { border: none; box-shadow: none; padding: 0; margin: 0; background: none; }
   /* Aviso de pedidos pendientes ahora que no hay barra: un punto en el botón del menú y en su opción. */
   .btn-menu-cond { position: relative; }
@@ -801,7 +879,7 @@
   .vacio-bloque strong { color: var(--text); font-size: 16px; }
   .vacio-bloque p { margin: 0; font-size: 14px; color: var(--text-3); max-width: 300px; }
   .vacio-bloque .tablero-acciones { width: 100%; margin: 12px 0 4px; }
-  .nota-mapa { font-size: 13.5px; color: var(--text-3); margin: 10px 0 0; }
+  .nota-mapa { font-size: 14px; color: var(--text-3); margin: 10px 0 0; }
   .nota-mapa.oculto { display: none; }
 
   /* ---------- Chat (mismo diseño que el lado del pasajero) ---------- */
@@ -811,19 +889,19 @@
   }
   .chat-vacio { color: var(--text-3); font-size: 14px; text-align: center; padding: 14px 0; }
   .chat-burbuja {
-    max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 15px; line-height: 1.4;
+    max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: 16px; line-height: 1.4;
     word-break: break-word;
   }
   .chat-burbuja.mia { align-self: flex-end; background: var(--primary); color: var(--primary-ink); border-bottom-right-radius: 4px; }
   .chat-burbuja.suya { align-self: flex-start; background: var(--surface-2); color: var(--text); border-bottom-left-radius: 4px; }
-  .chat-hora { display: block; font-size: 11.5px; opacity: 0.7; margin-top: 3px; }
+  .chat-hora { display: block; font-size: 12px; opacity: 0.7; margin-top: 3px; }
   .chat-entrada { display: flex; gap: 8px; }
   .chat-entrada input {
     flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: var(--r-input);
-    padding: 11px 13px; font: inherit; font-size: 15px; background: var(--surface); color: var(--text);
+    padding: 11px 13px; font: inherit; font-size: 16px; background: var(--surface); color: var(--text);
   }
   .chat-entrada input:focus { outline: none; border-color: var(--primary); }
-  .chat-entrada .btn { padding: 11px 16px; font-size: 15px; }
+  .chat-entrada .btn { padding: 11px 16px; font-size: 16px; }
 
   /* ---------- Chat flotante: burbuja + ventana propia ----------
      Visible en cualquier pestaña mientras haya viajes en curso. Con más de
@@ -832,7 +910,7 @@
     position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 60;
     width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; touch-action: none;
     background: var(--naranja); color: #FFFFFF;
-    box-shadow: 0 8px 22px rgba(239, 109, 25, 0.38), 0 2px 6px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 0 0 1px var(--border);
     display: flex; align-items: center; justify-content: center;
   }
   .burbuja-chat[hidden] { display: none; }
@@ -840,7 +918,7 @@
   .burbuja-chat:active { transform: scale(0.94); }
   .burbuja-chat-n {
     position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px;
-    border-radius: 11px; background: var(--danger); color: #FFFFFF; font-size: 12.5px; font-weight: 700;
+    border-radius: 12px; background: var(--danger); color: #FFFFFF; font-size: 12px; font-weight: 700;
     line-height: 18px; text-align: center; border: 2px solid #FFFFFF; box-sizing: border-box;
   }
   .burbuja-chat-n[hidden] { display: none; }
@@ -852,7 +930,7 @@
   .chat-vista-previa {
     position: fixed; z-index: 61; max-width: min(260px, 70vw); padding: 10px 13px; border-radius: 14px;
     background: var(--surface); color: var(--text); border: 1px solid var(--border);
-    box-shadow: 0 10px 24px rgba(16, 26, 32, 0.16); font-size: 14px; line-height: 1.35; cursor: pointer;
+    box-shadow: 0 0 0 1px var(--border); font-size: 14px; line-height: 1.35; cursor: pointer;
   }
   .chat-vista-previa[hidden] { display: none; }
   .chat-vista-previa strong { display: block; font-size: 12px; color: var(--text-3); margin-bottom: 2px; }
@@ -860,18 +938,18 @@
     position: fixed; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 70;
     width: min(400px, calc(100vw - 24px)); height: min(560px, calc(100vh - 110px));
     display: flex; flex-direction: column; overflow: hidden;
-    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-    box-shadow: 0 18px 48px rgba(16, 26, 32, 0.28), 0 4px 12px rgba(16, 26, 32, 0.12);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 0 0 1px var(--border);
   }
   .ventana-chat[hidden] { display: none; }
   .ventana-chat-cab {
     display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px;
-    background: linear-gradient(135deg, var(--primary), #24485A); color: #FFFFFF;
+    background: var(--primary); color: #FFFFFF;
   }
   .ventana-chat-cab .titulo { flex: 1; min-width: 0; }
   .ventana-chat-cab .titulo strong, .ventana-chat-cab .titulo span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ventana-chat-cab .titulo strong { font-size: 16px; }
-  .ventana-chat-cab .titulo span { font-size: 12.5px; opacity: 0.8; }
+  .ventana-chat-cab .titulo span { font-size: 12px; opacity: 0.8; }
   .ventana-chat-cab button {
     width: 40px; height: 40px; flex: none; border-radius: 50%; border: none; cursor: pointer;
     background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; line-height: 1;
@@ -880,14 +958,14 @@
   .ventana-chat-tabs[hidden] { display: none; }
   .chat-tab {
     flex: none; border: 1px solid var(--border); background: var(--surface); color: var(--text);
-    border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; position: relative;
+    border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; position: relative;
   }
   .chat-tab.activo { background: var(--naranja-soft); border-color: var(--naranja); color: var(--naranja-texto); }
   .chat-tab .punto { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); margin-left: 6px; vertical-align: middle; }
   .chat-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .chat-panel[hidden] { display: none; }
   .ventana-chat .chat-mensajes { flex: 1; max-height: none; margin: 0; padding: 14px 12px; background: var(--surface-2); }
-  .ventana-chat .chat-burbuja.suya { background: var(--surface); box-shadow: 0 1px 2px rgba(16, 26, 32, 0.08); }
+  .ventana-chat .chat-burbuja.suya { background: var(--surface); box-shadow: 0 0 0 1px var(--border); }
   .ventana-chat .chat-entrada { padding: 10px; border-top: 1px solid var(--border); align-items: flex-end; background: var(--surface); }
   .chat-entrada textarea {
     flex: 1; min-width: 0; resize: none; min-height: 48px; max-height: 140px; box-sizing: border-box;
@@ -909,7 +987,7 @@
   .plegable { border-top: 1px solid var(--border); margin-top: 4px; }
   .plegable-btn {
     width: 100%; background: none; border: none; cursor: pointer; font: inherit;
-    font-size: 15px; font-weight: 600; color: var(--text); text-align: left;
+    font-size: 16px; font-weight: 600; color: var(--text); text-align: left;
     padding: 16px 0; display: flex; align-items: center; gap: 8px;
   }
   .plegable-btn .chevron { transition: transform 0.16s ease; margin-left: auto; color: var(--text-3); }
@@ -921,7 +999,7 @@
   /* ---------- Botones ---------- */
   .btn {
     border: none; border-radius: var(--r-btn); cursor: pointer; font: inherit;
-    font-size: 16.5px; font-weight: 600; padding: 13px 16px;
+    font-size: 16px; font-weight: 600; padding: 13px 16px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: background-color 0.12s ease, opacity 0.12s ease;
     text-decoration: none; /* .btn se usa tanto en <button> como en <a> (links de navegación externa) */
@@ -938,17 +1016,17 @@
   .btn:disabled { opacity: 0.45; cursor: default; }
   .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
   .btn-chico {
-    padding: 7px 12px; font-size: 14px; border-radius: 9px;
+    padding: 7px 12px; font-size: 14px; border-radius: 12px;
     background: var(--surface); color: var(--text-2); border: 1px solid var(--border);
   }
   .btn-chico:hover { border-color: var(--border-strong); color: var(--text); }
   .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-  .msg { font-size: 15px; margin: 12px 0 0; color: var(--text-2); }
+  .msg { font-size: 16px; margin: 12px 0 0; color: var(--text-2); }
   .msg:empty { display: none; }
   .msg.ok { color: var(--accent); }
   .msg.error { color: var(--danger); }
-  .vacio { color: var(--text-3); font-size: 15px; text-align: center; padding: 24px 0; margin: 0; }
+  .vacio { color: var(--text-3); font-size: 16px; text-align: center; padding: 24px 0; margin: 0; }
 
   /* Respuesta visual al tocar: el botón se hunde un poco. Sin esto, con la
      latencia del servidor parecía que el toque no se había registrado. */
@@ -962,33 +1040,35 @@
      debajo aparecen "Rumbo" y el eslogan, y mientras carga un auto avanza dejando puntitos naranjas, como la ruta del logo.
      --sb / --nb (barra de estado y de navegación, en dp) los pone MainActivity: el splash del sistema se centra en la
      ventana completa y el WebView no. Sin ellos (web), queda centrado en la página. */
+  /* En la app nativa el splash del HTML espera los bordes que manda MainActivity (misma posición que el del sistema): sin salto. */
+  html.nativo:not(.bordes-ok) .splash .splash-centro, html.nativo:not(.bordes-ok) .splash .splash-bajo, html.nativo:not(.bordes-ok) .splash .by { visibility: hidden; }
   .splash { position: fixed; inset: 0; z-index: 100; background: #11304A; color: #fff; text-align: center; transition: opacity 0.35s ease; }
   .splash .splash-centro { position: absolute; left: 50%; top: calc(50% + (var(--nb, 0px) - var(--sb, 0px)) / 2); width: 132px; transform: translate(-50%, -50%); }
   .splash #splashLogo { display: block; width: 132px; height: auto; }
   .splash .splash-bajo { position: absolute; left: 50%; top: calc(100% + 26px); transform: translateX(-50%); width: 280px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .splash .splash-palabra { width: 150px; height: auto; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .12s forwards; }
   .splash .splash-titulo { display: none; }
-  .splash .splash-texto { font-size: 17px; font-weight: 600; letter-spacing: .01em; color: #C9D3DE; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .32s forwards; }
+  .splash .splash-texto { position: absolute; left: -90px; right: -90px; bottom: calc(100% + 20px); font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: 0; color: #fff; opacity: 0; animation: splashAparece .45s cubic-bezier(.16, 1, .3, 1) .2s forwards; }
   .splash .splash-carga { position: relative; width: 132px; height: 22px; margin-top: 8px; opacity: 0; animation: splashAparece .3s ease .5s forwards; }
-  .splash .splash-puntitos { position: absolute; left: 4px; right: 18px; top: 50%; display: flex; justify-content: space-between; transform: translateY(-50%); }
+  .splash .splash-puntitos { position: absolute; left: 4px; right: 56px; top: 50%; display: flex; justify-content: space-between; transform: translateY(-50%); }
   .splash .splash-puntitos i { width: 6px; height: 6px; border-radius: 50%; background: #EF6D19; opacity: 0; animation: splashPuntito 1.6s linear infinite; }
   .splash .splash-puntitos i:nth-child(1) { animation-delay: .15s; } .splash .splash-puntitos i:nth-child(2) { animation-delay: .42s; }
   .splash .splash-puntitos i:nth-child(3) { animation-delay: .69s; } .splash .splash-puntitos i:nth-child(4) { animation-delay: .96s; }
   .splash .splash-puntitos i:nth-child(5) { animation-delay: 1.23s; }
-  .splash .splash-auto { position: absolute; left: 0; top: 0; width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; animation: splashAuto 1.6s linear infinite; }
+  .splash .splash-auto { position: absolute; left: 0; top: 0; width: 52px; height: 20px; fill: none; stroke: #fff; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; animation: splashAuto 1.6s linear infinite; }
   @keyframes splashAparece { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  @keyframes splashAuto { 0% { transform: translateX(0); opacity: 1; } 85% { transform: translateX(110px); opacity: 1; } 100% { transform: translateX(110px); opacity: 0; } }
+  @keyframes splashAuto { 0% { transform: translateX(0); opacity: 1; } 85% { transform: translateX(82px); opacity: 1; } 100% { transform: translateX(82px); opacity: 0; } }
   @keyframes splashPuntito { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
   @media (prefers-reduced-motion: reduce) {
     .splash .splash-palabra, .splash .splash-texto, .splash .splash-carga { animation: none; opacity: 1; }
-    .splash .splash-auto { animation: none; transform: translateX(110px); }
+    .splash .splash-auto { animation: none; transform: translateX(82px); }
     .splash .splash-puntitos i { animation: none; opacity: 1; }
   }
   /* By BTo Innova soluciones (regla de marca): al pie del splash, a la misma altura que en el splash del sistema (80 dp sobre el borde de la ventana). El logo es azul oscuro: va sobre un recuadro claro. */
   .splash .by { position: absolute; left: 0; right: 0; bottom: calc(80px - var(--nb, 58px) + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
   .splash .by span { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
-  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 10px; padding: 3px 8px; }
-  .by-pie { text-align: center; color: #4E5A6C; font-size: 13px; margin: 4px 0 18px; }
+  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 12px; padding: 3px 8px; }
+  .by-pie { text-align: center; color: #4E5A6C; font-size: 14px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
 
@@ -1005,16 +1085,16 @@
     max-width: 340px; width: 100%; text-align: center; box-shadow: var(--shadow-md);
   }
   .actualizacion-ico { font-size: 40px; line-height: 1; margin-bottom: 10px; }
-  .actualizacion-card h2 { margin: 0 0 8px; font-size: 19px; font-weight: 700; }
-  .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
+  .actualizacion-card h2 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+  .actualizacion-card p { margin: 0 0 18px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
   .actualizacion-card button { width: 100%; }
 
   /* ---------- Marca: dorado envejecido (solo detalles; los colores base no cambian) ---------- */
-  .brand-mark { width: 72px; height: 72px; }
+  .brand-mark { width: 50px; height: 50px; }
   .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
-  .brand-wordmark { height: 26px; filter: none; }
-  .brand-texto { min-height: 72px; gap: 4px; }
-  .brand-lema { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+  .brand-wordmark { height: 18px; filter: none; }
+  .brand-texto { min-height: 50px; gap: 4px; }
+  .brand-lema { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
   .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
   .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
   .tv-asa span { background: var(--acento); }
@@ -1028,23 +1108,34 @@
   .rb-pop { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;
     padding: 24px; background: rgba(11,34,54,0.55); }
   .rb-pop[hidden] { display: none; }
-  .rb-pop-caja { width: 100%; max-width: 360px; background: #fff; color: #11304A; border-radius: 18px; padding: 22px 20px 16px;
-    box-shadow: 0 18px 48px rgba(0,0,0,0.35); border-top: 6px solid var(--acento, #0EA5B0); max-height: 80vh; overflow-y: auto; }
+  .rb-pop-caja { width: 100%; max-width: 360px; background: #fff; color: #11304A; border-radius: 14px; padding: 22px 20px 16px;
+    box-shadow: 0 0 0 1px var(--border); border-top: 6px solid var(--acento, #0EA5B0); max-height: 80vh; overflow-y: auto; }
   .rb-pop-caja.error { border-top-color: #B3392B; }
   .rb-pop-caja.ok { border-top-color: #0B7A4B; }
   .rb-pop-texto { margin: 0 0 18px; font: 500 16px/1.45 "Montserrat", system-ui, sans-serif; white-space: pre-line; word-wrap: break-word; }
   .rb-pop-campo { width: 100%; box-sizing: border-box; margin: 0 0 18px; padding: 11px 12px; font: 16px "Montserrat", system-ui, sans-serif;
-    border: 1px solid #C9D3DE; border-radius: 10px; }
+    border: 1px solid #C9D3DE; border-radius: 12px; }
   .rb-pop-botones { display: flex; gap: 10px; justify-content: flex-end; }
   .rb-pop-botones button { min-width: 96px; padding: 11px 16px; border-radius: 12px; font: 600 15px "Montserrat", system-ui, sans-serif; cursor: pointer; border: 0; }
   .rb-pop-si { background: #11304A; color: #fff; }
   .rb-pop-no { background: #E8EEF3; color: #11304A; }
   .rb-pop-si:disabled { opacity: .45; cursor: default; }
   /* Autorización de datos (documentos): texto con scroll propio y casilla "Leí y acepto". */
-  .rb-pop-caja.autorizacion .rb-pop-texto { max-height: 46vh; overflow-y: auto; font-size: 14.5px; font-weight: 400; margin-bottom: 14px; }
+  .rb-pop-caja.autorizacion .rb-pop-texto { max-height: 46vh; overflow-y: auto; font-size: 14px; font-weight: 400; margin-bottom: 14px; }
   .rb-pop-check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 16px; font: 600 15px/1.35 "Montserrat", system-ui, sans-serif; color: #11304A; cursor: pointer; }
   .rb-pop-check input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: #11304A; }
 </style>
+<script>try {
+  // __splashVis = cuándo se hace visible el splash del HTML (para que dure 4 s completos DESDE ahí, no desde que arrancó la app).
+  window.__splashVis = Date.now();
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    document.documentElement.classList.add("nativo");
+    window.__splashVis = 0;
+    var obs = new MutationObserver(function () { if (document.documentElement.classList.contains("bordes-ok")) { window.__splashVis = Date.now(); obs.disconnect(); } });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    setTimeout(function () { document.documentElement.classList.add("bordes-ok"); }, 1500);
+  }
+} catch (e) {}</script>
 </head>
 <body>
 <div class="aviso-actualizar" id="avisoActualizar" hidden>
@@ -1057,12 +1148,12 @@
 </div>
 <div class="splash" id="splashIngresando">
   <div class="splash-centro">
+    <div class="splash-texto" id="splashTexto">Sigue tu</div>
     <img src="img/logo-carita.png" alt="" id="splashLogo">
     <div class="splash-bajo">
       <img src="img/rumbo-palabra-blanco.png" alt="Rumbo" class="splash-palabra">
       <div class="splash-titulo" id="splashTitulo"></div>
-      <div class="splash-texto" id="splashTexto">Sigue tu Rumbo</div>
-      <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 0 24 24"><use href="#i-auto"></use></svg></div>
+      <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 -4 160 62" aria-hidden="true"><path d="M154 42 L140 42 A14 14 0 0 0 112 42 L46 42 A14 14 0 0 0 18 42 L6 42 L5 32 Q5 24 9 19 L14 10 Q22 0 38 -1 L88 -1 Q96 -1 102 3 L138 18 L148 19 Q154 21 154 28 Z"/><path d="M22 17 L27 6 Q29 3 36 3 L57 3 L57 17 Z"/><path d="M61 3 L88 3 Q93 3 97 6 L118 17 L61 17 Z"/><path d="M119 19 L125 19" stroke-width="3"/><path d="M143 23 L149 27" stroke-width="2"/><path d="M6 24 L10 23" stroke-width="2"/><circle cx="32" cy="42" r="11"/><circle cx="32" cy="42" r="3.5"/><circle cx="126" cy="42" r="11"/><circle cx="126" cy="42" r="3.5"/></svg></div>
     </div>
   </div>
   <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
@@ -1076,6 +1167,7 @@
     var ses = null;
     try { ses = JSON.parse(localStorage.getItem(clave) || localStorage.getItem("rumbo_conductor_sesion") || "null"); } catch (e) {}
     var el = document.getElementById("splashIngresando");
+    if (MODO === "admin") document.getElementById("splashTexto").textContent = "Organiza tu";   // frase de arriba de la carita: admin "Organiza tu" / conductor "Sigue tu" (la palabra de abajo es "Rumbo")
     if (!(ses && ses.token)) { el.hidden = true; return; }   // el eslogan ("Sigue tu Rumbo") ya viene en el HTML, igual en conductor y admin
   })();
 </script>
@@ -1097,7 +1189,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslados privados</span>
+        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslado móvil</span>
         <span class="brand-sub">Conductor</span>
       </span>
     </div>
@@ -1192,7 +1284,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslados privados</span>
+        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslado móvil</span>
         <span class="brand-sub" id="brandSubConductor">Conductor</span>
       </span>
     </div>
@@ -1249,12 +1341,13 @@
     <!-- Solo administrador: la flota. En el mapa, el vehículo de cada conductor con su
          estado (disponible / en viaje); acá abajo, el resumen y la lista. -->
     <div class="flota" id="flotaAdmin" hidden>
+      <div class="flota-resumen" id="flotaResumen"></div>
+      <div class="flota-detalle" id="flotaDetalle" hidden></div>
+      <div id="flotaViajes"></div>
       <div class="flota-ver" id="flotaVer">
         <button type="button" class="flota-ver-btn activo" data-ver="conductores" aria-pressed="true">Conductores <b id="flotaNC">0</b></button>
         <button type="button" class="flota-ver-btn activo" data-ver="pasajeros" aria-pressed="true">Pasajeros <b id="flotaNP">0</b></button>
       </div>
-      <div class="flota-resumen" id="flotaResumen"></div>
-      <div class="flota-detalle" id="flotaDetalle" hidden></div>
       <div id="flotaLista"><p class="vacio">Cargando conductores...</p></div>
       <p class="nota" id="flotaNota"></p>
     </div>
@@ -1263,7 +1356,6 @@
     <div class="tablero solo-conductor" id="tableroConductor">
       <div class="tablero-estado">
         <button type="button" class="btn-estado-conexion" id="tabEstadoBadge">Disponible ahora</button>
-        <button class="btn btn-chico" data-tablero="horarios" type="button">Cambiar horarios</button>
       </div>
       <div class="kpi-fila">
         <div class="kpi-card">
@@ -1282,10 +1374,6 @@
           <div class="kpi-valor" id="tabViajes">—</div>
           <div class="kpi-nota">Mes en curso</div>
         </div>
-      </div>
-      <div class="tablero-acciones">
-        <button class="btn btn-medio" data-tablero="qr" type="button">Compartir mi QR</button>
-        <button class="btn btn-secundario" data-tablero="tarifas" type="button">Ajustar tarifas</button>
       </div>
     </div>
 
@@ -1409,7 +1497,7 @@
       </div>
     </details>
 
-    <details class="acordeon simple"><summary>Visibilidad en la red</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonRed"><summary>Visibilidad en la red</summary><div class="acordeon-cuerpo">
     <div class="estado-conductor" id="estadoRed" style="flex-direction:column;align-items:stretch;gap:8px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <strong style="font-size:15px;flex:1;min-width:0;">Conectado al radar</strong>
@@ -1423,7 +1511,7 @@
       <p class="msg" id="redMsg" style="margin:0;font-size:12.5px;">Con esto activado, además de tu clientela, puedes recibir viajes que otros conductores de la red no pudieron tomar.</p>
     </div>
     </div></details>
-    <details class="acordeon simple"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonUbicacion"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
     <div class="estado-conductor" id="estadoConductor">
       <div class="estado-texto">
         <div class="estado-titulo">Compartir mi ubicación</div>
@@ -1436,7 +1524,7 @@
       </label>
     </div>
     </div></details>
-    <details class="acordeon simple"><summary>Navegación GPS</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonGps"><summary>Navegación GPS</summary><div class="acordeon-cuerpo">
     <div class="campo">
       <span class="campo-label">Con qué app navegar al iniciar un viaje</span>
       <div class="gps-switch" role="group" aria-label="App de navegación" id="grupoGps">
@@ -1469,9 +1557,10 @@
     <section class="card" id="cardMembresia">
       <div class="card-head"><span class="card-title">Membresía Rumbo</span></div>
       <p class="ayuda" style="margin:0 0 12px;">
-        Pagas el 10 % de cada viaje (sin contar peajes) hasta <strong>$100.000 al mes</strong>. Al llegar a ese tope, el resto del mes es 0 %.
+        Pagas el 10 % de lo que recibes por cada viaje (peajes incluidos) hasta <strong>$250.000 al mes</strong>. Al llegar al tope, el resto del mes es 0 %; si no llegas, pagas solo lo acumulado. <span id="memBonoTexto">Primeros 3 meses: si tu membresía del mes llega a $150.000 te devolvemos $25.000; a $200.000, $50.000; a $250.000, $100.000.</span>
       </p>
       <div class="mem-barra" aria-hidden="true"><div class="mem-relleno" id="memRelleno"></div></div>
+      <div class="mem-escala" aria-hidden="true"><span>$0</span><span id="memTopeReal">$250.000</span></div>
       <p class="msg" id="memAcumulado" style="margin:8px 0 12px;">Revisando...</p>
       <div class="mem-saldo" id="memSaldo"></div>
       <div id="memUltimas" style="margin-top:10px;"></div>
@@ -1512,10 +1601,10 @@
     <section class="card" id="cardMiQr">
       <div class="card-head"><span class="card-title">QR para pasajeros</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
-        Quien escanee este QR o abra tu link queda registrado como tu cliente.
+        Tus pasajeros lo escanean con la cámara (puedes imprimirlo y dejarlo detrás de tu asiento) o les envías el link. Quien lo use queda registrado como tu cliente.
       </p>
       <div style="text-align:center;">
-        <img id="miQrImg" alt="Código QR de tu link" style="width:220px;height:220px;border:1px solid var(--border);border-radius:12px;background:#fff;">
+        <img id="miQrImg" alt="Código QR de tu link" style="width:min(300px,78vw);height:min(300px,78vw);border:1px solid var(--border);border-radius:12px;background:#fff;">
         <p class="msg" id="miQrLink" style="word-break:break-all;font-size:13px;margin:10px 0 14px;"></p>
       </div>
       <div class="btn-row">
@@ -1589,7 +1678,12 @@
           <label class="campo-label" for="valorHoraPunta">Hora punta ($)</label>
           <input type="number" id="valorHoraPunta" step="500">
         </div>
+        <div class="campo solo-red">
+          <label class="campo-label" for="valorHoraFuerte">Punta fuerte ($)</label>
+          <input type="number" id="valorHoraFuerte" step="500">
+        </div>
       </div>
+      <p class="ayuda solo-red">Punta fuerte: lunes a viernes en la franja de abajo (hora de entrada al trabajo). Déjala en 0 para no usarla; actívala cuando las apps 68 estén instaladas.</p>
 
       <p class="ayuda solo-red">Días con tarifa punta todo el día. Los feriados se detectan solos.</p>
       <div class="dias-toggle solo-red" id="diasPuntaTodoElDia">
@@ -1617,6 +1711,18 @@
             <div class="campo">
               <label class="campo-label" for="finDeSemanaValleFin">hasta</label>
               <input type="time" id="finDeSemanaValleFin">
+            </div>
+          </div>
+
+          <p class="ayuda">Punta fuerte (lunes a viernes, gana sobre el valle del viernes; no rige en feriados):</p>
+          <div class="fila">
+            <div class="campo">
+              <label class="campo-label" for="horaFuerteInicio">Fuerte desde</label>
+              <input type="time" id="horaFuerteInicio">
+            </div>
+            <div class="campo">
+              <label class="campo-label" for="horaFuerteFin">hasta</label>
+              <input type="time" id="horaFuerteFin">
             </div>
           </div>
 
@@ -1705,7 +1811,7 @@
     <section class="card"><div class="tyc-cuerpo" tabindex="0">
 <!--TYC-CONDUCTOR-INICIO-->
 <p>Plataforma: Rumbo, aplicación desarrollada y operada por BTo Innova SpA, RUT 78.533.592-9 (nombre comercial "BTo Innova soluciones"), titular de las obligaciones que estos Términos atribuyen a Rumbo. En adelante, "Rumbo".</p>
-<p>Versión: 2026-10-23-tyc5 · 23 de octubre de 2026.</p>
+<p>Versión: 2026-10-23-tyc6 · 23 de octubre de 2026.</p>
 <p>Al registrarse y marcar la casilla "Acepto", el Conductor declara haber leído y aceptado íntegramente los presentes Términos y Condiciones, que constituyen el contrato de prestación de servicios de trabajador independiente de plataformas digitales entre Rumbo y el Conductor. Rumbo conservará registro de la fecha, la hora y la versión aceptadas. Estos Términos y las condiciones comerciales pueden cambiar más adelante, lo que será informado oportunamente a través de la aplicación.</p>
 <h4>1. Partes y domicilio</h4>
 <p>1.1. Las partes son Rumbo, individualizada arriba, y el Conductor, persona natural cuyos datos de identificación (nombre completo, RUT, teléfono y correo electrónico) constan en su registro en la aplicación.</p>
@@ -1739,7 +1845,7 @@
 <p>8.1. Los ingresos del Conductor corresponden a lo cobrado por los viajes que realiza, según el tiempo y la distancia recorridos, en concepto de arriendo del vehículo con conductor, y se le transfieren como honorarios, por los cuales debe emitir la boleta de honorarios correspondiente.</p>
 <p>8.2. El monto que percibe por cada viaje, expresado en pesos chilenos, se le informa en la aplicación. Los incentivos y promociones, cuando existan, se informan previamente y su aceptación es voluntaria.</p>
 <h4>9. Membresía</h4>
-<p>El Conductor paga una membresía por el uso de Rumbo, equivalente a un porcentaje del valor neto de cada viaje (excluidos los peajes), sujeta a un tope mensual: alcanzado el tope, no se cobra membresía por el resto del mes. Si no se alcanza el tope, se paga únicamente lo acumulado, sin generarse deuda por inactividad. La membresía se calcula una sola vez por cada viaje. El acumulado y el saldo pueden consultarse en la aplicación, en la sección "Mi dinero". Los porcentajes y topes corresponden a valores de lanzamiento: pueden modificarse previo aviso y solo se aplicarán a los viajes posteriores.</p>
+<p>El Conductor paga una membresía por el uso de Rumbo, equivalente a un porcentaje de lo que el Conductor recibe por cada viaje (peajes incluidos), sujeta a un tope mensual: alcanzado el tope, no se cobra membresía por el resto del mes. Si no se alcanza el tope, se paga únicamente lo acumulado, sin generarse deuda por inactividad. La membresía se calcula una sola vez por cada viaje. Durante los primeros tres meses desde el alta del Conductor, Rumbo le devolverá cada mes, a su favor en la billetera, un monto según el nivel de membresía acumulada en ese mes, conforme a los escalones informados en la aplicación; se paga solo el escalón más alto alcanzado, sin sumarlos. Los peajes se rectifican contra comprobante: el Conductor presentará al menos una vez al mes el estado de cuenta de su dispositivo de peaje para cruzarlo con sus viajes, y las diferencias se ajustan a su favor o en su contra. El acumulado y el saldo pueden consultarse en la aplicación, en la sección "Mi dinero". Los porcentajes y topes corresponden a valores de lanzamiento: pueden modificarse previo aviso y solo se aplicarán a los viajes posteriores.</p>
 <h4>10. Cargo por uso de la aplicación</h4>
 <p>El precio informado al Pasajero incluye un cargo por uso de la aplicación, que no forma parte del ingreso del Conductor y pertenece a Rumbo. Cuando el Pasajero paga en efectivo o por transferencia, el Conductor percibe el monto íntegro y adeuda a Rumbo la membresía y dicho cargo; cuando paga con tarjeta, el Conductor no se ve afectado.</p>
 <h4>11. Pagos y liquidación</h4>
@@ -1749,7 +1855,7 @@
 <h4>12. Conexión, desconexión y seguridad</h4>
 <p>Por razones de seguridad y de resguardo de la salud del Conductor, Rumbo aplica los siguientes criterios: el PIN de inicio de cada viaje, el aviso de cada viaje con su origen y destino antes de aceptarlo, y un límite de horas de conducción continuas con la aplicación conectada. Cumplido el límite, el Conductor queda desconectado y recupera su tiempo completo tras un descanso mínimo. El viaje en curso se finaliza con normalidad. La aplicación avisa cuando restan pocas horas. Los tiempos máximos de conexión y de desconexión vigentes se informan en la aplicación. El Conductor no es sancionado por rechazar viajes ni por no conectarse.</p>
 <h4>13. Datos personales</h4>
-<p>13.1. Rumbo trata los datos del Conductor (identidad, cédula, imagen facial, licencia, certificado de antecedentes, documentos del vehículo, cuenta bancaria y ubicación mientras permanece conectado) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya solo desde cinco minutos antes de la hora reservada o, en los viajes inmediatos, cuando el Conductor está a cinco minutos o menos del punto de recogida, y el Conductor solo podrá utilizarla para llegar a ese punto.</p>
+<p>13.1. Rumbo trata los datos del Conductor (identidad, cédula, imagen facial, licencia, certificado de antecedentes, documentos del vehículo, cuenta bancaria y ubicación mientras permanece conectado o con un viaje en curso) para operar Rumbo, asignar y pagar los viajes, brindar seguridad y cumplir la normativa vigente. Antes de solicitar cualquier dato se informa su finalidad. La ubicación del Conductor se comparte en tiempo real con el Pasajero del viaje activo; a su vez, el Pasajero comparte la suya solo desde cinco minutos antes de la hora reservada o, en los viajes inmediatos, cuando el Conductor está a cinco minutos o menos del punto de recogida, y el Conductor solo podrá utilizarla para llegar a ese punto.</p>
 <p>13.2. El Conductor puede ejercer sus derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo, en los términos de la ley de protección de datos personales aplicable, escribiendo a Rumbo. Las solicitudes se atienden desde la sección "Ayuda y reclamos" de la aplicación.</p>
 <p>13.3. Las imágenes de la cédula de identidad y la fotografía del rostro son datos personales sensibles. Solo se tratan con la autorización expresa del Conductor, otorgada en forma separada de estos Términos, con la finalidad exclusiva de verificar que es el titular de la cuenta, mediante comparación visual efectuada por personal autorizado de Rumbo, sin reconocimiento facial automatizado. Se almacenan con acceso restringido, no se comparten con los pasajeros y se eliminan dentro de los treinta días siguientes a su revisión, conservándose solo el resultado, su fecha y el número del documento. El Conductor puede revocar esta autorización por la sección "Ayuda y reclamos"; sin ella no es posible habilitar la cuenta.</p>
 <h4>14. Suspensión y término</h4>
@@ -1769,7 +1875,7 @@
 <!--TYC-CONDUCTOR-FIN-->
     </div></section>
     </div></details>
-    <details class="acordeon simple"><summary>Mi cuenta</summary><div class="acordeon-cuerpo">
+    <details class="acordeon simple" id="acordeonCuenta"><summary>Mi cuenta</summary><div class="acordeon-cuerpo">
     <!-- Cerrar sesión solo desde acá, a propósito: la sesión queda abierta
          (hasta 5 dispositivos) y no debe cerrarse por un toque accidental. -->
     <button class="btn btn-danger" id="btnCerrarSesion" type="button" style="width:100%;margin:0 0 6px;">Cerrar sesión en este dispositivo</button>
@@ -1850,7 +1956,7 @@
 <aside class="menu-lateral" id="menuLateral" aria-hidden="true" aria-label="Menú">
   <div class="menu-lateral-cab">
     <span class="menu-lateral-avatar" id="menuAvatar" aria-hidden="true">C</span>
-    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span id="menuPlataforma">Rumbo Driver</span></div>
+    <div class="menu-lateral-quien"><strong id="menuNombre">Conductor</strong><span id="menuPlataforma">Rumbo Driver</span><span id="menuStats" class="solo-conductor" hidden></span><span id="menuTiempo" class="solo-conductor" hidden></span></div>
     <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuCond" aria-label="Cerrar el menú">&times;</button>
   </div>
   <!-- Administrador: cada sección es una pantalla propia (sin scroll de página). -->
@@ -1867,23 +1973,35 @@
   <button type="button" class="menu-lateral-item solo-red" data-adm="tarifas">Tarifas de la red</button>
   <div class="menu-lateral-seccion solo-red">Cuenta</div>
   <button type="button" class="menu-lateral-item solo-red" data-adm="cuenta">Mi cuenta</button>
-  <div class="menu-lateral-seccion solo-conductor">Trabajo</div>
-  <button type="button" class="menu-lateral-item solo-conductor solo-con-viaje" data-menu="encurso">Viaje en curso</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="pedidos">Pedidos pendientes<span class="menu-punto" id="puntoItemPedidos" hidden></span></button>
-  <div class="menu-lateral-seccion solo-conductor">Mi dinero</div>
-  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonHistorial">Historial de pagos</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonMembresia">Membresía y pagos</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonRecibo">Recibo de pagos</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonCobroTarjeta">Cobro con tarjeta</button>
-  <div class="menu-lateral-seccion solo-conductor">Mi actividad</div>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="tarifas">Ajustar tarifas</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="horarios">Cambiar horarios</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-tablero="qr">Compartir mi QR</button>
-  <div class="menu-lateral-seccion solo-conductor">Configuración</div>
-  <button type="button" class="menu-lateral-item solo-conductor docs-menu" data-adm="documentos">Documentos<span class="menu-punto" id="puntoItemDocs" hidden></span></button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonVehiculo">Mi vehículo</button>
-  <button type="button" class="menu-lateral-item solo-conductor" data-menu="ajustes">Ajustes y cuenta</button>
+  <!-- Conductor: 4 ítems. Cada subítem abre su propia pantalla con flecha atrás. Viaje en curso y ofertas viven en la pantalla principal. -->
+  <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonQr" data-titulo="Mi QR">Mi QR</button>
+  <button type="button" class="menu-grupo solo-conductor" data-grupo="billetera" aria-expanded="false">Mi billetera<svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="menu-sub solo-conductor" data-sub="billetera" hidden>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="ganancias">Mis ganancias</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonHistorial">Historial de pagos</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonMembresia">Membresía</button>
+  </div>
+  <button type="button" class="menu-grupo solo-conductor" data-grupo="viajes" aria-expanded="false">Mis viajes<span class="menu-punto" id="puntoItemPedidos" hidden></span><svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="menu-sub solo-conductor" data-sub="viajes" hidden>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="solicitudes">Solicitudes de reserva</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="reservas">Reservas</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="viajes">Historial de viajes</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTarifas" data-titulo="Viajes privados">Viajes privados</button>
+  </div>
+  <button type="button" class="menu-grupo solo-conductor" data-grupo="config" aria-expanded="false">Configuración<svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="menu-sub solo-conductor" data-sub="config" hidden>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonCuenta" data-titulo="Mi cuenta">Mi cuenta</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonRecibo" data-titulo="Cuenta bancaria">Cuenta bancaria</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonVehiculo" data-titulo="Mi auto">Mi auto</button>
+    <button type="button" class="menu-lateral-item menu-sub-item docs-menu" data-adm="documentos">Documentos<span class="menu-punto" id="puntoItemDocs" hidden></span></button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonGps" data-titulo="Navegación GPS">Navegación GPS</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTycConductor" data-titulo="Términos y condiciones">Términos y condiciones</button>
+  </div>
+  <!-- Se mantienen en el DOM (ocultos) porque otras partes los usan; ya no se muestran. -->
+  <button type="button" class="menu-lateral-item aj-oculto" data-menu="encurso" hidden>Viaje en curso</button>
+  <button type="button" class="menu-lateral-item aj-oculto" data-tablero="pedidos" hidden>Pedidos pendientes</button>
+  <button type="button" class="menu-lateral-item aj-oculto" data-menu="ajustes" hidden>Ajustes y cuenta</button>
 </aside>
 
 <!-- Viaje en curso (solo conductor, estilo Uber/DiDi): arriba la ruta; abajo UN botón con la próxima acción y la pestaña
@@ -1893,6 +2011,12 @@
     <div class="tv-textos"><div class="tv-et" id="tvEt"></div><div class="tv-dir" id="tvDir"></div><div class="tv-sub" id="tvSub"></div></div>
     <button type="button" class="tv-mas" id="tvMas" aria-label="Ver u ocultar el itinerario completo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
   </div>
+  <div class="tv-acciones" id="tvAcciones" hidden>
+    <button type="button" class="tv-act" id="tvActNav" aria-label="Navegar al punto del viaje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 17-7-4-7 4 7-17z"/></svg><span id="tvActNavTx">Waze</span></button>
+    <button type="button" class="tv-act" id="tvActChat" aria-label="Abrir el chat con el pasajero"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>Chat</span><i class="tv-act-punto" id="tvActPunto" hidden>0</i></button>
+    <button type="button" class="tv-act" id="tvActEditar" aria-label="Editar el viaje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg><span>Editar</span></button>
+    <button type="button" class="tv-act" id="tvActMas" aria-label="Más opciones del viaje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg><span>Más</span></button>
+  </div>
   <div class="espera-panel tv-crono" id="tvCrono" hidden>
     <div class="espera-titulo">Tiempo de espera</div>
     <div class="espera-reloj" data-reloj>00:00</div>
@@ -1900,9 +2024,11 @@
     <div class="espera-texto" data-texto></div>
   </div>
 </div>
+<button class="btn-conexion solo-conductor" id="btnConexion" type="button">Iniciar</button>
 <div class="accion-viaje solo-conductor" id="accionViaje" hidden>
   <div id="tvNav"></div>
-  <button type="button" class="tv-accion" id="tvAccion"></button>
+  <div class="tv-info" id="tvInfo" hidden><strong id="tvInfoEta"></strong><span id="tvInfoQuien"></span></div>
+  <button type="button" class="tv-accion" id="tvAccion"><span class="tv-tirador" id="tvTirador" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span><span class="tv-texto" id="tvTexto"></span></button>
   <button type="button" class="tv-sec" id="tvSec" hidden></button>
   <button type="button" class="tv-editar-rapido" id="tvEditarRapido" hidden>Editar viaje</button>
   <button type="button" class="tv-otros" id="tvOtros" hidden></button>
@@ -1952,6 +2078,7 @@
 
 <!-- Chat con los pasajeros: burbuja flotante + ventana propia, fuera de las
      pestañas para que se vea en cualquiera. Una pestaña por viaje en curso. -->
+<button type="button" class="tv-navegar" id="tvNavegar" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 17-7-4-7 4 7-17z"/></svg><span id="tvNavegarTx">Navegar</span></button>
 <button type="button" class="burbuja-chat" id="burbujaChat" aria-label="Abrir el chat con tus pasajeros" hidden>
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.9 3 3 6.6 3 11c0 2.2 1 4.2 2.6 5.6L5 21l4.3-2.2c.9.2 1.8.3 2.7.3 5.1 0 9-3.6 9-8s-3.9-8-9-8z"/></svg>
   <span class="burbuja-chat-n" id="burbujaChatN" hidden>0</span>
@@ -2001,6 +2128,26 @@
   </div>
 </div>
 
+<!-- Opciones del viaje: Finalizar sin iniciar, Editar viaje y Ver itinerario en un solo lugar (no sueltos bajo el botón). -->
+<div class="modal-fondo" id="modalOpcionesViaje" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 12px;font-size:18px;">Opciones del viaje</h2>
+    <div id="opcionesViajeLista"></div>
+    <button class="btn btn-chico" id="btnOpcionesCerrar" type="button" style="width:100%;margin-top:10px;">Cerrar</button>
+  </div>
+</div>
+
+<!-- Comprobante de la transferencia: el conductor lo ve y comprueba que el monto transferido es el correcto antes de confirmar. -->
+<div class="modal-fondo" id="modalComprobante" hidden>
+  <div class="modal-hoja" style="max-height:92vh;display:flex;flex-direction:column;">
+    <h2 style="margin:0 0 4px;font-size:18px;">Comprobante de transferencia</h2>
+    <p class="nota" id="compEsperado" style="margin:0 0 10px;"></p>
+    <div class="comp-lienzo" id="compLienzo"><p class="nota">Cargando…</p></div>
+    <button class="btn btn-ok" id="btnCompConfirmar" type="button" style="width:100%;margin-top:12px;" disabled>El monto coincide: recibí la transferencia</button>
+    <button class="btn btn-chico" id="btnCompCerrar" type="button" style="width:100%;margin-top:8px;">Cerrar</button>
+  </div>
+</div>
+
 <!-- Cierre del viaje: muestra lo que se va a cobrar (valor real con la espera
      medida) antes de elegir cómo paga el pasajero. -->
 <div class="modal-fondo" id="modalCierre" hidden>
@@ -2008,12 +2155,7 @@
     <h2 style="margin:0 0 12px;font-size:19px;">Finalizar viaje</h2>
     <div id="cierreDetalle" class="cierre-detalle"></div>
     <div id="cierreAvisos"></div>
-    <button class="btn btn-ok" id="btnCierrePasajero" type="button" disabled style="width:100%;margin-top:12px;">Finalizar: el pasajero elige cómo pagar</button>
-    <p class="nota" style="margin:12px 0 8px;">O elige tú cómo te paga:</p>
-    <div class="btn-row">
-      <button class="btn btn-chico" id="btnCierreMp" type="button" disabled>Mercado Pago</button>
-      <button class="btn btn-chico" id="btnCierreEfectivo" type="button" disabled>Efectivo</button>
-    </div>
+    <button class="btn btn-ok" id="btnCierrePasajero" type="button" disabled style="width:100%;margin-top:12px;">Finalizar viaje</button>
     <button class="btn btn-chico" id="btnCierreVolver" type="button" style="width:100%;margin-top:10px;">Volver al viaje</button>
   </div>
 </div>
@@ -2156,7 +2298,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 65;
+  var APP_VERSION = 67;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2248,12 +2390,13 @@
     document.getElementById("splashTexto").textContent = texto;
     el.hidden = false; el.classList.remove("oculta");
     splashDesde = Date.now();
-    setTimeout(ocultarSplash, 1800);
+    setTimeout(ocultarSplash, 4000);
   }
   function ocultarSplash() {
     var el = document.getElementById("splashIngresando");
     if (el.hidden) return;
-    var espera = Math.max(0, 1200 - (Date.now() - splashDesde));
+    var desde = Math.max(splashDesde, window.__splashVis || 0);   // 4 s desde que se ve la carita (igual en las tres apps)
+    var espera = Math.min(4000, Math.max(0, 4000 - (Date.now() - desde)));
     setTimeout(function () {
       el.classList.add("oculta");
       setTimeout(function () { el.hidden = true; }, 380);
@@ -2329,7 +2472,7 @@
 
   // Estas acciones el servidor las trata como idempotentes ("ya marcado" / "ya iniciado"): si Apps Script
   // contesta una página HTML o se corta la red, se reintenta una vez antes de mostrar un error.
-  var ACCIONES_REINTENTABLES = { llegue_recogida: 1, salgo_a_buscar: 1, iniciar_viaje: 1 };
+  var ACCIONES_REINTENTABLES = { llegue_recogida: 1, salgo_a_buscar: 1, iniciar_viaje: 1, llegue_destino: 1, iniciar_regreso: 1, finalizar_pedido: 1 };
   function apiPost(body) {
     var sesion = obtenerSesion();
     if (sesion && sesion.token && !("token" in body)) body.token = sesion.token;
@@ -2522,17 +2665,28 @@
     f.hidden = !si;
     document.getElementById("btnMenuCond").setAttribute("aria-expanded", si ? "true" : "false");
   }
-  document.getElementById("btnMenuCond").addEventListener("click", function () { abrirMenuCond(true); });
+  document.getElementById("btnMenuCond").addEventListener("click", function () {
+    abrirMenuCond(true);
+    if (MODO === "conductor") api({ accion: "mis_viajes_conductor" }).then(function (r) { if (r && r.ok) pintarResumenMenu(r.resumen); }).catch(function () {});
+  });
   document.getElementById("btnCerrarMenuCond").addEventListener("click", function () { abrirMenuCond(false); });
   document.getElementById("menuLateralFondo").addEventListener("click", function () { abrirMenuCond(false); });
   [].forEach.call(document.querySelectorAll("#menuLateral .menu-lateral-item"), function (b) {
     b.addEventListener("click", function () {
       abrirMenuCond(false);
       if (!b.getAttribute("data-adm") && admAbierta) cerrarPantallasAdmin();
-      if (b.getAttribute("data-menu") === "ajustes") mostrarPestana("ajustes");   // los data-tablero los atiende el manejador general
+      if (b.getAttribute("data-menu") === "ajustes") { document.body.classList.remove("aj-solo"); mostrarPestana("ajustes"); }   // los data-tablero los atiende el manejador general
       if (b.getAttribute("data-adm")) abrirPantallaAdmin(b.getAttribute("data-adm"));
-      if (b.getAttribute("data-ajuste")) irASeccionAjustes(b.getAttribute("data-ajuste"));
+      if (b.getAttribute("data-ajuste")) irASeccionAjustes(b.getAttribute("data-ajuste"), b.getAttribute("data-titulo") || "");
       if (b.getAttribute("data-menu") === "encurso") mostrarPestana("enCurso");
+    });
+  });
+  [].forEach.call(document.querySelectorAll("#menuLateral .menu-grupo"), function (g) {
+    g.addEventListener("click", function () {
+      var sub = document.querySelector('#menuLateral .menu-sub[data-sub="' + g.dataset.grupo + '"]');
+      var abierto = g.getAttribute("aria-expanded") === "true";
+      g.setAttribute("aria-expanded", abierto ? "false" : "true");
+      if (sub) sub.hidden = abierto;
     });
   });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuCond(false); });
@@ -2634,7 +2788,7 @@
   /* Mi QR: link propio del conductor (?c=<id>) hacia la landing pública,
      que arrastra el código hasta la web del pasajero. Así cada conductor
      reparte SU QR sin depender de que alguien se lo genere a mano. */
-  var LANDING_PASAJERO = "https://btoinnova.github.io/rumbo-web/";
+  var LANDING_PASAJERO = "https://btoinnova.github.io/rumbo-web/pasajero.html";
   var miLinkPasajero = "";
 
   /* ---------------------------------------------------------------
@@ -2650,7 +2804,7 @@
   document.getElementById("btnVolverIngreso").addEventListener("click", function () { mostrarRegistro(false); });
 
   // Versión de los T&C del conductor que se aceptan al registrarse (ver legal/tyc-conductor.md).
-  var VERSION_TYC_CONDUCTOR = "2026-10-23-tyc5";
+  var VERSION_TYC_CONDUCTOR = "2026-10-23-tyc6";
   // Muestra los T&C debajo de la casilla, sin salir del registro (el texto es el mismo de Ajustes).
   document.getElementById("verTycConductor").addEventListener("click", function () {
     var caja = document.getElementById("tycRegistro");
@@ -2733,6 +2887,7 @@
           '<div class="cond-cab"><span class="cond-avatar" aria-hidden="true">' + escapar(iniciales) + '</span>' +
             '<div class="cond-datos"><div class="cond-nombre">' + escapar(c.nombre) + (c.conductor_id === yo ? " (tú)" : "") + '</div>' +
             '<div class="cond-sub">' + escapar(c.email) + ' · +' + escapar(c.telefono) + '</div>' +
+            (c.solo_admin ? '' : '<div class="cond-sub">' + (c.calificaciones ? '★ ' + String(c.calificacion).replace(".", ",") + ' (' + c.calificaciones + (c.calificaciones === 1 ? ' calificación' : ' calificaciones') + ')' : 'Sin calificaciones todavía') + '</div>') +
             (c.vehiculo ? '<div class="cond-sub">' + escapar(c.vehiculo) + '</div>' : '') + '</div>' + etiqueta + '</div>' +
           (botones ? '<div class="btn-row">' + botones + '</div>' : '') +
           (switchTarifa ? '<div class="cond-switches">' + switchTarifa + '</div>' : '') +
@@ -2811,7 +2966,11 @@
     document.querySelector("#acordeonTarifas > summary").textContent = MODO === "admin" ? "Tarifas de la red" : "Tarifas y costos";
     [].forEach.call(document.querySelectorAll(".solo-red"), function (el) { el.style.display = MODO === "admin" ? "" : "none"; });
     [].forEach.call(document.querySelectorAll(".solo-conductor"), function (el) { el.style.display = MODO === "admin" ? "none" : ""; });
-    if (MODO !== "admin") ordenarAjustesConductor();
+    if (MODO !== "admin") {
+      ordenarAjustesConductor();
+      // Ya no se ven (v68): horarios, cobro con tarjeta, visibilidad en la red (la decide el admin) y compartir ubicación (siempre activa al iniciar sesión).
+      ["acordeonDisponibilidad", "acordeonCobroTarjeta", "acordeonRed", "acordeonUbicacion"].forEach(function (id) { var d = document.getElementById(id); if (d) d.classList.add("aj-oculto"); });
+    }
     if (MODO === "admin") {
       // Mismo formato que las otras dos apps: mapa completo + ventana + menú lateral (sin barra de abajo).
       document.body.classList.add("modo-admin");
@@ -2836,7 +2995,7 @@
      (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
      Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
      --------------------------------------------------------------- */
-  var PANTALLAS_ADMIN = { documentos: "Documentos", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", documentos: "Documentos", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
   function crearPantallaAdmin(id) {
     var p = document.createElement("section");
     p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
@@ -3218,6 +3377,11 @@
   var admAbierta = "";
   function abrirPantallaAdmin(id) {
     if (id === "documentos") armarPantallaDocs();
+    if ((id === "solicitudes" || id === "reservas" || id === "viajes") && !document.getElementById("adm-" + id)) crearPantallaMisViajes(id);
+    if (id === "ganancias" && !document.getElementById("adm-" + id)) {
+      var pg = crearPantallaAdmin("ganancias");
+      var cg = document.createElement("div"); cg.className = "adm-scroll"; cg.id = "mv-ganancias"; pg.appendChild(cg);
+    }
     var p = document.getElementById("adm-" + id);
     if (!p) return;
     var tb = document.querySelector("#pantallaApp .topbar");
@@ -3236,6 +3400,101 @@
     else if (id === "pedidos") cargarRegistroPedidos();
     else if (id === "tarifas") cargarTarifas();
     else if (id === "documentos") cargarDocumentos();
+    else if (id === "solicitudes" || id === "reservas" || id === "viajes") cargarMisViajes(id);
+    else if (id === "ganancias") cargarMisGanancias();
+  }
+
+  /* Mis viajes del conductor: solicitudes de reserva, reservas e historial. Datos de mis_viajes_conductor (solo lectura,
+     salvo aceptar/rechazar una solicitud, que usa las mismas acciones de siempre). */
+  var MV_VACIO = { solicitudes: "No tienes solicitudes de reserva.", reservas: "No tienes reservas.", viajes: "Aún no tienes viajes terminados." };
+  function crearPantallaMisViajes(id) {
+    var p = crearPantallaAdmin(id);
+    var cont = document.createElement("div");
+    cont.className = "adm-scroll"; cont.id = "mv-" + id;
+    p.appendChild(cont);
+    cont.addEventListener("click", function (ev) {
+      var cal = ev.target.closest("button[data-calificar]");
+      if (cal) { abrirCalificarPasajero(cal.dataset.calificar); return; }
+      var btn = ev.target.closest("button[data-accion]");
+      if (!btn) return;
+      btn.disabled = true;
+      apiPost({ accion: btn.dataset.accion, pedido_id: btn.dataset.id }).then(function (res) {
+        if (!res.ok) { rbAlerta("Error: " + res.error); btn.disabled = false; return; }
+        cargarMisViajes(id);
+      }).catch(function () { btn.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
+    });
+  }
+  function textoFechaMv(fechaViaje, horaViaje, iso) {
+    var d = null;
+    if (fechaViaje) { var q = fechaViaje.split("-"); d = new Date(parseInt(q[0], 10), parseInt(q[1], 10) - 1, parseInt(q[2], 10)); }
+    else if (iso) d = new Date(iso);
+    if (!d || isNaN(d.getTime())) return "";
+    var t = d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" });
+    if (horaViaje) t += " · " + horaViaje;
+    else if (!fechaViaje) t += " · " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+    return t;
+  }
+  function cargarMisViajes(id) {
+    var cont = document.getElementById("mv-" + id);
+    if (!cont) return;
+    cont.innerHTML = '<p class="nota" style="margin:16px;">Cargando…</p>';
+    api({ accion: "mis_viajes_conductor" }).then(function (r) {
+      if (!r || !r.ok) { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + escapar((r && r.error) || "No se pudo cargar") + '</p>'; return; }
+      pintarResumenMenu(r.resumen);
+      var lista = id === "solicitudes" ? r.solicitudes : id === "reservas" ? r.reservas : r.historial;
+      if (!lista || !lista.length) { cont.innerHTML = '<p class="nota" style="margin:16px;">' + MV_VACIO[id] + '</p>'; return; }
+      cont.innerHTML = lista.map(function (v) {
+        var cuando = textoFechaMv(id === "viajes" ? "" : v.fecha_viaje, id === "viajes" ? "" : v.hora_viaje, id === "viajes" ? v.fecha : "");
+        var paradas = v.paradas ? " · " + String(v.paradas).split("|").length + (String(v.paradas).split("|").length === 1 ? " parada" : " paradas") : "";
+        return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(cuando) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div>' +
+          '<div class="mv-ruta">' + escapar(v.origen) + ' → ' + escapar(v.destino) + escapar(paradas) + '</div>' +
+          '<div class="mv-meta">' + escapar(v.nombre || "") + (id === "viajes" && v.forma ? " · " + escapar(v.forma) : "") + (v.ida_vuelta === "SI" ? " · ida y vuelta" : "") + '</div>' +
+          (id === "viajes" && !v.calificado ? '<div class="mv-acciones"><button class="btn btn-chico" data-calificar="' + escapar(v.pedido_id) + '">Calificar al pasajero</button></div>' : "") +
+          (id === "solicitudes" ? '<div class="mv-acciones"><button class="btn btn-ok" data-accion="confirmar_pedido" data-id="' + escapar(v.pedido_id) + '">Aceptar</button>' +
+            '<button class="btn btn-rechazar" data-accion="rechazar_pedido" data-id="' + escapar(v.pedido_id) + '">Rechazar</button></div>' : "") + '</div>';
+      }).join("");
+    }).catch(function () { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + TEXTO_SIN_CONEXION + '</p>'; });
+  }
+  // Mis ganancias: lo que recibió hoy y esta semana (con peajes), su neto tras la membresía y un gráfico de los 7 días. Nunca la comisión de la app.
+  function cargarMisGanancias() {
+    var cont = document.getElementById("mv-" + "ganancias");
+    if (!cont) return;
+    cont.innerHTML = '<p class="nota" style="margin:16px;">Cargando…</p>';
+    api({ accion: "mis_viajes_conductor" }).then(function (r) {
+      if (!r || !r.ok || !r.resumen || !r.resumen.hoy) { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + escapar((r && r.error) || "No se pudo cargar") + '</p>'; return; }
+      pintarResumenMenu(r.resumen);
+      var h = r.resumen.hoy, s = r.resumen.semana;
+      var max = Math.max.apply(null, s.dias.map(function (d) { return d.ganancia; }).concat([1]));
+      var d0 = new Date(), hoyTxt = d0.getFullYear() + "-" + ("0" + (d0.getMonth() + 1)).slice(-2) + "-" + ("0" + d0.getDate()).slice(-2);
+      var plural = function (n) { return n + (n === 1 ? " viaje" : " viajes"); };
+      cont.innerHTML =
+        '<div class="gan-bloque"><span class="gan-etiqueta">Hoy</span><span class="gan-grande">' + escapar(fmt(h.ganancia)) + '</span>' +
+          '<span class="gan-sub">' + escapar(plural(h.viajes)) + (h.ganancia > 0 ? " · neto después de la membresía " + escapar(fmt(h.neto)) : "") + '</span></div>' +
+        '<div class="gan-bloque"><span class="gan-etiqueta">Esta semana</span><span class="gan-medio">' + escapar(fmt(s.ganancia)) + '</span>' +
+          '<div class="gan-barras" aria-hidden="true">' + s.dias.map(function (d) {
+            return '<div class="gan-barra' + (d.dia === hoyTxt ? " hoy" : "") + '"><i style="height:' + Math.max(2, Math.round(d.ganancia / max * 64)) + 'px"></i><span>' + d.letra + '</span></div>';
+          }).join("") + '</div>' +
+          '<span class="gan-sub">' + escapar(plural(s.viajes)) + " · neto " + escapar(fmt(s.neto)) + '</span></div>' +
+        // Viajes de hoy (como la lista de Uber): hora, ruta y lo que ganó en cada uno
+        (function () {
+          var hoyViajes = (r.historial || []).filter(function (v) { var f = new Date(v.fecha); return !isNaN(f.getTime()) && f.getFullYear() + "-" + ("0" + (f.getMonth() + 1)).slice(-2) + "-" + ("0" + f.getDate()).slice(-2) === hoyTxt; });
+          if (!hoyViajes.length) return "";
+          return '<h4 class="lugares-sub" style="margin:8px 16px 0;">Viajes de hoy</h4>' + hoyViajes.map(function (v) {
+            var f = new Date(v.fecha), hora = ("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2);
+            return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(hora) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div><div class="mv-ruta">' + escapar(v.origen) + ' → ' + escapar(v.destino) + '</div></div>';
+          }).join("");
+        })();
+    }).catch(function () { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + TEXTO_SIN_CONEXION + '</p>'; });
+  }
+  function pintarResumenMenu(res) {
+    var el = document.getElementById("menuStats");
+    if (!el || !res) return;
+    var partes = [];
+    if (res.hoy) partes.push("Hoy " + fmt(res.hoy.ganancia));
+    if (res.calificacion && res.calificacion.promedio) partes.push("★ " + String(res.calificacion.promedio).replace(".", ","));
+    if (res.tasa_aceptacion !== null && res.tasa_aceptacion !== undefined) partes.push("Aceptación " + res.tasa_aceptacion + " %");
+    partes.push(res.finalizados + (res.finalizados === 1 ? " viaje finalizado" : " viajes finalizados"));
+    el.textContent = partes.join(" · "); el.hidden = false;
   }
   function cerrarPantallasAdmin() {
     [].forEach.call(document.querySelectorAll(".adm-pantalla"), function (x) { x.hidden = true; });
@@ -3349,7 +3608,7 @@
           ? '<br><span class="msg" style="font-size:12px;">Rechazó: ' + escapar(p.rechazado_por.join(", ")) + "</span>" : "";
         return "<tr>" +
             "<td>" + escapar(fecha) + "</td>" +
-            "<td>" + (p.nombre ? "<strong>" + escapar(p.nombre) + "</strong><br>" : "") +
+            "<td>" + (p.nombre ? "<strong>" + escapar(p.nombre) + "</strong>" + (p.pasajero_calificacion ? " " + escapar(textoCalificacionPasajero(p.pasajero_calificacion, 0)) : "") + "<br>" : "") +
               escapar(p.origen || "Origen no disponible") + " → " + escapar(p.destino || "destino no disponible") + "</td>" +
             "<td>" + escapar(conductorTexto) + detalle + "</td>" +
             '<td><span class="badge ' + (BADGE_ESTADO_REGISTRO[p.estado] || "badge-gris") + '">' + escapar(p.estado) + "</span></td>" +
@@ -3559,7 +3818,7 @@
   document.getElementById("btnCompartirQr").addEventListener("click", function () {
     var texto = "Pide tu traslado conmigo en Rumbo: " + miLinkPasajero;
     if (navigator.share) {
-      navigator.share({ title: "Rumbo — Traslados privados", text: texto, url: miLinkPasajero }).catch(function () {});
+      navigator.share({ title: "Rumbo — Traslado móvil", text: texto, url: miLinkPasajero }).catch(function () {});
     } else {
       window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
     }
@@ -3571,7 +3830,7 @@
     if (!w) { window.open(document.getElementById("miQrImg").src, "_blank"); return; }
     w.document.write(
       '<html><head><title>QR Rumbo</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
-      '<h1 style="margin:0 0 6px;">Rumbo</h1><p style="margin:0 0 24px;color:#555;">Traslados privados' +
+      '<h1 style="margin:0 0 6px;">Rumbo</h1><p style="margin:0 0 24px;color:#555;">Traslado móvil' +
       (nombre ? " con " + nombre.replace(/[<>&]/g, "") : "") + '</p>' +
       '<img src="' + document.getElementById("miQrImg").src + '" style="width:320px;height:320px;" onload="setTimeout(function(){window.print()},300)">' +
       '<p style="margin-top:20px;font-size:14px;color:#333;">Escanea para cotizar y pedir tu viaje</p></body></html>');
@@ -3694,7 +3953,22 @@
     api({ accion: "mi_membresia" }).then(function (res) {
       if (!res.ok) { acum.textContent = "No se pudo revisar: " + res.error; return; }
       var rel = document.getElementById("memRelleno");
-      rel.style.width = Math.min(100, Math.round(res.acumulado / res.tope * 100)) + "%";
+      // La barra siempre dibuja el tope real ($250.000) y marca el tope del bono de los primeros 3 meses.
+      var escala = Number(res.tope_real) || res.tope;
+      rel.style.width = Math.min(100, Math.round(res.acumulado / escala * 100)) + "%";
+      // Marcas de los escalones de devolución (primeros 3 meses) sobre la barra que llega al tope real.
+      var conBono = !!res.con_devolucion, barra = rel.parentNode;
+      [].forEach.call(barra.querySelectorAll(".mem-marca"), function (x) { x.remove(); });
+      if (conBono) (res.escalones || []).forEach(function (e) {
+        if (e[0] >= escala) return;
+        var mk = document.createElement("div"); mk.className = "mem-marca"; mk.style.left = Math.round(e[0] / escala * 100) + "%"; barra.appendChild(mk);
+      });
+      document.getElementById("memTopeReal").textContent = fmt(escala);
+      document.getElementById("memBonoTexto").textContent = conBono
+        ? "Devolución de bienvenida" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + ": " +
+          (res.escalones || []).map(function (e) { return fmt(e[0]) + " → " + fmt(e[1]); }).join(" · ") + "." +
+          (Number(res.bono) > 0 ? " Este mes ya ganaste " + fmt(res.bono) + "." : "")
+        : "";
       rel.classList.toggle("lleno", !!res.liberado);
       acum.textContent = res.liberado ? "✓ Llegaste al tope de " + fmt(res.tope) + ": el resto del mes pagas 0 %."
         : "Este mes llevas " + fmt(res.acumulado) + " de " + fmt(res.tope) + ". Te faltan " + fmt(res.falta) + " para pagar 0 %.";
@@ -4036,9 +4310,16 @@
   // Lo que se cobra de un viaje: el monto final si ya se calculó, si no el
   // cotizado. cobroRealActivo lo informa el servidor (interruptor del backend).
   var cobroRealActivo = false;
-  var pinActivoServ = false;   // el servidor exige el PIN de inicio (propiedad PIN_ACTIVO)
-  // Lo que paga el pasajero (incluye el cargo de la app): el servidor lo manda en total_cobrar.
-  function montoP(p) { return Number(p.total_cobrar) > 0 ? Number(p.total_cobrar) : (Number(p.total_final) > 0 ? Number(p.total_final) : Number(p.total)); }
+  var pinActivoServ = true;   // el PIN de inicio es obligatorio siempre (el servidor lo informa igual en cada sincronización)
+  // Lo que GANA el conductor por el viaje (peajes incluidos). Nunca incluye la comisión de la app (eso es entre el pasajero y Rumbo).
+  function montoP(p) { return Number(p.total_final) > 0 ? Number(p.total_final) : Number(p.total); }
+  // Lo que el conductor le COBRA al pasajero en efectivo o transferencia (el total que paga el pasajero; lo manda el servidor).
+  function montoCobrar(p) { return Number(p.total_cobrar) > 0 ? Number(p.total_cobrar) : montoP(p); }
+  // Desglose de la oferta: cuánto es peaje y cuánto es por el vehículo y el tiempo.
+  function desgloseGanancia(p) {
+    var total = Math.round(montoP(p)), peaje = Math.round(Number(p.peaje) || 0);
+    return peaje > 0 ? "Incluye peajes " + fmt(peaje) + " · vehículo y tiempo " + fmt(total - peaje) : "Vehículo y tiempo " + fmt(total) + " · sin peajes";
+  }
   function horaDe(iso) {
     var d = new Date(iso);
     return isNaN(d.getTime()) ? "" : d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
@@ -4046,7 +4327,8 @@
 
   var CAMPOS_TARIFA = ["precioComb", "kmLimiteSantiago", "busquedaMin", "consumoCiudad", "consumoRuta",
     "valorHoraValle", "valorHoraPunta", "finDeSemanaValleInicio", "finDeSemanaValleFin",
-    "horaPuntaMananaInicio", "horaPuntaMananaFin", "horaPuntaTardeInicio", "horaPuntaTardeFin"];
+    "horaPuntaMananaInicio", "horaPuntaMananaFin", "horaPuntaTardeInicio", "horaPuntaTardeFin",
+    "valorHoraFuerte", "horaFuerteInicio", "horaFuerteFin"];
 
   var diasPuntaSeleccionados = [0, 5, 6];
 
@@ -4171,9 +4453,8 @@
   }
 
   document.getElementById("btnCierreVolver").addEventListener("click", cerrarCierre);
-  document.getElementById("btnCierrePasajero").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "POR_ELEGIR", this); });
-  document.getElementById("btnCierreMp").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "MERCADOPAGO", this); });
-  document.getElementById("btnCierreEfectivo").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "EFECTIVO", this); });
+  // Un solo cierre: la forma de pago la eligió el pasajero al pedir (el servidor la usa; si no puede, el pasajero elige después).
+  document.getElementById("btnCierrePasajero").addEventListener("click", function () { if (cierrePedidoId) finalizarViaje(cierrePedidoId, "", this); });
 
   document.getElementById("btnCombustibleLuego").addEventListener("click", function () {
     document.getElementById("modalCombustible").hidden = true;
@@ -4547,6 +4828,11 @@
     return Math.min(Math.max(n, 1), total - 1);
   }
   function guardarTramo(id, n) { try { localStorage.setItem(claveTramo(id), String(n)); } catch (e) {} }
+  // "Llegué a la parada k": subestado local (igual que el tramo); "Ir al próximo destino" avanza el tramo.
+  function claveEnParada(id) { return "rumbo_enparada_" + id; }
+  function leerEnParada(id) { try { var v = parseInt(localStorage.getItem(claveEnParada(id)), 10); return isNaN(v) ? -1 : v; } catch (e) { return -1; } }
+  function guardarEnParada(id, n) { try { localStorage.setItem(claveEnParada(id), String(n)); } catch (e) {} }
+  function borrarEnParada(id) { try { localStorage.removeItem(claveEnParada(id)); } catch (e) {} }
 
   /* ---------- Editar el viaje ----------
      Si el viaje cambió (destino o paradas), el avance guardado en el teléfono se vuelve a ubicar: se cuentan las
@@ -5126,45 +5412,48 @@
     var puntos = puntosDelViaje(p), quien = String(p.nombre || "el pasajero");
     if (p.estado_pago === "PENDIENTE") {
       var fp = p.forma_pago;
-      return { etapa: "pago", id: p.pedido_id, etiqueta: "Viaje terminado", titulo: "Por cobrar " + fmt(montoP(p)),
-        sub: fp === "EFECTIVO" ? "El pasajero pagará en efectivo" : fp === "TRANSFERENCIA" ? "El pasajero pagará por transferencia"
+      return { etapa: "pago", id: p.pedido_id, etiqueta: "Viaje terminado", titulo: "Por cobrar " + fmt(montoCobrar(p)),
+        sub: fp === "EFECTIVO" ? "El pasajero pagará en efectivo" : fp === "TRANSFERENCIA" ? (p.comprobante_subido ? "Transferencia con comprobante PDF recibido ✓" : "Esperando el comprobante en PDF del pasajero")
           : (fp === "POR_ELEGIR" || !fp) ? "El pasajero está eligiendo cómo pagar" : "Esperando el pago por Mercado Pago",
-        boton: { texto: fp === "TRANSFERENCIA" ? "Recibí la transferencia" : fp === "EFECTIVO" ? "Recibí el efectivo" : "Me pagó en efectivo", accion: "efectivo", clase: "verde" }, crono: null, secundario: null, punto: null, nav: null };
+        boton: fp === "TRANSFERENCIA" && !p.comprobante_subido ? { texto: "Esperando el comprobante", accion: "esperar-comprobante", clase: "" }
+          : { texto: fp === "TRANSFERENCIA" ? "Recibí la transferencia" : fp === "EFECTIVO" ? "Recibí el efectivo" : "Me pagó en efectivo", accion: "efectivo", clase: "verde" }, crono: null, secundario: null, punto: null, nav: null };
     }
     var etapa = etapaDelViaje(p);
     if (etapa === "recoger") {
       var sec = { texto: "Finalizar sin iniciar", accion: "cerrar" };   // pasajero que no sube: siempre se puede cerrar y cobrar
       return llegoARecogida(p)
         ? { etapa: "recogida", id: p.pedido_id, etiqueta: "Pasajero", titulo: quien, sub: "Llegaste a " + puntos[0].dir,
-            boton: { texto: "Iniciar viaje", accion: "iniciar", clase: "" },
+            boton: { texto: "Iniciar viaje", accion: "iniciar", clase: "", slide: "iniciar viaje" },
             crono: llegadaIso(p) ? { desde: llegadaIso(p), incluidaMin: ESPERA_RECOGIDA_GRATIS_MIN, modo: "recogida", titulo: "Espera del pasajero", valorHora: Number(p.valor_hora) || 0 } : null, secundario: sec, punto: puntos[0], nav: { puntos: puntos, indice: 0 } }
         : { etapa: "recoger", id: p.pedido_id, etiqueta: "Recoger a", titulo: quien, sub: puntos[0].dir,
-            boton: salioABuscar(p) ? { texto: "Llegué", accion: "llegue-recogida", clase: "" } : { texto: "Ir a buscar", accion: "ir-buscar", clase: "" },
+            boton: salioABuscar(p) ? { texto: "Llegué", accion: "llegue-recogida", clase: "", slide: "confirmar llegada" } : { texto: "Ir a buscar", accion: "ir-buscar", clase: "", slide: "ir a buscar" },
             crono: null, secundario: sec, punto: puntos[0], nav: { puntos: puntos, indice: 0 } };
     }
     if (etapa === "espera") {
       var d = new Date(p.llegada_destino_en);
       return { etapa: "espera", id: p.pedido_id, etiqueta: "Esperando a " + quien, titulo: puntos[puntos.length - 1].dir, sub: "Ida y vuelta",
-        boton: { texto: "Iniciar regreso", accion: "iniciar-regreso", clase: "naranja" },
+        boton: { texto: "Iniciar regreso", accion: "iniciar-regreso", clase: "", slide: "iniciar el regreso" },
         crono: { desde: isNaN(d.getTime()) ? "" : d.toISOString(), incluidaMin: minutosEsperaContratada(p) }, secundario: null, punto: puntos[puntos.length - 1],
         nav: { puntos: puntos, indice: puntos.length - 1 } };
     }
     if (etapa === "regreso") {
       var reg = puntoRegreso(p, puntos), esp = (Date.parse(p.inicio_regreso_en) - Date.parse(p.llegada_destino_en)) / 60000;
       return { etapa: "regreso", id: p.pedido_id, etiqueta: "Regreso a", titulo: reg.dir, sub: isFinite(esp) ? "Esperaste " + Math.round(esp) + " min (incluidos " + minutosEsperaContratada(p) + ")" : "Ida y vuelta",
-        boton: { texto: "Finalizar viaje", accion: "cerrar", clase: "" }, crono: null, secundario: null, punto: reg, nav: { puntos: [reg], indice: 0 } };
+        boton: { texto: "Finalizar viaje", accion: "cerrar", clase: "", slide: "finalizar viaje" }, crono: null, secundario: null, punto: reg, nav: { puntos: [reg], indice: 0 } };
     }
     // ida: paradas una por una y, al final, el destino
     var idx = leerTramo(p, puntos.length), pt = puntos[idx];
     if (pt.rol === "parada") {
+      var enParada = leerEnParada(p.pedido_id) === idx;
       return { etapa: "ida", id: p.pedido_id, etiqueta: "Parada " + idx + " de " + (puntos.length - 2), titulo: pt.dir, sub: "Con " + quien,
-        boton: { texto: "Llegué a la parada", accion: "llegue-parada", siguiente: idx + 1, clase: "" }, crono: null, secundario: null, punto: pt, nav: { puntos: puntos, indice: idx } };
+        boton: enParada ? { texto: "Ir al próximo destino", accion: "proximo-destino", siguiente: idx + 1, clase: "", slide: "ir al próximo destino" }
+          : { texto: "Llegué a la parada", accion: "llegue-parada", siguiente: idx, clase: "", slide: "confirmar parada" }, crono: null, secundario: null, punto: pt, nav: { puntos: puntos, indice: idx } };
     }
     return esIdaYVuelta(p)
       ? { etapa: "ida", id: p.pedido_id, etiqueta: "En viaje a", titulo: pt.dir, sub: "Ida y vuelta · con " + quien,
-          boton: { texto: "Llegué al destino", accion: "llegue-destino", clase: "" }, crono: null, secundario: null, punto: pt, nav: { puntos: puntos, indice: idx } }
+          boton: { texto: "Llegué al destino", accion: "llegue-destino", clase: "", slide: "llegar al destino" }, crono: null, secundario: null, punto: pt, nav: { puntos: puntos, indice: idx } }
       : { etapa: "ida", id: p.pedido_id, etiqueta: "En viaje a", titulo: pt.dir, sub: "Con " + quien,
-          boton: { texto: "Finalizar viaje", accion: "cerrar", clase: "" }, crono: null, secundario: null, punto: pt, nav: { puntos: puntos, indice: idx } };
+          boton: { texto: "Finalizar viaje", accion: "cerrar", clase: "", slide: "finalizar viaje" }, crono: null, secundario: null, punto: pt, nav: { puntos: puntos, indice: idx } };
   }
 
   // Qué viaje muestra la tarjeta. Uno ya iniciado manda (el servidor solo deja uno a la vez); si no, el que se
@@ -5187,7 +5476,73 @@
     })[0];
   }
 
-  var focoManualId = "", tvOcupado = false, tvClave = "";
+  /* Línea de información sobre el botón (como Uber): "3 min · 1,2 km" y "Llegar por Judith". El tiempo y la distancia salen de eta_a_pedido
+     (hasta la recogida); en las demás etapas solo se dice con quién va. Se pide cada 60 s o si el auto se movió más de 200 m. */
+  var etaInfo = {};
+  function actualizarInfoViaje(p, m) {
+    var info = document.getElementById("tvInfo"), quien = String(p.nombre || "el pasajero");
+    var enRecogida = m.etapa === "recoger";
+    document.getElementById("tvInfoQuien").textContent = enRecogida ? "Llegar por " + quien : m.etapa === "recogida" ? "Esperando a " + quien : m.etapa === "pago" ? "Viaje terminado" : "Con " + quien;
+    var e = etaInfo[p.pedido_id] || (etaInfo[p.pedido_id] = {});
+    document.getElementById("tvInfoEta").textContent = enRecogida && e.texto ? e.texto : "";
+    document.getElementById("tvInfoEta").hidden = !(enRecogida && e.texto);
+    info.hidden = false;
+    var nav = document.getElementById("tvNavegar"), ir = document.getElementById("tvIr");
+    nav.hidden = !m.nav || m.etapa === "pago";
+    document.getElementById("tvNavegarTx").textContent = "Navegar";
+    if (!enRecogida || !miPosicionConductor) return;
+    var pos = { lat: miPosicionConductor.lat, lng: miPosicionConductor.lng };
+    if (e.pidiendo || (e.t && Date.now() - e.t < 60000 && e.lat && metrosEntre(e, pos) < 200)) return;
+    e.pidiendo = true;
+    api({ accion: "eta_a_pedido", pedido_id: p.pedido_id, lat: pos.lat, lng: pos.lng }).then(function (res) {
+      e.pidiendo = false;
+      if (!res || !res.ok) return;
+      e.t = Date.now(); e.lat = pos.lat; e.lng = pos.lng;
+      e.texto = (res.minutos >= 60 ? Math.floor(res.minutos / 60) + " h " + (res.minutos % 60) + " min" : res.minutos + " min") + " · " + String(res.km).replace(".", ",") + " km";
+      pintarTarjetaViaje();
+    }).catch(function () { e.pidiendo = false; });
+  }
+  document.getElementById("tvNavegar").addEventListener("click", function () { document.getElementById("tvIr").click(); });
+
+  /* Fila de acciones de la tarjeta de arriba (como Uber). Los botones originales (Ir con Waze, Editar viaje, Finalizar sin iniciar y la
+     burbuja del chat) siguen siendo los que mandan: la fila copia su estado y les pasa el toque. */
+  function actualizarOpcionesViaje() {
+    var q = function (id) { return document.getElementById(id); };
+    var ir = q("tvIr"), ed = q("tvEditarRapido"), sec = q("tvSec"), bur = q("burbujaChat"), n = q("burbujaChatN");
+    q("tvActNav").hidden = ir.hidden;
+    q("tvActNavTx").textContent = String(ir.textContent || "").replace(/^Ir con /, "") || "GPS";
+    q("tvActEditar").hidden = ed.hidden; q("tvActEditar").disabled = ed.disabled;
+    q("tvActChat").hidden = bur.hidden && !document.querySelector("#chatPaneles [data-panel]");
+    q("tvActPunto").hidden = n.hidden; q("tvActPunto").textContent = n.textContent;
+    q("tvActMas").hidden = sec.hidden;
+    q("tvAcciones").hidden = [].every.call(q("tvAcciones").children, function (b) { return b.hidden; });
+  }
+  function abrirOpcionesViaje() {
+    var lista = document.getElementById("opcionesViajeLista");
+    lista.innerHTML = "";
+    ["tvSec"].forEach(function (id) {
+      var orig = document.getElementById(id);
+      if (!orig || orig.hidden) return;
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opcion-viaje peligro";
+      b.textContent = orig.textContent; b.disabled = orig.disabled;
+      b.addEventListener("click", function () { document.getElementById("modalOpcionesViaje").hidden = true; orig.click(); });
+      lista.appendChild(b);
+    });
+    document.getElementById("modalOpcionesViaje").hidden = false;
+  }
+  [["tvActNav", "tvIr"], ["tvActEditar", "tvEditar"], ["tvActChat", "burbujaChat"]].forEach(function (par) {
+    document.getElementById(par[0]).addEventListener("click", function (ev) { ev.stopPropagation(); document.getElementById(par[1]).click(); });
+  });
+  document.getElementById("tvActMas").addEventListener("click", function (ev) { ev.stopPropagation(); abrirOpcionesViaje(); });
+  document.getElementById("btnOpcionesCerrar").addEventListener("click", function () { document.getElementById("modalOpcionesViaje").hidden = true; });
+  // El chat cambia solo (mensajes nuevos): la fila se entera cuando la burbuja cambia.
+  (function () {
+    var bur = document.getElementById("burbujaChat");
+    new MutationObserver(function () { actualizarOpcionesViaje(); }).observe(bur, { attributes: true, subtree: true, childList: true, characterData: true });
+  })();
+
+  var focoManualId = "", tvOcupado = false, tvClave = "", tvArrastrando = false;
 
   // Alturas de los dos bloques flotantes (los usan el chat, el itinerario, el encuadre y el centrado del mapa).
   function medirTarjetas() {
@@ -5249,9 +5604,14 @@
     tvEdR.textContent = tvEd.textContent;
     document.getElementById("tvIr").textContent = gpsPreferido === "GOOGLE_MAPS" ? "Ir con Maps" : "Ir con Waze";
     var b = document.getElementById("tvAccion");
-    b.textContent = m.boton.texto;
-    b.className = "tv-accion" + (m.boton.clase ? " " + m.boton.clase : "");
-    b.dataset.accion = m.boton.accion; b.dataset.id = m.id; b.dataset.siguiente = m.boton.siguiente !== undefined ? String(m.boton.siguiente) : "";
+    // Un arrastre en curso no se repinta (el sondeo corre cada ~5 s y devolvería el tirador al inicio).
+    if (!tvArrastrando) {
+      document.getElementById("tvTexto").textContent = m.boton.slide ? m.boton.slide.charAt(0).toUpperCase() + m.boton.slide.slice(1) : m.boton.texto;
+      b.className = "tv-accion" + (m.boton.slide ? " deslizable" : "") + (m.boton.clase ? " " + m.boton.clase : "");
+      b.setAttribute("aria-label", m.boton.texto);
+      b.dataset.desliza = m.boton.slide ? "1" : "";
+      b.dataset.accion = m.boton.accion; b.dataset.id = m.id; b.dataset.siguiente = m.boton.siguiente !== undefined ? String(m.boton.siguiente) : "";
+    }
     b.disabled = tvOcupado;
     var sc = document.getElementById("tvSec");
     if (m.secundario) { sc.hidden = false; sc.textContent = m.secundario.texto; sc.dataset.accion = m.secundario.accion; sc.dataset.id = m.id; } else sc.hidden = true;
@@ -5259,6 +5619,8 @@
     if (otros > 0) { ot.hidden = false; ot.textContent = "Hay " + otros + (otros === 1 ? " viaje más" : " viajes más") + " · ver itinerario"; } else ot.hidden = true;
     tv.hidden = false; ac.hidden = false;
     document.body.classList.add("con-tarjeta");
+    actualizarInfoViaje(p, m);
+    actualizarOpcionesViaje();
     medirTarjetas();
     reubicarBurbuja();
     actualizarMapaViaje(p, m);
@@ -5399,8 +5761,15 @@
     var p = pedidoEnCurso(id);
     if (tipo === "cerrar") { abrirCierre(id); return; }
     if (tipo === "llegue-parada") {
-      // "Llegué a la parada": pasa al tramo siguiente y abre su navegación.
+      // "Llegué a la parada": queda en la parada (el pasajero puede bajar/subir). Nada se avanza hasta "Ir al próximo destino".
+      guardarEnParada(id, siguiente);
+      refrescarViajes();
+      return;
+    }
+    if (tipo === "proximo-destino") {
+      // Sale de la parada: pasa al tramo siguiente y abre su navegación.
       guardarTramo(id, siguiente);
+      borrarEnParada(id);
       refrescarViajes();
       if (p) abrirNavegacion(puntosDelViaje(p), siguiente);
       return;
@@ -5426,7 +5795,7 @@
       // PIN de inicio: el pasajero se lo dice al subir (lo ve en su app). Sin el PIN correcto el servidor no inicia.
       var pinIngresado = "";
       if (pinActivoServ) {
-        pinIngresado = await rbPedir("Pídele al pasajero su PIN de 4 dígitos (lo ve en su app) y escríbelo para iniciar el viaje.", { si: "Iniciar viaje" });
+        pinIngresado = await pedirPin();
         if (pinIngresado === null) return;
       } else if (!(await rbConfirmar("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales."))) return;
       conBotonOcupado(apiPost({ accion: "iniciar_viaje", pedido_id: id, pin: String(pinIngresado || "").trim() }).then(function (res) {
@@ -5462,14 +5831,71 @@
       })).catch(function (err) { rbAlerta(TEXTO_SIN_CONEXION); });
       return;
     }
+    if (tipo === "esperar-comprobante") {
+      rbAlerta("El pasajero todavía no sube el comprobante en PDF de su transferencia. Cuando lo suba, podrás confirmar el pago.");
+      return;
+    }
     if (tipo === "efectivo") {
+      var pe = pedidoEnCurso(id);
+      // Transferencia: primero se ve el comprobante PDF y se comprueba el monto; la confirmación está dentro de esa ventana.
+      if (pe && pe.forma_pago === "TRANSFERENCIA" && pe.comprobante_subido) { abrirComprobante(id, montoCobrar(pe)); return; }
       if (!(await rbConfirmar("¿Recibiste el pago de este viaje? Se cierra el cobro."))) return;
-      conBotonOcupado(apiPost({ accion: "marcar_pagado_efectivo", pedido_id: id }).then(function (res) {
-        if (!res.ok) { rbAlerta("Error: " + res.error); return; }
-        refrescarViajes();
-      }));
+      confirmarPagoRecibido(id);
     }
   }
+  function confirmarPagoRecibido(id) {
+    conBotonOcupado(apiPost({ accion: "marcar_pagado_efectivo", pedido_id: id }).then(function (res) {
+      if (!res.ok) { rbAlerta("Error: " + res.error); return; }
+      refrescarViajes();
+    }));
+  }
+
+  /* Comprobante de transferencia: se dibuja el PDF con pdf.js (cargado al usarlo) para ver el monto. */
+  var pdfjsCargando = null, comprobanteAbierto = "";
+  function cargarPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve();
+    if (pdfjsCargando) return pdfjsCargando;
+    pdfjsCargando = new Promise(function (ok, mal) {
+      var sc = document.createElement("script");
+      sc.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+      sc.onload = function () { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; ok(); };
+      sc.onerror = function () { pdfjsCargando = null; mal(new Error("pdfjs")); };
+      document.head.appendChild(sc);
+    });
+    return pdfjsCargando;
+  }
+  function abrirComprobante(pedidoId, montoEsperado) {
+    comprobanteAbierto = pedidoId;
+    document.getElementById("compEsperado").textContent = "Debes haber recibido " + fmt(montoEsperado) + ". Revisa que el monto del comprobante sea ese, y que sea el PDF del banco.";
+    var lienzo = document.getElementById("compLienzo");
+    lienzo.innerHTML = '<p class="nota" style="margin:12px;">Cargando…</p>';
+    document.getElementById("btnCompConfirmar").disabled = true;
+    document.getElementById("modalComprobante").hidden = false;
+    Promise.all([apiPost({ accion: "ver_comprobante", pedido_id: pedidoId }), cargarPdfJs()]).then(function (r) {
+      var res = r[0];
+      if (!res || !res.ok) { lienzo.innerHTML = '<p class="msg error" style="margin:12px;">' + escapar((res && res.error) || "No se pudo cargar") + '</p>'; return; }
+      var bytes = Uint8Array.from(atob(res.data_url.split(",")[1]), function (c) { return c.charCodeAt(0); });
+      return window.pdfjsLib.getDocument({ data: bytes }).promise.then(function (pdf) {
+        lienzo.innerHTML = "";
+        var paginas = [];
+        for (var n = 1; n <= Math.min(pdf.numPages, 2); n++) paginas.push(n);
+        return paginas.reduce(function (seq, n) {
+          return seq.then(function () { return pdf.getPage(n).then(function (pg) {
+            var vp = pg.getViewport({ scale: 2 }), cv = document.createElement("canvas");
+            cv.width = vp.width; cv.height = vp.height; lienzo.appendChild(cv);
+            return pg.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
+          }); });
+        }, Promise.resolve()).then(function () { document.getElementById("btnCompConfirmar").disabled = false; });
+      });
+    }).catch(function () {
+      lienzo.innerHTML = '<p class="msg error" style="margin:12px;">No se pudo mostrar el comprobante (¿sin conexión?). Cierra e inténtalo de nuevo.</p>';
+    });
+  }
+  document.getElementById("btnCompCerrar").addEventListener("click", function () { document.getElementById("modalComprobante").hidden = true; });
+  document.getElementById("btnCompConfirmar").addEventListener("click", function () {
+    document.getElementById("modalComprobante").hidden = true;
+    if (comprobanteAbierto) confirmarPagoRecibido(comprobanteAbierto);
+  });
 
   // Hoja del itinerario: sube desde la pestaña (o desde la flecha de la tarjeta de arriba) y baja con el asa.
   function itinerarioAbierto() { var d = document.getElementById("itinerarioViaje"); return !!d && d.classList.contains("abierto"); }
@@ -5482,7 +5908,70 @@
   // El aviso de navegación y la lista del viaje no cambian: solo se mueven los bloques ya existentes.
   document.getElementById("tvNav").appendChild(document.getElementById("navPie"));
   document.getElementById("detalleCuerpo").appendChild(document.getElementById("grupoEnCurso"));
-  document.getElementById("tvAccion").addEventListener("click", function () { accionViaje(this.dataset.accion, this.dataset.id, parseInt(this.dataset.siguiente, 10)); });
+  // PIN de inicio: ventana con 4 casillas (el pasajero se lo dice al subir). Devuelve los 4 dígitos o null si se cancela.
+  function pedirPin() {
+    return new Promise(function (resolve) {
+      var fondo = document.createElement("div");
+      fondo.className = "modal-fondo"; fondo.setAttribute("role", "dialog"); fondo.setAttribute("aria-label", "PIN del pasajero");
+      fondo.innerHTML = '<div class="modal-hoja"><h2 style="margin:0 0 4px;font-size:18px;">PIN del pasajero</h2>' +
+        '<p class="nota" style="margin:0;">Pídele su PIN de 4 dígitos (lo ve en su app) para iniciar el viaje.</p>' +
+        '<div class="pin-casillas">' + [0, 1, 2, 3].map(function (i) { return '<input type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Dígito ' + (i + 1) + '">'; }).join("") + '</div>' +
+        '<button class="btn btn-ok pin-ok" type="button" disabled style="width:100%;">Iniciar viaje</button>' +
+        '<button class="btn btn-chico pin-cancelar" type="button" style="width:100%;margin-top:10px;">Cancelar</button></div>';
+      document.body.appendChild(fondo);
+      var cas = [].slice.call(fondo.querySelectorAll("input")), ok = fondo.querySelector(".pin-ok");
+      function valor() { return cas.map(function (c) { return c.value; }).join(""); }
+      function revisar() { ok.disabled = !/^\d{4}$/.test(valor()); }
+      function cerrar(v) { fondo.remove(); resolve(v); }
+      cas.forEach(function (c, i) {
+        c.addEventListener("input", function () {
+          var d = c.value.replace(/\D/g, "");
+          if (d.length > 1) { for (var k = 0; k < d.length && i + k < 4; k++) cas[i + k].value = d[k]; c.value = d[0]; cas[Math.min(3, i + d.length - 1)].focus(); }
+          else { c.value = d; if (d && i < 3) cas[i + 1].focus(); }
+          revisar();
+        });
+        c.addEventListener("keydown", function (ev) {
+          if (ev.key === "Backspace" && !c.value && i > 0) { cas[i - 1].focus(); cas[i - 1].value = ""; revisar(); }
+          if (ev.key === "Enter" && !ok.disabled) cerrar(valor());
+        });
+      });
+      ok.addEventListener("click", function () { cerrar(valor()); });
+      fondo.querySelector(".pin-cancelar").addEventListener("click", function () { cerrar(null); });
+      setTimeout(function () { cas[0].focus(); }, 50);
+    });
+  }
+
+  /* Botón de etapa deslizable: se arrastra el tirador hasta el final (≥ 90 %) para accionar. Un toque suelto solo muestra la pista;
+     el doble toque de TalkBack y Enter/Espacio (click sin puntero, detail 0) accionan directo. Los botones sin deslizar (cobro) accionan con un toque. */
+  (function () {
+    var b = document.getElementById("tvAccion"), asa = document.getElementById("tvTirador"), txt = document.getElementById("tvTexto");
+    var x0 = null, max = 0, pos = 0, recienArrastrado = false;
+    function mover(px) { pos = Math.max(0, Math.min(max, px)); asa.style.transform = "translateX(" + pos + "px)"; txt.style.opacity = String(max ? Math.max(0, 1 - pos / (max * 0.6)) : 1); }
+    function volver() { asa.style.transition = "transform .2s"; mover(0); txt.style.opacity = "1"; setTimeout(function () { asa.style.transition = ""; }, 230); }
+    function vibrar(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
+    function disparar() { tvArrastrando = false; accionViaje(b.dataset.accion, b.dataset.id, parseInt(b.dataset.siguiente, 10)); }
+    asa.addEventListener("pointerdown", function (ev) {
+      if (b.disabled || b.dataset.desliza !== "1") return;
+      x0 = ev.clientX; max = Math.max(0, b.clientWidth - asa.offsetWidth - 8); tvArrastrando = true; asa.style.transition = "";
+      try { asa.setPointerCapture(ev.pointerId); } catch (e) {}
+      vibrar(10);
+    });
+    asa.addEventListener("pointermove", function (ev) { if (x0 !== null) mover(ev.clientX - x0); });
+    function soltar(cancelado) {
+      if (x0 === null) return;
+      var completo = !cancelado && max > 0 && pos >= max * 0.9;
+      x0 = null; recienArrastrado = true; setTimeout(function () { recienArrastrado = false; }, 350);
+      if (completo) { vibrar(40); mover(max); disparar(); setTimeout(function () { tvArrastrando = false; volver(); pintarTarjetaViaje(); }, 400); }
+      else { tvArrastrando = false; volver(); pintarTarjetaViaje(); }
+    }
+    asa.addEventListener("pointerup", function () { soltar(false); });
+    asa.addEventListener("pointercancel", function () { soltar(true); });
+    b.addEventListener("click", function (ev) {
+      if (recienArrastrado) return;
+      if (b.dataset.desliza !== "1" || ev.detail === 0) { disparar(); return; }
+      b.classList.remove("pista"); void b.offsetWidth; b.classList.add("pista");   // toque suelto: solo la pista
+    });
+  })();
   document.getElementById("tvSec").addEventListener("click", function () { accionViaje(this.dataset.accion, this.dataset.id); });
   document.getElementById("tvIr").addEventListener("click", function () {
     var p = elegirFoco(pedidosEnCursoActuales, focoManualId), m = p ? modeloTarjeta(p) : null;
@@ -5522,7 +6011,7 @@
     if (r.espera_recogida_valor > 0) filas.push(["Espera en la recogida", Math.round(r.espera_recogida_min) + " min (3 sin costo) · +" + fmt(r.espera_recogida_valor), "extra"]);
     if (r.minutos_reales > 0) filas.push(["Tiempo total del viaje", Math.round(r.minutos_reales) + " min", ""]);
     if (r.km_reales > 0) filas.push(["Distancia medida", String(r.km_reales).replace(".", ",") + " km", ""]);
-    filas.push(["Valor a cobrar", fmt(r.a_cobrar_pasajero || r.a_cobrar), "total"]);
+    filas.push(["Tu ganancia por el viaje", fmt(r.a_cobrar), "total"]);
     return filas;
   }
 
@@ -5544,8 +6033,6 @@
     var cont = document.getElementById("cierreDetalle");
     cont.innerHTML = '<p class="nota">Calculando…</p>';
     document.getElementById("cierreAvisos").innerHTML = "";
-    document.getElementById("btnCierreMp").disabled = true;
-    document.getElementById("btnCierreEfectivo").disabled = true;
     document.getElementById("btnCierrePasajero").disabled = true;
     document.getElementById("modalCierre").hidden = false;
     api({ accion: "previsualizar_cierre", pedido_id: pedidoId }).then(function (r) {
@@ -5555,8 +6042,6 @@
         return '<div class="cierre-fila ' + f[2] + '"><span>' + escapar(f[0]) + '</span><strong>' + escapar(f[1]) + '</strong></div>';
       }).join("");
       document.getElementById("cierreAvisos").innerHTML = avisosCierre(r).map(function (a) { return '<p class="pedido-aviso">' + escapar(a) + '</p>'; }).join("");
-      document.getElementById("btnCierreMp").disabled = false;
-      document.getElementById("btnCierreEfectivo").disabled = false;
       document.getElementById("btnCierrePasajero").disabled = false;
     }).catch(function () { cont.innerHTML = '<p class="msg error">' + TEXTO_SIN_CONEXION + '</p>'; });
   }
@@ -5565,16 +6050,19 @@
 
   function finalizarViaje(pedidoId, forma, boton) {
     boton.disabled = true;
-    apiPost({ accion: "finalizar_pedido", pedido_id: pedidoId, forma_pago: forma }).then(function (res) {
+    var cuerpo = { accion: "finalizar_pedido", pedido_id: pedidoId };
+    if (forma) cuerpo.forma_pago = forma;
+    apiPost(cuerpo).then(function (res) {
       if (!res.ok) { rbAlerta("Error: " + res.error); boton.disabled = false; return; }
       cerrarCierre();
-      // Si el monto final es mayor que lo cotizado, el conductor tiene que
-      // saber cuánto cobrar (sobre todo en efectivo).
-      if (res.ajuste > 0) {
-        var aCobrar = res.total_cobrar || res.total_final;   // incluye el cargo de la app: es lo que paga el pasajero
-        rbAlerta("Monto final: " + fmt(aCobrar) + " (subió por tiempo y km reales).\n\n" +
-          (forma === "EFECTIVO" ? "Cóbrale " + fmt(aCobrar) + " en efectivo." : forma === "POR_ELEGIR" ? "El pasajero verá " + fmt(aCobrar) + " y elegirá cómo pagar." : "El pasajero pagará " + fmt(aCobrar) + " por Mercado Pago."));
-      }
+      // Qué hacer ahora según cómo pagará el pasajero (la eligió él al pedir). Con el precio cerrado en ciudad el monto es lo cotizado.
+      var aCobrar = res.total_cobrar || res.total_final;   // lo que paga el pasajero: lo que el conductor cobra en efectivo o recibe por transferencia
+      var fp = res.forma_pago || forma;
+      var queHacer = fp === "EFECTIVO" ? "Cóbrale " + fmt(aCobrar) + " en efectivo." : fp === "TRANSFERENCIA" ? "El pasajero te transferirá " + fmt(aCobrar) + ". Cuando llegue, toca «Recibí la transferencia»." : fp === "POR_ELEGIR" ? "El pasajero elegirá cómo pagar. Si es en efectivo, cóbrale " + fmt(aCobrar) + "." : "El pasajero paga con tarjeta: tu ganancia queda en tu billetera.";
+      // Desglose del pago: lo que gana (peajes incluidos) menos la membresía (10 % de lo que no es peaje) = neto.
+      var desglose = res.ganancia > 0 ? "Ganaste " + fmt(res.ganancia) + (res.peajes > 0 ? " (peajes " + fmt(res.peajes) + ")" : "") +
+        (res.membresia > 0 ? "\nMembresía Rumbo (10 %): −" + fmt(res.membresia) + "\nNeto: " + fmt(res.ganancia - res.membresia) : "") + "\n\n" : "";
+      rbAlerta(desglose + (res.ajuste > 0 ? "Subió por tiempo y km reales.\n\n" : "") + (res.aviso_pago ? res.aviso_pago + "\n\n" : "") + queHacer);
       document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
       cargarViajesEnCurso();
       abrirCalificarPasajero(pedidoId);
@@ -5589,8 +6077,9 @@
     div.innerHTML =
       '<div class="pedido-tope">' +
         '<div>' + htmlContacto(p) + '</div>' +
-        '<div class="pedido-total">' + fmt(p.total) + '</div>' +
+        '<div class="pedido-total">' + fmt(p.total) + '<span class="pedido-total-nota">Ganarás</span></div>' +
       '</div>' +
+      '<div class="pedido-desglose">' + escapar(desgloseGanancia(p)) + '</div>' +
       htmlProgramacion(p) +
       '<div class="pedido-ruta">' +
         puntosCard.map(function (pt, i) {
@@ -5638,6 +6127,35 @@
   var SONDEO_MS = 5000;
   var sondeoTimer = null;
   var idsYaAvisados = {}; // para no repetir la notificación del mismo pedido en cada ciclo
+
+  /* Escalada: si un pedido (ahora o reserva) lleva 1 minuto sin responder, la alerta sube: sonido fuerte y vibración cada 15 s hasta que
+     se acepte o se rechace (1 minuto sin responder; la ventana para decidir es de 2 minutos). Cuenta desde la primera vez que esta app lo ve. */
+  var pendientesVistos = {}, ultimaAlarma = 0;
+  var SIN_RESPONDER_MS = 60 * 1000;
+  function sonarAlarma() {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 0.3, 0.6, 0.9, 1.2, 1.5].forEach(function (retraso, i) {
+        var osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = "square"; osc.frequency.value = i % 2 ? 1175 : 880;
+        osc.connect(gain); gain.connect(ctx.destination);
+        var t = ctx.currentTime + retraso;
+        gain.gain.setValueAtTime(0.5, t); gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.start(t); osc.stop(t + 0.25);
+      });
+    } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400]); } catch (e) {}
+  }
+  function revisarPedidosSinResponder(pedidos) {
+    var ahora = Date.now(), hay = false, ids = {};
+    (pedidos || []).forEach(function (p) {
+      ids[p.pedido_id] = true;
+      if (!pendientesVistos[p.pedido_id]) pendientesVistos[p.pedido_id] = ahora;
+      if (ahora - pendientesVistos[p.pedido_id] >= SIN_RESPONDER_MS) hay = true;
+    });
+    Object.keys(pendientesVistos).forEach(function (id) { if (!ids[id]) delete pendientesVistos[id]; });
+    if (hay && ahora - ultimaAlarma >= 15000) { ultimaAlarma = ahora; sonarAlarma(); }
+  }
 
   function pedirPermisoNotificaciones() {
     iniciarPush();
@@ -5768,7 +6286,7 @@
     cerrarEmergente();
     mostrarPestana("pedidos"); ponerHoja("alto");
   });
-  document.getElementById("btnVolverAjustes").addEventListener("click", function () { mostrarPestana(pedidosEnCursoActuales.length ? "enCurso" : "pedidos"); });
+  document.getElementById("btnVolverAjustes").addEventListener("click", function () { document.body.classList.remove("aj-solo"); mostrarPestana(pedidosEnCursoActuales.length ? "enCurso" : "pedidos"); });
 
   function avisarPedidoNuevo(p) {
     sonarAviso();
@@ -5905,7 +6423,7 @@
         if (!res || !res.ok) return;
         if (res.estado_pago === "PAGADO" && res.forma_pago === "MERCADOPAGO") {
           sonarAviso();
-          rbAlerta("Pago recibido por Mercado Pago: " + fmt(res.total));
+          rbAlerta("Pago recibido con tarjeta: tu ganancia ya está en tu billetera.");
         }
       });
     });
@@ -5923,8 +6441,13 @@
     return '<a class="pedido-tel" href="tel:+' + escapar(t) + '">' + (rotulo ? escapar(rotulo) + " " : "") + "+" + escapar(t) + "</a>";
   }
   // El teléfono del pasajero ya no llega a esta app (lo quita el servidor): el contacto es por el chat de Rumbo.
+  // Calificación del pasajero (estrellas que le pusieron los conductores): la ven el conductor y el admin.
+  function textoCalificacionPasajero(promedio, cantidad) {
+    return promedio ? "★ " + String(promedio).replace(".", ",") + (cantidad ? " (" + cantidad + ")" : "") : "";
+  }
   function htmlContacto(p) {
-    var chat = '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);">Contacto: chat de Rumbo</div>';
+    var nota = textoCalificacionPasajero(p.pasajero_calificacion, p.pasajero_calificaciones);
+    var chat = '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);">' + (nota ? escapar(nota) + " · " : "") + 'Contacto: chat de Rumbo</div>';
     if (!p.solicitante) {
       return '<div class="pedido-cliente">' + escapar(p.nombre) + "</div>" + (enlaceTel(p.telefono, "") || chat);
     }
@@ -5956,10 +6479,10 @@
   }
 
   function tarjetaEsperandoPago(div, p) {
-    var forma = p.forma_pago, monto = fmt(montoP(p));
+    var forma = p.forma_pago, monto = fmt(forma === "EFECTIVO" || forma === "TRANSFERENCIA" ? montoCobrar(p) : montoP(p));
     var aviso = forma === "EFECTIVO" ? "Viaje terminado. El pasajero te pagará " + monto + " en efectivo: confirma cuando lo recibas."
-      : forma === "TRANSFERENCIA" ? "Viaje terminado. El pasajero pagará " + monto + " por transferencia: confirma cuando veas el depósito."
-      : forma === "MERCADOPAGO" ? "Viaje terminado. Esperando que el pasajero pague por Mercado Pago — te avisamos apenas entre."
+      : forma === "TRANSFERENCIA" ? "Viaje terminado. El pasajero pagará " + monto + " por transferencia: " + (p.comprobante_subido ? "ya subió el comprobante en PDF; confirma cuando veas el depósito." : "espera su comprobante en PDF y confirma cuando veas el depósito.")
+      : forma === "MERCADOPAGO" ? "Viaje terminado. Esperando que el pasajero pague con tarjeta — te avisamos apenas entre."
       : "Viaje terminado. El pasajero está eligiendo cómo pagar " + monto + ".";
     // Mercado Pago: por si al pasajero no le aparece el botón, el conductor le reenvía el link.
     var botones = (forma === "MERCADOPAGO" && p.mp_link ? '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' : "") +
@@ -6564,6 +7087,7 @@
         }
       });
       lista.dataset.yaAviso = "1";
+      revisarPedidosSinResponder(res.pedidos);
 
       if (!res.pedidos.length) {
         lista.innerHTML = '<div class="vacio-bloque"><strong>Sin pedidos por ahora</strong>' +
@@ -6710,10 +7234,21 @@
     }).catch(function () {});
   }
 
+  // Tiempo disponible de la jornada (de las 12 h de conducción): va en el menú, no en la pantalla principal.
+  function pintarTiempoDisponible() {
+    var el = document.getElementById("menuTiempo");
+    if (!el) return;
+    if (!jornadaActual) { el.hidden = true; return; }
+    el.textContent = jornadaActual.agotada ? "Tiempo disponible: descanso obligatorio" : "Tiempo disponible: " + textoHoras(Math.max(0, jornadaActual.restante_min || 0));
+    el.hidden = false;
+  }
   function pintarEstadoTablero() {
     if (!disponibilidadCargada) { cargarDisponibilidad(); return; }
     if (!conexionCargada) { cargarMiConexion(); return; }
-    var badge = document.getElementById("tabEstadoBadge");
+    var badge = document.getElementById("tabEstadoBadge"), bc = document.getElementById("btnConexion");
+    pintarTiempoDisponible();
+    bc.textContent = conectadoManual ? "Desconectar" : "Iniciar";
+    bc.className = "btn-conexion" + (conectadoManual ? " desconectar" : "");
     if (jornadaActual && jornadaActual.agotada) {
       badge.className = "btn-estado-conexion desconectado";
       var hasta = jornadaActual.descanso_hasta ? new Date(jornadaActual.descanso_hasta) : null;
@@ -6733,15 +7268,18 @@
       badge.textContent = "No disponible ahora";
     } else {
       badge.className = "btn-estado-conexion";
-      badge.textContent = "Disponible ahora" + (jornadaActual && jornadaActual.restante_min < 12 * 60 ? " · quedan " + textoHoras(jornadaActual.restante_min) : "");
+      badge.textContent = "Conectado";
     }
   }
 
-  document.getElementById("tabEstadoBadge").addEventListener("click", function () {
+  document.getElementById("tabEstadoBadge").addEventListener("click", alternarConexion);
+  document.getElementById("btnConexion").addEventListener("click", alternarConexion);
+  function alternarConexion() {
     if (docsResumen && !docsResumen.habilitado) { avisarDocsPendientes(); return; }
     var deseado = !conectadoManual;
     // Conectarse es seguro y se deshace solo; desconectarse corta los viajes nuevos: se confirma.
-    (deseado ? Promise.resolve(true) : rbConfirmar("¿Desconectarte? Dejarás de recibir viajes nuevos hasta que vuelvas a conectarte.", { si: "Sí, desconectarme", no: "Seguir conectado" }))
+    // Desconectarse es inmediato, sin ventana de confirmación (decisión de Alberto, 24-oct-2026); se vuelve a conectar con "Iniciar".
+    Promise.resolve(true)
       .then(function (si) {
         if (!si) return;
         conectadoManual = deseado; // optimista: se nota al toque, sin esperar la red
@@ -6754,7 +7292,7 @@
           }
         }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); rbAlerta(TEXTO_SIN_CONEXION); });
       });
-  });
+  }
 
   function pintarMapaEspera() {
     var lienzo = document.getElementById("tabMapaLienzo");
@@ -6859,16 +7397,24 @@
     var caja = document.getElementById("flotaDetalle"), par = parFlota();
     if (!par) { caja.hidden = true; caja.innerHTML = ""; return; }
     var h = "";
+    if (par.c && par.p) {
+      h += "<h3>Viaje · " + NOMBRE_ESTADO_PAS[par.p.estado] + "</h3><p>" + escapar(par.p.origen || "") + " → " + escapar(par.p.destino || "") + "</p>";
+      if (par.p.atraso_min > 0) h += '<p class="flota-malo">Lleva ' + par.p.atraso_min + " min de atraso sobre la hora pactada.</p>";
+      h += '<div class="flota-titulo">Conductor</div>';
+    }
     if (par.c) {
       var veh = [par.c.vehiculo_marca, par.c.vehiculo_modelo, par.c.vehiculo_color].filter(Boolean).join(" ") + (par.c.vehiculo_patente ? " · " + par.c.vehiculo_patente : "");
       h += "<h3>" + escapar(par.c.nombre) + "</h3><p>" + escapar(veh || "Sin datos del vehículo") + " · <strong>" + NOMBRE_ESTADO_FLOTA[par.c.estado] + "</strong> · " + escapar(detalleEstadoFlota(par.c)) + "</p>";
       h += lineasEvaluacion(par.c.evaluacion).map(function (t) { return "<p>" + t + "</p>"; }).join("");
     }
     if (par.p) {
-      h += '<p style="margin-top:8px;"><strong>Pasajero: ' + escapar(par.p.nombre) + "</strong> · " + escapar(par.p.telefono || "") + " · " + NOMBRE_ESTADO_PAS[par.p.estado] +
-        (par.p.en_vivo ? " (ubicación en vivo)" : " (punto de recogida)") + "</p>" +
-        "<p>" + escapar(par.p.origen || "") + " → " + escapar(par.p.destino || "") + "</p>";
-      if (par.p.atraso_min > 0) h += '<p class="flota-malo">Lleva ' + par.p.atraso_min + " min de atraso sobre la hora pactada.</p>";
+      if (par.c) h += '<div class="flota-titulo">Pasajero</div>';
+      h += '<p style="margin-top:' + (par.c ? "2" : "8") + 'px;"><strong>' + (par.c ? "" : "Pasajero: ") + escapar(par.p.nombre) + "</strong>" + (par.p.calificacion ? " " + escapar(textoCalificacionPasajero(par.p.calificacion, par.p.calificaciones)) : "") + " · " + escapar(par.p.telefono || "") + " · " + NOMBRE_ESTADO_PAS[par.p.estado] +
+        (par.p.en_vivo ? " (ubicación en vivo)" : " (punto de recogida)") + "</p>";
+      if (!par.c) {
+        h += "<p>" + escapar(par.p.origen || "") + " → " + escapar(par.p.destino || "") + "</p>";
+        if (par.p.atraso_min > 0) h += '<p class="flota-malo">Lleva ' + par.p.atraso_min + " min de atraso sobre la hora pactada.</p>";
+      }
     } else if (par.c && par.c.estado !== "EN_VIAJE") {
       h += "<p>Sin viaje en curso.</p>";
     }
@@ -6890,12 +7436,22 @@
       '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.DISPONIBLE + '"></i>Disponibles ' + cuenta.DISPONIBLE + '</span>' +
       '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.EN_VIAJE + '"></i>En viaje ' + cuenta.EN_VIAJE + '</span>' +
       '<span class="flota-chip"><i style="background:' + COLOR_ESTADO_FLOTA.SIN_SENAL + '"></i>Sin conexión ' + (cuenta.DESCONECTADO + cuenta.SIN_SENAL) + '</span>';
+    var viajes = flotaPas.filter(function (p) { return p.conductor_id && conductorDeFlota(p.conductor_id); });
+    var enViaje = {};
+    viajes.forEach(function (p) { enViaje["c" + p.conductor_id] = true; enViaje["p" + p.pedido_id] = true; });
+    document.getElementById("flotaViajes").innerHTML = '<div class="flota-titulo">Viajes en curso</div>' + (viajes.length ? viajes.map(function (p) {
+      var c = conductorDeFlota(p.conductor_id), sel = flotaSel && ((flotaSel.tipo === "p" && flotaSel.id === p.pedido_id) || (flotaSel.tipo === "c" && flotaSel.id === p.conductor_id));
+      return '<button type="button" class="flota-fila' + (sel ? " sel" : "") + '" data-flota-p="' + escapar(p.pedido_id) + '">' +
+        '<span class="flota-punto" style="background:' + (COLOR_ESTADO_PAS[p.estado] || "#EF6D19") + '"></span>' +
+        '<span class="flota-quien"><strong>' + escapar(p.nombre) + ' → ' + escapar(p.destino || "") + '</strong><span>Conductor: ' + escapar(c.nombre) + '</span></span>' +
+        '<span class="flota-estado">' + NOMBRE_ESTADO_PAS[p.estado] + (p.atraso_min > 0 ? '<span class="flota-malo">' + p.atraso_min + ' min de atraso</span>' : "") + '</span></button>';
+    }).join("") : '<p class="vacio">No hay viajes coordinados en este momento.</p>');
     var html = "";
     if (flotaVer.conductores) {
-      var orden = flotaDatos.slice().sort(function (a, b) {
+      var orden = flotaDatos.filter(function (c) { return !enViaje["c" + c.conductor_id]; }).sort(function (a, b) {
         return (ORDEN_ESTADO_FLOTA[a.estado] - ORDEN_ESTADO_FLOTA[b.estado]) || String(a.nombre).localeCompare(String(b.nombre));
       });
-      html += '<div class="flota-titulo">Conductores</div>' + (orden.length ? orden.map(function (c) {
+      html += '<div class="flota-titulo">Conductores sin viaje</div>' + (orden.length ? orden.map(function (c) {
         var veh = [c.vehiculo_marca, c.vehiculo_modelo, c.vehiculo_color].filter(Boolean).join(" ") + (c.vehiculo_patente ? " · " + c.vehiculo_patente : "");
         var sel = flotaSel && flotaSel.tipo === "c" && flotaSel.id === c.conductor_id;
         return '<button type="button" class="flota-fila' + (sel ? " sel" : "") + '" data-flota-c="' + escapar(c.conductor_id) + '">' +
@@ -6905,13 +7461,14 @@
       }).join("") : '<p class="vacio">No hay conductores activos en la red.</p>');
     }
     if (flotaVer.pasajeros) {
-      html += '<div class="flota-titulo">Pasajeros con solicitud</div>' + (flotaPas.length ? flotaPas.map(function (p) {
+      var sinConductor = flotaPas.filter(function (p) { return !enViaje["p" + p.pedido_id]; });
+      html += '<div class="flota-titulo">Pasajeros sin conductor</div>' + (sinConductor.length ? sinConductor.map(function (p) {
         var sel = flotaSel && flotaSel.tipo === "p" && flotaSel.id === p.pedido_id;
         return '<button type="button" class="flota-fila' + (sel ? " sel" : "") + '" data-flota-p="' + escapar(p.pedido_id) + '">' +
           '<span class="flota-punto" style="background:' + (COLOR_ESTADO_PAS[p.estado] || "#EAB308") + '"></span>' +
           '<span class="flota-quien"><strong>' + escapar(p.nombre) + '</strong><span>' + escapar(p.destino || "") + '</span></span>' +
           '<span class="flota-estado">' + NOMBRE_ESTADO_PAS[p.estado] + (p.atraso_min > 0 ? '<span class="flota-malo">' + p.atraso_min + ' min de atraso</span>' : "") + '</span></button>';
-      }).join("") : '<p class="vacio">No hay pasajeros con solicitud activa.</p>');
+      }).join("") : '<p class="vacio">No hay pasajeros esperando conductor.</p>');
     }
     document.getElementById("flotaLista").innerHTML = html;
     pintarFlotaDetalle();
@@ -7039,7 +7596,7 @@
     pintarFlotaLista();
     pintarFlota();
   });
-  document.getElementById("flotaLista").addEventListener("click", function (ev) {
+  function alTocarFlota(ev) {
     var fc = ev.target.closest("[data-flota-c]"), fp = ev.target.closest("[data-flota-p]");
     if (!fc && !fp) return;
     var tipo = fc ? "c" : "p", id = fc ? fc.dataset.flotaC : fp.dataset.flotaP;
@@ -7050,7 +7607,9 @@
       document.getElementById("flotaNota").textContent = fc ? "Fuera de su horario activo o sin señal: no se ubica en el mapa." : "";
     }
     seleccionarFlota(tipo, id);
-  });
+  }
+  document.getElementById("flotaLista").addEventListener("click", alTocarFlota);
+  document.getElementById("flotaViajes").addEventListener("click", alTocarFlota);
 
   // Sin permiso de ubicación se queda en Santiago y ofrece un botón; el
   // diálogo del sistema solo aparece cuando el conductor toca ese botón.
@@ -7073,10 +7632,20 @@
     } else { btn.hidden = false; }
   }
 
-  function irASeccionAjustes(idAcordeon) {
+  function irASeccionAjustes(idAcordeon, titulo) {
     mostrarPestana("ajustes");
     var a = document.getElementById(idAcordeon);
     if (!a) return;
+    if (MODO === "conductor") {
+      // Pantalla individual: solo este bloque, con su título y la flecha atrás (los demás siguen en el DOM, ocultos por CSS).
+      [].forEach.call(document.querySelectorAll("#panelAjustes > details.aj-solo-item"), function (x) { x.classList.remove("aj-solo-item"); });
+      a.classList.add("aj-solo-item"); a.open = true;
+      document.body.classList.add("aj-solo");
+      var h = document.querySelector("#panelAjustes .ajustes-cab h2");
+      if (h) h.textContent = titulo || (a.querySelector("summary") ? a.querySelector("summary").textContent : "Ajustes");
+      window.scrollTo(0, 0);
+      return;
+    }
     a.open = true;
     setTimeout(function () { a.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
   }
@@ -7186,7 +7755,7 @@
   }
 
   var sesionGuardada = obtenerSesion();
-  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 1800); }
+  if (!document.getElementById("splashIngresando").hidden) { splashDesde = performance.timing.navigationStart || Date.now(); setTimeout(ocultarSplash, 4000); }
   // Una sesión guardada de otro tipo de cuenta (p. ej. entraste como admin en
   // este navegador y ahora abres el panel de conductor) no se reutiliza.
   if (sesionGuardada && sesionGuardada.token && !cuentaPermitida(sesionGuardada.conductor)) {
