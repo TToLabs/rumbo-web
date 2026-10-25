@@ -10,23 +10,26 @@
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--tx); font:16px/1.5 "Montserrat",system-ui,sans-serif; }
 main { max-width:480px; margin:0 auto; padding:28px 16px 40px; }
-img.logo { display:block; height:44px; margin:0 0 18px; }
-h1 { font-size:24px; line-height:1.2; margin:0 0 6px; }
-.sub { color:var(--sub); margin:0 0 22px; }
+.cab { display:flex; align-items:center; justify-content:center; gap:12px; margin:0 0 4px; }
+img.logo { display:block; height:44px; }
+h1 { font-size:32px; line-height:1.2; margin:0; }
+.tag { text-align:center; font-weight:600; letter-spacing:.08em; text-transform:uppercase; font-size:13px; color:var(--sub); margin:0 0 18px; }
+.sub { color:var(--sub); text-align:center; margin:0 0 22px; }
 ol { margin:0 0 24px; padding:0; list-style:none; counter-reset:p; }
 li { counter-increment:p; display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--bd); }
 li::before { content:counter(p); flex:none; width:26px; height:26px; border-radius:50%; background:var(--tx); color:var(--bg); font-weight:700; font-size:14px; display:grid; place-items:center; }
 .op { display:block; width:100%; padding:16px; margin:0 0 10px; border-radius:14px; border:1px solid var(--bd); background:var(--card); color:var(--tx); font:inherit; font-weight:700; text-align:left; text-decoration:none; cursor:pointer; }
 .op small { display:block; font-weight:400; color:var(--sub); margin-top:2px; }
-.op.pri { background:var(--tx); color:var(--bg); border-color:var(--tx); }
-.op.pri small { color:inherit; opacity:.8; }
-.op.cal { background:var(--ac); color:#fff; border-color:var(--ac); }
-.op.cal small { color:inherit; opacity:.9; }
+.op.pri small { color:var(--sub); }
+.op.cal { background:var(--ac); color:#0A2236; border-color:var(--ac); }
+.op.cal small { color:inherit; opacity:1; }
+.op[hidden] { display:none; }
+.op:focus-visible { outline:3px solid var(--ac); outline-offset:3px; }
 .nota { color:var(--sub); font-size:13px; margin:14px 2px 0; }
 .by { text-align:center; color:var(--sub); font-size:13px; margin-top:28px; }
 </style></head><body><main>
-<img class="logo" src="img/logo-rumbo.png" alt="Rumbo">
-<h1>Pide tu traslado con Rumbo</h1>
+<div class="cab"><img class="logo" src="img/logo-rumbo.png" alt=""><h1>Rumbo</h1></div>
+<p class="tag">Traslado móvil</p>
 <p class="sub" id="quien">Tu conductor te invitó a Rumbo.</p>
 <ol>
   <li>Elige de dónde sales y a dónde vas.</li>
@@ -43,6 +46,7 @@ li::before { content:counter(p); flex:none; width:26px; height:26px; border-radi
 (function () {
   var c = new URLSearchParams(location.search).get("c") || "";
   var web = document.getElementById("web"), app = document.getElementById("app");
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) app.hidden = true;   // el APK solo se instala en Android
   if (c) web.href = "index.html?c=" + encodeURIComponent(c);
   // La app instalada no recibe el ?c=: se deja el código en el portapapeles y la app lo lee en su primer arranque.
   app.addEventListener("click", function (ev) {
