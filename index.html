@@ -585,6 +585,15 @@
      El MAPA ocupa toda la pantalla de fondo y la información va en una ventana inferior que
      se arrastra (baja del todo / media / alta). Las medidas las fija aplicarHojaP():
      --nav-h (barra de abajo, 0 si no hay), --topbar-h y --hoja-vis (alto visible de la ventana). */
+  .menu-punto.contador { display: inline-block; margin-left: 8px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; color: #fff; background: var(--acento, #ef6d19); }
+  .menu-punto[hidden] { display: none; }
+  #btnMenuP.con-mensajes { position: relative; }
+  #btnMenuP.con-mensajes::after { content: ""; position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
+  .mensaje-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .mensaje-item strong { display: block; font-size: 16px; }
+  .mensaje-item span { font-size: 13px; color: var(--text-3); }
+  .mensaje-item p { margin: 4px 0 0; font-size: 15px; color: var(--text-2); }
+  .mensaje-item.nuevo { border-left: 3px solid var(--acento, #ef6d19); padding-left: 10px; }
   .hoja-asa { display: none; }
   /* El botón del chat queda justo arriba de la ventana (sube y baja con ella), sin tapar sus botones. */
   body.pas-pantalla .burbuja-chat { bottom: calc(var(--nav-h, 0px) + var(--hoja-vis, 0px) + 14px); transition: bottom .28s cubic-bezier(.2, .8, .2, 1); }
@@ -1247,6 +1256,7 @@
             <div class="detalle-fila"><dt id="lblKm">Distancia</dt><dd id="outKm">—</dd></div>
             <div class="detalle-fila"><dt id="lblMin">Tiempo</dt><dd id="outMin">—</dd></div>
             <div class="detalle-fila"><dt id="lblPeaje">Peajes</dt><dd id="outPeaje">—</dd></div>
+            <div class="detalle-fila" id="filaPeajeOpcional" hidden><dt>Autopistas (opcional)</dt><dd id="outPeajeOpcional"></dd></div>
             <div class="detalle-fila"><dt>Tarifa aplicada</dt><dd id="outTipoTarifa">—</dd></div>
           </dl>
           <p class="precio-nota" id="etaCotizar" style="display:none;font-weight:600;"></p>
@@ -1281,7 +1291,7 @@
        <div class="tyc-cuerpo" id="tycCuerpo" tabindex="0">
 <!--TYC-PASAJERO-INICIO-->
 <p>Plataforma: Rumbo, aplicación desarrollada y operada por BTo Innova SpA, RUT 78.533.592-9 (nombre comercial "BTo Innova soluciones"), titular de las obligaciones que estos Términos atribuyen a Rumbo. En adelante, "Rumbo".</p>
-<p>Versión: 2026-10-23-tyc5 · 23 de octubre de 2026.</p>
+<p>Versión: 2026-10-25-tyc6 · 25 de octubre de 2026.</p>
 <p>Al crear su cuenta y marcar la casilla "Acepto", el Pasajero declara haber leído y aceptado íntegramente los presentes Términos y Condiciones. Rumbo conservará registro de la fecha, la hora y la versión aceptadas. Estos Términos y las condiciones comerciales pueden cambiar más adelante, lo que será informado oportunamente a través de la aplicación.</p>
 <h4>1. Naturaleza del servicio</h4>
 <p>1.1. Rumbo es una plataforma tecnológica de intermediación que vincula a los pasajeros con conductores independientes. Rumbo no es una empresa de transportes, no presta el servicio de conducción, no es propietaria de los vehículos ni empleadora de los conductores.</p>
@@ -1290,8 +1300,8 @@
 <h4>2. Cuenta del Pasajero</h4>
 <p>El Pasajero debe ser mayor de 18 años y proporcionar información veraz, completa y actualizada. Es responsable de la confidencialidad de su clave y de toda actividad realizada con su cuenta. Desde la sección "Mi cuenta" podrá solicitar una copia de sus datos o eliminar su cuenta.</p>
 <h4>3. Precio</h4>
-<p>3.1. Con anterioridad a solicitar el viaje, el Pasajero conocerá su valor, calculado en función de la ruta, el tiempo estimado y los peajes del trayecto.</p>
-<p>3.2. Dentro de la ciudad, el valor informado antes de solicitar el viaje es un precio cerrado: es el que se cobra, sin reajuste por tráfico ni por mayor duración del trayecto, salvo que el Pasajero cambie el destino, el punto de recogida o las paradas, o exceda el tiempo de espera contratado o el tiempo de espera sin costo en la recogida. Fuera de la ciudad, mientras la diferencia entre el viaje efectivamente realizado y el cotizado se mantenga dentro de la tolerancia informada en la aplicación, se cobrará el valor cotizado; fuera de ella, el valor final podrá reajustarse a la conclusión del viaje, calculándose en función del tiempo y la distancia efectivamente recorridos, únicamente por las siguientes causas: cambio del destino o del punto de recogida, paradas agregadas o suprimidas, un recorrido sustancialmente más largo o lento que el estimado, o tráfico extraordinario. El reajuste no podrá exceder el límite máximo informado previamente en la aplicación. Si el Pasajero modifica el destino o agrega paradas, se le informará el nuevo valor y, cuando el aumento sea relevante, el cambio requerirá su aceptación expresa.</p>
+<p>3.1. Con anterioridad a solicitar el viaje, el Pasajero conocerá su valor, calculado en función de la ruta, el tiempo estimado y los peajes obligatorios del trayecto. Si existe una ruta alternativa por autopista, la aplicación informa su costo adicional estimado, que solo se cobra si el vehículo efectivamente la utiliza.</p>
+<p>3.2. Dentro de la ciudad, el valor informado antes de solicitar el viaje es un precio estimativo: se calcula con la ruta, el tiempo y los peajes obligatorios del trayecto, y es el que se cobra, sin reajuste por tráfico ni por mayor duración del trayecto, salvo que el Pasajero cambie el destino, el punto de recogida o las paradas, que exceda el tiempo de espera contratado o el tiempo de espera sin costo en la recogida, o que el vehículo utilice efectivamente autopistas con peaje no incluidas en el valor informado, caso en que se agrega el valor de los peajes utilizados, conforme a la tarifa vigente y verificado con la ubicación del viaje. Fuera de la ciudad, mientras la diferencia entre el viaje efectivamente realizado y el cotizado se mantenga dentro de la tolerancia informada en la aplicación, se cobrará el valor cotizado; fuera de ella, el valor final podrá reajustarse a la conclusión del viaje, calculándose en función del tiempo y la distancia efectivamente recorridos, únicamente por las siguientes causas: cambio del destino o del punto de recogida, paradas agregadas o suprimidas, un recorrido sustancialmente más largo o lento que el estimado, o tráfico extraordinario. El reajuste no podrá exceder el límite máximo informado previamente en la aplicación. Si el Pasajero modifica el destino o agrega paradas, se le informará el nuevo valor y, cuando el aumento sea relevante, el cambio requerirá su aceptación expresa.</p>
 <p>3.3. La espera en el punto de recogida dispone de un tiempo sin costo; excedido este, se cobrará conforme a la tarifa vigente.</p>
 <p>3.4. Si el Pasajero estima que el valor final se vio incrementado por un desvío o error de ruta del Conductor, podrá reclamarlo a través de la sección "Ayuda y reclamos" de la aplicación. Rumbo evaluará el caso y, si corresponde, ajustará el cobro.</p>
 <h4>4. Cargo por uso de la aplicación</h4>
@@ -1319,6 +1329,13 @@
 <!--TYC-PASAJERO-FIN-->
        </div>
        <button type="button" class="btn btn-primario" data-cierra="modalTyc" style="margin-top:12px;">Cerrar</button>
+     </div>
+   </div>
+
+   <div class="modal-opc pagina" id="modalMensajes" hidden role="dialog" aria-labelledby="modalMensajesTit">
+     <div class="modal-opc-hoja">
+       <div class="pagina-cab"><button type="button" data-cierra="modalMensajes" aria-label="Volver">&#8249;</button><h3 id="modalMensajesTit">Mensajes</h3></div>
+       <div id="listaMensajesP"><p class="tyc-p">Cargando…</p></div>
      </div>
    </div>
 
@@ -1825,6 +1842,7 @@
     <button type="button" class="menu-lateral-cerrar" id="btnCerrarMenuP" aria-label="Cerrar el menú">&times;</button>
   </div>
   <div class="menu-lateral-seccion">Cuenta</div>
+  <button type="button" class="menu-lateral-item" data-menu="mensajes">Mensajes<span class="menu-punto contador" id="puntoMensajesP" hidden></span></button>
   <button type="button" class="menu-lateral-item" data-menu="cuenta">Mi cuenta</button>
   <button type="button" class="menu-lateral-item" data-menu="viajes">Mis viajes</button>
   <button type="button" class="menu-lateral-item" data-menu="lugares">Mis lugares frecuentes</button>
@@ -1939,6 +1957,7 @@
   function cargarGoogleMaps() {
     var script = document.createElement("script");
     script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=places,geometry&callback=alGoogleMapsListo";
+    script.onerror = function () { rbAlerta("No se pudo cargar el mapa de Google. Revisa tu conexión y vuelve a abrir la app; mientras tanto puedes escribir las direcciones."); };
     document.head.appendChild(script);
   }
 
@@ -2159,7 +2178,14 @@
   }
 
   function apiPost(body) {
-    return fetch(API_URL, conTimeout({ method: "POST", body: JSON.stringify(body) }, body.accion)).then(function (r) { return r.json(); });
+    return fetch(API_URL, conTimeout({ method: "POST", body: JSON.stringify(body) }, body.accion)).then(function (r) { return r.json(); }).then(function (res) {
+      // Sesión vencida o cerrada en otro teléfono: cualquier pantalla lo avisa una vez y vuelve a «Ingresar» (antes cada pantalla lo manejaba a su manera o no).
+      if (res && res.requiere_login && body.pasajero_token && obtenerSesionPasajero()) {
+        salirDeCuentaPasajero();
+        rbAlerta("Tu sesión venció o se abrió en otro teléfono. Ingresa de nuevo para seguir.");
+      }
+      return res;
+    });
   }
 
   /* Identificador ANÓNIMO de esta instalación (aleatorio, sin datos personales): sirve para contar instalaciones, versiones y
@@ -2190,7 +2216,7 @@
   // Versión del texto que se le muestra al pasajero al marcar el
   // checkbox — si el texto cambia, subir este número: así, ante un
   // reclamo, se puede probar QUÉ decía el texto que aceptó (Ley 21.719).
-  var VERSION_POLITICA = "2026-10-23-tyc5";   // versión de los T&C y la política que se aceptan al registrarse
+  var VERSION_POLITICA = "2026-10-25-tyc6";   // versión de los T&C y la política que se aceptan al registrarse
 
   // El QR/link de cada conductor trae ?c=<conductor_id>. Se guarda en
   // localStorage para que, si el pasajero cierra y vuelve a abrir sin el
@@ -2401,7 +2427,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 72;
+  var APP_VERSION = 73;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3071,6 +3097,10 @@
 
     document.getElementById("lblPeaje").textContent = "Peajes" + (idaYVuelta ? " (ida y vuelta, total)" : "");
     document.getElementById("outPeaje").textContent = peaje ? fmt(peaje) : "—";
+    // Si hay una ruta más rápida por autopista, se informa lo que costaría; solo se cobra si el conductor la toma (lo detecta el GPS).
+    var opcional = Math.round((rutaActual.peajeOpcional || 0) * ((rutaActual.cobraRegresoSiempre || idaYVuelta) ? 2 : 1));
+    var filaOp = document.getElementById("filaPeajeOpcional");
+    if (filaOp) { filaOp.hidden = !(opcional > 0); document.getElementById("outPeajeOpcional").textContent = "hasta " + fmt(opcional) + " más, solo si se toman"; }
     var partesResumen = [rutaActual.km.toFixed(1) + " km", rutaActual.minutos + " min"];
     if (peaje) partesResumen.push("peajes " + fmt(peaje));
     document.getElementById("precioResumen").textContent = partesResumen.join(" · ") + (idaYVuelta ? " · ida y vuelta" : "");
@@ -3780,7 +3810,7 @@
     }).then(function (res) {
       if (!res.ok) throw new Error(res.error || "sin datos");
       rutaActual = {
-        km: res.km, minutos: res.minutos, peaje: res.peaje, fueraDeSantiago: res.fueraDeSantiago,
+        km: res.km, minutos: res.minutos, peaje: res.peaje, peajeOpcional: Number(res.peaje_opcional) || 0, fueraDeSantiago: res.fueraDeSantiago,
         cobraRegresoSiempre: res.cobraRegresoSiempre
       };
       dibujarRutaCotizar(res.polilinea);
@@ -3994,6 +4024,7 @@
     var sesion = obtenerSesionPasajero();
     api({ accion: "sincronizar_pasajero", pedido_id: pedidoActualId, pasajero_token: sesion ? sesion.token : "", desde: ultimoMensajeEn })
       .then(function (res) {
+        fallosSyncViaje = 0;
         if (!res.ok) {
           if (res.requiere_login || /no encontrado|sin acceso/i.test(res.error || "")) viajeInvalido(!!res.requiere_login);
           return;
@@ -4016,9 +4047,14 @@
         if (res.conductor) pintarConductorAsignado(res.conductor);
         document.getElementById("avisoDerivado").style.display = res.derivado ? "" : "none";
       })
-      .catch(function () {})
+      .catch(function () {
+        // Sin conexión: se sigue intentando solo; tras 3 fallos seguidos se avisa una vez (antes la pantalla quedaba congelada sin decir nada).
+        fallosSyncViaje++;
+        if (fallosSyncViaje === 3) rbAlerta("Sin conexión: tu viaje sigue en curso y seguimos intentando actualizar. Revisa tu internet.");
+      })
       .then(function () { sincronizandoViaje = false; });
   }
+  var fallosSyncViaje = 0;
   document.addEventListener("visibilitychange", function () { if (!document.hidden) sincronizarViaje(); });
 
   var rutaViajeCodificada = "";
@@ -5781,9 +5817,45 @@ function svgAuto(rumbo, color, tipo) {
       else if (cual === "lugares") { renderLugares(); abrirModalOpc("modalLugares"); }
       else if (cual === "tyc") abrirModalOpc("modalTyc");
       else if (cual === "reclamos") { abrirModalOpc("modalReclamos"); cargarMisReclamosP(); }
+      else if (cual === "mensajes") { abrirModalOpc("modalMensajes"); cargarMensajesP(true); }
     });
   });
   document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") abrirMenuP(false); });
+  /* Mensajes: los avisos que te llegan (conductor en camino, pago, cambios del viaje...). Lo leído se recuerda en este teléfono; el contador
+     son los que llegaron después de la última vez que abriste la bandeja. */
+  var MENSAJES_VISTO_KEY = "rumbo_mensajes_visto";
+  function mensajesVisto() { try { return localStorage.getItem(MENSAJES_VISTO_KEY) || ""; } catch (e) { return ""; } }
+  function cargarMensajesP(abierta) {
+    var ses = obtenerSesionPasajero();
+    var lista = document.getElementById("listaMensajesP"), punto = document.getElementById("puntoMensajesP");
+    if (!ses || !ses.token) {
+      if (punto) punto.hidden = true;
+      if (abierta && lista) lista.innerHTML = '<p class="tyc-p">Ingresa a tu cuenta para ver tus mensajes.</p>';
+      return;
+    }
+    apiPost({ accion: "mis_mensajes_pasajero", pasajero_token: ses.token }).then(function (res) {
+      if (!res || !res.ok) { if (abierta && lista) lista.innerHTML = '<p class="tyc-p">No se pudieron cargar tus mensajes. Intenta de nuevo.</p>'; return; }
+      var msgs = res.notificaciones || [], visto = mensajesVisto();
+      var sinLeer = msgs.filter(function (n) { return String(n.creado_en) > visto; }).length;
+      document.getElementById("btnMenuP").classList.toggle("con-mensajes", sinLeer > 0 && !abierta);
+      if (abierta && lista) {
+        lista.textContent = "";
+        if (!msgs.length) { var vacio = document.createElement("p"); vacio.className = "tyc-p"; vacio.textContent = "No tienes mensajes."; lista.appendChild(vacio); }
+        msgs.forEach(function (n) {
+          var d = document.createElement("div"); d.className = "mensaje-item" + (String(n.creado_en) > visto ? " nuevo" : "");
+          var t = document.createElement("strong"); t.textContent = n.titulo;
+          var f = document.createElement("span"); var fe = new Date(n.creado_en);
+          f.textContent = fe.toLocaleDateString("es-CL", { day: "numeric", month: "short" }) + " " + fe.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+          var x = document.createElement("p"); x.textContent = n.texto;
+          d.appendChild(t); d.appendChild(f); d.appendChild(x); lista.appendChild(d);
+        });
+        if (msgs.length) { try { localStorage.setItem(MENSAJES_VISTO_KEY, msgs[0].creado_en); } catch (e) {} }
+        if (punto) punto.hidden = true;
+      } else if (punto) { punto.hidden = sinLeer === 0; punto.textContent = sinLeer > 9 ? "9+" : String(sinLeer); }
+    }).catch(function () {});
+  }
+  setInterval(function () { if (!document.hidden) cargarMensajesP(false); }, 120000);
+  setTimeout(function () { cargarMensajesP(false); }, 2500);
   // Botón «atrás» del teléfono (lo llama MainActivity): cierra lo de arriba y devuelve true; false = no hay nada que cerrar.
   window.rumboAtras = function () {
     var pop = document.querySelector(".rb-pop:not([hidden])");
