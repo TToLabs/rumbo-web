@@ -1987,9 +1987,13 @@
         }
       }, 300);
     });
+    // Las coordenadas del lugar elegido viajan al servidor (el texto solo se puede reinterpretar en otra comuna). Si el pasajero
+    // vuelve a escribir en el campo, esas coordenadas ya no valen.
+    input.addEventListener("input", function () { delete input.dataset.ll; });
     auto.addListener("place_changed", function () {
       var lugar = auto.getPlace();
       if (lugar && lugar.formatted_address) input.value = direccionConNombre(lugar);
+      if (lugar && lugar.geometry && lugar.geometry.location) { input.dataset.ll = lugar.geometry.location.lat() + "," + lugar.geometry.location.lng(); input.dataset.llTxt = input.value; }
       if (marcador && lugar && lugar.geometry && lugar.geometry.location) {
         pintarMarcadorCotizar(marcador, { lat: lugar.geometry.location.lat(), lng: lugar.geometry.location.lng() });
       }
@@ -2397,7 +2401,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 70;
+  var APP_VERSION = 71;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -3206,6 +3210,7 @@
         var destinoInput = document.getElementById(campoDireccionActivo);
         destinoInput.value = d.direccion;
         destinoInput.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
+        if (isFinite(d.lat) && isFinite(d.lng)) { destinoInput.dataset.ll = d.lat + "," + d.lng; destinoInput.dataset.llTxt = destinoInput.value; }
         pintarMarcadorCotizar(campoDireccionActivo, { lat: d.lat, lng: d.lng });
         cont.style.display = "none"; // se cierran solas al elegir una
       });
@@ -3447,6 +3452,7 @@
         var input = document.getElementById("origen");
         input.value = direccion;
         input.dispatchEvent(new Event("input")); // muestra el botón de borrar (×)
+        input.dataset.ll = coords.lat + "," + coords.lng; input.dataset.llTxt = input.value;
         pintarMarcadorCotizar("origen", coords);
       });
     }, function () {
@@ -3553,6 +3559,16 @@
     });
     return valores;
   }
+
+  // Coordenadas del autocompletado, alineadas con obtenerParadas() ("" si esa parada se escribió a mano).
+  function obtenerParadasLl() {
+    var v = [];
+    document.querySelectorAll("#paradasContenedor input").forEach(function (i) { if (i.value.trim()) v.push(llValida(i)); });
+    return v.join("|");
+  }
+  // Solo vale si el texto del campo sigue siendo el que se eligió (otros códigos cambian .value sin avisar).
+  function llValida(i) { return i.dataset.ll && i.dataset.llTxt === i.value ? i.dataset.ll : ""; }
+  function llDe(id) { return llValida(document.getElementById(id)); }
 
   function agregarFilaParada() {
     var contenedor = document.getElementById("paradasContenedor");
@@ -3759,7 +3775,8 @@
 
     api({
       accion: "calcular_ruta", dispositivo: idDispositivo(), origen: origen, destino: destino, departureTime: departureTime,
-      hora: hora, paradas: paradas.join("|")
+      hora: hora, paradas: paradas.join("|"),
+      origen_ll: llDe("origen"), destino_ll: llDe("destino"), paradas_ll: obtenerParadasLl()
     }).then(function (res) {
       if (!res.ok) throw new Error(res.error || "sin datos");
       rutaActual = {
@@ -3889,6 +3906,7 @@
       nombre_pasajero: esParaOtro ? document.getElementById("nombreTercero").value.trim() : "",
       telefono_viajero: esParaOtro ? document.getElementById("telefonoTercero").value.trim() : "",
       paradas: obtenerParadas().join("|"),
+      origen_ll: llDe("origen"), destino_ll: llDe("destino"), paradas_ll: obtenerParadasLl(),
       fecha: fechaHoraCotizada.fecha,
       hora: fechaHoraCotizada.hora,
       ida_vuelta: idaYVuelta ? "SI" : "NO",
