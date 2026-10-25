@@ -2138,15 +2138,24 @@
     return "$" + Math.round(n).toLocaleString("es-CL");
   }
 
+  // Tope de espera: con mala señal una llamada colgada ya no deja "Calculando…"/"Enviando…" eternos (rechaza y cae en el catch).
+  // Subidas de archivos y cobros: tope largo (180 s). Cortarlos antes dejaría "error" en pantalla con la operación ya hecha en el servidor.
+  var ACCIONES_LARGAS = { subir_comprobante: 1, pagar_con_tarjeta: 1, guardar_tarjeta: 1 };
+  function conTimeout(opciones, accion) {
+    opciones = opciones || {};
+    if (typeof AbortController === "undefined") return opciones;
+    var ac = new AbortController(); setTimeout(function () { ac.abort(); }, ACCIONES_LARGAS[accion] ? 180000 : 60000);
+    opciones.signal = ac.signal; return opciones;
+  }
   function api(params) {
     var url = API_URL + "?" + Object.keys(params).map(function (k) {
       return k + "=" + encodeURIComponent(params[k]);
     }).join("&");
-    return fetch(url).then(function (r) { return r.json(); });
+    return fetch(url, conTimeout()).then(function (r) { return r.json(); });
   }
 
   function apiPost(body) {
-    return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+    return fetch(API_URL, conTimeout({ method: "POST", body: JSON.stringify(body) }, body.accion)).then(function (r) { return r.json(); });
   }
 
   /* Identificador ANÓNIMO de esta instalación (aleatorio, sin datos personales): sirve para contar instalaciones, versiones y
@@ -2249,16 +2258,32 @@
   function obtenerConductorId() {
     var params = new URLSearchParams(window.location.search);
     var deLaUrl = params.get("c");
-    if (deLaUrl) { localStorage.setItem(CONDUCTOR_KEY, deLaUrl); return deLaUrl; }
-    return localStorage.getItem(CONDUCTOR_KEY);
+    var guardado = localStorage.getItem(CONDUCTOR_KEY);
+    if (deLaUrl && (!guardado || guardado === deLaUrl)) { localStorage.setItem(CONDUCTOR_KEY, deLaUrl); return deLaUrl; }
+    if (deLaUrl) proponerConductor(deLaUrl);
+    return guardado;
   }
-  // Primer arranque de la app instalada: pasajero.html dejó "rumbo-c:<id>" en el portapapeles al tocar «Descargar la app».
-  if (window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform() && !localStorage.getItem(CONDUCTOR_KEY) && navigator.clipboard && navigator.clipboard.readText) {
-    navigator.clipboard.readText().then(function (t) {
-      var m = /^rumbo-c:([\w-]{4,80})$/.exec(String(t || "").trim());
-      if (m) { localStorage.setItem(CONDUCTOR_KEY, m[1]); try { cargarTarifas(); } catch (e) {} }
-    }).catch(function () {});
+  // Un QR de OTRO conductor no cambia el vínculo en silencio: se pregunta y solo cambia si el pasajero acepta.
+  var conductorPropuesto = "";
+  function proponerConductor(id) {
+    var guardado = localStorage.getItem(CONDUCTOR_KEY);
+    if (!id || id === guardado || id === conductorPropuesto) return;
+    if (!guardado) { localStorage.setItem(CONDUCTOR_KEY, id); return; }
+    conductorPropuesto = id;
+    setTimeout(function () {
+      rbConfirmar("Escaneaste el QR de otro conductor.\n\n¿Quieres cambiar de conductor? Tus próximos viajes se pedirán a él.", { si: "Aceptar", no: "Cancelar" }).then(function (acepta) {
+        if (acepta) { localStorage.setItem(CONDUCTOR_KEY, id); try { cargarTarifas(); } catch (e) {} }
+      });
+    }, 1500);
   }
+  // Primer arranque de la app instalada: MainActivity lee el "rumbo-c:<id>" que dejó pasajero.html y lo entrega acá.
+  window.rumboConductorNativo = function (id) {
+    if (!localStorage.getItem(CONDUCTOR_KEY)) {
+      localStorage.setItem(CONDUCTOR_KEY, id);
+      try { cargarTarifas(); } catch (e) {}
+    }
+    return true;
+  };
 
   /* ---------------------------------------------------------------
      Sesión del pasajero: se crea una sola vez y no vence. Reemplaza al
@@ -2353,7 +2378,7 @@
         if (!el.matches || !el.matches(SEL) || (el.closest && el.closest(".rb-pop"))) return;
         // Los textos de ESTADO que se refrescan solos (p. ej. "Compartiendo ubicación en vivo", cada 15 s) no son alertas:
         // no se muestran como pop-up si están marcados data-sin-popup o si el usuario no los está viendo (sección oculta).
-        if (el.closest("[data-sin-popup]") || !el.getClientRects().length) return;
+        if (el.closest("[data-sin-popup]") || !(el.parentElement && el.parentElement.getClientRects().length)) return;
         var t = (el.textContent || "").trim(); if (!t) return;
         var k = t + "|" + el.className, ahora = Date.now();
         for (var i = 0; i < ultimo.length; i++) if (ultimo[i].el === el && ultimo[i].k === k && ahora - ultimo[i].t < 1500) return;
@@ -2368,11 +2393,11 @@
       if (!timer) timer = setTimeout(revisar, 40);
     }
     new MutationObserver(function (ms) {
-      ms.forEach(function (m) { marcar(m.target); });
+      ms.forEach(function (m) { marcar(m.target); [].forEach.call(m.addedNodes || [], marcar); });
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 69;
+  var APP_VERSION = 70;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2877,8 +2902,8 @@
       if (res.ok) {
         tarifas = res.tarifas; cargoApp = Number(res.cargo_app) || 0; revisarActualizacion(res.version_app);
         if (res.pago_opciones) { pagoOpciones = res.pago_opciones; pintarFilaPago(); }
-      }
-    });
+      } else if (!tarifas) rbAlerta(res.error || "No se pudieron cargar las tarifas. Cierra y abre la app.");
+    }).catch(function () { if (!tarifas) rbAlerta(TEXTO_SIN_CONEXION); });
   }
 
   /* Forma de pago: el pasajero la elige ANTES de pedir. Se recuerda la última (localStorage siempre dentro de try/catch).
@@ -3825,15 +3850,13 @@
       return;
     }
     if (!fechaHoraCotizada) {
-      pedirTexto.textContent = "Vuelve a calcular el precio antes de solicitar.";
-      pedirTexto.className = "nota error";
+      rbAlerta("Vuelve a calcular el precio antes de solicitar.");
       return;
     }
     // "Para otra persona" sin nombre: puede pasar si lo escribió, calculó
     // el precio, y después lo borró antes de tocar "Solicitar viaje".
     if (esParaOtro && !document.getElementById("nombreTercero").value.trim()) {
-      pedirTexto.textContent = "Falta el nombre de quien viaja.";
-      pedirTexto.className = "nota error";
+      rbAlerta("Falta el nombre de quien viaja.");
       irAPaso(1);
       enfocarEn("modalPara", document.getElementById("nombreTercero"));
       return;
@@ -5643,10 +5666,15 @@ function svgAuto(rumbo, color, tipo) {
       err.textContent = "";
     }).catch(function (e) { btn.disabled = false; err.className = "nota error"; err.textContent = textoErrorMp(e); });
   });
-  document.getElementById("btnQuitarTarjeta").addEventListener("click", function () {
+  document.getElementById("btnQuitarTarjeta").addEventListener("click", async function () {
     var sesion = obtenerSesionPasajero();
     if (!sesion || !sesion.token) return;
-    apiPost({ accion: "quitar_tarjeta", pasajero_token: sesion.token }).then(function (r) { if (r && r.ok) { tarjetaGuardada = null; pintarTarjetaPantalla(); } });
+    if (!(await rbConfirmar("¿Quitar tu tarjeta guardada?", { si: "Quitar", no: "Cancelar" }))) return;
+    var boton = this; boton.disabled = true;
+    apiPost({ accion: "quitar_tarjeta", pasajero_token: sesion.token }).then(function (r) {
+      if (r && r.ok) { tarjetaGuardada = null; pintarTarjetaPantalla(); rbAlerta("Tarjeta quitada.", "ok"); }
+      else rbAlerta((r && r.error) || "No se pudo quitar la tarjeta.");
+    }).catch(function () { rbAlerta(TEXTO_SIN_CONEXION); }).then(function () { boton.disabled = false; });
   });
   // RUT chileno: formato y dígito verificador.
   function validarRutChile(rut) {
@@ -5676,8 +5704,8 @@ function svgAuto(rumbo, color, tipo) {
     }).then(function (r) {
       btn.disabled = false;
       if (!r.ok) { err.className = "nota error"; err.textContent = r.error || "No se pudo pagar."; return; }
-      err.className = "nota"; err.textContent = r.mensaje || "Pago recibido ✓";
       document.getElementById("pagoCvvForm").hidden = true;
+      rbAlerta(r.mensaje || "Pago recibido ✓", "ok");
     }).catch(function (e) { btn.disabled = false; err.className = "nota error"; err.textContent = textoErrorMp(e); });
   });
   // La tarjeta se ofrece en el cierre del viaje solo si hay una guardada y el viaje se paga con tarjeta.
@@ -5882,7 +5910,7 @@ function svgAuto(rumbo, color, tipo) {
           var url = new URL(urlString);
           var conductorId = url.searchParams.get("c");
           if (conductorId) {
-            localStorage.setItem(CONDUCTOR_KEY, conductorId);
+            proponerConductor(conductorId);
             mostrarAvisoInstalarApp();
           }
         } catch (e) { /* link con formato raro: no rompe nada */ }

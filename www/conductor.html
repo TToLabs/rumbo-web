@@ -2279,7 +2279,7 @@
         if (!el.matches || !el.matches(SEL) || (el.closest && el.closest(".rb-pop"))) return;
         // Los textos de ESTADO que se refrescan solos (p. ej. "Compartiendo ubicación en vivo", cada 15 s) no son alertas:
         // no se muestran como pop-up si están marcados data-sin-popup o si el usuario no los está viendo (sección oculta).
-        if (el.closest("[data-sin-popup]") || !el.getClientRects().length) return;
+        if (el.closest("[data-sin-popup]") || !(el.parentElement && el.parentElement.getClientRects().length)) return;
         var t = (el.textContent || "").trim(); if (!t) return;
         var k = t + "|" + el.className, ahora = Date.now();
         for (var i = 0; i < ultimo.length; i++) if (ultimo[i].el === el && ultimo[i].k === k && ahora - ultimo[i].t < 1500) return;
@@ -2294,11 +2294,11 @@
       if (!timer) timer = setTimeout(revisar, 40);
     }
     new MutationObserver(function (ms) {
-      ms.forEach(function (m) { marcar(m.target); });
+      ms.forEach(function (m) { marcar(m.target); [].forEach.call(m.addedNodes || [], marcar); });
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 67;
+  var APP_VERSION = 68;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2438,13 +2438,22 @@
 
   // Todo endpoint que toca pedidos/ubicación exige token de sesión — se
   // agrega automático acá para no repetirlo en cada llamada del archivo.
+  // Tope de espera: con mala señal una llamada colgada ya no deja "Ingresando…"/"Cargando…" eternos (rechaza y cae en el catch).
+  // Subidas de archivos y cobros: tope largo (180 s). Cortarlos antes dejaría "error" en pantalla con la operación ya hecha en el servidor.
+  var ACCIONES_LARGAS = { subir_documento: 1, subir_foto_vehiculo: 1, subir_comprobante: 1, pagar_con_tarjeta: 1, guardar_tarjeta: 1 };
+  function conTimeout(opciones, accion) {
+    opciones = opciones || {};
+    if (typeof AbortController === "undefined") return opciones;
+    var ac = new AbortController(); setTimeout(function () { ac.abort(); }, ACCIONES_LARGAS[accion] ? 180000 : 60000);
+    opciones.signal = ac.signal; return opciones;
+  }
   function api(params) {
     var sesion = obtenerSesion();
     if (sesion && sesion.token) params.token = sesion.token;
     var url = API_URL + "?" + Object.keys(params).map(function (k) {
       return k + "=" + encodeURIComponent(params[k]);
     }).join("&");
-    return fetch(url).then(function (r) { return r.json(); }).then(verificarSesionValida);
+    return fetch(url, conTimeout()).then(function (r) { return r.json(); }).then(verificarSesionValida);
   }
 
   /* Identificador ANÓNIMO de esta instalación (aleatorio, sin datos personales) para contar instalaciones y versiones. */
@@ -2477,7 +2486,7 @@
     var sesion = obtenerSesion();
     if (sesion && sesion.token && !("token" in body)) body.token = sesion.token;
     function una() {
-      return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+      return fetch(API_URL, conTimeout({ method: "POST", body: JSON.stringify(body) }, body.accion)).then(function (r) { return r.json(); });
     }
     var p = una();
     if (ACCIONES_REINTENTABLES[body.accion]) {
@@ -2904,9 +2913,9 @@
     sw.disabled = true;
     apiPost({ accion: "cambiar_modo_tarifa", conductor_id: sw.dataset.modo, modo_tarifa: valorNuevo }).then(function (res) {
       sw.disabled = false;
-      if (!res.ok) { rbAlerta(res.error); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
+      if (!res.ok) { rbAlerta(res.error || "No se pudo cambiar la tarifa."); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
       cargarConductoresAdmin();
-    });
+    }).catch(function () { sw.disabled = false; sw.checked = valorAnterior === "INDIVIDUAL"; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   document.getElementById("listaConductores").addEventListener("change", async function (ev) {
@@ -3559,7 +3568,7 @@
               "</td></tr>"
             : "");
       }).join("");
-    });
+    }).catch(function () { resumen.textContent = TEXTO_SIN_CONEXION; filas.innerHTML = ""; });
   }
 
   // Cada fila con detalle (origen/destino/pasajero) se puede desplegar: en
@@ -3614,7 +3623,7 @@
             '<td><span class="badge ' + (BADGE_ESTADO_REGISTRO[p.estado] || "badge-gris") + '">' + escapar(p.estado) + "</span></td>" +
           "</tr>";
       }).join("");
-    });
+    }).catch(function () { resumen.textContent = TEXTO_SIN_CONEXION; filas.innerHTML = ""; });
   }
 
   document.getElementById("regMes").addEventListener("change", cargarRegistroPedidos);
@@ -4229,9 +4238,10 @@
     var porHuella = viaHuella; viaHuella = false;
     if (!usuario || !clave) { msg.textContent = "Completa usuario y clave."; msg.className = "msg error"; return; }
     msg.textContent = "Ingresando..."; msg.className = "msg";
+    var botonLogin = this; botonLogin.disabled = true;
     apiPost({ accion: "login_conductor", usuario: usuario, clave: clave }).then(function (res) {
       if (!res.ok) {
-        msg.textContent = res.error; msg.className = "msg error";
+        msg.textContent = res.error || "No se pudo ingresar. Inténtalo de nuevo."; msg.className = "msg error";
         if (porHuella && /incorrectos/i.test(res.error || "")) { bioDesactivar(); document.getElementById("loginClave").value = ""; msg.textContent = res.error + " Se desactivó la huella: ingresa con tu clave."; }
         return;
       }
@@ -4242,8 +4252,9 @@
       bioTrasLogin(usuario, clave);
       entrar(res);
     }).catch(function (err) {
-      msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error";
-    });
+      var red = !err || err.name === "TypeError" || err.name === "AbortError";
+      msg.textContent = red ? TEXTO_SIN_CONEXION : "No se pudo ingresar por un error de la app. Ciérrala, ábrela de nuevo e inténtalo otra vez."; msg.className = "msg error";
+    }).then(function () { botonLogin.disabled = false; });
   });
 
   // "Olvidé mi clave": paso 1 pide el código por correo, paso 2 lo
@@ -4269,11 +4280,13 @@
     var msg = document.getElementById("recuperarMsg");
     if (!usuario) { msg.textContent = "Escribe tu usuario o correo."; msg.className = "msg error"; return; }
     msg.textContent = "Enviando..."; msg.className = "msg";
+    var botonCodigo = this; botonCodigo.disabled = true;
     apiPost({ accion: "recuperar_clave_pedir", usuario: usuario }).then(function (res) {
       msg.textContent = res.mensaje || res.error || "Listo.";
       msg.className = "msg " + (res.ok ? "ok" : "error");
       if (res.ok) document.getElementById("recuperarPaso2").style.display = "block";
-    }).catch(function (err) { msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error"; });
+    }).catch(function (err) { msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error"; })
+      .then(function () { botonCodigo.disabled = false; });
   });
 
   document.getElementById("btnConfirmarCodigo").addEventListener("click", function () {
@@ -4375,14 +4388,15 @@
     if (!(await rbConfirmar("¿Pedir al administrador que autorice tu tarifa propia?"))) return;
     var boton = this; boton.disabled = true;
     apiPost({ accion: "solicitar_tarifa_propia" }).then(function (res) {
-      if (!res.ok) { rbAlerta(res.error); boton.disabled = false; return; }
+      if (!res.ok) { rbAlerta(res.error || "No se pudo enviar la solicitud."); boton.disabled = false; return; }
       pintarModoTarifa("GENERAL", "PENDIENTE");
-    });
+      rbAlerta("Solicitud enviada. Espera la autorización del administrador.", "ok");
+    }).catch(function () { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   function cargarTarifas() {
     api({ accion: MODO === "admin" ? "tarifas" : "mis_tarifas" }).then(function (res) {
-      if (!res.ok) return;
+      if (!res.ok) { rbAlerta(res.error || "No se pudieron cargar las tarifas."); return; }
       if (res.tipo_combustible !== undefined) document.getElementById("tipoCombustible").value = res.tipo_combustible || "";
       if (MODO !== "admin") pintarModoTarifa(res.modo_tarifa, res.solicitud_tarifa);
       CAMPOS_TARIFA.forEach(function (c) {
@@ -5845,9 +5859,9 @@
   }
   function confirmarPagoRecibido(id) {
     conBotonOcupado(apiPost({ accion: "marcar_pagado_efectivo", pedido_id: id }).then(function (res) {
-      if (!res.ok) { rbAlerta("Error: " + res.error); return; }
+      if (!res || !res.ok) { rbAlerta("Error: " + ((res && res.error) || "no se pudo registrar el pago")); return; }
       refrescarViajes();
-    }));
+    }).catch(function () { rbAlerta(TEXTO_SIN_CONEXION); }));
   }
 
   /* Comprobante de transferencia: se dibuja el PDF con pdf.js (cargado al usarlo) para ver el monto. */
@@ -6994,10 +7008,10 @@
     if (boton) boton.disabled = true;
     input.value = ""; input.style.height = "auto";
     apiPost({ accion: "enviar_mensaje_conductor", pedido_id: pedidoId, texto: texto }).then(function (res) {
-      if (!res.ok) { input.value = texto; rbAlerta("No se pudo enviar: " + res.error); return; }
+      if (!res.ok) { input.value = texto; rbAlerta("No se pudo enviar: " + (res.error || "inténtalo de nuevo")); return; }
       pintarMensajeConductor(pedidoId, res.mensaje, true);
       ultimoMensajePorPedido[pedidoId] = res.mensaje.creado_en;
-    }).catch(function () { input.value = texto; })
+    }).catch(function () { input.value = texto; rbAlerta(TEXTO_SIN_CONEXION); })
       .then(function () { enviandoChat[pedidoId] = false; if (boton) boton.disabled = false; });
   }
 
@@ -7288,7 +7302,7 @@
           if (res && res.jornada) jornadaActual = res.jornada;
           if (!res || !res.ok) {
             conectadoManual = !deseado; pintarEstadoTablero();
-            if (res && res.documentos) avisarDocsPendientes(res.error); else if (res && res.error) rbAlerta(res.error);
+            if (res && res.documentos) avisarDocsPendientes(res.error); else rbAlerta((res && res.error) || "No se pudo cambiar tu estado de conexión.");
           }
         }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); rbAlerta(TEXTO_SIN_CONEXION); });
       });
@@ -7668,9 +7682,9 @@
     if (!btn) return;
     btn.disabled = true;
     apiPost({ accion: btn.dataset.accion, pedido_id: btn.dataset.id }).then(function (res) {
-      if (!res.ok) { rbAlerta("Error: " + res.error); btn.disabled = false; return; }
+      if (!res || !res.ok) { rbAlerta("Error: " + ((res && res.error) || "no se pudo completar")); btn.disabled = false; return; }
       cargarPedidos();
-    });
+    }).catch(function () { btn.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   // Ubicación en vivo: manda la posición cada vez que el navegador la
@@ -7705,6 +7719,8 @@
           .then(function (res) {
             msg.textContent = res.ok ? "Compartiendo ubicación en vivo." : ("Error: " + res.error);
             msg.className = "msg " + (res.ok ? "ok" : "error");
+          }).catch(function () {
+            msg.textContent = "Sin conexión: no se está enviando tu ubicación."; msg.className = "msg error";
           });
       }, function (err) {
         msg.textContent = "No se pudo obtener ubicación: " + err.message;
