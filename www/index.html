@@ -2356,31 +2356,35 @@
     });
   }
 
+  // localStorage SIEMPRE dentro de try/catch (regla global de Alberto): en un WebView restringido o navegación privada lanza SecurityError. Con respaldo en memoria para que la app siga funcionando.
+  function leerLocalSeguro(k) { var m = window.__memLocal = window.__memLocal || {}; try { return localStorage.getItem(k); } catch (e) { return m[k] === undefined ? null : m[k]; } }
+  function guardarLocalSeguro(k, v) { var m = window.__memLocal = window.__memLocal || {}; m[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+  function borrarLocalSeguro(k) { var m = window.__memLocal = window.__memLocal || {}; delete m[k]; try { localStorage.removeItem(k); } catch (e) {} }
   function obtenerConductorId() {
     var params = new URLSearchParams(window.location.search);
     var deLaUrl = params.get("c");
-    var guardado = localStorage.getItem(CONDUCTOR_KEY);
-    if (deLaUrl && (!guardado || guardado === deLaUrl)) { localStorage.setItem(CONDUCTOR_KEY, deLaUrl); return deLaUrl; }
+    var guardado = leerLocalSeguro(CONDUCTOR_KEY);
+    if (deLaUrl && (!guardado || guardado === deLaUrl)) { guardarLocalSeguro(CONDUCTOR_KEY, deLaUrl); return deLaUrl; }
     if (deLaUrl) proponerConductor(deLaUrl);
     return guardado;
   }
   // Un QR de OTRO conductor no cambia el vínculo en silencio: se pregunta y solo cambia si el pasajero acepta.
   var conductorPropuesto = "";
   function proponerConductor(id) {
-    var guardado = localStorage.getItem(CONDUCTOR_KEY);
+    var guardado = leerLocalSeguro(CONDUCTOR_KEY);
     if (!id || id === guardado || id === conductorPropuesto) return;
-    if (!guardado) { localStorage.setItem(CONDUCTOR_KEY, id); return; }
+    if (!guardado) { guardarLocalSeguro(CONDUCTOR_KEY, id); return; }
     conductorPropuesto = id;
     setTimeout(function () {
       rbConfirmar("Escaneaste el QR de otro conductor.\n\n¿Quieres cambiar de conductor? Tus próximos viajes se pedirán a él.", { si: "Aceptar", no: "Cancelar" }).then(function (acepta) {
-        if (acepta) { localStorage.setItem(CONDUCTOR_KEY, id); try { cargarTarifas(); } catch (e) {} }
+        if (acepta) { guardarLocalSeguro(CONDUCTOR_KEY, id); try { cargarTarifas(); } catch (e) {} }
       });
     }, 1500);
   }
   // Primer arranque de la app instalada: MainActivity lee el "rumbo-c:<id>" que dejó pasajero.html y lo entrega acá.
   window.rumboConductorNativo = function (id) {
-    if (!localStorage.getItem(CONDUCTOR_KEY)) {
-      localStorage.setItem(CONDUCTOR_KEY, id);
+    if (!leerLocalSeguro(CONDUCTOR_KEY)) {
+      guardarLocalSeguro(CONDUCTOR_KEY, id);
       try { cargarTarifas(); } catch (e) {}
     }
     return true;
@@ -2534,9 +2538,9 @@
   });
 
   function obtenerSesionPasajero() {
-    try { return JSON.parse(localStorage.getItem(PERFIL_KEY) || "null"); } catch (e) { return null; }
+    try { return JSON.parse(leerLocalSeguro(PERFIL_KEY) || "null"); } catch (e) { return null; }
   }
-  function guardarSesionPasajero(s) { localStorage.setItem(PERFIL_KEY, JSON.stringify(s)); setTimeout(registrarDispositivo, 800); }   // quien inicia sesión deja de contar como "sin cuenta"
+  function guardarSesionPasajero(s) { guardarLocalSeguro(PERFIL_KEY, JSON.stringify(s)); setTimeout(registrarDispositivo, 800); }   // quien inicia sesión deja de contar como "sin cuenta"
 
   /* Avisos con la app CERRADA (Firebase Cloud Messaging): viaje confirmado y
      mensajes del conductor. Se pide el permiso nativo recién con la cuenta

@@ -2540,11 +2540,15 @@
     b.dataset.ocupado = "1"; setTimeout(function () { delete b.dataset.ocupado; }, 2000);
   }, true);
 
+  // localStorage SIEMPRE dentro de try/catch (regla global de Alberto): en un WebView restringido o navegación privada lanza SecurityError. Con respaldo en memoria para que la app siga funcionando.
+  function leerLocalSeguro(k) { var m = window.__memLocal = window.__memLocal || {}; try { return localStorage.getItem(k); } catch (e) { return m[k] === undefined ? null : m[k]; } }
+  function guardarLocalSeguro(k, v) { var m = window.__memLocal = window.__memLocal || {}; m[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+  function borrarLocalSeguro(k) { var m = window.__memLocal = window.__memLocal || {}; delete m[k]; try { localStorage.removeItem(k); } catch (e) {} }
   function obtenerSesion() {
-    try { return JSON.parse(localStorage.getItem(SESION_KEY) || "null"); } catch (e) { return null; }
+    try { return JSON.parse(leerLocalSeguro(SESION_KEY) || "null"); } catch (e) { return null; }
   }
-  function guardarSesion(sesion) { localStorage.setItem(SESION_KEY, JSON.stringify(sesion)); setTimeout(registrarDispositivo, 800); }
-  function borrarSesion() { localStorage.removeItem(SESION_KEY); }
+  function guardarSesion(sesion) { guardarLocalSeguro(SESION_KEY, JSON.stringify(sesion)); setTimeout(registrarDispositivo, 800); }
+  function borrarSesion() { borrarLocalSeguro(SESION_KEY); }
 
   // Todo endpoint que toca pedidos/ubicación exige token de sesión — se
   // agrega automático acá para no repetirlo en cada llamada del archivo.
