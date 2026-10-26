@@ -102,6 +102,9 @@
   .brand-name { font-size: 24px; font-weight: 700; line-height: 1.2; }
   .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
+  /* «Rumbo móvil»: la marca y «móvil» en minúscula, en la misma línea. */
+  .brand-marca { display: flex; align-items: baseline; gap: 5px; }
+  .brand-movil { font: 600 15px/1 "Montserrat", system-ui, sans-serif; color: #fff; text-transform: none; letter-spacing: .01em; }
   .brand-sub { font-size: 14px; color: var(--acento-claro); line-height: 1.3; }
 
   /* ---------- Estado del conductor (switch prominente) ---------- */
@@ -500,11 +503,12 @@
   /* ---------- Tablero del conductor cuando no hay pedidos ---------- */
   .tablero { display: none; margin-bottom: 4px; }
   .tablero.visible { display: block; }
-  /* Iniciar / Desconectar: barra fija abajo, ancho completo y centrada, en el mismo lugar y tamaño que el botón de las etapas del viaje
-     (así no se pierde en la pantalla). Azul petróleo para iniciar (decisión de Alberto, 24-oct-2026); blanco con borde rojo para desconectar. Solo en el inicio, sin viaje ni oferta. */
-  .btn-conexion { display: none; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h, 0px) + 10px + env(safe-area-inset-bottom)); z-index: 45; width: calc(100% - 40px); max-width: 428px; min-height: 56px; padding: 0 20px; border: none; border-radius: 12px; background: var(--primary); color: #fff; font: inherit; font-size: 16px; font-weight: 600; text-align: center; cursor: pointer; }
+  /* Iniciar / Desconectar (decisión de Alberto, 26-oct-2026): barra pegada al borde de abajo, ancho completo, no un botón flotante sobre el mapa.
+     El botón ES el estado: verde «Iniciar», rojo «Desconectar» (ya no hay chip «Conectado/Desconectado»). Solo en el inicio, sin viaje ni oferta. */
+  .btn-conexion { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; width: 100%; min-height: calc(60px + env(safe-area-inset-bottom)); padding: 0 20px env(safe-area-inset-bottom); border: none; border-radius: 0; background: var(--accent); color: #fff; font: inherit; font-size: 17px; font-weight: 700; text-align: center; cursor: pointer; box-shadow: 0 -2px 12px rgba(17, 48, 74, .14); }
   body.cond-pantalla:not(.con-tarjeta):not(.cond-pedido):not(.adm-abierta):not(.modo-admin) .btn-conexion { display: block; }
-  .btn-conexion.desconectar { background: var(--surface); color: var(--danger); box-shadow: inset 0 0 0 2px var(--danger); }
+  .btn-conexion.desconectar { background: var(--danger); color: #fff; }
+  .btn-estado-conexion[hidden] { display: none; }
   /* Mis ganancias (menú → Mi billetera): hoy y semana */
   .gan-bloque { margin: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 4px; }
   .gan-etiqueta { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
@@ -775,10 +779,25 @@
   body.aj-solo #panelAjustes > *:not(.ajustes-cab):not(.aj-solo-item) { display: none !important; }
   body.aj-solo #panelAjustes > details.aj-solo-item > summary { display: none; }
   .mv-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .mv-item[data-viaje] { position: relative; padding-right: 38px; cursor: pointer; }
+  .mv-item[data-viaje]::after { content: "\203A"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 24px; line-height: 1; color: var(--text-3); }
+  .mv-item[data-viaje]:active { background: color-mix(in srgb, var(--accent) 6%, transparent); }
   .mv-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; }
-  .mv-ruta { margin-top: 4px; font-size: 14px; color: var(--text); }
-  .mv-meta { margin-top: 2px; font-size: 14px; color: var(--text-2); }
+  .mv-fila span { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .mv-ruta { display: grid; gap: 3px; margin-top: 8px; font-size: 14px; color: var(--text); }
+  .mv-pto { display: flex; gap: 8px; min-width: 0; }
+  .mv-pto small { flex: none; width: 44px; font-size: 12px; color: var(--text-3); line-height: 1.6; }
+  .mv-pto span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mv-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .mv-acciones { display: flex; gap: 8px; margin-top: 10px; }
+  /* Detalle de un viaje: cada dato en su propia fila, con su rótulo. */
+  .vd { padding: 4px 2px 16px; }
+  .vd-monto { margin: 4px 0 0; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .vd-sub { margin: 2px 0 14px; font-size: 14px; color: var(--text-2); }
+  .vd-lista { margin: 0 0 16px; }
+  .vd-fila { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .vd-fila dt { font-size: 13px; color: var(--text-3); }
+  .vd-fila dd { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
   .menu-lateral-item {
     display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 8px; border: none; background: none;
     font: inherit; font-size: 16px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
@@ -1135,8 +1154,7 @@
   }
   /* By BTo Innova soluciones (regla de marca): al pie del splash, a la misma altura que en el splash del sistema (80 dp sobre el borde de la ventana). El logo es azul oscuro: va sobre un recuadro claro. */
   .splash .by { position: absolute; left: 0; right: 0; bottom: calc(80px - var(--nb, 58px) + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
-  .splash .by span { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
-  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 12px; padding: 3px 8px; }
+  .splash .by { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
   .by-pie { text-align: center; color: #4E5A6C; font-size: 14px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
@@ -1163,7 +1181,6 @@
   .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
   .brand-wordmark { height: 18px; filter: none; }
   .brand-texto { min-height: 50px; gap: 4px; }
-  .brand-lema { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
   .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
   .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
   .tv-asa span { background: var(--acento); }
@@ -1225,7 +1242,7 @@
       <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 -4 160 62" aria-hidden="true"><path d="M154 42 L140 42 A14 14 0 0 0 112 42 L46 42 A14 14 0 0 0 18 42 L6 42 L5 32 Q5 24 9 19 L14 10 Q22 0 38 -1 L88 -1 Q96 -1 102 3 L138 18 L148 19 Q154 21 154 28 Z"/><path d="M22 17 L27 6 Q29 3 36 3 L57 3 L57 17 Z"/><path d="M61 3 L88 3 Q93 3 97 6 L118 17 L61 17 Z"/><path d="M119 19 L125 19" stroke-width="3"/><path d="M143 23 L149 27" stroke-width="2"/><path d="M6 24 L10 23" stroke-width="2"/><circle cx="32" cy="42" r="11"/><circle cx="32" cy="42" r="3.5"/><circle cx="126" cy="42" r="11"/><circle cx="126" cy="42" r="3.5"/></svg></div>
     </div>
   </div>
-  <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
+  <div class="by">by BTo Innova soluciones</div>
 </div>
 <script>
   /* MODO lo fija scripts/generar-paneles.js. Esta pantalla se decide ANTES
@@ -1258,8 +1275,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslado móvil</span>
-        <span class="brand-sub">Conductor</span>
+        <span class="brand-marca"><img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-movil">móvil</span></span>        <span class="brand-sub">Conductor</span>
       </span>
     </div>
   </header>
@@ -1353,8 +1369,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslado móvil</span>
-        <span class="brand-sub" id="brandSubConductor">Conductor</span>
+        <span class="brand-marca"><img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-movil">móvil</span></span>        <span class="brand-sub" id="brandSubConductor">Conductor</span>
       </span>
     </div>
     <div class="topbar-spacer"></div>
@@ -1424,7 +1439,7 @@
          pantalla vacía, resumen del mes, mapa de la zona y accesos rápidos. -->
     <div class="tablero solo-conductor" id="tableroConductor">
       <div class="tablero-estado">
-        <button type="button" class="btn-estado-conexion" id="tabEstadoBadge">Disponible ahora</button>
+        <button type="button" class="btn-estado-conexion" id="tabEstadoBadge" hidden>Disponible ahora</button>
       </div>
       <div class="kpi-fila">
         <div class="kpi-card">
@@ -2382,7 +2397,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 73;
+  var APP_VERSION = 74;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2787,6 +2802,13 @@
     g.addEventListener("click", function () {
       var sub = document.querySelector('#menuLateral .menu-sub[data-sub="' + g.dataset.grupo + '"]');
       var abierto = g.getAttribute("aria-expanded") === "true";
+      // Un solo submenú abierto a la vez: al abrir uno se cierran los demás.
+      if (!abierto) [].forEach.call(document.querySelectorAll('#menuLateral .menu-grupo[aria-expanded="true"]'), function (otro) {
+        if (otro === g) return;
+        otro.setAttribute("aria-expanded", "false");
+        var subOtro = document.querySelector('#menuLateral .menu-sub[data-sub="' + otro.dataset.grupo + '"]');
+        if (subOtro) subOtro.hidden = true;
+      });
       g.setAttribute("aria-expanded", abierto ? "false" : "true");
       if (sub) sub.hidden = abierto;
     });
@@ -3118,7 +3140,7 @@
      (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
      Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
      --------------------------------------------------------------- */
-  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", documentos: "Documentos", notificaciones: "Mensajes", publicar: "Publicar noticia", leer: "Mensaje", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", viaje: "Detalle del viaje", documentos: "Documentos", notificaciones: "Mensajes", publicar: "Publicar noticia", leer: "Mensaje", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
   function crearPantallaAdmin(id) {
     var p = document.createElement("section");
     p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
@@ -3694,7 +3716,11 @@
       var cal = ev.target.closest("button[data-calificar]");
       if (cal) { abrirCalificarPasajero(cal.dataset.calificar); return; }
       var btn = ev.target.closest("button[data-accion]");
-      if (!btn) return;
+      if (!btn) {
+        var it = ev.target.closest(".mv-item[data-viaje]");
+        if (it) abrirFichaViaje(it.dataset.viaje, id);
+        return;
+      }
       btn.disabled = true;
       apiPost({ accion: btn.dataset.accion, pedido_id: btn.dataset.id }).then(function (res) {
         if (!res.ok) { rbAlerta("Error: " + res.error); btn.disabled = false; return; }
@@ -3712,6 +3738,34 @@
     else if (!fechaViaje) t += " · " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
     return t;
   }
+  // Detalle de un viaje (historial, reservas y solicitudes): pantalla propia con cada dato en su fila. Solo lectura; usa lo que ya trae la lista.
+  var mvCache = {}, mvOrigen = "viajes";
+  var ESTADO_TXT_MV = { COMPLETADO: "Terminado", CONFIRMADO: "Confirmado", PENDIENTE: "Esperando tu respuesta" };
+  function abrirFichaViaje(pedidoId, origen) {
+    var v = mvCache[pedidoId];
+    if (!v) return;
+    mvOrigen = origen;
+    if (!document.getElementById("adm-viaje")) {
+      var p = crearPantallaAdmin("viaje");
+      p.insertAdjacentHTML("beforeend", '<div class="adm-scroll vd" id="viajeDetalle"></div>');
+      document.getElementById("viajeDetalle").addEventListener("click", function (ev) {
+        var cal = ev.target.closest("button[data-calificar]");
+        if (cal) abrirCalificarPasajero(cal.dataset.calificar);
+      });
+    }
+    var fila = function (rotulo, valor) { return valor ? '<div class="vd-fila"><dt>' + escapar(rotulo) + '</dt><dd>' + escapar(valor) + '</dd></div>' : ""; };
+    var paradas = v.paradas ? String(v.paradas).split("|").filter(Boolean) : [];
+    var cuando = origen === "viajes" ? fechaHoraLarga(v.fecha) : textoFechaMv(v.fecha_viaje, v.hora_viaje, "");
+    var cuerpo = document.getElementById("viajeDetalle");
+    cuerpo.innerHTML = '<p class="vd-monto">' + escapar(fmt(v.monto)) + '</p><p class="vd-sub">' + escapar(ESTADO_TXT_MV[v.estado] || "") + '</p>' +
+      '<dl class="vd-lista">' + fila("Fecha y hora", cuando) + fila("Pasajero", v.nombre) + fila("Desde", v.origen) +
+        paradas.map(function (x, i) { return fila("Parada " + (i + 1), x); }).join("") + fila("Hasta", v.destino) +
+        fila("Ida y vuelta", v.ida_vuelta === "SI" ? "Sí" : "") + fila("Forma de pago", origen === "viajes" ? v.forma : "") +
+        (origen === "viajes" ? fila("Calificación", v.calificado ? "Ya calificaste al pasajero" : "Pendiente") : "") + '</dl>' +
+      (origen === "viajes" && !v.calificado ? '<button class="btn btn-chico" type="button" data-calificar="' + escapar(v.pedido_id) + '">Calificar al pasajero</button>' : "");
+    cuerpo.scrollTop = 0;
+    abrirPantallaAdmin("viaje");
+  }
   function cargarMisViajes(id) {
     var cont = document.getElementById("mv-" + id);
     if (!cont) return;
@@ -3723,10 +3777,13 @@
       if (!lista || !lista.length) { cont.innerHTML = '<p class="nota" style="margin:16px;">' + MV_VACIO[id] + '</p>'; return; }
       cont.innerHTML = lista.map(function (v) {
         var cuando = textoFechaMv(id === "viajes" ? "" : v.fecha_viaje, id === "viajes" ? "" : v.hora_viaje, id === "viajes" ? v.fecha : "");
-        var paradas = v.paradas ? " · " + String(v.paradas).split("|").length + (String(v.paradas).split("|").length === 1 ? " parada" : " paradas") : "";
-        return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(cuando) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div>' +
-          '<div class="mv-ruta">' + escapar(v.origen) + ' → ' + escapar(v.destino) + escapar(paradas) + '</div>' +
-          '<div class="mv-meta">' + escapar(v.nombre || "") + (id === "viajes" && v.forma ? " · " + escapar(v.forma) : "") + (v.ida_vuelta === "SI" ? " · ida y vuelta" : "") + '</div>' +
+        mvCache[v.pedido_id] = v;
+        var nParadas = v.paradas ? String(v.paradas).split("|").filter(Boolean).length : 0;
+        var chip = function (t) { return '<span class="badge badge-gris">' + escapar(t) + '</span>'; };
+        return '<div class="mv-item" data-viaje="' + escapar(v.pedido_id) + '" role="button" tabindex="0"><div class="mv-fila"><strong>' + escapar(cuando) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div>' +
+          '<div class="mv-ruta"><div class="mv-pto"><small>Desde</small><span>' + escapar(v.origen) + '</span></div><div class="mv-pto"><small>Hasta</small><span>' + escapar(v.destino) + '</span></div></div>' +
+          '<div class="mv-chips">' + (v.nombre ? chip(v.nombre) : "") + (id === "viajes" && v.forma ? chip(v.forma) : "") + (v.ida_vuelta === "SI" ? chip("Ida y vuelta") : "") +
+            (nParadas ? chip(nParadas + (nParadas === 1 ? " parada" : " paradas")) : "") + '</div>' +
           (id === "viajes" && !v.calificado ? '<div class="mv-acciones"><button class="btn btn-chico" data-calificar="' + escapar(v.pedido_id) + '">Calificar al pasajero</button></div>' : "") +
           (id === "solicitudes" ? '<div class="mv-acciones"><button class="btn btn-ok" data-accion="confirmar_pedido" data-id="' + escapar(v.pedido_id) + '">Aceptar</button>' +
             '<button class="btn btn-rechazar" data-accion="rechazar_pedido" data-id="' + escapar(v.pedido_id) + '">Rechazar</button></div>' : "") + '</div>';
@@ -3784,7 +3841,7 @@
     if (ev.target.closest("[data-adm-volver]")) volverAdmin();
   });
   // «Publicar noticia» vuelve a Mensajes; las demás pantallas vuelven al inicio.
-  function volverAdmin() { if (admAbierta === "publicar" || admAbierta === "leer") abrirPantallaAdmin("notificaciones"); else cerrarPantallasAdmin(); }
+  function volverAdmin() { if (admAbierta === "publicar" || admAbierta === "leer") abrirPantallaAdmin("notificaciones"); else if (admAbierta === "viaje") abrirPantallaAdmin(mvOrigen); else cerrarPantallasAdmin(); }
 
   /* ---------------------------------------------------------------
      Historial de pagos por mes (solo monto, estado y forma de pago).
@@ -7629,6 +7686,7 @@
     pintarTiempoDisponible();
     bc.textContent = conectadoManual ? "Desconectar" : "Iniciar";
     bc.className = "btn-conexion" + (conectadoManual ? " desconectar" : "");
+    badge.hidden = false;
     if (jornadaActual && jornadaActual.agotada) {
       badge.className = "btn-estado-conexion desconectado";
       var hasta = jornadaActual.descanso_hasta ? new Date(jornadaActual.descanso_hasta) : null;
@@ -7640,15 +7698,19 @@
       badge.textContent = "Documentos pendientes";
       return;
     }
+    // Conectado y desconectado ya los dice el botón de abajo (verde / rojo): el chip solo aparece en los casos especiales.
     if (!conectadoManual) {
       badge.className = "btn-estado-conexion desconectado";
       badge.textContent = "Desconectado";
+      badge.hidden = true;
     } else if (estaBloqueadoAhora()) {
       badge.className = "btn-estado-conexion bloqueado";
       badge.textContent = "No disponible ahora";
+      badge.hidden = false;
     } else {
       badge.className = "btn-estado-conexion";
       badge.textContent = "Conectado";
+      badge.hidden = true;
     }
   }
 
@@ -8026,6 +8088,8 @@
       window.scrollTo(0, 0);
       return;
     }
+    // Un solo bloque abierto a la vez: al abrir uno se pliegan los demás.
+    [].forEach.call(document.querySelectorAll("#panelAjustes > details[open]"), function (x) { if (x !== a) x.open = false; });
     a.open = true;
     setTimeout(function () { a.scrollIntoView({ behavior: "smooth", block: "start" }); }, 80);
   }

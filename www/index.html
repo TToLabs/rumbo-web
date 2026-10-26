@@ -108,6 +108,9 @@
   .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
   .brand-texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; min-height: 72px; }
   .brand-wordmark { height: 26px; width: auto; display: block; filter: brightness(0) invert(1); }
+  /* «Rumbo móvil»: la marca y «móvil» en minúscula, en la misma línea. */
+  .brand-marca { display: flex; align-items: baseline; gap: 5px; }
+  .brand-movil { font: 600 15px/1 "Montserrat", system-ui, sans-serif; color: #fff; text-transform: none; letter-spacing: .01em; }
   .card-title, .precio-valor, .splash-titulo, h1, h2, h3 { font-weight: 700; }
 
   /* ---------- Fondo "mapa" del hero ---------- */
@@ -649,6 +652,7 @@
     body.pas-pantalla .brand-mark { width: 44px; height: 44px; }
     body.pas-pantalla .brand-texto { flex-direction: row; align-items: center; gap: 12px; min-height: 0; }
     body.pas-pantalla .brand-wordmark { height: 22px; }
+    body.pas-pantalla .brand-movil { font-size: 17px; }
     body.pas-pantalla .brand-sub::before { content: "\00b7"; margin-right: 12px; color: #fff; }
     body.pas-pantalla .wiz-hoja {
       left: 0; transform: none; width: 420px; max-width: none;
@@ -1012,8 +1016,7 @@
   }
   /* By BTo Innova soluciones (regla de marca): al pie del splash, a la misma altura que en el splash del sistema (80 dp sobre el borde de la ventana). El logo es azul oscuro: va sobre un recuadro claro. */
   .splash .by { position: absolute; left: 0; right: 0; bottom: calc(80px - var(--nb, 58px) + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; gap: .45em; }
-  .splash .by span { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
-  .splash .by img { width: auto; height: 40px; filter: none; animation: none; background: #fff; border-radius: 12px; padding: 3px 8px; }
+  .splash .by { font: 400 16px "Montserrat", system-ui, sans-serif; color: #B9C4D0; }
   .by-pie { text-align: center; color: #4E5A6C; font-size: 14px; margin: 4px 0 18px; }
   .splash.oculta { opacity: 0; pointer-events: none; }
   .splash[hidden] { display: none; }
@@ -1085,7 +1088,6 @@
   .brand-mark img { content: url(img/logo-carita.png); object-fit: contain; }
   .brand-wordmark { height: 18px; filter: none; }
   .brand-texto { min-height: 50px; gap: 4px; }
-  .brand-lema { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #fff; line-height: 1.1; }
   .btn-primario { box-shadow: inset 0 -3px 0 var(--acento); }
   .menu-lateral-cab { border-bottom: 2px solid var(--acento); }
   .hoja-asa span { background: var(--acento); }
@@ -1143,7 +1145,7 @@
       <div class="splash-carga" aria-hidden="true"><span class="splash-puntitos"><i></i><i></i><i></i><i></i><i></i></span><svg class="splash-auto" viewBox="0 -4 160 62" aria-hidden="true"><path d="M154 42 L140 42 A14 14 0 0 0 112 42 L46 42 A14 14 0 0 0 18 42 L6 42 L5 32 Q5 24 9 19 L14 10 Q22 0 38 -1 L88 -1 Q96 -1 102 3 L138 18 L148 19 Q154 21 154 28 Z"/><path d="M22 17 L27 6 Q29 3 36 3 L57 3 L57 17 Z"/><path d="M61 3 L88 3 Q93 3 97 6 L118 17 L61 17 Z"/><path d="M119 19 L125 19" stroke-width="3"/><path d="M143 23 L149 27" stroke-width="2"/><path d="M6 24 L10 23" stroke-width="2"/><circle cx="32" cy="42" r="11"/><circle cx="32" cy="42" r="3.5"/><circle cx="126" cy="42" r="11"/><circle cx="126" cy="42" r="3.5"/></svg></div>
     </div>
   </div>
-  <div class="by"><span>by</span><img src="img/bto-innova.png" alt="BTo Innova soluciones"></div>
+  <div class="by">by BTo Innova soluciones</div>
 </div>
 <script>
   /* Se decide ANTES de dibujar el resto: con sesión, la pantalla de espera
@@ -1183,8 +1185,7 @@
     <div class="brand">
       <span class="brand-mark"><img src="img/logo-rumbo.png" width="72" height="72" alt="" aria-hidden="true"></span>
       <span class="brand-texto">
-        <img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-lema">Traslado móvil</span>
-        <span class="brand-sub" id="brandSubPasajero">Pasajero</span>
+        <span class="brand-marca"><img class="brand-wordmark" src="img/rumbo-palabra-blanco.png" alt="Rumbo"><span class="brand-movil">móvil</span></span>        <span class="brand-sub" id="brandSubPasajero">Pasajero</span>
       </span>
     </div>
     <span class="topbar-spacer"></span>
@@ -2497,7 +2498,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 76;
+  var APP_VERSION = 77;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
