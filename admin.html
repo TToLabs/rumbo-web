@@ -355,6 +355,15 @@
   #btnMenuCond.con-mensajes::after { content: attr(data-n); position: absolute; top: 2px; right: 2px; box-sizing: border-box; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 12px; font-weight: 700; line-height: 14px; text-align: center; color: #fff; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
   .docs-correo { padding: 12px 16px; border-bottom: 1px solid var(--border); }
   .docs-correo p { margin: 0 0 8px; } .docs-correo p span { display: block; font-size: 14px; color: var(--text-2); }
+  .aviso-tarifas { flex: none; margin: 0 0 12px; padding: 12px 14px; border: 1.5px solid var(--primary); border-radius: 12px; background: var(--surface-2); }
+  .aviso-tarifas strong { display: block; font-size: 15px; }
+  .aviso-tarifas .ayuda { margin: 4px 0 0; font-size: 13.5px; }
+  .aviso-tarifas table { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 13.5px; }
+  .aviso-tarifas th { text-align: right; font-weight: 600; color: var(--text-2); padding: 2px 0 4px 8px; }
+  .aviso-tarifas th:first-child { text-align: left; padding-left: 0; }
+  .aviso-tarifas td { text-align: right; padding: 4px 0 4px 8px; border-top: 1px solid var(--border); }
+  .aviso-tarifas td:first-child { text-align: left; padding-left: 0; color: var(--text-2); }
+  .aviso-tarifas td.dif { font-weight: 700; }
   .notif-form { display: flex; flex-direction: column; gap: 8px; padding: 4px 2px; }
   .notif-form .nota { margin: 0 0 4px; }
   .notif-form input, .notif-form textarea { width: 100%; }
@@ -1677,6 +1686,8 @@
     </div></details>
 
     <details class="acordeon" id="acordeonTarifas"><summary>Tarifas y costos</summary><div class="acordeon-cuerpo">
+    <!-- Alcance de lo que se edita aquí: admin = toda la red; conductor = solo lo suyo (en el admin este bloque se pasa a su pantalla). -->
+    <div class="aviso-tarifas" id="avisoAlcanceTarifas" role="note"><strong id="avisoAlcanceTitulo"></strong><p class="ayuda" id="avisoAlcanceTexto"></p><div id="comparaTarifas"></div></div>
     <!-- Conductor: modalidad de cobro que decide el admin. -->
     <div class="solo-conductor" id="bloqueModoTarifa" style="padding:12px 14px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;">
       <div style="font-weight:600;" id="modoTarifaTitulo">Tarifa general</div>
@@ -2047,7 +2058,7 @@
     <button type="button" class="menu-lateral-item menu-sub-item" data-adm="solicitudes">Solicitudes de reserva</button>
     <button type="button" class="menu-lateral-item menu-sub-item" data-adm="reservas">Reservas</button>
     <button type="button" class="menu-lateral-item menu-sub-item" data-adm="viajes">Historial de viajes</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTarifas" data-titulo="Viajes privados">Viajes privados</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTarifas" data-titulo="Mis tarifas">Mis tarifas</button>
   </div>
   <button type="button" class="menu-grupo solo-conductor" data-grupo="config" aria-expanded="false">Configuración<svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
   <div class="menu-sub solo-conductor" data-sub="config" hidden>
@@ -2371,7 +2382,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 72;
+  var APP_VERSION = 73;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -3192,6 +3203,7 @@
       { id: "franjas", titulo: "Franjas", nodos: [franjas] }
     ]);
     envolver(pt, "adm-fijo", [document.getElementById("btnGuardarTarifas"), document.getElementById("tarifasMsg")]);
+    pt.insertBefore(document.getElementById("avisoAlcanceTarifas"), pt.querySelector(".adm-tabs"));
     // Mi cuenta: clave y correo en pestañas; cerrar sesión siempre a la vista.
     var pq = crearPantallaAdmin("cuenta");
     var cuerpoQ = [].slice.call(document.getElementById("btnCerrarSesion").parentNode.children);
@@ -4649,6 +4661,39 @@
     CAMPOS_MI_VEHICULO.concat(["tipoCombustible", "btnGuardarTarifas"]).forEach(function (id) {
       document.getElementById(id).disabled = !individual;
     });
+    modoTarifaActual = individual ? "INDIVIDUAL" : "GENERAL";
+    pintarAvisoTarifas();
+  }
+
+  // Aviso fijo arriba de la pantalla: deja claro QUÉ se está editando. Admin: toda la red. Conductor con tarifa propia: solo lo suyo,
+  // con sus valores junto a los de la red. Conductor con la general: campos bloqueados y por qué.
+  var modoTarifaActual = "GENERAL", tarifasPropias = null, tarifasRed = null;
+  function pesosT(n) { return "$" + Math.round(Number(n) || 0).toLocaleString("es-CL"); }
+  function pintarAvisoTarifas() {
+    var tit = document.getElementById("avisoAlcanceTitulo"), txt = document.getElementById("avisoAlcanceTexto"), cmp = document.getElementById("comparaTarifas");
+    if (MODO === "admin") {
+      tit.textContent = "Estás editando las tarifas de TODA la red";
+      txt.textContent = "Rigen para todos los conductores con tarifa general. Quien tiene tarifa propia cobra con la suya.";
+      cmp.textContent = "";
+      return;
+    }
+    if (modoTarifaActual !== "INDIVIDUAL") {
+      tit.textContent = "Cobras con las tarifas de la red";
+      txt.textContent = "Estos valores son los de la red y aquí no se pueden cambiar: los campos están bloqueados. Para usar los tuyos, pide tarifa propia abajo.";
+      cmp.textContent = "";
+      return;
+    }
+    tit.textContent = "Estás editando SOLO tus tarifas";
+    txt.textContent = "Tus pasajeros cotizan con tus tarifas, no con las de la red. Los cambios no afectan a otros conductores.";
+    if (!tarifasPropias) { cmp.textContent = ""; return; }
+    var filas = [["Combustible ($/L)", "precioComb", pesosT], ["Consumo ciudad (km/L)", "consumoCiudad", String], ["Consumo ruta (km/L)", "consumoRuta", String],
+      ["Hora valle", "valorHoraValle", pesosT], ["Hora punta", "valorHoraPunta", pesosT], ["Punta fuerte", "valorHoraFuerte", pesosT]];
+    var h = '<table><thead><tr><th></th><th>Tuyas</th><th>Red</th></tr></thead><tbody>';
+    filas.forEach(function (f) {
+      var a = tarifasPropias[f[1]], r = tarifasRed ? tarifasRed[f[1]] : undefined;
+      h += '<tr><td>' + f[0] + '</td><td' + (r !== undefined && Number(a) !== Number(r) ? ' class="dif"' : '') + '>' + escapar(a === undefined ? "-" : f[2](a)) + '</td><td>' + escapar(r === undefined ? "-" : f[2](r)) + '</td></tr>';
+    });
+    cmp.innerHTML = h + '</tbody></table>';
   }
 
   document.getElementById("btnSolicitarTarifa").addEventListener("click", async function () {
@@ -4665,7 +4710,8 @@
     api({ accion: MODO === "admin" ? "tarifas" : "mis_tarifas" }).then(function (res) {
       if (!res.ok) { rbAlerta(res.error || "No se pudieron cargar las tarifas."); return; }
       if (res.tipo_combustible !== undefined) document.getElementById("tipoCombustible").value = res.tipo_combustible || "";
-      if (MODO !== "admin") pintarModoTarifa(res.modo_tarifa, res.solicitud_tarifa);
+      tarifasPropias = res.tarifas;
+      if (MODO !== "admin") pintarModoTarifa(res.modo_tarifa, res.solicitud_tarifa); else pintarAvisoTarifas();
       CAMPOS_TARIFA.forEach(function (c) {
         if (res.tarifas[c] !== undefined) document.getElementById(c).value = res.tarifas[c];
       });
@@ -4673,6 +4719,8 @@
       pintarDias();
       revisarCombustibleDelJueves();   // con el formulario ya cargado
     });
+    // Las de la red (consulta pública, sin conductor): sirven para ponerlas junto a las propias.
+    if (MODO !== "admin") api({ accion: "tarifas" }).then(function (r) { if (r && r.ok) { tarifasRed = r.tarifas; pintarAvisoTarifas(); } }).catch(function () {});
   }
 
   // Guarda TODO el formulario de tarifas tal como está en pantalla (admin:
@@ -4695,16 +4743,20 @@
   }
 
   document.getElementById("btnGuardarTarifas").addEventListener("click", function () {
-    var msg = document.getElementById("tarifasMsg");
-    msg.textContent = "Guardando...";
-    msg.className = "msg";
+    // El resultado va SIEMPRE en el pop-up flotante (no en una línea que puede quedar fuera de la vista).
+    var boton = this, msg = document.getElementById("tarifasMsg");
+    msg.textContent = ""; msg.className = "msg";
+    boton.disabled = true;
     guardarTarifasDelFormulario().then(function (res) {
-      msg.textContent = res.ok ? "Cambios guardados." : ("Error: " + res.error);
-      msg.className = "msg " + (res.ok ? "ok" : "error");
-    }).catch(function (err) {
-      msg.textContent = TEXTO_SIN_CONEXION;
-      msg.className = "msg error";
-    });
+      boton.disabled = false;
+      if (!res || !res.ok) { rbAlerta((res && res.error) || "No se pudieron guardar los cambios."); return; }
+      if (MODO !== "admin") {   // lo guardado pasa a ser «lo actual» en el cuadro comparativo
+        tarifasPropias = Object.assign({}, tarifasPropias || {});
+        CAMPOS_MI_VEHICULO.forEach(function (c) { tarifasPropias[c] = parseFloat(document.getElementById(c).value) || 0; });
+        pintarAvisoTarifas();
+      }
+      rbAlerta("Cambios guardados.", "ok");
+    }).catch(function () { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
   /* Jueves: en Chile el precio de los combustibles cambia los jueves. Al
