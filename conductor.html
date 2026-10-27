@@ -13,6 +13,9 @@
 <link rel="apple-touch-icon" href="img/favicon-conductor-192.png?v=69">
 <!-- Montserrat va DENTRO de la app (www/fonts, licencia SIL OFL de Google Fonts): sin internet el splash y la app no cambian de letra. -->
 <style>@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("fonts/Montserrat-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }</style>
+<style>@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 400 600; font-display: swap; src: url("fonts/IBMPlexSans-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Carlito"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/Carlito-400-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Carlito"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/Carlito-700-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }</style>
 <style>
   /* Centro de control del administrador: mismo esquema de tokens que el
      resto de Rumbo, pero con el gris de fondo aún más neutro (#F8F9FA) y
@@ -20,6 +23,8 @@
      de escritorio/análisis, no de viaje, así que el fondo puede ser más
      "papel" y menos "app". */
   :root {
+    --f-dinero: "IBM Plex Sans", "Montserrat", system-ui, sans-serif;   /* cifras y filas del conductor: alinean bien y se leen a 15-16 px */
+    --f-texto: Carlito, Calibri, "Montserrat", system-ui, sans-serif;   /* textos largos: ayudas, explicaciones, términos y condiciones */
     --bg: #F8F9FA; --bg-grad-1: #F8F9FA; --bg-grad-2: #F8F9FA;
     --surface: #FFFFFF; --surface-2: #F4F6F8;
     --border: #E2E6EA; --border-strong: #C9D0D7;
@@ -394,7 +399,7 @@
   .pedido-desglose { margin: -4px 0 8px; font-size: 14px; color: var(--text-2); }
   .mem-barra { position: relative; }
   .mem-marca { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--naranja); }
-  .mem-escala { position: relative; display: flex; justify-content: space-between; margin-top: 4px; font-size: 12px; color: var(--text-2); }
+  .mem-escala { position: relative; display: flex; justify-content: space-between; margin-top: 4px; font-size: 14px; color: var(--text-2); }
   .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
   .estrella {
     border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
@@ -403,8 +408,8 @@
   .estrella:active { transform: scale(0.9); }
   .estrella.activa { color: #F5A623; }
 
-  .tabla-historial { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-  .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 12px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
+  .tabla-historial { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .tabla-historial th { text-align: left; font-weight: 600; color: var(--text-2); font-size: 14px; padding: 6px 6px; border-bottom: 1px solid var(--border); }
   .tabla-historial td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .tabla-historial td.monto { text-align: right; white-space: nowrap; font-weight: 600; }
   .tabla-historial th:nth-last-child(2) { text-align: right; }
@@ -503,25 +508,49 @@
   /* ---------- Tablero del conductor cuando no hay pedidos ---------- */
   .tablero { display: none; margin-bottom: 4px; }
   .tablero.visible { display: block; }
-  /* Iniciar / Desconectar (decisión de Alberto, 26-oct-2026): el botón va DENTRO de una pestaña blanca fija abajo (no flotando sobre el mapa).
-     La pestaña siempre se ve, aunque la hoja de pedidos esté vacía. El botón ES el estado: verde «Iniciar», rojo «Desconectar» (ya no hay chip
-     «Conectado/Desconectado»). Solo en el inicio, sin viaje ni oferta. */
-  .pestana-conexion { display: none; position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 45; width: 100%; max-width: 448px; box-sizing: border-box; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); background: var(--surface); border-radius: 18px 18px 0 0; box-shadow: 0 -4px 18px rgba(17, 48, 74, .16); }
+  /* Iniciar / Desconectar (decisión de Alberto, 26-oct-2026, 2.ª versión «como el referente de mercado»): el botón va DENTRO de la hoja inferior,
+     pegado a su pie. Al bajar la hoja se esconde con ella y para desconectar hay que subirla otra vez. El botón ES el estado: verde «Iniciar»,
+     rojo «Desconectar». Solo en el inicio, sin viaje ni oferta. */
+  .pestana-conexion { display: none; position: sticky; bottom: 0; z-index: 5; box-sizing: border-box; margin: 0 -14px -12px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); }
   body.cond-pantalla:not(.con-tarjeta):not(.cond-pedido):not(.adm-abierta):not(.modo-admin) .pestana-conexion { display: block; }
+  body.cond-pantalla:not(.modo-admin) .hoja-cuerpo { min-height: calc(var(--hoja-vis, 300px) - 44px - 84px - env(safe-area-inset-bottom)); }
+  /* «Buscando viajes»: radar con movimiento mientras está conectado (expectativa y motivación); quieto cuando está desconectado. */
+  .buscando { display: none; align-items: center; gap: 14px; padding: 14px 4px 6px; }
+  .buscando.visible { display: flex; }
+  .radar { position: relative; width: 64px; height: 64px; flex: none; display: flex; align-items: center; justify-content: center; }
+  .radar i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; animation: radarOnda 2.4s ease-out infinite; }
+  .radar i:nth-child(2) { animation-delay: .8s; } .radar i:nth-child(3) { animation-delay: 1.6s; }
+  .radar-auto { position: relative; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; animation: radarLatido 1.6s ease-in-out infinite; }
+  .radar-auto svg { width: 20px; height: 20px; }
+  .buscando-txt { min-width: 0; }
+  .buscando-txt strong { display: block; font-size: 17px; font-weight: 700; }
+  .buscando-txt > span { display: block; font-size: 14px; opacity: .75; margin-top: 2px; transition: opacity .3s; }
+  .buscando-txt strong b { display: inline-block; font-weight: 700; animation: buscPunto 1.2s infinite; } .buscando-txt strong b:nth-of-type(2) { animation-delay: .2s; } .buscando-txt strong b:nth-of-type(3) { animation-delay: .4s; }
+  .buscando.quieto .radar i, .buscando.quieto .radar-auto, .buscando.quieto strong b { animation: none; }
+  .buscando.quieto .radar i { display: none; }
+  .buscando.quieto .radar-auto { background: var(--border-strong, #b8c2ca); }
+  .buscando.quieto strong b { display: none; }
+  @keyframes radarOnda { 0% { transform: scale(.55); opacity: .55; } 100% { transform: scale(1.25); opacity: 0; } }
+  @keyframes radarLatido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @keyframes buscPunto { 0%, 60%, 100% { opacity: .25; } 30% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .radar i, .radar-auto, .buscando-txt strong b { animation: none; } .radar i:first-child { opacity: .3; transform: scale(1); } }
+  .hoy-lista { margin-top: 6px; }
+  .hoy-lista h4 { margin: 10px 0 4px; font-size: 13px; font-weight: 700; opacity: .75; }
+  .hoy-lista .mv-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
   .btn-conexion { display: block; width: 100%; min-height: 56px; padding: 0 20px; border: none; border-radius: 12px; background: var(--accent); color: #fff; font: inherit; font-size: 17px; font-weight: 700; text-align: center; cursor: pointer; }
   .btn-conexion.desconectar { background: var(--danger); color: #fff; }
   .btn-estado-conexion[hidden] { display: none; }
   /* Mis ganancias (menú → Mi billetera): hoy y semana */
   .gan-bloque { margin: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 4px; }
-  .gan-etiqueta { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
+  .gan-etiqueta { font-size: 14px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-2); }
   .gan-grande { font-size: 32px; font-weight: 700; line-height: 1.1; color: var(--primary); font-variant-numeric: tabular-nums; }
   .gan-medio { font-size: 22px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
-  .gan-sub { font-size: 14px; color: var(--text-2); }
+  .gan-sub { font-size: 16px; color: var(--text-2); }
   .gan-barras { display: flex; align-items: flex-end; gap: 8px; height: 88px; margin: 12px 0 4px; }
   .gan-barra { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
   .gan-barra i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--primary); opacity: .35; }
   .gan-barra.hoy i { background: var(--naranja); opacity: 1; }
-  .gan-barra span { font-size: 12px; line-height: 1; color: var(--text-2); }
+  .gan-barra span { font-size: 14px; line-height: 1; color: var(--text-2); }
   .tablero-estado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; min-height: 44px; }
   .tablero .kpi-fila { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .tablero .kpi-valor { font-size: 22px; white-space: nowrap; }
@@ -580,7 +609,7 @@
   body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .nota-mapa,
   body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .mapa-pasajero,
   body.cond-pantalla.hoja-medio :is(#panelPedidos, #panelEnCurso) .ayuda,
-  body.cond-pantalla.hoja-medio .tablero .kpi-fila { display: none; }
+  body.cond-pantalla.hoja-medio .tablero .hoy-lista { display: none; }
   body.cond-pantalla.hoja-bajo #panelPedidos, body.cond-pantalla.hoja-bajo #panelEnCurso { padding-bottom: 0; overflow: hidden; }
   /* Administrador: mismo formato (mapa completo + ventana arrastrable + menú lateral), sin barra
      de abajo. En el mapa va la flota; en la ventana, el resumen y la lista de conductores. */
@@ -694,10 +723,10 @@
   .mem-barra { height: 10px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); overflow: hidden; }
   .mem-relleno { height: 100%; width: 0; background: var(--acento); transition: width .3s ease; }
   .mem-relleno.lleno { background: var(--accent); }
-  .mem-saldo { padding: 10px 12px; border-radius: var(--r-input); background: var(--surface-2); font-size: 14px; line-height: 1.4; }
-  .mem-saldo strong { font-size: 18px; display: block; }
+  .mem-saldo { padding: 12px 14px; border-radius: var(--r-input); background: var(--surface-2); font-size: 16px; line-height: 1.45; }
+  .mem-saldo strong { font-size: 24px; display: block; }
   .mem-saldo.debe { background: var(--warn-soft); }
-  .mem-fila { display: flex; justify-content: space-between; font-size: 14px; color: var(--text-2); padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .mem-fila { display: flex; justify-content: space-between; font-size: 16px; color: var(--text-2); padding: 8px 0; border-bottom: 1px solid var(--border); }
   .tyc-cuerpo { font-size: 14px; line-height: 1.5; color: var(--text); }
   .tyc-cuerpo h4 { margin: 14px 0 4px; font-size: 16px; color: var(--primary); }
   .tyc-cuerpo p { margin: 0 0 6px; }
@@ -773,6 +802,10 @@
   .menu-sub { background: var(--surface-2); }
   .menu-sub[hidden] { display: none; }
   .menu-sub-item { padding-left: 36px; font-weight: 500; }
+  /* Ayuda y Términos: aparte, abajo y más quietos que los grupos (se usan poco, pero siempre se encuentran). */
+  .menu-pie { margin-top: 10px; padding-top: 6px; border-top: 1px solid var(--border); }
+  .menu-pie-item { min-height: 44px; font-size: 14px; font-weight: 500; color: var(--text-2); }
+  .menu-grupo .menu-punto { position: static; display: inline-block; width: 10px; height: 10px; margin-left: 2px; border-color: var(--surface); }
   #menuStats, #menuTiempo { display: block; font-size: 12px; color: var(--text-2); }
   #menuTiempo[hidden] { display: none; }
   #menuStats[hidden] { display: none; }
@@ -784,22 +817,62 @@
   .mv-item[data-viaje] { position: relative; padding-right: 38px; cursor: pointer; }
   .mv-item[data-viaje]::after { content: "\203A"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 24px; line-height: 1; color: var(--text-3); }
   .mv-item[data-viaje]:active { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-  .mv-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; }
+  .mv-fila { display: flex; justify-content: space-between; gap: 12px; font-size: 17px; }
   .mv-fila span { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .mv-ruta { display: grid; gap: 3px; margin-top: 8px; font-size: 14px; color: var(--text); }
+  .mv-ruta { display: grid; gap: 6px; margin-top: 10px; font-size: 16px; line-height: 1.35; color: var(--text); }
   .mv-pto { display: flex; gap: 8px; min-width: 0; }
-  .mv-pto small { flex: none; width: 44px; font-size: 12px; color: var(--text-3); line-height: 1.6; }
-  .mv-pto span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mv-pto small { flex: none; width: 56px; font-size: 14px; color: var(--text-2); line-height: 1.5; }
+  .mv-pto span { min-width: 0; overflow-wrap: anywhere; }
   .mv-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .mv-acciones { display: flex; gap: 8px; margin-top: 10px; }
   /* Detalle de un viaje: cada dato en su propia fila, con su rótulo. */
   .vd { padding: 4px 2px 16px; }
   .vd-monto { margin: 4px 0 0; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .vd-sub { margin: 2px 0 14px; font-size: 14px; color: var(--text-2); }
+  .vd-sub { margin: 2px 0 14px; font-size: 16px; color: var(--text-2); }
   .vd-lista { margin: 0 0 16px; }
   .vd-fila { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .vd-fila dt { font-size: 13px; color: var(--text-3); }
-  .vd-fila dd { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
+  .vd-fila dt { font-size: 15px; color: var(--text-2); }
+  .vd-fila dd { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
+  /* Liquidación del viaje (ficha del historial): formal, como un estado de cuenta. Filas con reglas finas y cifras alineadas a la derecha;
+     la jerarquía la da el peso y el tamaño, no el color. Sin mapa. */
+  .liq { margin: 4px 0 18px; font-family: var(--f-dinero); font-variant-numeric: tabular-nums; }
+  .liq-cab { padding: 0 0 10px; border-bottom: 1.5px solid var(--text); }
+  .liq-cab small { display: block; font-size: 15px; color: var(--text-2); }
+  .liq-cab b { display: block; margin-top: 2px; font-size: 20px; font-weight: 600; }
+  .liq-f { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 17px; }
+  .liq-f span:last-child { white-space: nowrap; }
+  .liq-f.sub { padding: 8px 0 8px 14px; font-size: 15px; color: var(--text-2); }
+  .liq-f.tot { margin-top: 2px; padding-top: 14px; border-bottom: none; border-top: 1.5px solid var(--text); font-size: 20px; font-weight: 600; }
+  .sem-sel { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 16px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-family: var(--f-dinero); font-size: 17px; }
+  .sem-flecha { width: 48px; height: 44px; border: none; background: none; font-size: 26px; line-height: 1; color: var(--primary); cursor: pointer; }
+  .sem-flecha:disabled { color: var(--border-strong); cursor: default; }
+  .liq-ver { display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 48px; margin: 0 0 14px; padding: 0 4px; border: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: none; font-family: var(--f-dinero); font-size: 17px; font-weight: 500; color: var(--primary); text-align: left; cursor: pointer; }
+  .liq-nota { margin: 10px 0 0; font-family: var(--f-texto); font-size: 16px; line-height: 1.45; color: var(--text-2); }
+  /* Historial de pagos del conductor: una tarjeta por viaje (en vez de tabla de letra fina). */
+  .pago-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px; }
+  .pago-stat { padding: 12px 10px; border-radius: 12px; background: var(--surface-2); }
+  .pago-stat small { display: block; font-size: 14px; color: var(--text-2); }
+  .pago-stat strong { display: block; margin-top: 2px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .pago-item { padding: 14px 4px; border-bottom: 1px solid var(--border); }
+  .pago-fila { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .pago-fila strong { font-size: 17px; font-weight: 600; }
+  .pago-fila b { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pago-sub { margin-top: 4px; font-size: 15px; color: var(--text-2); }
+  .pago-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 15px; color: var(--text-2); }
+  body.modo-admin .pago-lista { display: none; }
+  body:not(.modo-admin) .tabla-historial-caja { display: none; }
+  /* Letra legible en las pantallas del conductor (menú → viajes, billetera, configuración). El admin no cambia. */
+  /* Administrador: mismos criterios de letra (textos largos en Carlito, cifras en IBM Plex Sans). */
+  body.modo-admin .adm-pantalla :is(.ayuda, .nota, .msg) { font-family: var(--f-texto); font-size: 17px; line-height: 1.5; }
+  body.modo-admin .tyc-cuerpo, body.modo-admin .tyc-cuerpo p { font-family: var(--f-texto); font-size: 17px; line-height: 1.5; }
+  body.modo-admin :is(.tabla-historial, .kpi-valor, .mv-item, .liq-f) { font-family: var(--f-dinero); font-variant-numeric: tabular-nums; }
+  body:not(.modo-admin) .adm-pantalla :is(.ayuda, .nota, .msg) { font-family: var(--f-texto); font-size: 17px; line-height: 1.5; color: var(--text-2); }
+  body:not(.modo-admin) .tyc-cuerpo, body:not(.modo-admin) .tyc-cuerpo p { font-family: var(--f-texto); font-size: 17px; line-height: 1.5; }
+  body:not(.modo-admin) :is(.mv-item, .pago-item, .pago-stat, .gan-bloque, .mem-saldo, .mem-fila, .vd-fila, .pago-stats) { font-family: var(--f-dinero); font-variant-numeric: tabular-nums; }
+  body:not(.modo-admin) .adm-pantalla .campo-label { font-size: 16px; }
+  body:not(.modo-admin) .adm-pantalla .card-title { font-size: 18px; }
+  body:not(.modo-admin) .adm-pantalla .badge { font-size: 14px; padding: 4px 12px; }
+  body:not(.modo-admin) .adm-pantalla .btn-chico { min-height: 44px; font-size: 16px; }
   .menu-lateral-item {
     display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 0 8px; border: none; background: none;
     font: inherit; font-size: 16px; font-weight: 500; color: var(--text); text-align: left; cursor: pointer; border-radius: 12px;
@@ -1424,6 +1497,7 @@
 
   <div id="panelPedidos" role="tabpanel" aria-labelledby="tabPedidos">
     <div class="hoja-asa" data-asa role="button" tabindex="0" aria-label="Subir o bajar la ventana"><span></span></div>
+    <div class="hoja-cuerpo">
     <!-- Solo administrador: la flota. En el mapa, el vehículo de cada conductor con su
          estado (disponible / en viaje); acá abajo, el resumen y la lista. -->
     <div class="flota" id="flotaAdmin" hidden>
@@ -1446,21 +1520,26 @@
       <div class="kpi-fila">
         <div class="kpi-card">
           <div class="kpi-cabeza">
-            <span class="kpi-etiqueta">Total facturado</span>
+            <span class="kpi-etiqueta">Ganado hoy</span>
             <svg class="ico ico-sm" aria-hidden="true"><use href="#i-precio"/></svg>
           </div>
           <div class="kpi-valor" id="tabFacturado">—</div>
-          <div class="kpi-nota">Mes en curso</div>
+          <div class="kpi-nota">Hoy</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-cabeza">
-            <span class="kpi-etiqueta">Viajes realizados</span>
+            <span class="kpi-etiqueta">Viajes hoy</span>
             <svg class="ico ico-sm" aria-hidden="true"><use href="#i-auto"/></svg>
           </div>
           <div class="kpi-valor" id="tabViajes">—</div>
-          <div class="kpi-nota">Mes en curso</div>
+          <div class="kpi-nota">Hoy</div>
         </div>
       </div>
+      <div class="buscando" id="tabBuscando" aria-live="polite">
+        <div class="radar" aria-hidden="true"><i></i><i></i><i></i><span class="radar-auto"><svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg></span></div>
+        <div class="buscando-txt"><strong><span id="buscTitulo">Buscando viajes</span><b>.</b><b>.</b><b>.</b></strong><span id="buscSub"></span></div>
+      </div>
+      <div class="hoy-lista" id="tabViajesHoy"></div>
     </div>
 
     <section class="card solo-conductor" id="grupoPedidos">
@@ -1474,6 +1553,8 @@
       </div>
       <div id="listaPedidos"><p class="vacio">Cargando pedidos...</p></div>
     </section>
+    </div>
+    <div class="pestana-conexion solo-conductor"><button class="btn-conexion" id="btnConexion" type="button">Iniciar</button></div>
   </div>
 
   <div id="panelAjustes" role="tabpanel" aria-labelledby="tabAjustes" style="display:none;">
@@ -1535,7 +1616,8 @@
           </div>
         </div>
         <div id="histResumen" class="msg" style="margin:0 0 10px;"></div>
-        <div style="overflow-x:auto;">
+        <div class="pago-lista" id="histLista"></div>
+        <div class="tabla-historial-caja" style="overflow-x:auto;">
           <table class="tabla-historial">
             <thead><tr><th>Fecha</th><th id="histColConductor" style="display:none;">Conductor</th><th>Monto</th><th>Estado de pago</th></tr></thead>
             <tbody id="histFilas"></tbody>
@@ -1642,9 +1724,9 @@
     <details class="acordeon simple" id="acordeonMembresia"><summary>Mi membresía y pagos</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMembresia">
       <div class="card-head"><span class="card-title">Membresía Rumbo</span></div>
-      <p class="ayuda" style="margin:0 0 12px;">
-        Pagas el 10 % de lo que recibes por cada viaje (peajes incluidos) hasta <strong>$250.000 al mes</strong>. Al llegar al tope, el resto del mes es 0 %; si no llegas, pagas solo lo acumulado. <span id="memBonoTexto">Primeros 3 meses: si tu membresía del mes llega a $150.000 te devolvemos $25.000; a $200.000, $50.000; a $250.000, $100.000.</span>
-      </p>
+      <p class="ayuda" style="margin:0 0 8px;">Pagas el 10 % de lo que ganas en cada viaje.</p>
+      <p class="ayuda" style="margin:0 0 12px;">Cuando en el mes sumas <strong>$250.000</strong> de membresía, el resto del mes pagas 0 %.</p>
+      <p class="ayuda" id="memBonoTexto" style="margin:0 0 12px;"></p>
       <div class="mem-barra" aria-hidden="true"><div class="mem-relleno" id="memRelleno"></div></div>
       <div class="mem-escala" aria-hidden="true"><span>$0</span><span id="memTopeReal">$250.000</span></div>
       <p class="msg" id="memAcumulado" style="margin:8px 0 12px;">Revisando...</p>
@@ -2052,11 +2134,11 @@
   <div class="menu-lateral-seccion solo-red">Operación</div>
   <button type="button" class="menu-lateral-item solo-red" data-adm="conductores">Conductores</button>
   <button type="button" class="menu-lateral-item solo-red" data-adm="documentos">Documentos<span class="menu-punto" id="puntoItemDocsAdm" hidden></span></button>
-  <button type="button" class="menu-lateral-item solo-red" data-adm="pedidos">Registro de pedidos</button>
   <button type="button" class="menu-lateral-item solo-red" data-adm="reclamos">Reclamos<span class="menu-punto" id="puntoItemReclamos" hidden></span></button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="pedidos">Registro de pedidos</button>
   <div class="menu-lateral-seccion solo-red">Dinero</div>
-  <button type="button" class="menu-lateral-item solo-red" data-adm="pagos">Historial de pagos</button>
   <button type="button" class="menu-lateral-item solo-red" data-adm="liquidaciones">Liquidaciones</button>
+  <button type="button" class="menu-lateral-item solo-red" data-adm="pagos">Historial de pagos</button>
   <button type="button" class="menu-lateral-item solo-red" data-adm="mp">Mercado Pago de la empresa</button>
   <div class="menu-lateral-seccion solo-red">Configuración</div>
   <button type="button" class="menu-lateral-item solo-red" data-adm="tarifas">Tarifas de la red</button>
@@ -2064,28 +2146,31 @@
   <button type="button" class="menu-lateral-item solo-red" data-adm="cuenta">Mi cuenta</button>
   <!-- Conductor: 4 ítems. Cada subítem abre su propia pantalla con flecha atrás. Viaje en curso y ofertas viven en la pantalla principal. -->
   <button type="button" class="menu-lateral-item solo-conductor" data-ajuste="acordeonQr" data-titulo="Mi QR">Mi QR</button>
-  <button type="button" class="menu-grupo solo-conductor" data-grupo="billetera" aria-expanded="false">Mi billetera<svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-  <div class="menu-sub solo-conductor" data-sub="billetera" hidden>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="ganancias">Mis ganancias</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonHistorial">Historial de pagos</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonMembresia">Membresía</button>
-  </div>
   <button type="button" class="menu-grupo solo-conductor" data-grupo="viajes" aria-expanded="false">Mis viajes<span class="menu-punto" id="puntoItemPedidos" hidden></span><svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
   <div class="menu-sub solo-conductor" data-sub="viajes" hidden>
     <button type="button" class="menu-lateral-item menu-sub-item" data-adm="solicitudes">Solicitudes de reserva</button>
     <button type="button" class="menu-lateral-item menu-sub-item" data-adm="reservas">Reservas</button>
     <button type="button" class="menu-lateral-item menu-sub-item" data-adm="viajes">Historial de viajes</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTarifas" data-titulo="Mis tarifas">Mis tarifas</button>
   </div>
-  <button type="button" class="menu-grupo solo-conductor" data-grupo="config" aria-expanded="false">Configuración<svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <button type="button" class="menu-grupo solo-conductor" data-grupo="billetera" aria-expanded="false">Mi billetera<svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="menu-sub solo-conductor" data-sub="billetera" hidden>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="ganancias">Mis ganancias</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-adm="semana">Resumen semanal</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonHistorial">Historial de pagos</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTarifas" data-titulo="Mis tarifas">Mis tarifas</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonMembresia">Membresía</button>
+    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonRecibo" data-titulo="Cuenta bancaria">Cuenta bancaria</button>
+  </div>
+  <button type="button" class="menu-grupo solo-conductor" data-grupo="config" aria-expanded="false">Configuración<span class="menu-punto" id="puntoGrupoConfig" hidden></span><svg class="menu-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
   <div class="menu-sub solo-conductor" data-sub="config" hidden>
     <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonCuenta" data-titulo="Mi cuenta">Mi cuenta</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonRecibo" data-titulo="Cuenta bancaria">Cuenta bancaria</button>
     <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonVehiculo" data-titulo="Mi auto">Mi auto</button>
     <button type="button" class="menu-lateral-item menu-sub-item docs-menu" data-adm="documentos">Documentos<span class="menu-punto" id="puntoItemDocs" hidden></span></button>
     <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonGps" data-titulo="Navegación GPS">Navegación GPS</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
-    <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonTycConductor" data-titulo="Términos y condiciones">Términos y condiciones</button>
+  </div>
+  <div class="menu-pie solo-conductor">
+    <button type="button" class="menu-lateral-item menu-pie-item solo-conductor" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
+    <button type="button" class="menu-lateral-item menu-pie-item solo-conductor" data-ajuste="acordeonTycConductor" data-titulo="Términos y condiciones">Términos y condiciones</button>
   </div>
   <!-- Se mantienen en el DOM (ocultos) porque otras partes los usan; ya no se muestran. -->
   <button type="button" class="menu-lateral-item aj-oculto" data-menu="encurso" hidden>Viaje en curso</button>
@@ -2113,7 +2198,6 @@
     <div class="espera-texto" data-texto></div>
   </div>
 </div>
-<div class="pestana-conexion solo-conductor"><button class="btn-conexion" id="btnConexion" type="button">Iniciar</button></div>
 <div class="accion-viaje solo-conductor" id="accionViaje" hidden>
   <div id="tvNav"></div>
   <div class="tv-info" id="tvInfo" hidden><strong id="tvInfoEta"></strong><span id="tvInfoQuien"></span></div>
@@ -2223,6 +2307,16 @@
     <h2 style="margin:0 0 12px;font-size:18px;">Opciones del viaje</h2>
     <div id="opcionesViajeLista"></div>
     <button class="btn btn-chico" id="btnOpcionesCerrar" type="button" style="width:100%;margin-top:10px;">Cerrar</button>
+  </div>
+</div>
+
+<!-- «No puedo hacer este viaje»: el conductor dice por qué y el viaje pasa a otro conductor con el mismo precio y el mismo PIN. -->
+<div class="modal-fondo" id="modalSoltar" hidden>
+  <div class="modal-hoja">
+    <h2 style="margin:0 0 4px;font-size:18px;">¿Qué pasó?</h2>
+    <p class="nota" style="margin:0 0 12px;">Gracias por avisar a tiempo. Buscamos a otro conductor para tu pasajero.</p>
+    <div id="soltarLista"></div>
+    <button class="btn btn-chico" id="btnSoltarCerrar" type="button" style="width:100%;margin-top:10px;">Volver al viaje</button>
   </div>
 </div>
 
@@ -2399,7 +2493,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 75;
+  var APP_VERSION = 76;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -3146,7 +3240,7 @@
      (antes era una lista larga de acordeones). Se arman moviendo los bloques que ya existen en
      Ajustes (mismos id y mismos manejadores: no se duplica nada); el conductor sigue igual.
      --------------------------------------------------------------- */
-  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", viaje: "Detalle del viaje", documentos: "Documentos", notificaciones: "Mensajes", publicar: "Publicar noticia", leer: "Mensaje", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
+  var PANTALLAS_ADMIN = { ganancias: "Mis ganancias", semana: "Resumen semanal", solicitudes: "Solicitudes de reserva", reservas: "Reservas", viajes: "Historial de viajes", viaje: "Detalle del viaje", documentos: "Documentos", notificaciones: "Mensajes", publicar: "Publicar noticia", leer: "Mensaje", conductores: "Conductores", pagos: "Historial de pagos", liquidaciones: "Liquidaciones", mp: "Mercado Pago de la empresa", reclamos: "Reclamos", pedidos: "Registro de pedidos", tarifas: "Tarifas de la red", cuenta: "Mi cuenta" };
   function crearPantallaAdmin(id) {
     var p = document.createElement("section");
     p.className = "adm-pantalla"; p.id = "adm-" + id; p.hidden = true;
@@ -3486,6 +3580,7 @@
     var urgente = !resumen.ok || (docs || []).some(function (d) { return d.estado === "POR_VENCER" || d.estado === "VENCIDO" || d.estado === "RECHAZADO"; });
     if (!docs && resumen.vence_min) urgente = urgente || diasHasta(resumen.vence_min) <= 30;
     punto.hidden = !urgente;
+    var grupo = document.getElementById("puntoGrupoConfig"); if (grupo) grupo.hidden = !urgente;
   }
 
   function pintarDocsAdmin(res) {
@@ -3566,6 +3661,17 @@
       var pg = crearPantallaAdmin("ganancias");
       var cg = document.createElement("div"); cg.className = "adm-scroll"; cg.id = "mv-ganancias"; pg.appendChild(cg);
     }
+    if (id === "semana" && !document.getElementById("adm-" + id)) {
+      var ps = crearPantallaAdmin("semana");
+      var cs = document.createElement("div"); cs.className = "adm-scroll"; cs.id = "mv-semana"; ps.appendChild(cs);
+      cs.addEventListener("click", function (ev) {
+        var mv = ev.target.closest("[data-semana-mover]");
+        if (!mv) return;
+        var nueva = semanaVista + Number(mv.getAttribute("data-semana-mover"));
+        if (nueva > 0 || nueva < -52) return;
+        cargarResumenSemanal(nueva);
+      });
+    }
     var p = document.getElementById("adm-" + id);
     if (!p) return;
     var tb = document.querySelector("#pantallaApp .topbar");
@@ -3586,6 +3692,7 @@
     else if (id === "documentos") cargarDocumentos();
     else if (id === "solicitudes" || id === "reservas" || id === "viajes") cargarMisViajes(id);
     else if (id === "ganancias") cargarMisGanancias();
+    else if (id === "semana") cargarResumenSemanal(semanaPedida);
     else if (id === "notificaciones") cargarNotificaciones(true);
     else if (id === "publicar") cargarEnviadas();
   }
@@ -3757,13 +3864,25 @@
       document.getElementById("viajeDetalle").addEventListener("click", function (ev) {
         var cal = ev.target.closest("button[data-calificar]");
         if (cal) abrirCalificarPasajero(cal.dataset.calificar);
+        var ver = ev.target.closest("button[data-ver-semana]");
+        if (ver) { semanaPedida = Number(ver.getAttribute("data-ver-semana")) || 0; abrirPantallaAdmin("semana"); }
       });
     }
     var fila = function (rotulo, valor) { return valor ? '<div class="vd-fila"><dt>' + escapar(rotulo) + '</dt><dd>' + escapar(valor) + '</dd></div>' : ""; };
     var paradas = v.paradas ? String(v.paradas).split("|").filter(Boolean) : [];
     var cuando = origen === "viajes" ? fechaHoraLarga(v.fecha) : textoFechaMv(v.fecha_viaje, v.hora_viaje, "");
     var cuerpo = document.getElementById("viajeDetalle");
-    cuerpo.innerHTML = '<p class="vd-monto">' + escapar(fmt(v.monto)) + '</p><p class="vd-sub">' + escapar(ESTADO_TXT_MV[v.estado] || "") + '</p>' +
+    var dsg = v.desglose, cas = "";
+    if (dsg) {
+      var lf = function (nom, monto, signo, cls) { return '<div class="liq-f' + (cls ? " " + cls : "") + '"><span>' + nom + '</span><span>' + (signo || "") + escapar(fmt(monto)) + '</span></div>'; };
+      var inc = function (nom, monto) { return monto > 0 ? lf(nom, monto, "", "sub") : ""; };
+      cas = '<div class="liq"><div class="liq-cab"><small>' + escapar(cuando) + '</small><b>Liquidación del viaje</b></div>' +
+        lf("Ganaste en este viaje", dsg.ganado) + inc("Incluye peajes", dsg.peaje) + inc("Incluye espera", dsg.espera) +
+        lf("Membresía Rumbo, 10 %", dsg.membresia, "−") + lf("Retención SII, 15,25 %", dsg.retencion_sii, "−") + lf("Te queda", dsg.queda, "", "tot") +
+        '<p class="liq-nota">La retención se calcula sobre el honorario sin peajes.</p></div>' +
+        '<button type="button" class="liq-ver" data-ver-semana="' + offsetSemanaDe(v.fecha) + '">Ver el resumen de la semana<span aria-hidden="true">›</span></button>';
+    }
+    cuerpo.innerHTML = (dsg ? cas : '<p class="vd-monto">' + escapar(fmt(v.monto)) + '</p><p class="vd-sub">' + escapar(ESTADO_TXT_MV[v.estado] || "") + '</p>') +
       '<dl class="vd-lista">' + fila("Fecha y hora", cuando) + fila("Pasajero", v.nombre) + fila("Desde", v.origen) +
         paradas.map(function (x, i) { return fila("Parada " + (i + 1), x); }).join("") + fila("Hasta", v.destino) +
         fila("Ida y vuelta", v.ida_vuelta === "SI" ? "Sí" : "") + fila("Forma de pago", origen === "viajes" ? v.forma : "") +
@@ -3797,6 +3916,37 @@
     }).catch(function () { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + TEXTO_SIN_CONEXION + '</p>'; });
   }
   // Mis ganancias: lo que recibió hoy y esta semana (con peajes), su neto tras la membresía y un gráfico de los 7 días. Nunca la comisión de la app.
+  // Resumen semanal (lunes a domingo): liquidación formal de la semana elegida. 0 = esta semana, -1 = la anterior (hasta 52 hacia atrás).
+  var semanaVista = 0, semanaPedida = 0;
+  // A cuántas semanas de hoy cae una fecha (0 = esta semana, -1 = la anterior...). Lunes a domingo, con la hora del teléfono.
+  function offsetSemanaDe(fechaIso, ahora) {
+    var lunes = function (d) { var x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+    var f = new Date(fechaIso);
+    if (isNaN(f.getTime())) return 0;
+    return Math.max(-52, Math.min(0, -Math.round((lunes(ahora || new Date()) - lunes(f)) / 604800000)));
+  }
+  function cargarResumenSemanal(offset) {
+    var cont = document.getElementById("mv-semana");
+    if (!cont) return;
+    offset = Math.max(-52, Math.min(0, Number(offset) || 0));
+    semanaVista = offset; semanaPedida = 0;
+    cont.innerHTML = '<p class="nota" style="margin:16px;">Cargando…</p>';
+    api({ accion: "mis_viajes_conductor", semana: offset }).then(function (r) {
+      if (!r || !r.ok || !r.semana_resumen) { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + escapar((r && r.error) || "No se pudo cargar") + '</p>'; return; }
+      var w = r.semana_resumen, dd = function (iso) { var p = String(iso).split("-"); return Number(p[2]) + " " + ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][Number(p[1]) - 1]; };
+      var lf = function (nom, monto, signo, cls) { return '<div class="liq-f' + (cls ? " " + cls : "") + '"><span>' + nom + '</span><span>' + (signo || "") + escapar(fmt(monto)) + '</span></div>'; };
+      var inc = function (nom, monto) { return monto > 0 ? lf(nom, monto, "", "sub") : ""; };
+      cont.innerHTML =
+        '<div class="sem-sel"><button type="button" class="sem-flecha" data-semana-mover="-1" aria-label="Semana anterior"' + (offset <= -52 ? " disabled" : "") + '>‹</button>' +
+          '<strong>' + escapar(dd(w.desde) + " – " + dd(w.hasta)) + '</strong>' +
+          '<button type="button" class="sem-flecha" data-semana-mover="1" aria-label="Semana siguiente"' + (semanaVista < 0 ? "" : " disabled") + '>›</button></div>' +
+        (w.viajes ? '<div class="liq" style="margin:0 16px 18px;"><div class="liq-cab"><small>' + escapar(w.viajes + (w.viajes === 1 ? " viaje" : " viajes")) + '</small><b>Liquidación de la semana</b></div>' +
+          lf("Ganaste", w.ganado) + inc("Incluye peajes", w.peaje) + inc("Incluye espera", w.espera) +
+          lf("Membresía Rumbo", w.membresia, "−") + lf("Retención SII", w.retencion_sii, "−") + lf("Te quedó", w.queda, "", "tot") +
+          '<p class="liq-nota">Los viajes de la semana están en Historial de viajes.</p></div>'
+          : '<p class="nota" style="margin:16px;">No tuviste viajes terminados esta semana.</p>');
+    }).catch(function () { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + TEXTO_SIN_CONEXION + '</p>'; });
+  }
   function cargarMisGanancias() {
     var cont = document.getElementById("mv-" + "ganancias");
     if (!cont) return;
@@ -3810,12 +3960,12 @@
       var plural = function (n) { return n + (n === 1 ? " viaje" : " viajes"); };
       cont.innerHTML =
         '<div class="gan-bloque"><span class="gan-etiqueta">Hoy</span><span class="gan-grande">' + escapar(fmt(h.ganancia)) + '</span>' +
-          '<span class="gan-sub">' + escapar(plural(h.viajes)) + (h.ganancia > 0 ? " · neto después de la membresía " + escapar(fmt(h.neto)) : "") + (h.retencion > 0 ? " · retención SII " + escapar(fmt(h.retencion)) + " (es tuya)" : "") + '</span></div>' +
+          '<span class="gan-sub">' + escapar(plural(h.viajes)) + (h.ganancia > 0 ? " · neto después de la membresía " + escapar(fmt(h.neto)) : "") + '</span></div>' +
         '<div class="gan-bloque"><span class="gan-etiqueta">Esta semana</span><span class="gan-medio">' + escapar(fmt(s.ganancia)) + '</span>' +
           '<div class="gan-barras" aria-hidden="true">' + s.dias.map(function (d) {
             return '<div class="gan-barra' + (d.dia === hoyTxt ? " hoy" : "") + '"><i style="height:' + Math.max(2, Math.round(d.ganancia / max * 64)) + 'px"></i><span>' + d.letra + '</span></div>';
           }).join("") + '</div>' +
-          '<span class="gan-sub">' + escapar(plural(s.viajes)) + " · neto " + escapar(fmt(s.neto)) + (s.retencion > 0 ? " · retención SII " + escapar(fmt(s.retencion)) + " (es tuya)" : "") + '</span></div>' +
+          '<span class="gan-sub">' + escapar(plural(s.viajes)) + " · neto " + escapar(fmt(s.neto)) + '</span></div>' +
         // Viajes de hoy (lista al estilo de los referentes de mercado): hora, ruta y lo que ganó en cada uno
         (function () {
           var hoyViajes = (r.historial || []).filter(function (v) { var f = new Date(v.fecha); return !isNaN(f.getTime()) && f.getFullYear() + "-" + ("0" + (f.getMonth() + 1)).slice(-2) + "-" + ("0" + f.getDate()).slice(-2) === hoyTxt; });
@@ -3830,12 +3980,11 @@
   function pintarResumenMenu(res) {
     var el = document.getElementById("menuStats");
     if (!el || !res) return;
+    // Menú limpio (decisión de Alberto, 26-oct-2026): bajo el nombre la calificación, la tasa de aceptación y el tiempo restante conectado; sin dinero ni conteos.
     var partes = [];
-    if (res.hoy) partes.push("Hoy " + fmt(res.hoy.ganancia));
     if (res.calificacion && res.calificacion.promedio) partes.push("★ " + String(res.calificacion.promedio).replace(".", ","));
     if (res.tasa_aceptacion !== null && res.tasa_aceptacion !== undefined) partes.push("Aceptación " + res.tasa_aceptacion + " %");
-    partes.push(res.finalizados + (res.finalizados === 1 ? " viaje finalizado" : " viajes finalizados"));
-    el.textContent = partes.join(" · "); el.hidden = false;
+    el.textContent = partes.join(" · "); el.hidden = !partes.length;
   }
   function cerrarPantallasAdmin() {
     [].forEach.call(document.querySelectorAll(".adm-pantalla"), function (x) { x.hidden = true; });
@@ -3880,6 +4029,16 @@
         kpiFacturado.textContent = fmt(res.total);
         document.getElementById("kpiFacturadoNota").textContent =
           mes === (new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, "0")) ? "Mes en curso" : mes;
+      }
+      if (!esAdmin) {
+        // Conductor: tres cifras grandes arriba y una tarjeta por viaje (fecha, pasajero, monto, forma y si se cobró).
+        resumen.innerHTML = res.viajes.length ? '<div class="pago-stats"><div class="pago-stat"><small>Total</small><strong>' + escapar(fmt(res.total)) + '</strong></div><div class="pago-stat"><small>Cobrado</small><strong>' + escapar(fmt(res.cobrado)) + '</strong></div><div class="pago-stat"><small>Pendiente</small><strong>' + escapar(fmt(res.pendiente || 0)) + '</strong></div></div>' + '<p class="pago-sub" style="margin:0 0 4px;">' + res.viajes.length + (res.viajes.length === 1 ? " viaje" : " viajes") + ' este mes</p>' : "Sin viajes finalizados en este mes.";
+        document.getElementById("histLista").innerHTML = res.viajes.map(function (v) {
+          var d = new Date(v.fecha), fch = isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" }) + " · " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+          return '<div class="pago-item"><div class="pago-fila"><strong>' + escapar(fch) + '</strong><b>' + escapar(fmt(v.monto)) + '</b></div>' +
+            (v.nombre ? '<div class="pago-sub">' + escapar(v.nombre) + '</div>' : "") +
+            '<div class="pago-chips">' + escapar(v.forma || "") + ' ' + (v.pagado ? '<span class="badge badge-verde">Cobrado</span>' : '<span class="badge badge-ambar">Sin cobrar</span>') + '</div></div>';
+        }).join("");
       }
       filas.innerHTML = res.viajes.map(function (v, i) {
         var d = new Date(v.fecha);
@@ -4161,7 +4320,7 @@
   document.getElementById("btnCompartirQr").addEventListener("click", function () {
     var texto = "Pide tu traslado conmigo en Rumbo: " + miLinkPasajero;
     if (navigator.share) {
-      navigator.share({ title: "Rumbo — Traslado móvil", text: texto, url: miLinkPasajero }).catch(function () {});
+      navigator.share({ title: "Rumbo móvil", text: texto, url: miLinkPasajero }).catch(function () {});
     } else {
       window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
     }
@@ -4173,7 +4332,7 @@
     if (!w) { window.open(document.getElementById("miQrImg").src, "_blank"); return; }
     w.document.write(
       '<html><head><title>QR Rumbo</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;">' +
-      '<h1 style="margin:0 0 6px;">Rumbo</h1><p style="margin:0 0 24px;color:#555;">Traslado móvil' +
+      '<h1 style="margin:0 0 6px;">Rumbo</h1><p style="margin:0 0 24px;color:#555;">Rumbo móvil' +
       (nombre ? " con " + nombre.replace(/[<>&]/g, "") : "") + '</p>' +
       '<img src="' + document.getElementById("miQrImg").src + '" style="width:320px;height:320px;" onload="setTimeout(function(){window.print()},300)">' +
       '<p style="margin-top:20px;font-size:14px;color:#333;">Escanea para cotizar y pedir tu viaje</p></body></html>');
@@ -4282,6 +4441,17 @@
 
   // Membresía del conductor: se pide al abrir la sección (no va en los sondeos). Todo lo calcula el servidor.
   function fechaCorta(v) { var d = new Date(v); return isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" }); }
+  // Mensaje del bono por objetivo según el tramo alcanzado. El bono NO se suma entre tramos: vale el tramo más alto alcanzado.
+  function textoBonoObjetivo(escalones, acumulado) {
+    var e = (escalones || []).slice().sort(function (x, y) { return x[0] - y[0]; });
+    if (!e.length) return "";
+    var ORD = ["primer", "segundo", "tercer"], hechos = e.filter(function (x) { return x[0] <= acumulado; }), n = hechos.length, sig = e[n];
+    if (!n) return "Vas por tu primer bono. Sigue así: con " + fmt(e[0][0] - acumulado) + " más de membresía ganas " + fmt(e[0][1]) + ".";
+    var ganado = hechos[n - 1][1];
+    if (!sig) return "¡Llegaste al bono máximo! Ganaste " + fmt(ganado) + " este mes.";
+    if (n === 1) return "¡Ganaste " + fmt(ganado) + "! Sigue así: con " + fmt(sig[0] - acumulado) + " más de membresía ganas otros " + fmt(sig[1] - ganado) + " y tu bono sube a " + fmt(sig[1]) + ".";
+    return "¡Alcanzaste el " + (ORD[n - 1] || (n + "º")) + " bono! Tu bono sube a " + fmt(ganado) + " (reemplaza al anterior, no se suma). Sigue así: con " + fmt(sig[0] - acumulado) + " más ganas otros " + fmt(sig[1] - ganado) + " y llegas a " + fmt(sig[1]) + ".";
+  }
   function textoSaldoMembresia(res) {
     var html;
     if (res.en_revision) html = "<strong>En revisión</strong>Tu saldo lo está revisando el administrador.";
@@ -4307,18 +4477,13 @@
         var mk = document.createElement("div"); mk.className = "mem-marca"; mk.style.left = Math.round(e[0] / escala * 100) + "%"; barra.appendChild(mk);
       });
       document.getElementById("memTopeReal").textContent = fmt(escala);
-      document.getElementById("memBonoTexto").textContent = conBono
-        ? "Devolución de bienvenida" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + ": " +
-          (res.escalones || []).map(function (e) { return fmt(e[0]) + " → " + fmt(e[1]); }).join(" · ") + "." +
-          (Number(res.bono) > 0 ? " Este mes ya ganaste " + fmt(res.bono) + "." : "") +
-          (function () {
-            var sig = (res.escalones || []).filter(function (e) { return e[0] > res.acumulado; })[0];
-            return sig ? " Te faltan " + fmt(sig[0] - res.acumulado) + " para sumar " + fmt(sig[1] - (Number(res.bono) || 0)) + " más." : "";
-          })()
-        : (res.bono_desde ? "Tu devolución de bienvenida empieza el " + fechaCorta(res.bono_desde) + " y dura 3 meses. Hasta entonces rige el plan normal." : "");
+      document.getElementById("memBonoTexto").innerHTML = conBono
+        ? "<strong>Bono por objetivo" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + "</strong><br>" + escapar(textoBonoObjetivo(res.escalones, res.acumulado)) + "<br>Los bonos no se acumulan: recibes el del tramo más alto que alcances en el mes." +
+          '<details style="margin-top:6px;"><summary>Ver los tramos</summary>' + (res.escalones || []).slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (e) { return "<div>" + fmt(e[0]) + " de membresía → bono de " + fmt(e[1]) + "</div>"; }).join("") + "</details>"
+        : (res.bono_desde ? "Tu bono por objetivo empieza el " + fechaCorta(res.bono_desde) + " y dura 3 meses." : "");
       rel.classList.toggle("lleno", !!res.liberado);
-      acum.textContent = res.liberado ? "✓ Llegaste al tope de " + fmt(res.tope) + ": el resto del mes pagas 0 %."
-        : "Este mes llevas " + fmt(res.acumulado) + " de " + fmt(res.tope) + ". Te faltan " + fmt(res.falta) + " para pagar 0 %.";
+      acum.textContent = res.liberado ? "Llegaste al tope de " + fmt(res.tope) + ": el resto del mes pagas 0 %."
+        : "Este mes llevas " + fmt(res.acumulado) + " de " + fmt(res.tope) + ". Suma " + fmt(res.falta) + " más y el resto del mes pagas 0 %.";
       saldo.innerHTML = textoSaldoMembresia(res);
       saldo.classList.toggle("debe", res.saldo < 0);
       document.getElementById("memUltimas").innerHTML = (res.ultimas || []).length ? '<div class="flota-titulo">Últimas transferencias</div>' +
@@ -5927,8 +6092,51 @@
       b.addEventListener("click", function () { document.getElementById("modalOpcionesViaje").hidden = true; orig.click(); });
       lista.appendChild(b);
     });
+    var sec = document.getElementById("tvSec");
+    if (sec && !sec.hidden && sec.dataset.id) {
+      var idSoltar = sec.dataset.id, bs = document.createElement("button");
+      bs.type = "button"; bs.className = "opcion-viaje";
+      bs.textContent = "No puedo hacer este viaje";
+      bs.addEventListener("click", function () { document.getElementById("modalOpcionesViaje").hidden = true; abrirSoltar(idSoltar); });
+      lista.appendChild(bs);
+    }
     document.getElementById("modalOpcionesViaje").hidden = false;
   }
+
+  /* «No puedo hacer este viaje»: solo antes de iniciar. Los ids son los mismos que MOTIVOS_SOLTAR del servidor (lo comprueba pruebas/t_soltar_boton.js). */
+  var MOTIVOS_SOLTAR_APP = [
+    { id: "inseguridad", texto: "Me siento inseguro con este viaje" },
+    { id: "falla_mecanica", texto: "Mi auto tiene una falla" },
+    { id: "pasajero_ausente", texto: "El pasajero no aparece" },
+    { id: "error_solicitud", texto: "La solicitud tiene un error" },
+    { id: "otro", texto: "Otro motivo" }
+  ];
+  var soltandoViaje = false;
+  function abrirSoltar(pedidoId) {
+    var lista = document.getElementById("soltarLista");
+    lista.innerHTML = "";
+    MOTIVOS_SOLTAR_APP.forEach(function (mo) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "opcion-viaje"; b.textContent = mo.texto;
+      b.addEventListener("click", function () { soltarViajeConductor(pedidoId, mo); });
+      lista.appendChild(b);
+    });
+    document.getElementById("modalSoltar").hidden = false;
+  }
+  async function soltarViajeConductor(pedidoId, mo) {
+    if (soltandoViaje) return;
+    var aviso = mo.id === "pasajero_ausente" ? "Se cancela el viaje y no se cobra nada al pasajero." : "El viaje pasa a otro conductor, con el mismo precio y el mismo PIN.";
+    document.getElementById("modalSoltar").hidden = true;
+    if (!(await rbConfirmar("¿Soltar este viaje? " + aviso, { si: "Sí, soltarlo", no: "Volver" }))) { document.getElementById("modalSoltar").hidden = false; return; }
+    soltandoViaje = true;
+    apiPost({ accion: "no_puedo_hacer_viaje", pedido_id: pedidoId, motivo: mo.id }).then(function (res) {
+      soltandoViaje = false;
+      if (!res || !res.ok) { rbAlerta("No se pudo soltar el viaje: " + ((res && res.error) || "intenta de nuevo")); return; }
+      rbAlerta(res.estado === "CANCELADO" ? "Listo, el viaje quedó cancelado y no se cobró nada." : "Listo, avisamos al pasajero y buscamos otro conductor. Gracias por avisar.");
+      refrescarViajes();
+    }).catch(function () { soltandoViaje = false; rbAlerta(TEXTO_SIN_CONEXION); });
+  }
+  document.getElementById("btnSoltarCerrar").addEventListener("click", function () { document.getElementById("modalSoltar").hidden = true; });
   [["tvActNav", "tvIr"], ["tvActEditar", "tvEditar"], ["tvActChat", "burbujaChat"]].forEach(function (par) {
     document.getElementById(par[0]).addEventListener("click", function (ev) { ev.stopPropagation(); document.getElementById(par[1]).click(); });
   });
@@ -6415,7 +6623,6 @@
 
   function avisosCierre(r) {
     var av = [];
-    if (r.metodo === "COTIZADO") av.push("No se inició el viaje con «Iniciar viaje»: se cobra lo cotizado.");
     if (r.ida_vuelta && r.metodo !== "COTIZADO" && !r.llegada_marcada) av.push("No marcaste «Llegué al destino»: la espera no se pudo medir por separado; se cobra por el tiempo total.");
     if (r.ida_vuelta && r.llegada_marcada && !r.regreso_marcado) av.push("No marcaste «Iniciar regreso»: la espera se cuenta hasta ahora.");
     if (!r.cobro_real && r.metodo !== "COTIZADO") av.push("El cobro con valores reales está desactivado: se cobra lo cotizado.");
@@ -7630,17 +7837,52 @@
     pintarMapaEspera();
   }
 
-  // Máximo una consulta cada 2 minutos: el sondeo repinta la lista seguido.
+  // Resumen del DÍA en la hoja (lo ganado hoy, viajes de hoy y su lista). Máximo una consulta cada 2 minutos: el sondeo repinta la lista seguido.
+  // Usa la misma respuesta de «Mis ganancias» (mis_viajes_conductor): resumen.hoy e historial; no calcula dinero nuevo.
+  var viajesHoyCant = 0;
   function cargarResumenMes() {
     if (Date.now() - ultimoResumenMes < 120000) return;
     ultimoResumenMes = Date.now();
-    var h = new Date();
-    var mes = h.getFullYear() + "-" + String(h.getMonth() + 1).padStart(2, "0");
-    api({ accion: "historial_pagos", mes: mes, vista: MODO }).then(function (res) {
-      if (!res || !res.ok || !res.viajes) { ultimoResumenMes = 0; return; }
-      document.getElementById("tabFacturado").textContent = fmt(res.total);
-      document.getElementById("tabViajes").textContent = String(res.viajes.length);
+    api({ accion: "mis_viajes_conductor" }).then(function (r) {
+      if (!r || !r.ok || !r.resumen || !r.resumen.hoy) { ultimoResumenMes = 0; return; }
+      pintarResumenMenu(r.resumen);
+      var d0 = new Date(), hoyTxt = d0.getFullYear() + "-" + ("0" + (d0.getMonth() + 1)).slice(-2) + "-" + ("0" + d0.getDate()).slice(-2);
+      document.getElementById("tabFacturado").textContent = fmt(r.resumen.hoy.ganancia);
+      document.getElementById("tabViajes").textContent = String(r.resumen.hoy.viajes);
+      viajesHoyCant = r.resumen.hoy.viajes || 0;
+      var hoyViajes = (r.historial || []).filter(function (v) { var f = new Date(v.fecha); return !isNaN(f.getTime()) && f.getFullYear() + "-" + ("0" + (f.getMonth() + 1)).slice(-2) + "-" + ("0" + f.getDate()).slice(-2) === hoyTxt; });
+      document.getElementById("tabViajesHoy").innerHTML = hoyViajes.length ? '<h4>Viajes de hoy</h4>' + hoyViajes.map(function (v) {
+        var f = new Date(v.fecha), hora = ("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2);
+        return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(hora) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div><div class="mv-ruta">' + escapar(v.origen) + ' → ' + escapar(v.destino) + '</div></div>';
+      }).join("") : "";
     }).catch(function () { ultimoResumenMes = 0; });
+  }
+  // «Buscando viajes» con movimiento mientras está conectado y disponible; quieto y sin ruido cuando está desconectado. Los textos rotan para dar expectativa.
+  var buscTimer = null, buscIdx = 0;
+  function pintarBuscando() {
+    var b = document.getElementById("tabBuscando");
+    if (!b) return;
+    var especial = (jornadaActual && jornadaActual.agotada) || (docsResumen && !docsResumen.habilitado) || (conectadoManual && estaBloqueadoAhora());
+    var rotar = false;
+    if (especial) { b.classList.remove("visible"); }
+    else if (!conectadoManual) {
+      b.classList.add("visible", "quieto");
+      document.getElementById("buscTitulo").textContent = "Estás desconectado";
+      document.getElementById("buscSub").textContent = "Toca Iniciar para recibir viajes.";
+    } else {
+      b.classList.add("visible"); b.classList.remove("quieto");
+      document.getElementById("buscTitulo").textContent = "Buscando viajes";
+      rotar = true;
+    }
+    if (!rotar) { if (buscTimer) { clearInterval(buscTimer); buscTimer = null; } return; }
+    var frases = function () {
+      var f = ["Los pasajeros cercanos ya pueden verte.", "Mantén la app abierta para no perder pedidos.", "Cada viaje cuenta. Ya viene el próximo."];
+      if (viajesHoyCant > 0) f.splice(1, 0, "Hoy ya llevas " + viajesHoyCant + (viajesHoyCant === 1 ? " viaje." : " viajes."));
+      return f;
+    };
+    var poner = function () { var f = frases(), el = document.getElementById("buscSub"); el.style.opacity = 0; setTimeout(function () { el.textContent = f[buscIdx++ % f.length]; el.style.opacity = ""; }, 250); };
+    document.getElementById("buscSub").textContent = frases()[buscIdx % frases().length];
+    if (!buscTimer) buscTimer = setInterval(poner, 5000);
   }
 
   // "Disponible" salvo que ahora caiga dentro de un bloqueo de Ajustes.
@@ -7692,6 +7934,7 @@
     pintarTiempoDisponible();
     bc.textContent = conectadoManual ? "Desconectar" : "Iniciar";
     bc.className = "btn-conexion" + (conectadoManual ? " desconectar" : "");
+    pintarBuscando();
     badge.hidden = false;
     if (jornadaActual && jornadaActual.agotada) {
       badge.className = "btn-estado-conexion desconectado";
