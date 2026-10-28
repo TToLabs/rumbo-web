@@ -2516,7 +2516,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 77;
+  var APP_VERSION = 78;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -6695,7 +6695,8 @@
   /* Ventana de cierre: antes de cobrar se le muestra al conductor lo que se va
      a cobrar (el mismo cálculo del servidor) y la espera medida. */
   function filasCierre(r) {
-    var filas = [["Valor cotizado", fmt(r.cotizado), ""]];
+    var cobraAlPasajero = (r.forma_pago === "EFECTIVO" || r.forma_pago === "TRANSFERENCIA") && Number(r.total_cobrar) > 0;
+    var filas = cobraAlPasajero ? [] : [["Valor cotizado", fmt(r.cotizado), ""]];
     if (r.ida_vuelta) {
       if (r.espera_real_min !== null && r.espera_real_min !== undefined) {
         filas.push(["Espera en el destino", Math.round(r.espera_real_min) + " min (incluidos " + r.espera_cotizada_min + ")", r.extra_espera_min > 0 ? "extra" : ""]);
@@ -6705,7 +6706,10 @@
     if (r.espera_recogida_valor > 0) filas.push(["Espera en la recogida", Math.round(r.espera_recogida_min) + " min (3 sin costo) · +" + fmt(r.espera_recogida_valor), "extra"]);
     if (r.minutos_reales > 0) filas.push(["Tiempo total del viaje", Math.round(r.minutos_reales) + " min", ""]);
     if (r.km_reales > 0) filas.push(["Distancia medida", String(r.km_reales).replace(".", ",") + " km", ""]);
-    filas.push(["Tu ganancia por el viaje", fmt(r.a_cobrar), "total"]);
+    // Lo que paga el pasajero (con el cargo de la app) es lo que se le cobra en efectivo o transferencia. Al finalizar solo se muestra eso:
+    // la ganancia del conductor aparece después de calificar al pasajero (decisión de Alberto, 28-oct-2026).
+    if (cobraAlPasajero) filas.push(["Cóbrale al pasajero", fmt(r.total_cobrar), "total"]);
+    else filas.push(["Tu ganancia por el viaje", fmt(r.a_cobrar), "total"]);
     return filas;
   }
 
@@ -6751,6 +6755,19 @@
     document.getElementById("cobroQue").textContent = queHacer;
     var n = document.getElementById("cobroNota"); n.textContent = nota; n.hidden = !nota;
     var cn = document.getElementById("cobroNeto"); cn.textContent = neto; cn.hidden = !neto;
+    document.getElementById("cobroTit").textContent = "Cobrar el pago";
+    document.getElementById("modalCobro").hidden = false;
+  }
+  // Lo que ganó el conductor se muestra recién después de calificar al pasajero (o de omitir).
+  var gananciaPendiente = null;
+  function mostrarGanancia(g) {
+    cobroPedidoId = "";
+    document.getElementById("cobroTit").textContent = "Tu ganancia por el viaje";
+    document.getElementById("cobroQuien").textContent = "";
+    document.getElementById("cobroMonto").textContent = fmt(g.total);
+    document.getElementById("cobroQue").textContent = "";
+    var n = document.getElementById("cobroNota"); n.textContent = ""; n.hidden = true;
+    var cn = document.getElementById("cobroNeto"); cn.textContent = g.texto; cn.hidden = !g.texto;
     document.getElementById("modalCobro").hidden = false;
   }
   document.getElementById("btnCobroListo").addEventListener("click", function () {
@@ -6769,12 +6786,10 @@
       var aCobrar = res.total_cobrar || res.total_final;   // lo que paga el pasajero: lo que el conductor cobra en efectivo o recibe por transferencia
       var fp = res.forma_pago || forma;
       var queHacer = fp === "EFECTIVO" ? "Cóbrale " + fmt(aCobrar) + " en efectivo." : fp === "TRANSFERENCIA" ? "El pasajero te transferirá " + fmt(aCobrar) + ". Cuando llegue, toca «Recibí la transferencia»." : fp === "POR_ELEGIR" ? "El pasajero elegirá cómo pagar. Si es en efectivo, cóbrale " + fmt(aCobrar) + "." : "El pasajero paga con tarjeta: tu ganancia queda en tu billetera.";
-      // Desglose del pago: lo que gana (peajes incluidos) menos la membresía (10 % de lo que no es peaje) = neto.
-      var desglose = res.ganancia > 0 ? "Ganaste " + fmt(res.ganancia) + (res.peajes > 0 ? " (peajes " + fmt(res.peajes) + ")" : "") +
-        (res.membresia > 0 ? "\nMembresía: −" + fmt(res.membresia) + "\nTotal: " + fmt(res.ganancia - res.membresia) : "") + "\n\n" : "";
       var ped = (pedidosEnCursoActuales || []).filter(function (x) { return x.pedido_id === pedidoId; })[0];
       var nota = (res.peaje_extra > 0 ? "Incluye peajes tomados que detectó el GPS: " + fmt(res.peaje_extra) + ".\n" : res.ajuste > 0 ? "Subió por tiempo y km reales.\n" : "") + (res.aviso_pago ? res.aviso_pago + "\n" : "");
-      mostrarCobro(pedidoId, ped && ped.nombre ? String(ped.nombre).split(" ")[0] : "El pasajero", fp, aCobrar, queHacer, desglose.replace(/\n\n$/, ""), nota);
+      gananciaPendiente = res.ganancia > 0 ? { total: res.ganancia, texto: "" } : null;   // solo lo que se le ofreció; el desglose con descuentos está en la ficha del viaje
+      mostrarCobro(pedidoId, ped && ped.nombre ? String(ped.nombre).split(" ")[0] : "El pasajero", fp, aCobrar, queHacer, "", nota);
       document.getElementById("listaEnCurso").dataset.ids = ""; // fuerza redibujo
       cargarViajesEnCurso();
     }).catch(function (err) { rbAlerta(TEXTO_SIN_CONEXION); boton.disabled = false; });
@@ -7457,6 +7472,7 @@
   function cerrarCalificarPasajero() {
     document.getElementById("modalCalificarPasajero").hidden = true;
     pedidoACalificar = null;
+    if (gananciaPendiente) { var g = gananciaPendiente; gananciaPendiente = null; mostrarGanancia(g); }
   }
 
   // La lista guardada (mvCache) no se refresca sola: sin esto el botón «Calificar» seguía visible y la hoja quedaba atrapada.

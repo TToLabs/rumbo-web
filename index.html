@@ -378,9 +378,8 @@
   /* ---------- Mis viajes (historial) ---------- */
   .viaje-fila {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 12px 0; border-bottom: 1px solid var(--border);
+    padding: 12px 14px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
   }
-  .viaje-fila:last-child { border-bottom: none; }
   .viaje-ruta { font-size: 14px; font-weight: 600; color: var(--text); }
   .viaje-detalle { font-size: 14px; color: var(--text-2); margin-top: 2px; }
 
@@ -598,7 +597,7 @@
   #btnMenuP.con-mensajes { position: relative; }
   #btnMenuP.con-mensajes::after { content: attr(data-n); position: absolute; top: 2px; right: 2px; box-sizing: border-box; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 12px; font-weight: 700; line-height: 14px; text-align: center; color: #fff; background: var(--acento, #ef6d19); border: 2px solid var(--surface, #fff); }
   .modal-opc.pagina#modalMensajeLeer { z-index: 71; }
-  .msg-fila { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 56px; padding: 12px 6px; text-align: left; font: inherit; color: var(--text); background: none; border: none; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .msg-fila { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 56px; padding: 12px 14px; margin-bottom: 10px; text-align: left; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; }
   .msg-fila:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
   .msg-punto { flex: none; width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; background: transparent; }
   .msg-fila.nuevo .msg-punto { background: var(--naranja, #ef6d19); }
@@ -2510,7 +2509,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 80;
+  var APP_VERSION = 81;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
