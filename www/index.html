@@ -235,6 +235,22 @@
   .reordenando, .reordenando input { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   .fila-arrastrando { outline: 2px solid #EF6D19; outline-offset: 2px; border-radius: 12px; box-shadow: 0 6px 18px rgba(17, 48, 74, .28); transform: scale(1.02); position: relative; z-index: 3; transition: transform .12s; }
   .parada-fila .ruta-marca { display: flex; align-items: center; justify-content: center; }
+  /* Pestaña para mover una parada intermedia: pegada al borde derecho del campo y de color turquesa suave para reconocerla (el campo mantiene su ancho).
+     Solo la manito es la pestaña: se agarra y se arrastra. Las flechitas grises, fuera de la pestaña, solo indican hacia dónde se puede mover. */
+  .ruta:has(.parada-mango), .wiz-hoja .ruta:has(.parada-mango) { padding-right: 22px; }
+  .parada-input-wrap .parada-mango { position: absolute; right: -17px; top: 50%; transform: translateY(-50%); z-index: 2; display: flex; flex-direction: column; align-items: center; touch-action: none; }
+  .parada-mango .mango-mano { position: relative; display: flex; align-items: center; justify-content: center; width: 18px; height: 34px; margin: 3px 0;
+    border: 1px solid #0EA5B0; border-left: 0; border-radius: 0 10px 10px 0; background: #D4F0F2; color: var(--primary); cursor: grab; box-shadow: 0 1px 2px rgba(17,48,74,.10);
+    transition: background .12s, color .12s, box-shadow .12s; }
+  .parada-mango .mango-mano::after { content: ""; position: absolute; inset: -5px -8px -5px -2px; }   /* zona táctil de 44 px aunque se vea chica */
+  .parada-mango .mango-mano svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .parada-mango .mg-flecha { display: flex; align-items: center; justify-content: center; width: 18px; height: 10px; color: var(--text-3); }
+  .parada-mango .mg-flecha svg { width: 12px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .parada-mango .mg-flecha.oculta { visibility: hidden; }
+  .fila-arrastrando .mango-mano { background: #0EA5B0; color: #fff; cursor: grabbing; box-shadow: 0 3px 8px rgba(17,48,74,.30); }
+  .fila-arrastrando .mg-flecha { color: var(--text); }
+  .parada-input-wrap.con-mango input { padding-right: 40px; }
+  .parada-input-wrap.con-mango .btn-quitar-parada { right: 8px; }
   .parada-quitar-celda { display: flex; }
   .parada-input-wrap, .ruta-input-wrap { position: relative; }
   /* Escribir una dirección: el teclado del teléfono ocupa media pantalla y
@@ -410,13 +426,21 @@
 
   /* ---------- Confianza ---------- */
   .confianza {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 8px; margin: 20px 2px 0;
+    display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 2px 0;
   }
   .confianza-item {
-    display: flex; flex-direction: column; align-items: center; text-align: center;
-    gap: 6px; font-size: 12px; line-height: 1.3; color: var(--text-2);
+    display: flex; flex-direction: row; align-items: center; text-align: left;
+    gap: 10px; font-size: 15px; line-height: 1.3; color: var(--text-2);
   }
   .confianza-item svg { width: 24px; height: 24px; color: var(--primary); }
+  /* Línea de confianza en la pantalla de inicio: un mensaje a la vez, discreta, bajo los campos de la ruta. */
+  .confianza-linea { display: flex; align-items: center; gap: 8px; min-height: 40px; margin: 6px 2px 0; font-size: 15px; font-weight: 500; line-height: 1.3; color: var(--text-2); }
+  .confianza-linea svg { flex: none; width: 20px; height: 20px; color: var(--primary); }
+  .confianza-linea span { transition: opacity .3s; }
+  .confianza-linea.cambia span { opacity: 0; }
+  .confianza-linea[hidden] { display: none; }
+  /* «Mi cuenta»: lo que no se está editando se ve como dato, no como campo vacío por llenar. */
+  #cardSesion input[readonly] { background: var(--surface-2, #eef2f4); border-color: transparent; color: var(--text); }
 
   /* ---------- Botón principal fijo al pulgar (sticky bottom) ---------- */
   .btn-sticky-wrap {
@@ -1184,6 +1208,9 @@
   <symbol id="i-banco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5M5 10v7M10 10v7M14 10v7M19 10v7M3 20h18"/></symbol>
   <symbol id="i-tarjeta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/></symbol>
     <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-arriba" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+    <symbol id="i-abajo" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-mano" viewBox="0 0 24 24"><path d="M8 13V6.5a1.5 1.5 0 0 1 3 0V11m0-1V5a1.5 1.5 0 0 1 3 0v6m0-4.5a1.5 1.5 0 0 1 3 0V13m0-3a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-1.2a6 6 0 0 1-5-2.7L4.6 13.6a1.5 1.5 0 0 1 2.5-1.6L8 13"/></symbol>
 </svg>
 
 <div class="app">
@@ -1265,6 +1292,9 @@
           <svg class="ico ico-sm" aria-hidden="true"><use href="#i-plus"/></svg>
           Agregar parada
         </button>
+        <p class="confianza-linea" id="confianzaLinea" aria-live="off">
+          <svg class="ico ico-sm" aria-hidden="true"><use id="confianzaIco" href="#i-etiqueta"/></svg><span id="confianzaTxt">Ve el precio de tu viaje antes de pedirlo</span>
+        </p>
       </div>
       <div class="wiz-pie">
         <div class="wiz-chips wiz-chips-fijos" role="group" aria-label="Opciones del viaje">
@@ -1717,18 +1747,23 @@
       <p class="nota" id="sesionTexto" style="margin:0 0 14px;"></p>
       <div class="campo" style="margin-bottom:12px;">
         <label class="campo-label" for="cuentaNombre">Nombre y apellido</label>
-        <input type="text" id="cuentaNombre" autocomplete="name">
+        <input type="text" id="cuentaNombre" autocomplete="name" readonly aria-describedby="cuentaNombreNota">
+        <p class="nota" id="cuentaNombreNota" style="margin:4px 2px 0;">Es el de tu cédula y no se puede cambiar.</p>
       </div>
       <div class="campo" style="margin-bottom:12px;">
         <label class="campo-label" for="cuentaTelefono">WhatsApp</label>
-        <input type="text" id="cuentaTelefono" inputmode="numeric" autocomplete="tel">
+        <input type="text" id="cuentaTelefono" inputmode="numeric" autocomplete="tel" readonly>
       </div>
       <div class="campo" style="margin-bottom:14px;">
         <label class="campo-label" for="cuentaEmail">Correo</label>
-        <input type="email" id="cuentaEmail" autocomplete="email">
+        <input type="email" id="cuentaEmail" autocomplete="email" readonly>
       </div>
-      <button class="btn btn-medio" id="btnGuardarCuenta" type="button">Guardar mis datos</button>
-      <p class="nota" id="cuentaEditMsg" style="margin:10px 2px 0;"></p>
+      <button class="btn btn-medio" id="btnEditarCuenta" type="button">Editar</button>
+      <div class="btn-row" id="filaGuardarCuenta" hidden>
+        <button class="btn btn-chico" id="btnCancelarEdicionCuenta" type="button">Cancelar</button>
+        <button class="btn btn-medio" id="btnGuardarCuenta" type="button">Guardar mis datos</button>
+      </div>
+      <p class="nota" id="cuentaEditMsg" role="status" style="margin:10px 2px 0;"></p>
     </section>
 
     <div class="ajustes-grupo solo-sesion" style="display:none;">Actividad</div>
@@ -1773,7 +1808,7 @@
     <div class="confianza">
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
-        Ves el precio antes de pedir
+        Ve el precio de tu viaje antes de pedirlo
       </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
@@ -1781,7 +1816,7 @@
       </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
-        Cobertura dentro y fuera de Santiago
+        Cobertura de viajes en todo el país
       </div>
     </div>
   </div>
@@ -2027,8 +2062,12 @@
   // Un lugar con nombre propio (aeropuerto, mall, clínica) conserva el nombre que eligió el pasajero delante de la dirección:
   // "Aeropuerto Internacional Arturo Merino Benítez, Av. Armando Cortínez Ote. 1704, Pudahuel". Antes se perdía, el conductor veía
   // solo la calle y el servidor no reconocía el aeropuerto. Una dirección de calle ya empieza con su nombre: queda igual.
+  // Solo calle, número y comuna: sin el código postal, la región ni el país (las coordenadas del lugar viajan aparte).
+  function direccionCorta(d) {
+    return String(d || "").replace(/,\s*Chile\s*$/i, "").replace(/,\s*Región[^,]*$/i, "").replace(/\b\d{7}\s+/, "").trim();
+  }
   function direccionConNombre(lugar) {
-    var dir = lugar.formatted_address || "";
+    var dir = direccionCorta(lugar.formatted_address || "");
     var nombre = String(lugar.name || "").trim();
     return nombre && dir.indexOf(nombre) !== 0 ? nombre + ", " + dir : dir;
   }
@@ -2509,7 +2548,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 81;
+  var APP_VERSION = 82;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2698,6 +2737,8 @@
     cont.innerHTML = '<p class="nota" style="margin:0;">Aquí verás tus viajes terminados.</p>';
     document.getElementById("bloqueReservas").hidden = true;
     api({ accion: "mis_viajes_pasajero", pasajero_token: sesion.token }).then(function (res) {
+      // Sesión cerrada en otro teléfono (el servidor guarda 5 por cuenta): antes la lista quedaba vacía sin avisar y parecía que se habían borrado los viajes.
+      if (res && res.requiere_login) { salirDeCuentaPasajero(); rbAlerta("Tu sesión se cerró. Ingresa de nuevo."); return; }
       // Reservas: viajes agendados que todavía no empezaron (esperando conductor o ya aceptados). Se arma con DOM, sin datos directos en el HTML.
       if (res.ok && res.reservas && res.reservas.length) {
         var lr = document.getElementById("listaReservas");
@@ -2930,6 +2971,20 @@
     mostrarPestana("cuenta");
   }
 
+  // Los datos ya ingresados no se tocan por error: solo se editan con el botón «Editar» (WhatsApp y correo; el nombre nunca).
+  function editarCuenta(si) {
+    ["cuentaTelefono", "cuentaEmail"].forEach(function (id) { document.getElementById(id).readOnly = !si; });
+    document.getElementById("btnEditarCuenta").hidden = si;
+    document.getElementById("filaGuardarCuenta").hidden = !si;
+    (si ? document.getElementById("cuentaTelefono") : document.getElementById("btnEditarCuenta")).focus();
+  }
+  document.getElementById("btnEditarCuenta").addEventListener("click", function () { editarCuenta(true); });
+  document.getElementById("btnCancelarEdicionCuenta").addEventListener("click", function () {
+    var s = obtenerSesionPasajero();
+    if (s && s.pasajero) { document.getElementById("cuentaTelefono").value = s.pasajero.telefono || ""; document.getElementById("cuentaEmail").value = s.pasajero.email || ""; }
+    document.getElementById("cuentaEditMsg").textContent = "";
+    editarCuenta(false);
+  });
   document.getElementById("btnGuardarCuenta").addEventListener("click", function () {
     accionCuenta({
       accion: "actualizar_pasajero",
@@ -2938,7 +2993,7 @@
       email: document.getElementById("cuentaEmail").value.trim()
     }, "cuentaEditMsg", function (res, sesion) {
       var telefonoAntes = sesion.pasajero && sesion.pasajero.telefono;
-      sesion.pasajero = res.pasajero; guardarSesionPasajero(sesion); pintarSesionPasajero();
+      sesion.pasajero = res.pasajero; guardarSesionPasajero(sesion); pintarSesionPasajero(); editarCuenta(false);
       var m = document.getElementById("cuentaEditMsg"); m.textContent = "Datos guardados."; m.className = "nota ok";
       // La huella guarda el teléfono con el que se activó: si cambió, ya no sirve.
       if (bioActivada() && String(res.pasajero.telefono || "") !== String(telefonoAntes || "")) {
@@ -3693,12 +3748,17 @@
     fila.className = "parada-fila";
     fila.innerHTML =
       '<span class="ruta-marca"><span class="punto-parada"></span></span>' +
-      '<div class="parada-input-wrap">' +
+      '<div class="parada-input-wrap con-mango">' +
         '<label class="sr-only" for="' + id + '">Parada intermedia</label>' +
         '<input type="text" id="' + id + '" placeholder="Parada intermedia" autocomplete="off">' +
         '<button type="button" class="btn-quitar-parada" aria-label="Quitar parada">' +
           '<svg class="ico ico-sm" aria-hidden="true"><use href="#i-cerrar"/></svg>' +
         '</button>' +
+        '<div class="parada-mango" aria-hidden="true">' +
+          '<span class="mg-flecha mg-arriba"><svg><use href="#i-arriba"/></svg></span>' +
+          '<span class="mango-mano"><svg><use href="#i-mano"/></svg></span>' +
+          '<span class="mg-flecha mg-abajo"><svg><use href="#i-abajo"/></svg></span>' +
+        '</div>' +
       '</div>';
     contenedor.appendChild(fila);
     permitirReordenar(fila.querySelector("input"));
@@ -3724,6 +3784,8 @@
       var label = fila.querySelector("label");
       input.placeholder = "Parada intermedia " + numero;
       if (label) label.textContent = "Parada intermedia " + numero;
+      var sube = fila.querySelector(".mg-arriba");
+      if (sube) sube.classList.toggle("oculta", i === 0);   // la primera parada no sube (arriba está el origen); con una sola parada solo baja
     });
   }
 
@@ -3775,6 +3837,7 @@
       if (e.target.closest("button") || e.touches.length !== 1) return;
       x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
       clearTimeout(timer);
+      var enMano = !!e.target.closest(".parada-mango");
       timer = setTimeout(function () {
         if (slotsRuta().length < 2) return;
         activo = true;
@@ -3783,7 +3846,7 @@
         document.body.classList.add("reordenando");
         try { navigator.vibrate(18); } catch (err) {}
         marcar();
-      }, 450);
+      }, enMano ? 120 : 450);
     }, { passive: true });
     fila.addEventListener("touchmove", function (e) {
       var t = e.touches[0];
@@ -5902,6 +5965,8 @@ function svgAuto(rumbo, color, tipo) {
     b.addEventListener("click", function () {
       abrirMenuP(false);
       var cual = b.getAttribute("data-menu");
+      // Abrir otro ítem del menú cierra «Mis viajes» / «Mi cuenta»: si no, esa pantalla quedaba abierta debajo.
+      if (cual !== "cuenta" && cual !== "viajes" && document.body.classList.contains("cta-solo")) cerrarPantallaCuenta();
       if (cual === "cuenta") { mostrarPestana("cuenta"); abrirPantallaCuenta("cuenta"); }
       else if (cual === "viajes") { mostrarPestana("cuenta"); abrirPantallaCuenta("viajes"); }
       else if (cual === "pagos") { pintarMediosPago(); abrirModalOpc("modalMediosPago"); }
@@ -6004,10 +6069,26 @@ function svgAuto(rumbo, color, tipo) {
     if (pasoPedir === 2) { irAPaso(1); return true; }
     return false;
   };
-  document.getElementById("btnVolverCuenta").addEventListener("click", function () {
+  // Mensajes de confianza en la pantalla de inicio: uno a la vez, cada 5 s; se pausan al escribir en un campo y no rotan con «reducir movimiento».
+  (function () {
+    var linea = document.getElementById("confianzaLinea"), txt = document.getElementById("confianzaTxt"), ico = document.getElementById("confianzaIco");
+    if (!linea || !txt || !ico) return;
+    var msgs = [["#i-etiqueta", "Ve el precio de tu viaje antes de pedirlo"], ["#i-escudo", "Conductor identificado y viaje en vivo"], ["#i-pin", "Cobertura de viajes en todo el país"]], i = 0;
+    var quieto = false; try { quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    function escribiendo() { var a = document.activeElement; return !!a && (a.id === "origen" || a.id === "destino" || (a.closest && !!a.closest("#paradasContenedor"))); }
+    if (quieto) return;
+    setInterval(function () {
+      if (escribiendo() || linea.offsetParent === null) return;
+      linea.classList.add("cambia");
+      setTimeout(function () { i = (i + 1) % msgs.length; ico.setAttribute("href", msgs[i][0]); txt.textContent = msgs[i][1]; linea.classList.remove("cambia"); }, 300);
+    }, 5000);
+  })();
+  // Cierra «Mis viajes» / «Mi cuenta» (pantallas propias del menú) y vuelve a la pestaña de inicio.
+  function cerrarPantallaCuenta() {
     document.body.classList.remove("cta-solo", "cta-viajes", "cta-cuenta");
     mostrarPestana(document.getElementById("tabSeguimiento").disabled ? "cotizar" : "seguimiento");
-  });
+  }
+  document.getElementById("btnVolverCuenta").addEventListener("click", cerrarPantallaCuenta);
 
   function textoOpcionesViaje() {
     var f = document.getElementById("fechaSalida").value, h = document.getElementById("horaSalida").value;

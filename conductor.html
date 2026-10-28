@@ -2516,7 +2516,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 78;
+  var APP_VERSION = 79;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -3921,7 +3921,7 @@
         '<button type="button" class="liq-ver" data-ver-semana="' + offsetSemanaDe(v.fecha) + '">Ver el resumen de la semana<span aria-hidden="true">›</span></button>';
     }
     cuerpo.innerHTML = (dsg ? cas : '<p class="vd-monto">' + escapar(fmt(v.monto)) + '</p><p class="vd-sub">' + escapar(ESTADO_TXT_MV[v.estado] || "") + '</p>') +
-      '<dl class="vd-lista">' + fila("Fecha y hora", dsg ? "" : cuando) + fila("Pasajero", v.nombre) + fila("Desde", v.origen) +
+      '<dl class="vd-lista">' + fila("Fecha y hora", dsg ? "" : cuando) + fila("Pasajero", nomP(v.nombre)) + fila("Desde", v.origen) +
         paradas.map(function (x, i) { return fila("Parada " + (i + 1), x); }).join("") + fila("Hasta", v.destino) +
         fila("Ida y vuelta", v.ida_vuelta === "SI" ? "Sí" : "") + fila("Forma de pago", origen === "viajes" ? v.forma : "") +
         (origen === "viajes" ? fila("Calificación", v.calificado ? "Ya calificaste al pasajero" : "Pendiente") : "") + '</dl>' +
@@ -3945,7 +3945,7 @@
         var chip = function (t) { return '<span class="badge badge-gris">' + escapar(t) + '</span>'; };
         return '<div class="mv-item" data-viaje="' + escapar(v.pedido_id) + '" role="button" tabindex="0"><div class="mv-fila"><strong>' + escapar(cuando) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div>' +
           '<div class="mv-ruta"><div class="mv-pto"><small>Desde</small><span>' + escapar(dirCorta(v.origen)) + '</span></div><div class="mv-pto"><small>Hasta</small><span>' + escapar(dirCorta(v.destino)) + '</span></div></div>' +
-          '<div class="mv-chips">' + (v.nombre ? chip(v.nombre) : "") + (id === "viajes" && v.forma ? chip(v.forma) : "") + (v.ida_vuelta === "SI" ? chip("Ida y vuelta") : "") +
+          '<div class="mv-chips">' + (v.nombre ? chip(nomP(v.nombre)) : "") + (id === "viajes" && v.forma ? chip(v.forma) : "") + (v.ida_vuelta === "SI" ? chip("Ida y vuelta") : "") +
             (nParadas ? chip(nParadas + (nParadas === 1 ? " parada" : " paradas")) : "") + '</div>' +
           (id === "viajes" && !v.calificado ? '<div class="mv-acciones"><button class="btn btn-chico" data-calificar="' + escapar(v.pedido_id) + '">Calificar al pasajero</button></div>' : "") +
           (id === "solicitudes" ? '<div class="mv-acciones"><button class="btn btn-ok" data-accion="confirmar_pedido" data-id="' + escapar(v.pedido_id) + '">Aceptar</button>' +
@@ -4086,7 +4086,7 @@
         document.getElementById("histLista").innerHTML = res.viajes.map(function (v) {
           var d = new Date(v.fecha), fch = isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" }) + " · " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
           return '<div class="pago-item"><div class="pago-fila"><strong>' + escapar(fch) + '</strong><b>' + escapar(fmt(v.monto)) + '</b></div>' +
-            (v.nombre ? '<div class="pago-sub">' + escapar(v.nombre) + '</div>' : "") +
+            (v.nombre ? '<div class="pago-sub">' + escapar(nomP(v.nombre)) + '</div>' : "") +
             '<div class="pago-chips">' + escapar(v.forma || "") + ' ' + (v.pagado ? '<span class="badge badge-verde">Cobrado</span>' : '<span class="badge badge-ambar">Sin cobrar</span>') + '</div></div>';
         }).join("");
       }
@@ -4106,7 +4106,7 @@
           "</tr>" +
           (hayDetalle
             ? '<tr class="hist-detalle" data-detalle-de="' + i + '" hidden><td colspan="' + colspan + '">' +
-                (v.nombre ? '<strong>' + escapar(v.nombre) + '</strong><br>' : "") +
+                (v.nombre ? '<strong>' + escapar(nomP(v.nombre)) + '</strong><br>' : "") +
                 (v.origen ? escapar(v.origen) : "Origen no disponible") + " → " + (v.destino ? escapar(v.destino) : "destino no disponible") +
               "</td></tr>"
             : "");
@@ -6060,7 +6060,7 @@
   }
 
   function modeloTarjeta(p) {
-    var puntos = puntosDelViaje(p), quien = String(p.nombre || "el pasajero");
+    var puntos = puntosDelViaje(p), quien = nomP(p.nombre || "el pasajero");
     if (p.estado_pago === "PENDIENTE") {
       var fp = p.forma_pago;
       return { etapa: "pago", id: p.pedido_id, etiqueta: "Viaje terminado", titulo: "Por cobrar " + fmt(montoCobrar(p)),
@@ -6131,7 +6131,7 @@
      (hasta la recogida); en las demás etapas solo se dice con quién va. Se pide cada 60 s o si el auto se movió más de 200 m. */
   var etaInfo = {};
   function actualizarInfoViaje(p, m) {
-    var info = document.getElementById("tvInfo"), quien = String(p.nombre || "el pasajero");
+    var info = document.getElementById("tvInfo"), quien = nomP(p.nombre || "el pasajero");
     var enRecogida = m.etapa === "recoger";
     document.getElementById("tvInfoQuien").textContent = enRecogida ? "Llegar por " + quien : m.etapa === "recogida" ? "Esperando a " + quien : m.etapa === "pago" ? "Viaje terminado" : "Con " + quien;
     var e = etaInfo[p.pedido_id] || (etaInfo[p.pedido_id] = {});
@@ -6978,7 +6978,7 @@
     emergenteId = p.pedido_id;
     emergenteVence = Date.parse(p.vence_en); emergenteTotal = 0;
     var paradas = String(p.paradas || "").split("|").filter(function (s) { return s.trim(); }).length;
-    document.getElementById("peTitulo").textContent = p.solicitante ? "Pedido nuevo · viaja " + p.nombre : "Pedido nuevo";
+    document.getElementById("peTitulo").textContent = p.solicitante ? "Pedido nuevo · viaja " + nomP(p.nombre) : "Pedido nuevo";
     document.getElementById("pePrecio").textContent = fmt(p.total);
     document.getElementById("peCuando").innerHTML = htmlProgramacion(p, true);
     document.getElementById("peOrigen").textContent = p.origen;
@@ -7029,7 +7029,7 @@
     if ("vibrate" in navigator) navigator.vibrate([300, 150, 300, 150, 300]);
     if ("Notification" in window && Notification.permission === "granted") {
       var n = new Notification("🚗 Pedido nuevo de viaje", {
-        body: p.nombre + "\n" + p.origen + " → " + p.destino + "\n" + fmt(p.total),
+        body: nomP(p.nombre) + "\n" + p.origen + " → " + p.destino + "\n" + fmt(p.total),
         tag: p.pedido_id,
         requireInteraction: true
       });
@@ -7181,14 +7181,16 @@
   function textoCalificacionPasajero(promedio, cantidad) {
     return promedio ? "★ " + String(promedio).replace(".", ",") + (cantidad ? " (" + cantidad + ")" : "") : "";
   }
+  // Al conductor solo se le muestra el PRIMER NOMBRE del pasajero (decisión de Alberto, 28-oct-2026); el administrador ve el nombre completo.
+  function nomP(n) { n = String(n == null ? "" : n).trim(); return MODO === "admin" ? n : n.split(/\s+/)[0]; }
   function htmlContacto(p) {
     var nota = textoCalificacionPasajero(p.pasajero_calificacion, p.pasajero_calificaciones);
     var chat = '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);">' + (nota ? escapar(nota) + " · " : "") + 'Contacto: chat de Rumbo</div>';
     if (!p.solicitante) {
-      return '<div class="pedido-cliente">' + escapar(p.nombre) + "</div>" + (enlaceTel(p.telefono, "") || chat);
+      return '<div class="pedido-cliente">' + escapar(nomP(p.nombre)) + "</div>" + (enlaceTel(p.telefono, "") || chat);
     }
-    return '<div class="pedido-cliente">Viaja: ' + escapar(p.nombre) + "</div>" +
-      '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);margin-top:4px;">Lo pidió: ' + escapar(p.solicitante) + "</div>" + chat;
+    return '<div class="pedido-cliente">Viaja: ' + escapar(nomP(p.nombre)) + "</div>" +
+      '<div class="pedido-sub" style="font-size:13px;color:var(--text-2);margin-top:4px;">Lo pidió: ' + escapar(nomP(p.solicitante)) + "</div>" + chat;
   }
 
   function tarjetaEnCurso(p) {
@@ -7581,7 +7583,7 @@
     (pedidos || []).forEach(function (p) {
       var id = p.pedido_id;
       vigentes[id] = true;
-      nombresChat[id] = String(p.nombre || "Pasajero");
+      nombresChat[id] = nomP(p.nombre || "Pasajero");
       if (cont.querySelector('[data-panel="' + id + '"]')) return;
       var panel = document.createElement("div");
       panel.className = "chat-panel";
