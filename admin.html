@@ -549,6 +549,23 @@
   .gan-barras { display: flex; align-items: flex-end; gap: 8px; height: 88px; margin: 12px 0 4px; }
   .gan-barra { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
   .gan-barra i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--primary); opacity: .35; }
+  .gan-barras .gan-barra, .gan-semanas .gan-barra { border: 0; background: none; padding: 0; cursor: pointer; font: inherit; }
+  .gan-barras .gan-barra.sel i { opacity: 1; background: var(--primary); }
+  .gan-dia { font-size: 16px; font-weight: 600; color: var(--text); min-height: 24px; }
+  .gan-semanas { display: flex; align-items: flex-end; gap: 6px; height: 104px; margin: 4px 16px 18px; }
+  .gan-semanas .gan-barra.sel i { background: var(--primary); opacity: 1; }
+  .gan-semanas .gan-barra span { font-size: 13px; }
+  /* Contenedores: lista de viajes, reservas, pagos, liquidación y gráfico de semanas */
+  #mv-viajes .mv-item, #mv-reservas .mv-item, #mv-solicitudes .mv-item, #mv-ganancias .mv-item { margin: 0 16px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  #mv-viajes .mv-item:first-child, #mv-reservas .mv-item:first-child, #mv-solicitudes .mv-item:first-child { margin-top: 12px; }
+  .pago-item { margin: 0 0 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .adm-pantalla .liq { padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .gan-semanas-card { margin: 4px 16px 18px; padding: 12px 14px 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .gan-semanas-card .gan-semanas { margin: 8px 0 0; }
+  #mv-ganancias .lugares-sub { margin-top: 22px; }
+  .adm-pantalla .vd-lista { margin: 0 16px 16px; padding: 0 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .adm-pantalla .vd-lista .vd-fila:last-child { border-bottom: 0; }
+  #viajeDetalle > .btn { margin: 0 16px 16px; }
   .gan-barra.hoy i { background: var(--naranja); opacity: 1; }
   .gan-barra span { font-size: 14px; line-height: 1; color: var(--text-2); }
   .tablero-estado { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; min-height: 44px; }
@@ -777,6 +794,11 @@
     background: rgba(255, 255, 255, 0.14); color: #fff; display: flex; align-items: center; justify-content: center;
   }
   .btn-menu-cond:active { background: rgba(255, 255, 255, 0.26); }
+  .cajas-codigo { position: relative; display: flex; gap: 8px; }
+  .casilla-codigo { flex: 1; height: 56px; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .casilla-codigo.activa { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+  .cajas-codigo.ok .casilla-codigo { border-color: var(--ok, #2e9e6b); }
+  .cajas-codigo input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; border: 0; padding: 0; }
   .menu-lateral-fondo { position: fixed; inset: 0; z-index: 55; background: rgba(10, 20, 40, 0.5); }
   .menu-lateral-fondo[hidden] { display: none; }
   .menu-lateral {
@@ -1303,8 +1325,8 @@
   <div class="actualizacion-card">
     <div class="actualizacion-ico">⬆️</div>
     <h2>Hay una versión nueva</h2>
-    <p>Para seguir usando Rumbo hace falta actualizar la app primero. Es rápido.</p>
-    <button type="button" id="btnActualizar" class="btn btn-primario">Descargar actualización</button>
+    <p>Actualiza la app para seguir usando Rumbo.</p>
+    <button type="button" id="btnActualizar" class="btn btn-primario">Actualizar ahora</button>
   </div>
 </div>
 <div class="splash" id="splashIngresando">
@@ -1379,7 +1401,7 @@
   <section class="card" id="cardRecuperar" style="display:none;">
     <div class="card-head"><span class="card-title">Recuperar clave</span></div>
     <div id="recuperarPaso1">
-      <p class="nota" style="margin:0 0 12px;">Escribe tu usuario o tu correo. Si la cuenta existe, te mandamos un código.</p>
+      <p class="nota" style="margin:0 0 12px;">Escribe tu usuario o correo y te enviamos un código.</p>
       <div class="campo" style="margin-bottom:14px;">
         <label class="campo-label" for="recuperarUsuario">Usuario o correo</label>
         <input type="text" id="recuperarUsuario" autocomplete="username" autocapitalize="none">
@@ -1389,8 +1411,13 @@
     <div id="recuperarPaso2" style="display:none;margin-top:16px;">
       <div class="campo" style="margin-bottom:14px;">
         <label class="campo-label" for="recuperarCodigo">Código de 6 dígitos</label>
-        <input type="text" id="recuperarCodigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+        <div class="cajas-codigo" id="recuperarCajas">
+          <span class="casilla-codigo" aria-hidden="true"></span><span class="casilla-codigo" aria-hidden="true"></span><span class="casilla-codigo" aria-hidden="true"></span><span class="casilla-codigo" aria-hidden="true"></span><span class="casilla-codigo" aria-hidden="true"></span><span class="casilla-codigo" aria-hidden="true"></span>
+          <input type="text" id="recuperarCodigo" inputmode="numeric" autocomplete="one-time-code" aria-label="Código de 6 dígitos">
+        </div>
       </div>
+    </div>
+    <div id="recuperarPaso3" style="display:none;margin-top:4px;">
       <div class="campo" style="margin-bottom:14px;">
         <label class="campo-label" for="recuperarClaveNueva">Clave nueva (mínimo 6 caracteres)</label>
         <input type="password" id="recuperarClaveNueva" autocomplete="new-password">
@@ -1406,7 +1433,7 @@
   <section class="card" id="acordeonRegistro" style="display:none;" data-enter="btnRegistrar">
     <div class="card-head"><span class="card-title">Crear cuenta de conductor</span></div>
     <div>
-      <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Un administrador revisa y aprueba tu cuenta; cuando la apruebe podrás ingresar con tu correo y clave.</p>
+      <p class="ayuda" style="margin:0 0 14px;">Completa tus datos. Revisamos tu cuenta y la activamos.</p>
       <div class="campo" style="margin-bottom:12px;"><label class="campo-label" for="regNombre">Nombre y apellido</label><input type="text" id="regNombre" autocomplete="name"></div>
       <div class="fila">
         <div class="campo"><label class="campo-label" for="regTelefono">WhatsApp</label><input type="text" id="regTelefono" inputmode="numeric" placeholder="56912345678" autocomplete="tel"></div>
@@ -1435,7 +1462,7 @@
 
   <!-- Solo tiene sentido en el navegador: dentro de la app instalada se oculta. -->
   <a class="btn btn-chico" id="linkDescargaApp" href="#" style="width:100%;margin-top:4px;"></a>
-  <p class="ayuda" id="notaDescargaApp" style="text-align:center;font-size:13px;margin:8px 0 0;">Android pedirá permitir "fuentes desconocidas" la primera vez.</p>
+  <p class="ayuda" id="notaDescargaApp" style="text-align:center;font-size:13px;margin:8px 0 0;">Si Android lo pide, permite "fuentes desconocidas".</p>
 </div>
 
 <div class="app" id="pantallaApp" style="display:none;">
@@ -1489,9 +1516,9 @@
     </section>
     <div class="vacio-bloque" id="sinViajesEnCurso">
       <svg class="ico" aria-hidden="true"><use href="#i-auto"/></svg>
-      <strong>No tienes viajes en curso</strong>
-      <p>Cuando aceptes un pedido, aparece aquí con el mapa y el chat del pasajero.</p>
-      <button class="btn btn-medio" data-tablero="pedidos" type="button">Ver pedidos pendientes</button>
+      <strong>Tu viaje en curso aparecerá aquí</strong>
+      <p>Al aceptar un pedido verás el mapa y el chat.</p>
+      <button class="btn btn-medio" data-tablero="pedidos" type="button">Ver pedidos</button>
     </div>
   </div>
 
@@ -1598,7 +1625,7 @@
     <details class="acordeon" id="acordeonConductores" style="display:none;">
       <summary>Conductores (administración)</summary>
       <div class="acordeon-cuerpo">
-        <p class="ayuda" style="margin:0 0 12px;"><strong>Aprobar</strong>: puede ingresar y trabajar con su clientela. <strong>En la red</strong>: además recibe viajes que otros conductores no pudieron tomar.</p>
+        <p class="ayuda" style="margin:0 0 12px;"><strong>Aprobar</strong>: puede ingresar y recibir a sus pasajeros. <strong>En la red</strong>: también recibe viajes de otros conductores.</p>
         <div id="listaConductores"><p class="vacio">Cargando...</p></div>
       </div>
     </details>
@@ -1630,7 +1657,7 @@
     <details class="acordeon" id="acordeonLiquidaciones" style="display:none;">
       <summary>Liquidaciones</summary>
       <div class="acordeon-cuerpo">
-        <p class="ayuda" style="margin:0;">Saldo = cobros con tarjeta − membresía − membresía de viajes en efectivo − transferencias ya hechas. El monto lo calcula el sistema; tú solo confirmas que transferiste.</p>
+        <p class="ayuda" style="margin:0;">Saldo = cobros con tarjeta − membresía − membresía de viajes en efectivo − transferencias hechas. El sistema calcula; tú confirmas la transferencia.</p>
         <div id="listaLiquidaciones"><p class="vacio">Cargando...</p></div>
       </div>
     </details>
@@ -1639,10 +1666,10 @@
     <details class="acordeon" id="acordeonMpEmpresa" style="display:none;">
       <summary>Mercado Pago de la empresa</summary>
       <div class="acordeon-cuerpo">
-        <p class="ayuda" style="margin:0 0 10px;">Todos los pagos con tarjeta de Rumbo entran a la cuenta de Mercado Pago de <strong>BTo Innova SpA</strong>. Se conecta una sola vez, autorizando desde esa cuenta.</p>
+        <p class="ayuda" style="margin:0 0 10px;">Los pagos con tarjeta entran a la cuenta Mercado Pago de <strong>BTo Innova SpA</strong>. Se conecta una sola vez.</p>
         <p class="msg" id="mpEmpresaEstado" data-sin-popup style="margin:0 0 12px;">Revisando...</p>
         <button class="btn btn-medio" id="btnMpEmpresa" type="button" style="width:100%;">Conectar Mercado Pago de la empresa</button>
-        <p class="ayuda" style="margin:12px 0 0;font-size:13px;">Se abre Mercado Pago: inicia sesión con la cuenta de la empresa (no una personal). El link vence a los 15 minutos.</p>
+        <p class="ayuda" style="margin:12px 0 0;font-size:13px;">Inicia sesión con la cuenta de la empresa, no una personal. El link vence en 15 minutos.</p>
       </div>
     </details>
 
@@ -1676,7 +1703,7 @@
           <span class="switch-pista"></span>
         </label>
       </div>
-      <p class="msg" id="redMsg" style="margin:0;font-size:12.5px;">Con esto activado, además de tu clientela, puedes recibir viajes que otros conductores de la red no pudieron tomar.</p>
+      <p class="msg" id="redMsg" style="margin:0;font-size:12.5px;">Además de tus pasajeros, recibes viajes de otros conductores de la red.</p>
     </div>
     </div></details>
     <details class="acordeon simple" id="acordeonUbicacion"><summary>Compartir mi ubicación</summary><div class="acordeon-cuerpo">
@@ -1703,14 +1730,14 @@
         </label>
         <span class="gps-lado" data-gps="GOOGLE_MAPS">Google Maps</span>
       </div>
-      <p class="msg" style="margin:8px 2px 0;font-size:12.5px;">Al tocar "Iniciar viaje" se abre sola, con la ruta hacia el destino ya cargada.</p>
+      <p class="msg" style="margin:8px 2px 0;font-size:12.5px;">Se abre sola al iniciar el viaje, con la ruta lista.</p>
     </div>
     </div></details>
     <details class="acordeon simple" id="acordeonCobroTarjeta"><summary>Cobro con tarjeta</summary><div class="acordeon-cuerpo">
     <section class="card" id="cardMercadoPago">
       <div class="card-head"><span class="card-title">Cobro con tarjeta</span></div>
       <p class="ayuda" id="mpAyuda" style="margin:0 0 12px;">
-        Tus pasajeros pueden pagar con débito, crédito o en cuotas. BTo Innova recibe el pago y te lo transfiere a tu cuenta (ver <strong>Recibo de pagos</strong>), descontada tu membresía. No necesitas conectar nada.
+        Tus pasajeros pagan con débito, crédito o en cuotas. Te transferimos el pago a tu cuenta (ver <strong>Recibo de pagos</strong>), menos tu membresía. No conectas nada.
       </p>
       <p class="msg" id="mpEstado" data-sin-popup style="margin:0 0 12px;">Revisando...</p>
       <div class="estado-conductor" id="mpPausaFila" style="display:none;margin:0 0 12px;">
@@ -1725,7 +1752,7 @@
     <section class="card" id="cardMembresia">
       <div class="card-head"><span class="card-title">Membresía Rumbo</span></div>
       <p class="ayuda" style="margin:0 0 8px;">Pagas el 10 % de lo que ganas en cada viaje.</p>
-      <p class="ayuda" style="margin:0 0 12px;">Cuando en el mes sumas <strong>$250.000</strong> de membresía, el resto del mes pagas 0 %.</p>
+      <p class="ayuda" style="margin:0 0 12px;">Al sumar <strong>$250.000</strong> de membresía en el mes, el resto del mes pagas 0 %.</p>
       <p class="ayuda" id="memBonoTexto" style="margin:0 0 12px;"></p>
       <div class="mem-barra" aria-hidden="true"><div class="mem-relleno" id="memRelleno"></div></div>
       <div class="mem-escala" aria-hidden="true"><span>$0</span><span id="memTopeReal">$250.000</span></div>
@@ -1739,9 +1766,7 @@
     <section class="card" id="cardTransferencia">
       <div class="card-head"><span class="card-title">Tu cuenta bancaria</span></div>
       <p class="ayuda" style="margin:0 0 12px;">
-        Aquí te transferimos lo que se cobró con tarjeta, descontada tu membresía.
-        También se la mostramos al pasajero que elige pagarte por transferencia, con botón de copiar.
-        Si la dejas vacía, no podemos transferirte ni se ofrece transferencia.
+        Aquí te transferimos tus cobros con tarjeta, menos la membresía. Si el pasajero paga por transferencia, también ve esta cuenta. Sin cuenta, no hay transferencias.
       </p>
       <div class="campo"><label class="campo-label" for="trTitular">Nombre del titular</label><input type="text" id="trTitular" autocomplete="off" maxlength="80"></div>
       <div class="campo"><label class="campo-label" for="trRut">RUT</label><input type="text" id="trRut" placeholder="12.345.678-9" autocomplete="off" maxlength="14"></div>
@@ -1769,7 +1794,7 @@
     <section class="card" id="cardMiQr">
       <div class="card-head"><span class="card-title">QR para pasajeros</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
-        Tus pasajeros lo escanean con la cámara (puedes imprimirlo y dejarlo detrás de tu asiento) o les envías el link. Quien lo use queda registrado como tu cliente.
+        Tus pasajeros lo escanean con la cámara o les envías el link: quien lo use queda como tu cliente. Imprímelo y déjalo detrás de tu asiento.
       </p>
       <div style="text-align:center;">
         <img id="miQrImg" alt="Código QR de tu link" style="width:min(300px,78vw);height:min(300px,78vw);border:1px solid var(--border);border-radius:12px;background:#fff;">
@@ -1853,7 +1878,7 @@
           <input type="number" id="valorHoraFuerte" step="500">
         </div>
       </div>
-      <p class="ayuda solo-red">Punta fuerte: lunes a viernes en la franja de abajo (hora de entrada al trabajo). Déjala en 0 para no usarla; actívala cuando las apps 68 estén instaladas.</p>
+      <p class="ayuda solo-red">Punta fuerte: lunes a viernes, en la franja de abajo (entrada al trabajo). En 0 no se usa; actívala cuando las apps 68 estén instaladas.</p>
 
       <p class="ayuda solo-red">Días con tarifa punta todo el día. Los feriados se detectan solos.</p>
       <div class="dias-toggle solo-red" id="diasPuntaTodoElDia">
@@ -1872,7 +1897,7 @@
           <svg class="ico ico-sm chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
         </button>
         <div class="plegable-cuerpo" id="cuerpoHorarios">
-          <p class="ayuda">En los días marcados arriba, todo el día es punta salvo esta franja:</p>
+          <p class="ayuda">Días marcados: todo el día es punta, salvo esta franja de valle:</p>
           <div class="fila">
             <div class="campo">
               <label class="campo-label" for="finDeSemanaValleInicio">Valle desde</label>
@@ -1896,7 +1921,7 @@
             </div>
           </div>
 
-          <p class="ayuda">El resto de los días solo son punta en estas dos franjas:</p>
+          <p class="ayuda">Los demás días, punta solo en estas franjas:</p>
           <div class="fila">
             <div class="campo">
               <label class="campo-label" for="horaPuntaMananaInicio">Mañana desde</label>
@@ -1925,24 +1950,24 @@
     <p class="msg" id="tarifasMsg" style="margin:12px 2px 0;"></p>
     </div></details>
 
-    <details class="acordeon simple" id="acordeonReclamos"><summary>Ayuda y reclamos</summary><div class="acordeon-cuerpo">
-      <p class="ayuda" style="margin:0 0 12px;">Escríbenos tu consulta o reclamo (pagos, viajes, calificaciones, tu cuenta). La respuesta aparecerá en esta sección.</p>
+    <details class="acordeon simple" id="acordeonReclamos"><summary>Ayuda</summary><div class="acordeon-cuerpo">
+      <p class="ayuda" style="margin:0 0 12px;">Escríbenos por pagos, viajes, calificaciones o tu cuenta. Respondemos aquí.</p>
       <div class="campo"><label class="campo-label" for="reclamoTipo">Tema</label>
         <select id="reclamoTipo"><option value="PAGO">Un pago</option><option value="VIAJE">Un viaje</option><option value="CUENTA">Mi cuenta</option><option value="OTRO">Otro</option></select></div>
       <div class="campo"><label class="campo-label" for="reclamoTexto">Tu mensaje</label>
-        <textarea id="reclamoTexto" rows="4" maxlength="1000" placeholder="Cuéntanos qué pasó" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px;background:var(--surface);color:var(--text);font:inherit;"></textarea></div>
+        <textarea id="reclamoTexto" rows="4" maxlength="1000" placeholder="Cuéntanos en qué te ayudamos" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px;background:var(--surface);color:var(--text);font:inherit;"></textarea></div>
       <button class="btn btn-medio" type="button" id="btnEnviarReclamo">Enviar</button>
       <div id="listaMisReclamos" style="margin-top:16px;"></div>
     </div></details>
     <details class="acordeon simple" id="acordeonReclamosAdmin"><summary>Reclamos</summary><div class="acordeon-cuerpo">
-      <p class="ayuda" style="margin:0 0 12px;">Reclamos y consultas de pasajeros y conductores. Al responder, se cierra y la persona recibe el aviso.</p>
+      <p class="ayuda" style="margin:0 0 12px;">Reclamos y consultas. Al responder, se cierra y se avisa a la persona.</p>
       <div id="listaReclamosAdmin"><p class="vacio">Cargando...</p></div>
     </div></details>
     <details class="acordeon simple" id="acordeonVehiculo"><summary>Mi vehículo</summary><div class="acordeon-cuerpo">
     <section class="card">
       <div class="card-head"><span class="card-title">Mi vehículo</span></div>
       <p class="ayuda" style="margin:0 0 14px;">
-        El pasajero ve esto al pedir el viaje, para reconocer tu auto al llegar.
+        El pasajero lo ve para reconocer tu auto.
       </p>
       <div class="veh-foto-fila">
         <img id="vehFotoPreview" alt="" class="veh-foto-preview">
@@ -2065,13 +2090,13 @@
     </section>
     <section class="card">
       <div class="card-head"><span class="card-title">Correo de recuperación</span></div>
-      <p class="nota" style="margin:0 0 12px;">Si olvidas tu clave, el código para recuperarla llega a este correo.</p>
+      <p class="nota" style="margin:0 0 12px;">Aquí te llega el código si olvidas tu clave.</p>
       <div class="campo" style="margin-bottom:12px;">
         <label class="campo-label" for="emailActual">Correo actual</label>
         <input type="email" id="emailActual" autocomplete="email">
       </div>
       <div class="campo" style="margin-bottom:16px;">
-        <label class="campo-label" for="emailClaveActual">Tu clave actual (para confirmar)</label>
+        <label class="campo-label" for="emailClaveActual">Tu clave actual</label>
         <input type="password" id="emailClaveActual" autocomplete="current-password">
       </div>
       <button class="btn btn-chico" id="btnCambiarEmail" type="button">Guardar correo</button>
@@ -2083,12 +2108,10 @@
     <section class="card">
       <div class="card-head">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-calendario"/></svg>
-        <span class="card-title">Cuándo NO estás disponible</span>
+        <span class="card-title">Tus horarios libres</span>
       </div>
       <p class="ayuda" style="margin:0 0 14px;">
-        Los pedidos agendados para estos días/horarios pasan directo al
-        siguiente conductor de tu red — no te van a llegar ofertas en ese
-        rango.
+        Los pedidos agendados en estos horarios pasan al siguiente conductor de tu red.
       </p>
       <div id="listaBloqueos"></div>
       <button class="btn btn-chico" id="btnAgregarBloqueo" type="button" style="margin-top:4px;">
@@ -2169,7 +2192,7 @@
     <button type="button" class="menu-lateral-item menu-sub-item" data-ajuste="acordeonGps" data-titulo="Navegación GPS">Navegación GPS</button>
   </div>
   <div class="menu-pie solo-conductor">
-    <button type="button" class="menu-lateral-item menu-pie-item solo-conductor" data-ajuste="acordeonReclamos">Ayuda y reclamos</button>
+    <button type="button" class="menu-lateral-item menu-pie-item solo-conductor" data-ajuste="acordeonReclamos">Ayuda</button>
     <button type="button" class="menu-lateral-item menu-pie-item solo-conductor" data-ajuste="acordeonTycConductor" data-titulo="Términos y condiciones">Términos y condiciones</button>
   </div>
   <!-- Se mantienen en el DOM (ocultos) porque otras partes los usan; ya no se muestran. -->
@@ -2234,7 +2257,7 @@
 <div class="modal-fondo" id="modalCalificarPasajero" hidden>
   <div class="modal-hoja">
     <h2 style="margin:0 0 4px;font-size:19px;">¿Cómo fue el pasajero?</h2>
-    <p class="nota" style="margin:0 0 16px;">Tu calificación queda registrada en el viaje.</p>
+    <p class="nota" style="margin:0 0 16px;">Tu opinión ayuda a cuidar la comunidad.</p>
     <div class="estrellas" id="estrellasPasajero" role="radiogroup" aria-label="Calificación del pasajero">
       <button type="button" class="estrella" data-estrella="1" aria-label="1 estrella">★</button>
       <button type="button" class="estrella" data-estrella="2" aria-label="2 estrellas">★</button>
@@ -2271,7 +2294,7 @@
   <div class="modal-hoja">
     <h2 style="margin:0 0 10px;font-size:19px;">Instalaciones y cotizaciones</h2>
     <div id="instCuerpo" class="cierre-detalle">Cargando…</div>
-    <p class="nota" style="margin:10px 0;">Cuenta desde la versión que incluye este contador. Cada instalación es un identificador anónimo, sin datos personales.</p>
+    <p class="nota" style="margin:10px 0;">Cuenta desde esta versión. Cada instalación es un identificador anónimo.</p>
     <button class="btn btn-chico" id="instCerrar" type="button" style="width:100%;">Cerrar</button>
   </div>
 </div>
@@ -2280,7 +2303,7 @@
 <div class="modal-fondo" id="modalEditarC" hidden>
   <div class="modal-hoja">
     <h2 style="margin:0 0 8px;font-size:19px;">Editar viaje</h2>
-    <p class="nota" style="margin:0 0 10px;">Corrige direcciones o agrega paradas para ayudar al pasajero. El cambio se aplica de inmediato y se le avisa; solo si el valor sube más de 30 % sobre el primero, el pasajero debe aceptarlo. Para seguir después del destino actual, agrégalo como parada y escribe el destino nuevo abajo.</p>
+    <p class="nota" style="margin:0 0 10px;">Corrige direcciones o agrega paradas. Se aplica de inmediato y avisamos al pasajero; si el valor sube más de 30 %, él debe aceptar. Para ir más allá del destino, agrégalo como parada y escribe el destino nuevo.</p>
     <div class="campo"><label class="campo-label" for="edcOrigen">Salida</label><input type="text" id="edcOrigen" autocomplete="off"></div>
     <div id="edcParadas" style="margin-top:8px;"></div>
     <button class="btn btn-chico" id="edcAgregar" type="button" style="margin:0 0 10px;">+ Agregar parada</button>
@@ -2297,7 +2320,7 @@
     <h2 style="margin:0 0 8px;font-size:19px;">Viaje modificado</h2>
     <p class="nota" id="cambioPasTxt" style="margin:0 0 12px;"></p>
     <button class="btn btn-ok" id="cambioPasAceptar" type="button" style="width:100%;margin-bottom:8px;">Aceptar el cambio</button>
-    <button class="btn btn-chico" id="cambioPasRechazar" type="button" style="width:100%;">Rechazar: sigo con el viaje original</button>
+    <button class="btn btn-chico" id="cambioPasRechazar" type="button" style="width:100%;">Rechazar y seguir con el original</button>
   </div>
 </div>
 
@@ -2314,7 +2337,7 @@
 <div class="modal-fondo" id="modalSoltar" hidden>
   <div class="modal-hoja">
     <h2 style="margin:0 0 4px;font-size:18px;">¿Qué pasó?</h2>
-    <p class="nota" style="margin:0 0 12px;">Gracias por avisar a tiempo. Buscamos a otro conductor para tu pasajero.</p>
+    <p class="nota" style="margin:0 0 12px;">Gracias por avisar. Buscamos otro conductor.</p>
     <div id="soltarLista"></div>
     <button class="btn btn-chico" id="btnSoltarCerrar" type="button" style="width:100%;margin-top:10px;">Volver al viaje</button>
   </div>
@@ -2360,7 +2383,7 @@
 <div class="modal-fondo" id="modalCombustible" hidden>
   <div class="modal-hoja">
     <h2 style="margin:0 0 4px;font-size:19px;">Es jueves: actualiza el combustible</h2>
-    <p class="nota" id="combustibleTexto" style="margin:0 0 14px;">Los precios de los combustibles cambian los jueves. Revisa el valor por litro para que las cotizaciones queden al día.</p>
+    <p class="nota" id="combustibleTexto" style="margin:0 0 14px;">Los combustibles cambian de precio los jueves. Actualiza el valor por litro.</p>
     <div class="campo" style="margin-bottom:14px;">
       <label class="campo-label" for="combustibleNuevo">Precio por litro (CLP)</label>
       <input type="number" id="combustibleNuevo" inputmode="numeric" step="1" min="1">
@@ -2493,7 +2516,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 76;
+  var APP_VERSION = 77;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2518,19 +2541,19 @@
     plugin.descargarEInstalar({ url: URL_APK })
       .then(function () {
         boton.textContent = "Abriendo instalador…";
-        setTimeout(function () { boton.disabled = false; boton.textContent = "Descargar actualización"; }, 4000);
+        setTimeout(function () { boton.disabled = false; boton.textContent = "Actualizar ahora"; }, 4000);
       })
       .catch(function () {
         boton.disabled = false;
-        boton.textContent = "No se pudo descargar. Toca para reintentar";
+        boton.textContent = "Toca para reintentar la descarga";
       })
       .finally(function () { escucha.then(function (h) { h.remove(); }); });
   });
 
   // Cada panel solo acepta su tipo de cuenta.
   function cuentaPermitida(c) {
-    if (MODO === "admin" && !c.es_admin) return "Esta app es solo para administradores. Si eres conductor, usa Rumbo Driver.";
-    if (MODO === "conductor" && c.solo_admin) return "Esta cuenta es de administración. Usa Rumbo Admin.";
+    if (MODO === "admin" && !c.es_admin) return "App para administradores. Si eres conductor, usa Rumbo Driver.";
+    if (MODO === "conductor" && c.solo_admin) return "Cuenta de administración: ingresa con Rumbo Admin.";
     return "";
   }
 
@@ -2621,7 +2644,7 @@
     var script = document.createElement("script");
     script.id = "gmapsScript";
     script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=geometry,places&callback=alGoogleMapsListo";
-    script.onerror = function () { rbAlerta("No se pudo cargar el mapa de Google. Revisa tu conexión y vuelve a abrir la app."); };
+    script.onerror = function () { rbAlerta("Revisa tu conexión y vuelve a abrir la app para ver el mapa."); };
     document.head.appendChild(script);
   }
   window.alGoogleMapsListo = function () { googleMapsListo = true; };
@@ -2707,7 +2730,7 @@
   // otro lugar), se vuelve a la pantalla de login en vez de dejar al
   // conductor viendo un panel que ya no puede usar.
   function verificarSesionValida(res) {
-    if (res && res.requiere_login) { res.error = "Tu sesión venció o se abrió en otro dispositivo. Ingresa de nuevo."; borrarSesion(); mostrarPantalla("login"); }
+    if (res && res.requiere_login) { res.error = "Tu sesión terminó. Ingresa de nuevo."; borrarSesion(); mostrarPantalla("login"); }
     return res;
   }
 
@@ -2944,7 +2967,7 @@
     if (MODO !== "admin" && sesion.conductor.bienvenida) {
       sesion.conductor.bienvenida = false; guardarSesion(sesion);
       setTimeout(function () {
-        rbAlerta("¡Bienvenido a Rumbo! Tu cuenta está activa. Conéctate con el botón de arriba y te avisamos apenas llegue un viaje. ¡Mucho éxito!", "ok");
+        rbAlerta("¡Bienvenido a Rumbo! Tu cuenta está activa. Toca Iniciar y te avisamos cuando llegue un viaje.", "ok");
         apiPost({ accion: "bienvenida_vista" }).catch(function () {});
       }, 700);
     }
@@ -3070,8 +3093,8 @@
     }).then(function (res) {
       boton.disabled = false;
       if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; return; }
-      msg.textContent = "Cuenta creada. " + (res.correo_enviado ? "Te enviamos un código a tu correo: " : "Revisa tu correo (si no llega, lo pides de nuevo al ingresar): ") +
-        "ingresa con tu correo y clave, confirma el código y sube tus documentos. Rumbo los revisa y activa tu cuenta.";
+      msg.textContent = "¡Cuenta creada! " + (res.correo_enviado ? "Te enviamos un código a tu correo: " : "Revisa tu correo (si no llega, lo pides al ingresar): ") +
+        "ingresa con tu correo y clave, confirma el código y sube tus documentos. Los revisamos y activamos tu cuenta.";
       msg.className = "msg ok";
       ["regNombre","regTelefono","regEmail","regClave","regPatente","regColor","regMarca","regModelo"].forEach(function (id) { document.getElementById(id).value = ""; });
       document.getElementById("regTerminos").checked = false;
@@ -3119,10 +3142,10 @@
         }
         var switchTarifa = "";
         if (c.conductor_id !== yo) {
-          switchTarifa = interruptor("data-activo", c.activo, "Habilitado", "Puede iniciar sesión y recibir viajes.", "Suspendido o pendiente de aprobar: no recibe viajes.");
+          switchTarifa = interruptor("data-activo", c.activo, "Habilitado", "Puede iniciar sesión y recibir viajes.", "Suspendido o por aprobar: sin viajes.");
           if (!c.solo_admin) {
-            switchTarifa += interruptor("data-red", c.activo && c.en_red, "En la red", "Recibe sus pasajeros y también viajes que otros conductores no pudieron tomar.",
-              c.activo ? "Solo recibe viajes de sus propios pasajeros." : "Primero hay que habilitarlo.", "", !c.activo);
+            switchTarifa += interruptor("data-red", c.activo && c.en_red, "En la red", "Recibe sus pasajeros y viajes de otros conductores.",
+              c.activo ? "Solo viajes de sus pasajeros." : "Habilítalo primero.", "", !c.activo);
             switchTarifa += interruptor("data-modo", c.modo_tarifa === "INDIVIDUAL", "Tarifa propia", "Cobra con sus propias tarifas.", "Cobra con la tarifa general de Rumbo.",
               c.solicitud_tarifa === "PENDIENTE" ? '<p class="msg" style="margin:2px 0 0;font-size:12px;color:var(--accent);">Pidió tarifa propia — activa para autorizar</p>' : "");
           }
@@ -3149,7 +3172,7 @@
     sw.disabled = true;
     apiPost({ accion: "cambiar_modo_tarifa", conductor_id: sw.dataset.modo, modo_tarifa: valorNuevo }).then(function (res) {
       sw.disabled = false;
-      if (!res.ok) { rbAlerta(res.error || "No se pudo cambiar la tarifa."); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
+      if (!res.ok) { rbAlerta(res.error || "Intenta de nuevo para cambiar la tarifa."); sw.checked = valorAnterior === "INDIVIDUAL"; return; }
       cargarConductoresAdmin();
     }).catch(function () { sw.disabled = false; sw.checked = valorAnterior === "INDIVIDUAL"; rbAlerta(TEXTO_SIN_CONEXION); });
   });
@@ -3185,7 +3208,7 @@
     ["Mi dinero", ["Historial de pagos", "Mi membresía y pagos", "Recibo de pagos", "Cobro con tarjeta"]],
     ["Mi actividad", ["Tarifas y costos", "Disponibilidad (cuándo no trabajas)", "QR para pasajeros", "Visibilidad en la red"]],
     ["Preferencias", ["Compartir mi ubicación", "Navegación GPS"]],
-    ["Cuenta", ["Ayuda y reclamos", "Mi vehículo", "Mi cuenta", "Términos y condiciones"]]
+    ["Cuenta", ["Ayuda", "Mi vehículo", "Mi cuenta", "Términos y condiciones"]]
   ];
   function ordenarAjustesConductor() {
     var panel = document.getElementById("panelAjustes");
@@ -3354,7 +3377,7 @@
     if (document.getElementById("adm-documentos")) return;
     var p = crearPantallaAdmin("documentos");
     p.insertAdjacentHTML("beforeend",
-      '<div class="adm-fijo docs-correo" id="docsCorreo" hidden><p><strong>Confirma tu correo</strong><span>Te enviamos un código de 6 dígitos. Rumbo no puede activar tu cuenta hasta que lo ingreses.</span></p>' +
+      '<div class="adm-fijo docs-correo" id="docsCorreo" hidden><p><strong>Confirma tu correo</strong><span>Te enviamos un código de 6 dígitos para activar tu cuenta.</span></p>' +
         '<div class="docs-correo-fila"><input type="text" inputmode="numeric" maxlength="6" id="docsCorreoCodigo" placeholder="Código de 6 dígitos" autocomplete="one-time-code">' +
         '<button class="btn btn-ok" type="button" id="docsCorreoValidar">Confirmar</button></div>' +
         '<button class="btn btn-chico" type="button" id="docsCorreoReenviar">Enviarme otro código</button></div>' +
@@ -3364,21 +3387,21 @@
     document.getElementById("docsCerrarSesion").addEventListener("click", function () { document.getElementById("btnCerrarSesion").click(); });
     document.getElementById("docsCorreoValidar").addEventListener("click", function () {
       var b = this, cod = document.getElementById("docsCorreoCodigo").value.replace(/\D/g, "");
-      if (cod.length !== 6) { rbAlerta("Escribe los 6 dígitos del código que te llegó al correo."); return; }
+      if (cod.length !== 6) { rbAlerta("Escribe el código de 6 dígitos de tu correo."); return; }
       b.disabled = true;
       apiPost({ accion: "validar_correo", codigo: cod }).then(function (res) {
         b.disabled = false;
         if (!res.ok) { rbAlerta(res.error || "No se pudo confirmar el código."); return; }
         var ses = obtenerSesion(); if (ses && ses.conductor) { ses.conductor.correo_pendiente = false; guardarSesion(ses); }
         pintarCorreoDocs();
-        rbAlerta("Correo confirmado. Ahora Rumbo revisa tus documentos y activa tu cuenta.", "ok");
+        rbAlerta("¡Correo confirmado! Rumbo revisa tus documentos y activa tu cuenta.", "ok");
       }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
     });
     document.getElementById("docsCorreoReenviar").addEventListener("click", function () {
       var b = this; b.disabled = true;
       apiPost({ accion: "reenviar_validacion" }).then(function (res) {
         b.disabled = false;
-        rbAlerta(res.ok ? "Listo, te enviamos un código nuevo. Revisa tu correo (y la carpeta de spam)." : (res.error || "No se pudo enviar el código."), res.ok ? "ok" : undefined);
+        rbAlerta(res.ok ? "Código nuevo enviado. Revisa tu correo o el spam." : (res.error || "No se pudo enviar el código."), res.ok ? "ok" : undefined);
       }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
     });
     var visor = document.createElement("div");
@@ -3397,7 +3420,7 @@
       if (!res.ok) { cuerpo.innerHTML = '<p class="vacio">' + escapar(res.error) + '</p>'; return; }
       docsDatos = res;
       if (esAdmin) pintarDocsAdmin(res); else pintarDocsConductor(res);
-    }).catch(function () { cuerpo.innerHTML = '<p class="vacio">Sin conexión. Revisa tu internet y vuelve a abrir Documentos.</p>'; });
+    }).catch(function () { cuerpo.innerHTML = '<p class="vacio">Sin conexión. Revisa tu internet y reintenta.</p>'; });
   }
 
   function fechaLarga(iso) {
@@ -3422,10 +3445,10 @@
     avance.innerHTML =
       '<div class="mem-barra"><div class="mem-relleno' + (listos === total ? " lleno" : "") + '" style="width:' + Math.round(listos * 100 / total) + '%"></div></div>' +
       '<p class="docs-avance-texto"><strong>' + listos + ' de ' + total + ' validados</strong>' +
-      (pendiente ? 'Sube tus documentos. Rumbo los revisa y activa tu cuenta.'
-        : faltan ? 'Te ' + (faltan === 1 ? 'falta 1' : 'faltan ' + faltan) + ' para recibir viajes.' : 'Estás habilitado para recibir viajes.') + '</p>';
+      (pendiente ? 'Sube tus documentos y Rumbo activa tu cuenta.'
+        : faltan ? 'Sube ' + (faltan === 1 ? '1 más' : faltan + ' más') + ' para recibir viajes.' : 'Estás habilitado para recibir viajes.') + '</p>';
     var html = "";
-    [["PERSONA", "Tú", "Tu identidad, licencia y antecedentes."], ["VEHICULO", "Tu auto", "Si uno vence, el auto queda inhabilitado hasta renovarlo."]].forEach(function (g) {
+    [["PERSONA", "Tú", "Tu identidad, licencia y antecedentes."], ["VEHICULO", "Tu auto", "Mantenlos al día para seguir recibiendo viajes."]].forEach(function (g) {
       html += '<h3 class="docs-grupo">' + g[1] + '<small>' + g[2] + '</small></h3><div class="docs-lista">';
       var primero = true;
       docs.filter(function (d) { return d.grupo === g[0]; }).forEach(function (d) {
@@ -3435,7 +3458,7 @@
       });
       html += "</div>";
     });
-    if (listos === total) html = '<div class="docs-listo"><strong>Estás habilitado en la red</strong><span class="docs-nota">Te avisaremos 30 días antes de que venza algún documento.</span></div>' + html;
+    if (listos === total) html = '<div class="docs-listo"><strong>Estás habilitado en la red</strong><span class="docs-nota">Te avisamos 30 días antes de cada vencimiento.</span></div>' + html;
     document.getElementById("docsCuerpo").innerHTML = html;
     document.getElementById("docsPie").hidden = !pendiente;
     document.querySelector("#adm-documentos [data-adm-volver]").hidden = pendiente;
@@ -3445,7 +3468,7 @@
     var ses = obtenerSesion();
     if (ses && ses.conductor && ses.conductor.pendiente_activacion && !pendiente) {
       ses.conductor.pendiente_activacion = false; guardarSesion(ses);
-      rbAlerta("¡Bienvenido a Rumbo! Activamos tu cuenta: ya puedes recibir viajes. ¡Mucho éxito!", "ok");
+      rbAlerta("¡Bienvenido a Rumbo! Tu cuenta está activa: ya puedes recibir viajes.", "ok");
       apiPost({ accion: "bienvenida_vista" }).catch(function () {});
       document.body.classList.remove("alta-pendiente"); cerrarPantallasAdmin(); entrar(ses);
     }
@@ -3479,7 +3502,7 @@
     if (d.vence === "FECHA") h += '<div class="campo"><label class="campo-label" for="docVence">Fecha de vencimiento</label><input type="date" id="docVence"></div>';
     if (d.tipo === "LICENCIA_FRENTE") h += '<div class="campo"><label class="campo-label" for="docClase">Clase de licencia</label><select id="docClase"><option value="B">B</option><option>A1</option><option>A2</option><option>A3</option><option>A4</option><option>A5</option><option>C</option><option>D</option></select></div>';
     if (d.vence === "EMISION_6M") {
-      h += '<p class="docs-nota">Descárgalo gratis en registrocivil.cl (para fines especiales); te llega en PDF al correo. Vale 6 meses desde su emisión.</p>' +
+      h += '<p class="docs-nota">Descárgalo gratis en registrocivil.cl (fines especiales). Llega en PDF a tu correo y vale 6 meses.</p>' +
         '<div class="campo"><label class="campo-label" for="docEmision">Fecha de emisión</label><input type="date" id="docEmision"></div>' +
         '<div class="campo"><label class="campo-label" for="docFolio">Folio</label><input type="text" id="docFolio" inputmode="numeric" autocomplete="off"></div>' +
         '<div class="campo"><label class="campo-label" for="docCodigo">Código de verificación</label><input type="text" id="docCodigo" autocomplete="off"></div>';
@@ -3566,7 +3589,7 @@
       boton.disabled = false; boton.textContent = "Enviar a revisión";
       if (!res.ok) { rbAlerta(res.error); return; }
       docsAbierto = "";
-      rbAlerta(d.nombre + " quedó en revisión. Te avisaremos cuando Rumbo lo valide.", "ok");
+      rbAlerta(d.nombre + " enviado a revisión. Te avisamos cuando Rumbo lo valide.", "ok");
       cargarDocumentos();
     }).catch(function (err) {
       boton.disabled = false; boton.textContent = "Enviar a revisión";
@@ -3587,7 +3610,7 @@
     var total = res.total;
     var porRevisar = res.conductores.reduce(function (a, c) { return a + c.por_revisar; }, 0);
     document.getElementById("docsAvance").innerHTML = '<p class="docs-avance-texto"><strong>' + (porRevisar ? porRevisar + (porRevisar === 1 ? " documento por revisar" : " documentos por revisar") : "Nada por revisar") + '</strong>' +
-      'Verifica el certificado de antecedentes con su folio y código en el sitio del Registro Civil. La activación de una cuenta nueva se hace en Conductores.</p>';
+      'Verifica antecedentes con folio y código en el Registro Civil. Activa cuentas nuevas en Conductores.</p>';
     var punto = document.getElementById("puntoItemDocsAdm");
     if (punto) punto.hidden = !porRevisar;
     if (!res.conductores.length) { document.getElementById("docsCuerpo").innerHTML = '<p class="vacio">No hay conductores todavía.</p>'; return; }
@@ -3626,7 +3649,7 @@
         if (b.hasAttribute("data-doc-pdf")) {
           // El visor del teléfono no muestra PDF: ahí se usa Verificar (el Registro Civil muestra el certificado original).
           var nativa = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform());
-          if (nativa) { rbAlerta("En el teléfono el PDF no se puede mostrar. Usa Verificar con el folio y el código: el Registro Civil muestra el certificado original. Para ver el PDF subido, abre el panel admin en el computador."); return; }
+          if (nativa) { rbAlerta("El teléfono no muestra PDF. Usa Verificar (folio y código) o abre el panel en el computador."); return; }
           var bin = atob(res.data_url.split(",")[1]), bytes = new Uint8Array(bin.length);
           for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
           window.open(URL.createObjectURL(new Blob([bytes], { type: "application/pdf" })), "_blank");
@@ -3639,7 +3662,7 @@
     }
     if (b.dataset.docValidar || b.dataset.docRechazar) {
       var aprobado = !!b.dataset.docValidar, id = b.dataset.docValidar || b.dataset.docRechazar;
-      (aprobado ? Promise.resolve("") : rbPedir("¿Qué debe corregir el conductor? (lo verá tal cual)", { si: "Rechazar" })).then(function (motivo) {
+      (aprobado ? Promise.resolve("") : rbPedir("¿Qué debe corregir? El conductor lo verá.", { si: "Rechazar" })).then(function (motivo) {
         if (motivo === null) return;
         b.disabled = true;
         return apiPost({ accion: "revisar_documento", documento_id: id, aprobado: aprobado, motivo: motivo }).then(function (res) {
@@ -3660,11 +3683,22 @@
     if (id === "ganancias" && !document.getElementById("adm-" + id)) {
       var pg = crearPantallaAdmin("ganancias");
       var cg = document.createElement("div"); cg.className = "adm-scroll"; cg.id = "mv-ganancias"; pg.appendChild(cg);
+      cg.addEventListener("click", function (ev) {
+        var b = ev.target.closest("button[data-dia]");
+        if (!b) return;
+        var p = b.getAttribute("data-dia").split("-"), n = Number(b.getAttribute("data-viajes"));
+        var f = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+        var nom = f.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "short" });
+        [].forEach.call(cg.querySelectorAll("button[data-dia]"), function (x) { x.classList.toggle("sel", x === b); });
+        document.getElementById("ganDiaSel").textContent = nom.charAt(0).toUpperCase() + nom.slice(1) + ": " + fmt(Number(b.getAttribute("data-ganado"))) + " · " + n + (n === 1 ? " viaje" : " viajes");
+      });
     }
     if (id === "semana" && !document.getElementById("adm-" + id)) {
       var ps = crearPantallaAdmin("semana");
       var cs = document.createElement("div"); cs.className = "adm-scroll"; cs.id = "mv-semana"; ps.appendChild(cs);
       cs.addEventListener("click", function (ev) {
+        var ir = ev.target.closest("[data-semana-ir]");
+        if (ir) { cargarResumenSemanal(Number(ir.getAttribute("data-semana-ir"))); return; }
         var mv = ev.target.closest("[data-semana-mover]");
         if (!mv) return;
         var nueva = semanaVista + Number(mv.getAttribute("data-semana-mover"));
@@ -3731,7 +3765,7 @@
   function armarPantallaPublicar() {
     var p = crearPantallaAdmin("publicar");
     p.insertAdjacentHTML("beforeend",
-      '<div class="adm-scroll notif-form"><p class="nota">Elige si la ven los conductores, los pasajeros o ambos.</p>' +
+      '<div class="adm-scroll notif-form"><p class="nota">Elige quién la ve.</p>' +
         '<input type="text" id="notifTitulo" maxlength="80" placeholder="Título">' +
         '<textarea id="notifTexto" maxlength="500" rows="4" placeholder="Mensaje"></textarea>' +
         '<label class="campo-label" for="notifDestino">Para quién es</label>' +
@@ -3757,7 +3791,7 @@
       el.innerHTML = !l ? '<p class="vacio">No se pudo cargar lo enviado.</p>' : l.length ? l.map(function (n) {
         return '<div class="msg-env"><div class="msg-cab"><strong>' + escapar(n.titulo) + '</strong><span class="msg-fecha">' + escapar(fechaCorta(n.creado_en)) + '</span></div>' +
           '<span class="msg-para">' + escapar(DESTINO_TXT[String(n.destino || "").toUpperCase()] || "") + '</span></div>';
-      }).join("") : '<p class="vacio">Aún no has enviado noticias.</p>';
+      }).join("") : '<p class="vacio">Tus noticias enviadas aparecerán aquí.</p>';
     }).catch(function () { el.innerHTML = '<p class="vacio">No se pudo cargar lo enviado.</p>'; });
   }
   /* Lectura de un mensaje: pantalla propia con título, fecha y hora, texto completo y, en el admin, «Ir a …» si el mensaje es una tarea. */
@@ -3819,7 +3853,7 @@
 
   /* Mis viajes del conductor: solicitudes de reserva, reservas e historial. Datos de mis_viajes_conductor (solo lectura,
      salvo aceptar/rechazar una solicitud, que usa las mismas acciones de siempre). */
-  var MV_VACIO = { solicitudes: "No tienes solicitudes de reserva.", reservas: "No tienes reservas.", viajes: "Aún no tienes viajes terminados." };
+  var MV_VACIO = { solicitudes: "Aquí verás tus solicitudes de reserva.", reservas: "Aquí verás tus reservas.", viajes: "Aquí verás tus viajes terminados." };
   function crearPantallaMisViajes(id) {
     var p = crearPantallaAdmin(id);
     var cont = document.createElement("div");
@@ -3840,6 +3874,10 @@
         cargarMisViajes(id);
       }).catch(function () { btn.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
     });
+  }
+  // Sin relleno de Google: código postal, región y país.
+  function dirCorta(d) {
+    return String(d || "").replace(/,\s*Chile\s*$/i, "").replace(/,\s*Región[^,]*$/i, "").replace(/\b\d{7}\s+/, "").trim();
   }
   function textoFechaMv(fechaViaje, horaViaje, iso) {
     var d = null;
@@ -3878,12 +3916,12 @@
       var inc = function (nom, monto) { return monto > 0 ? lf(nom, monto, "", "sub") : ""; };
       cas = '<div class="liq"><div class="liq-cab"><small>' + escapar(cuando) + '</small><b>Liquidación del viaje</b></div>' +
         lf("Ganaste en este viaje", dsg.ganado) + inc("Incluye peajes", dsg.peaje) + inc("Incluye espera", dsg.espera) +
-        lf("Membresía Rumbo, 10 %", dsg.membresia, "−") + lf("Retención SII, 15,25 %", dsg.retencion_sii, "−") + lf("Te queda", dsg.queda, "", "tot") +
+        lf("Membresía", dsg.membresia, "−") + lf("Retención SII", dsg.retencion_sii, "−") + lf("Total", dsg.queda, "", "tot") +
         '<p class="liq-nota">La retención se calcula sobre el honorario sin peajes.</p></div>' +
         '<button type="button" class="liq-ver" data-ver-semana="' + offsetSemanaDe(v.fecha) + '">Ver el resumen de la semana<span aria-hidden="true">›</span></button>';
     }
     cuerpo.innerHTML = (dsg ? cas : '<p class="vd-monto">' + escapar(fmt(v.monto)) + '</p><p class="vd-sub">' + escapar(ESTADO_TXT_MV[v.estado] || "") + '</p>') +
-      '<dl class="vd-lista">' + fila("Fecha y hora", cuando) + fila("Pasajero", v.nombre) + fila("Desde", v.origen) +
+      '<dl class="vd-lista">' + fila("Fecha y hora", dsg ? "" : cuando) + fila("Pasajero", v.nombre) + fila("Desde", v.origen) +
         paradas.map(function (x, i) { return fila("Parada " + (i + 1), x); }).join("") + fila("Hasta", v.destino) +
         fila("Ida y vuelta", v.ida_vuelta === "SI" ? "Sí" : "") + fila("Forma de pago", origen === "viajes" ? v.forma : "") +
         (origen === "viajes" ? fila("Calificación", v.calificado ? "Ya calificaste al pasajero" : "Pendiente") : "") + '</dl>' +
@@ -3906,7 +3944,7 @@
         var nParadas = v.paradas ? String(v.paradas).split("|").filter(Boolean).length : 0;
         var chip = function (t) { return '<span class="badge badge-gris">' + escapar(t) + '</span>'; };
         return '<div class="mv-item" data-viaje="' + escapar(v.pedido_id) + '" role="button" tabindex="0"><div class="mv-fila"><strong>' + escapar(cuando) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div>' +
-          '<div class="mv-ruta"><div class="mv-pto"><small>Desde</small><span>' + escapar(v.origen) + '</span></div><div class="mv-pto"><small>Hasta</small><span>' + escapar(v.destino) + '</span></div></div>' +
+          '<div class="mv-ruta"><div class="mv-pto"><small>Desde</small><span>' + escapar(dirCorta(v.origen)) + '</span></div><div class="mv-pto"><small>Hasta</small><span>' + escapar(dirCorta(v.destino)) + '</span></div></div>' +
           '<div class="mv-chips">' + (v.nombre ? chip(v.nombre) : "") + (id === "viajes" && v.forma ? chip(v.forma) : "") + (v.ida_vuelta === "SI" ? chip("Ida y vuelta") : "") +
             (nParadas ? chip(nParadas + (nParadas === 1 ? " parada" : " paradas")) : "") + '</div>' +
           (id === "viajes" && !v.calificado ? '<div class="mv-acciones"><button class="btn btn-chico" data-calificar="' + escapar(v.pedido_id) + '">Calificar al pasajero</button></div>' : "") +
@@ -3925,6 +3963,16 @@
     if (isNaN(f.getTime())) return 0;
     return Math.max(-52, Math.min(0, -Math.round((lunes(ahora || new Date()) - lunes(f)) / 604800000)));
   }
+  // Barras de las últimas 8 semanas (lo ganado); la semana que se está viendo va marcada y cada barra es un botón.
+  function graficoSemanas(serie, desdeVista) {
+    if (!serie || !serie.length) return "";
+    var max = Math.max.apply(null, serie.map(function (x) { return x.ganado; }).concat([1]));
+    var dd = function (iso) { var p = String(iso).split("-"); return Number(p[2]) + "/" + Number(p[1]); };
+    return '<div class="gan-semanas-card"><span class="gan-etiqueta">Últimas 8 semanas</span><div class="gan-semanas" role="group" aria-label="Últimas 8 semanas">' + serie.map(function (x) {
+      return '<button type="button" class="gan-barra' + (x.desde === desdeVista ? " sel" : "") + '" data-semana-ir="' + x.offset + '" aria-label="Semana del ' + escapar(dd(x.desde)) + ': ' + escapar(fmt(x.ganado)) + '">' +
+        '<i style="height:' + Math.max(2, Math.round(x.ganado / max * 64)) + 'px"></i><span>' + escapar(dd(x.desde)) + '</span></button>';
+    }).join("") + '</div></div>';
+  }
   function cargarResumenSemanal(offset) {
     var cont = document.getElementById("mv-semana");
     if (!cont) return;
@@ -3940,11 +3988,12 @@
         '<div class="sem-sel"><button type="button" class="sem-flecha" data-semana-mover="-1" aria-label="Semana anterior"' + (offset <= -52 ? " disabled" : "") + '>‹</button>' +
           '<strong>' + escapar(dd(w.desde) + " – " + dd(w.hasta)) + '</strong>' +
           '<button type="button" class="sem-flecha" data-semana-mover="1" aria-label="Semana siguiente"' + (semanaVista < 0 ? "" : " disabled") + '>›</button></div>' +
+        graficoSemanas(r.semanas_grafico, w.desde) +
         (w.viajes ? '<div class="liq" style="margin:0 16px 18px;"><div class="liq-cab"><small>' + escapar(w.viajes + (w.viajes === 1 ? " viaje" : " viajes")) + '</small><b>Liquidación de la semana</b></div>' +
           lf("Ganaste", w.ganado) + inc("Incluye peajes", w.peaje) + inc("Incluye espera", w.espera) +
-          lf("Membresía Rumbo", w.membresia, "−") + lf("Retención SII", w.retencion_sii, "−") + lf("Te quedó", w.queda, "", "tot") +
-          '<p class="liq-nota">Los viajes de la semana están en Historial de viajes.</p></div>'
-          : '<p class="nota" style="margin:16px;">No tuviste viajes terminados esta semana.</p>');
+          lf("Membresía", w.membresia, "−") + lf("Retención SII", w.retencion_sii, "−") + lf("Total", w.queda, "", "tot") +
+          '<p class="liq-nota">Los viajes están en Historial de viajes.</p></div>'
+          : '<p class="nota" style="margin:16px;">Aún sin viajes esta semana. ¡Conéctate y suma!</p>');
     }).catch(function () { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + TEXTO_SIN_CONEXION + '</p>'; });
   }
   function cargarMisGanancias() {
@@ -3960,19 +4009,20 @@
       var plural = function (n) { return n + (n === 1 ? " viaje" : " viajes"); };
       cont.innerHTML =
         '<div class="gan-bloque"><span class="gan-etiqueta">Hoy</span><span class="gan-grande">' + escapar(fmt(h.ganancia)) + '</span>' +
-          '<span class="gan-sub">' + escapar(plural(h.viajes)) + (h.ganancia > 0 ? " · neto después de la membresía " + escapar(fmt(h.neto)) : "") + '</span></div>' +
+          '<span class="gan-sub">' + escapar(plural(h.viajes)) + "" + '</span></div>' +
         '<div class="gan-bloque"><span class="gan-etiqueta">Esta semana</span><span class="gan-medio">' + escapar(fmt(s.ganancia)) + '</span>' +
-          '<div class="gan-barras" aria-hidden="true">' + s.dias.map(function (d) {
-            return '<div class="gan-barra' + (d.dia === hoyTxt ? " hoy" : "") + '"><i style="height:' + Math.max(2, Math.round(d.ganancia / max * 64)) + 'px"></i><span>' + d.letra + '</span></div>';
+          '<div class="gan-barras" role="group" aria-label="Ganado por día">' + s.dias.map(function (d) {
+            return '<button type="button" class="gan-barra' + (d.dia === hoyTxt ? " hoy" : "") + '" data-dia="' + escapar(d.dia) + '" data-ganado="' + d.ganancia + '" data-viajes="' + d.viajes + '"><i style="height:' + Math.max(2, Math.round(d.ganancia / max * 64)) + 'px"></i><span>' + d.letra + '</span></button>';
           }).join("") + '</div>' +
-          '<span class="gan-sub">' + escapar(plural(s.viajes)) + " · neto " + escapar(fmt(s.neto)) + '</span></div>' +
+          '<span class="gan-dia" id="ganDiaSel" aria-live="polite">Toca una barra para ver ese día.</span>' +
+          '<span class="gan-sub">' + escapar(plural(s.viajes)) + '</span></div>' +
         // Viajes de hoy (lista al estilo de los referentes de mercado): hora, ruta y lo que ganó en cada uno
         (function () {
           var hoyViajes = (r.historial || []).filter(function (v) { var f = new Date(v.fecha); return !isNaN(f.getTime()) && f.getFullYear() + "-" + ("0" + (f.getMonth() + 1)).slice(-2) + "-" + ("0" + f.getDate()).slice(-2) === hoyTxt; });
           if (!hoyViajes.length) return "";
           return '<h4 class="lugares-sub" style="margin:8px 16px 0;">Viajes de hoy</h4>' + hoyViajes.map(function (v) {
             var f = new Date(v.fecha), hora = ("0" + f.getHours()).slice(-2) + ":" + ("0" + f.getMinutes()).slice(-2);
-            return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(hora) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div><div class="mv-ruta">' + escapar(v.origen) + ' → ' + escapar(v.destino) + '</div></div>';
+            return '<div class="mv-item"><div class="mv-fila"><strong>' + escapar(hora) + '</strong><span>' + escapar(fmt(v.monto)) + '</span></div><div class="mv-ruta">' + escapar(dirCorta(v.origen)) + ' → ' + escapar(dirCorta(v.destino)) + '</div></div>';
           }).join("");
         })();
     }).catch(function () { cont.innerHTML = '<p class="msg error" style="margin:16px;">' + TEXTO_SIN_CONEXION + '</p>'; });
@@ -4254,7 +4304,7 @@
         estado.className = "msg";
         return;
       }
-      estado.textContent = res.pausado ? "El cobro con tarjeta está en pausa: el pasajero no ve esa opción." : "✓ Cobro con tarjeta activo: el pasajero paga a través de Rumbo y BTo Innova te lo transfiere.";
+      estado.textContent = res.pausado ? "Tarjeta en pausa: el pasajero no la ve." : "✓ Cobro con tarjeta activo: el pasajero paga a través de Rumbo y BTo Innova te lo transfiere.";
       estado.className = res.pausado ? "msg" : "msg ok";
     });
   }
@@ -4265,7 +4315,7 @@
     fila.style.display = res.vinculado ? "flex" : "none";
     chk.checked = !res.pausado;
     fila.classList.toggle("activo", !res.pausado);
-    document.getElementById("mpPausaTexto").textContent = res.pausado ? "En pausa: el pasajero no ve la opción de tarjeta." : "Activo: el pasajero puede elegir pagar con tarjeta.";
+    document.getElementById("mpPausaTexto").textContent = res.pausado ? "Tarjeta en pausa." : "Tarjeta activa.";
   }
   document.getElementById("chkMpActivo").addEventListener("change", function () {
     var chk = this, pausar = !chk.checked;
@@ -4283,7 +4333,7 @@
       if (!res.ok) { estado.textContent = "No se pudo revisar: " + res.error; estado.className = "msg"; return; }
       if (!res.configurado) { estado.textContent = "Mercado Pago todavía no está configurado en el sistema (faltan las credenciales de la aplicación)."; estado.className = "msg"; boton.style.display = "none"; return; }
       boton.style.display = "";
-      estado.textContent = res.empresa_vinculada ? "✓ Conectada: los pagos con tarjeta entran a la cuenta de BTo Innova." : "Todavía no hay una cuenta conectada: los pagos con tarjeta no se pueden cobrar.";
+      estado.textContent = res.empresa_vinculada ? "✓ Conectada: los pagos con tarjeta entran a la cuenta de BTo Innova." : "Conecta la cuenta de la empresa para cobrar con tarjeta.";
       estado.className = res.empresa_vinculada ? "msg ok" : "msg";
       boton.textContent = res.empresa_vinculada ? "Reconectar Mercado Pago de la empresa" : "Conectar Mercado Pago de la empresa";
     }).catch(function (err) { estado.textContent = TEXTO_SIN_CONEXION; estado.className = "msg"; });
@@ -4292,14 +4342,14 @@
   // Solo admin: conecta la cuenta Mercado Pago de BTo Innova, que recauda todos los cobros.
   document.getElementById("btnMpEmpresa").addEventListener("click", async function () {
     var boton = this;
-    if (!(await rbConfirmar("Se abrirá Mercado Pago: autoriza con la sesión de la cuenta de BTo Innova SpA (no una personal). El link vence en 15 minutos. ¿Continuar?"))) return;
+    if (!(await rbConfirmar("Autoriza en Mercado Pago con la cuenta de BTo Innova SpA, no una personal. El link vence en 15 min. ¿Continuar?"))) return;
     boton.disabled = true;
     apiPost({ accion: "mp_link_empresa" }).then(function (res) {
       boton.disabled = false;
       if (!res.ok) { rbAlerta(res.error); return; }
       window.open(res.url, "_blank");
       document.getElementById("mpEmpresaEstado").textContent =
-        "Autoriza en Mercado Pago con la cuenta de la empresa y vuelve acá. Después entra de nuevo a esta pantalla para actualizar.";
+        "Autoriza con la cuenta de la empresa y vuelve. Luego reabre esta pantalla.";
     }).catch(function (err) { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
@@ -4314,7 +4364,7 @@
     var msg = document.getElementById("miQrMsg");
     (navigator.clipboard ? navigator.clipboard.writeText(miLinkPasajero) : Promise.reject())
       .then(function () { msg.textContent = "Link copiado."; msg.className = "msg ok"; })
-      .catch(function () { msg.textContent = "No se pudo copiar; mantené presionado el link para copiarlo."; msg.className = "msg error"; });
+      .catch(function () { msg.textContent = "Mantén presionado el link para copiarlo."; msg.className = "msg error"; });
   });
 
   document.getElementById("btnCompartirQr").addEventListener("click", function () {
@@ -4454,7 +4504,7 @@
   }
   function textoSaldoMembresia(res) {
     var html;
-    if (res.en_revision) html = "<strong>En revisión</strong>Tu saldo lo está revisando el administrador.";
+    if (res.en_revision) html = "<strong>En revisión</strong>El administrador revisa tu saldo.";
     else if (res.saldo > 0) html = "<strong>" + fmt(res.saldo) + "</strong>Por recibir en tu próxima transferencia" + (res.cuenta_completa ? "." : ": completa tu cuenta bancaria para poder recibirla.");
     else if (res.saldo < 0) html = "<strong>" + fmt(-res.saldo) + "</strong>Membresía pendiente de viajes en efectivo o transferencia: se descuenta sola de tus próximos cobros con tarjeta.";
     else html = "<strong>$0</strong>Estás al día.";
@@ -4478,7 +4528,7 @@
       });
       document.getElementById("memTopeReal").textContent = fmt(escala);
       document.getElementById("memBonoTexto").innerHTML = conBono
-        ? "<strong>Bono por objetivo" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + "</strong><br>" + escapar(textoBonoObjetivo(res.escalones, res.acumulado)) + "<br>Los bonos no se acumulan: recibes el del tramo más alto que alcances en el mes." +
+        ? "<strong>Bono por objetivo" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + "</strong><br>" + escapar(textoBonoObjetivo(res.escalones, res.acumulado)) + "<br>Recibes el bono del tramo más alto del mes." +
           '<details style="margin-top:6px;"><summary>Ver los tramos</summary>' + (res.escalones || []).slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (e) { return "<div>" + fmt(e[0]) + " de membresía → bono de " + fmt(e[1]) + "</div>"; }).join("") + "</details>"
         : (res.bono_desde ? "Tu bono por objetivo empieza el " + fechaCorta(res.bono_desde) + " y dura 3 meses." : "");
       rel.classList.toggle("lleno", !!res.liberado);
@@ -4509,12 +4559,12 @@
   document.getElementById("acordeonReclamos").addEventListener("toggle", function () { if (this.open) cargarMisReclamos(); });
   document.getElementById("btnEnviarReclamo").addEventListener("click", function () {
     var txt = document.getElementById("reclamoTexto"), btn = this;
-    if (txt.value.trim().length < 5) { rbAlerta("Cuéntanos un poco más para poder ayudarte."); return; }
+    if (txt.value.trim().length < 5) { rbAlerta("Cuéntanos un poco más."); return; }
     btn.disabled = true;
     apiPost({ accion: "enviar_reclamo_conductor", tipo: document.getElementById("reclamoTipo").value, texto: txt.value.trim() }).then(function (res) {
       btn.disabled = false;
       if (!res.ok) { rbAlerta(res.error || "No se pudo enviar. Intenta de nuevo."); return; }
-      txt.value = ""; rbAlerta("Recibimos tu mensaje. La respuesta aparecerá en esta sección."); cargarMisReclamos();
+      txt.value = ""; rbAlerta("Recibido. Te respondemos en esta sección."); cargarMisReclamos();
     }).catch(function (e) { btn.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
   function cargarReclamosAdmin() {
@@ -4580,7 +4630,7 @@
       b.disabled = false;
       if (res.ok) { rbAlerta("Transferencia registrada: " + fmt(res.monto) + ".", "ok"); cargarLiquidaciones(); return; }
       if (res.cuenta_cambio) {
-        rbConfirmar("La cuenta bancaria cambió desde la última transferencia. ¿Ya confirmaste la cuenta nueva con el conductor?").then(function (si) { if (si) liquidar(b, true); });
+        rbConfirmar("La cuenta bancaria cambió. ¿Confirmaste la cuenta nueva con el conductor?").then(function (si) { if (si) liquidar(b, true); });
         return;
       }
       rbAlerta(res.error); cargarLiquidaciones();
@@ -4589,7 +4639,7 @@
   document.addEventListener("click", function (ev) {
     var b = ev.target.closest("[data-liquidar]");
     if (!b) return;
-    rbConfirmar("¿Confirmas que ya transferiste " + fmt(Number(b.getAttribute("data-saldo"))) + " a " + b.getAttribute("data-nombre") + "? Esto queda registrado y no se puede deshacer.").then(function (si) { if (si) liquidar(b, false); });
+    rbConfirmar("¿Transferiste " + fmt(Number(b.getAttribute("data-saldo"))) + " a " + b.getAttribute("data-nombre") + "? Queda registrado y no se puede deshacer.").then(function (si) { if (si) liquidar(b, false); });
   });
 
   // Datos para cobrar por transferencia: bancos y tipo de cuenta se ELIGEN de una lista (no se escriben).
@@ -4640,7 +4690,7 @@
     var msg = document.getElementById("vehFotoMsg");
     if (!archivo) return;
     if (archivo.size > 3 * 1024 * 1024) {
-      msg.textContent = "La imagen pesa más de 3 MB, usa una más liviana.";
+      msg.textContent = "Usa una imagen de hasta 3 MB.";
       msg.className = "msg error";
       ev.target.value = "";
       return;
@@ -4710,7 +4760,7 @@
     bioPedida = false;
     bioDisponible().then(async function (ok) {
       if (!ok) return;
-      if (!(await rbConfirmar("¿Quieres ingresar con tu huella la próxima vez, sin escribir la clave?"))) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
+      if (!(await rbConfirmar("¿Ingresar con tu huella la próxima vez?"))) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
       return P.verifyIdentity({ reason: "Confirma con tu huella", title: "Activar ingreso con huella", negativeButtonText: "Cancelar", useFallback: false })
         .then(function () { return P.setCredentials({ username: usuario, password: clave, server: BIO_SERVER }); })
         .then(function () { bioGuardarLocal("rumbo_bio", "1"); pintarBotonHuella(); })
@@ -4721,7 +4771,7 @@
     var P = bioPlugin();
     var msg = document.getElementById("loginMsg");
     if (!P) return;
-    if (!bioActivada()) { bioPedida = true; msg.textContent = "Ingresa ahora con tu usuario y clave: te preguntaremos si quieres activar la huella."; msg.className = "msg"; return; }
+    if (!bioActivada()) { bioPedida = true; msg.textContent = "Ingresa con tu clave y te ofreceremos activar la huella."; msg.className = "msg"; return; }
     P.verifyIdentity({ reason: "Ingresar a Rumbo", title: "Ingresar a Rumbo", subtitle: "Usa tu huella", negativeButtonText: "Usar clave", useFallback: false })
       .then(function () { return P.getCredentials({ server: BIO_SERVER }); })
       .then(function (cred) {
@@ -4730,7 +4780,7 @@
         viaHuella = true;
         document.getElementById("btnLogin").click();
       })
-      .catch(function () { msg.textContent = "No se pudo usar la huella. Ingresa con tu clave."; msg.className = "msg error"; });
+      .catch(function () { msg.textContent = "Huella no reconocida. Ingresa con tu clave."; msg.className = "msg error"; });
   });
   pintarBotonHuella();
 
@@ -4756,13 +4806,22 @@
       entrar(res);
     }).catch(function (err) {
       var red = !err || err.name === "TypeError" || err.name === "AbortError";
-      msg.textContent = red ? TEXTO_SIN_CONEXION : "No se pudo ingresar por un error de la app. Ciérrala, ábrela de nuevo e inténtalo otra vez."; msg.className = "msg error";
+      msg.textContent = red ? TEXTO_SIN_CONEXION : "Error de la app. Ciérrala, ábrela y reintenta."; msg.className = "msg error";
     }).then(function () { botonLogin.disabled = false; });
   });
 
   // "Olvidé mi clave": paso 1 pide el código por correo, paso 2 lo
   // confirma junto con la clave nueva. Mismo backend para conductor y
   // admin — ambos son filas de la misma hoja de Conductores.
+  // Deja solo los dígitos (pegar «123 456» o «123-456») y máximo 6.
+  function soloDigitos(v) { return String(v == null ? "" : v).replace(/\D/g, "").slice(0, 6); }
+  // Recuperar clave desde cero: casillas vacías y editables, sin la clave nueva a la vista.
+  function reiniciarRecuperar() {
+    var ec = document.getElementById("recuperarCodigo"); ec.value = ""; ec.readOnly = false; ec.dispatchEvent(new Event("blur"));
+    document.getElementById("recuperarCajas").classList.remove("ok");
+    document.getElementById("recuperarPaso3").style.display = "none";
+    document.getElementById("recuperarClaveNueva").value = "";
+  }
   function mostrarRecuperar(mostrar) {
     document.getElementById("cardIngreso").style.display = mostrar ? "none" : "block";
     document.getElementById("cardRecuperar").style.display = mostrar ? "block" : "none";
@@ -4770,8 +4829,7 @@
       document.getElementById("recuperarPaso1").style.display = "block";
       document.getElementById("recuperarPaso2").style.display = "none";
       document.getElementById("recuperarUsuario").value = document.getElementById("loginUsuario").value.trim();
-      document.getElementById("recuperarCodigo").value = "";
-      document.getElementById("recuperarClaveNueva").value = "";
+      reiniciarRecuperar();
       document.getElementById("recuperarMsg").textContent = "";
     }
   }
@@ -4787,10 +4845,40 @@
     apiPost({ accion: "recuperar_clave_pedir", usuario: usuario }).then(function (res) {
       msg.textContent = res.mensaje || res.error || "Listo.";
       msg.className = "msg " + (res.ok ? "ok" : "error");
-      if (res.ok) document.getElementById("recuperarPaso2").style.display = "block";
+      if (res.ok) {
+        document.getElementById("recuperarPaso2").style.display = "block";
+        reiniciarRecuperar();   // código nuevo: casillas limpias y clave nueva oculta hasta validarlo
+        document.getElementById("recuperarCodigo").focus();
+      }
     }).catch(function (err) { msg.textContent = TEXTO_SIN_CONEXION; msg.className = "msg error"; })
       .then(function () { botonCodigo.disabled = false; });
   });
+
+  // Código de 6 casillas: al completar los 6 dígitos se valida en el servidor y recién entonces aparece la clave nueva.
+  (function () {
+    var entrada = document.getElementById("recuperarCodigo"), cajas = document.getElementById("recuperarCajas");
+    var casillas = cajas.querySelectorAll(".casilla-codigo"), validando = false;
+    function pintar() {
+      var v = entrada.value;
+      casillas.forEach(function (c, i) { c.textContent = v.charAt(i); c.classList.toggle("activa", i === Math.min(v.length, 5) && document.activeElement === entrada); });
+    }
+    entrada.addEventListener("focus", pintar); entrada.addEventListener("blur", pintar);
+    entrada.addEventListener("input", function () {
+      entrada.value = soloDigitos(entrada.value);
+      pintar();
+      if (entrada.value.length < 6 || validando) return;
+      var msg = document.getElementById("recuperarMsg");
+      validando = true; msg.textContent = "Validando código..."; msg.className = "msg";
+      apiPost({ accion: "recuperar_clave_validar", usuario: document.getElementById("recuperarUsuario").value.trim(), codigo: entrada.value }).then(function (res) {
+        if (!res.ok) { msg.textContent = res.error; msg.className = "msg error"; entrada.value = ""; pintar(); return; }
+        msg.textContent = "Código correcto. Elige tu clave nueva."; msg.className = "msg ok";
+        cajas.classList.add("ok"); entrada.readOnly = true;
+        document.getElementById("recuperarPaso3").style.display = "block";
+        document.getElementById("recuperarClaveNueva").focus();
+      }).catch(function () { msg.textContent = TEXTO_SIN_CONEXION + " Escribe el código otra vez."; msg.className = "msg error"; entrada.value = ""; pintar(); })
+        .then(function () { validando = false; });
+    });
+  })();
 
   document.getElementById("btnConfirmarCodigo").addEventListener("click", function () {
     var usuario = document.getElementById("recuperarUsuario").value.trim();
@@ -4810,7 +4898,7 @@
   });
 
   document.getElementById("btnCerrarSesion").addEventListener("click", async function () {
-    if (!(await rbConfirmar("¿Cerrar sesión en este dispositivo? Tendrás que volver a ingresar con tu usuario y clave."))) return;
+    if (!(await rbConfirmar("¿Cerrar sesión? Volverás a ingresar con tu usuario y clave."))) return;
     apiPost({ accion: "cerrar_sesion" }).catch(function () {});
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     if (sondeoTimer) clearInterval(sondeoTimer);
@@ -4880,8 +4968,8 @@
     document.getElementById("modoTarifaTexto").textContent = individual
       ? "Tus pasajeros cotizan con estos valores de tu vehículo."
       : (solicitud === "PENDIENTE"
-          ? "Pediste tarifa propia. Esperando autorización del administrador."
-          : "Tus pasajeros cotizan con los valores de la red. Si tu vehículo tiene costos distintos, pide tarifa propia.");
+          ? "Tarifa propia solicitada: el administrador la revisa."
+          : "Cotizas con la tarifa de la red. ¿Tu auto cuesta distinto? Pide tarifa propia.");
     var boton = document.getElementById("btnSolicitarTarifa");
     boton.style.display = individual ? "none" : "";
     boton.disabled = solicitud === "PENDIENTE";
@@ -4901,18 +4989,18 @@
     var tit = document.getElementById("avisoAlcanceTitulo"), txt = document.getElementById("avisoAlcanceTexto"), cmp = document.getElementById("comparaTarifas");
     if (MODO === "admin") {
       tit.textContent = "Estás editando las tarifas de TODA la red";
-      txt.textContent = "Rigen para todos los conductores con tarifa general. Quien tiene tarifa propia cobra con la suya.";
+      txt.textContent = "Rigen para todos con tarifa general. Quien tiene tarifa propia usa la suya.";
       cmp.textContent = "";
       return;
     }
     if (modoTarifaActual !== "INDIVIDUAL") {
       tit.textContent = "Cobras con las tarifas de la red";
-      txt.textContent = "Estos valores son los de la red y aquí no se pueden cambiar: los campos están bloqueados. Para usar los tuyos, pide tarifa propia abajo.";
+      txt.textContent = "Valores de la red, bloqueados. Para usar los tuyos, pide tarifa propia abajo.";
       cmp.textContent = "";
       return;
     }
     tit.textContent = "Estás editando SOLO tus tarifas";
-    txt.textContent = "Tus pasajeros cotizan con tus tarifas, no con las de la red. Los cambios no afectan a otros conductores.";
+    txt.textContent = "Tus pasajeros cotizan con tus tarifas. No afecta a otros conductores.";
     if (!tarifasPropias) { cmp.textContent = ""; return; }
     var filas = [["Combustible ($/L)", "precioComb", pesosT], ["Consumo ciudad (km/L)", "consumoCiudad", String], ["Consumo ruta (km/L)", "consumoRuta", String],
       ["Hora valle", "valorHoraValle", pesosT], ["Hora punta", "valorHoraPunta", pesosT], ["Punta fuerte", "valorHoraFuerte", pesosT]];
@@ -4930,7 +5018,7 @@
     apiPost({ accion: "solicitar_tarifa_propia" }).then(function (res) {
       if (!res.ok) { rbAlerta(res.error || "No se pudo enviar la solicitud."); boton.disabled = false; return; }
       pintarModoTarifa("GENERAL", "PENDIENTE");
-      rbAlerta("Solicitud enviada. Espera la autorización del administrador.", "ok");
+      rbAlerta("Solicitud enviada. El administrador la revisará.", "ok");
     }).catch(function () { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
@@ -5006,8 +5094,8 @@
     if (!actual || actual.disabled) return;
     document.getElementById("combustibleNuevo").value = actual.value || "";
     document.getElementById("combustibleTexto").textContent = MODO === "admin"
-      ? "Los combustibles cambian de precio los jueves. Actualiza el valor por litro de la red para que las cotizaciones queden al día."
-      : "Los combustibles cambian de precio los jueves. Actualiza el valor por litro de tu vehículo para que tus cotizaciones queden al día.";
+      ? "El combustible cambia los jueves. Actualiza el valor por litro de la red."
+      : "El combustible cambia los jueves. Actualiza tu valor por litro.";
     document.getElementById("combustibleMsg").textContent = "";
     document.getElementById("modalCombustible").hidden = false;
     combustiblePreguntadoEnSesion = true;
@@ -5199,7 +5287,7 @@
     var msg = document.getElementById("disponibilidadMsg");
     var sinDias = bloqueos.some(function (b) { return b.dias.length === 0; });
     if (sinDias) {
-      msg.textContent = "Cada bloqueo necesita al menos un día marcado.";
+      msg.textContent = "Marca al menos un día.";
       msg.className = "msg error";
       return;
     }
@@ -5451,7 +5539,7 @@
       }
       if (p.cambio_por === "CONDUCTOR" && (p.cambio_estado === "ACEPTADO" || p.cambio_estado === "RECHAZADO") && cambioVisto(p) !== String(p.cambio_en)) {
         marcarCambioVisto(p);
-        rbAlerta(p.cambio_estado === "ACEPTADO" ? "El pasajero aceptó el cambio del viaje." : "El pasajero no aceptó el cambio: el viaje sigue como estaba.");
+        rbAlerta(p.cambio_estado === "ACEPTADO" ? "El pasajero aceptó el cambio del viaje." : "El pasajero mantiene el viaje original.");
       }
     });
   }
@@ -5534,7 +5622,7 @@
       msg.textContent = "";
       var dif = r.diferencia, pr = document.getElementById("edcPrecio");
       pr.innerHTML = "Valor actual " + fmt(r.total_actual) + " → <strong>nuevo " + fmt(r.total_nuevo) + "</strong>" + (dif === 0 ? " (sin cambio)" : dif > 0 ? " (+" + fmt(dif) + ")" : " (−" + fmt(-dif) + ")") +
-        "<br>" + (r.requiere_pasajero ? "El valor sube más de 30 % sobre el primero: el pasajero tiene que aceptarlo." : "Se aplica de inmediato y se avisa al pasajero.");
+        "<br>" + (r.requiere_pasajero ? "Sube más de 30 %: el pasajero debe aceptarlo." : "Se aplica ya y avisamos al pasajero.");
       pr.style.display = "block";
       document.getElementById("edcEnviar").disabled = false;
     }).catch(function (err) { btn.disabled = false; msg.textContent = TEXTO_SIN_CONEXION; });
@@ -5546,7 +5634,7 @@
     apiPost(d).then(function (r) {
       if (!r.ok) { btn.disabled = false; msg.textContent = r.error || "No se pudo enviar."; return; }
       document.getElementById("modalEditarC").hidden = true;
-      if (!r.aplicado) rbAlerta("Cambio enviado: esperando que el pasajero lo acepte.");
+      if (!r.aplicado) rbAlerta("Cambio enviado. Esperando al pasajero.");
       refrescarViajes();
     }).catch(function (err) { btn.disabled = false; msg.textContent = TEXTO_SIN_CONEXION; });
   });
@@ -5646,7 +5734,7 @@
   function navActiva() { return !!nav; }
 
   function iniciarNavegacion(dest) {
-    if (!miPosicionConductor) { rbAlerta("Todavía no tengo tu ubicación. Revisa que el GPS esté encendido y vuelve a intentar."); return; }
+    if (!miPosicionConductor) { rbAlerta("Enciende el GPS para ubicarte y reintenta."); return; }
     detenerNavegacion(true);
     nav = { dest: dest, pasos: [], pts: [], cum: [], acum: [], idx: 0, linea: null, ultimaConsulta: 0, fuera: 0, anunciado: {}, voz: true, fin: false, pidiendo: false };
     document.body.classList.add("cond-navegando");
@@ -5671,7 +5759,7 @@
       if (!nav) return;
       nav.pidiendo = false;
       if (!res || !res.ok) {
-        document.getElementById("navInstr").textContent = res && res.reintentar ? "Calculando la ruta…" : "No pude calcular la ruta. Usa Waze o Maps.";
+        document.getElementById("navInstr").textContent = res && res.reintentar ? "Calculando la ruta…" : "Usa Waze o Maps para esta ruta.";
         if (res && res.reintentar) setTimeout(pedirRutaNav, 9000);
         return;
       }
@@ -5679,7 +5767,7 @@
       nav.pts = (res.polilinea && window.google && google.maps.geometry) ? google.maps.geometry.encoding.decodePath(res.polilinea).map(function (p) { return { lat: p.lat(), lng: p.lng() }; }) : [];
       if (nav.pts.length < 2) {   // sin el trazado no se puede medir el avance
         nav.pasos = [];
-        document.getElementById("navInstr").textContent = "No pude trazar la ruta. Usa Waze o Maps.";
+        document.getElementById("navInstr").textContent = "Usa Waze o Maps para esta ruta.";
         return;
       }
       nav.cum = largosRuta(nav.pts); nav.acum = acumPasos(nav.pasos);
@@ -5687,7 +5775,7 @@
       if (mapaEspera && nav.pts.length) nav.linea = dibujarRutaNaranja(mapaEspera, nav.pts);
       pintarNav();
       if (nav.voz) hablarNav(nav.pasos[0].texto);
-    }).catch(function () { if (nav) { nav.pidiendo = false; document.getElementById("navInstr").textContent = "Sin conexión para calcular la ruta."; } });
+    }).catch(function () { if (nav) { nav.pidiendo = false; document.getElementById("navInstr").textContent = "Sin conexión. Usa Waze o Maps."; } });
   }
 
   function pintarNav() {
@@ -5891,8 +5979,8 @@
     if (sinAcciones) {
       panelEtapa = "";   // los avisos y el reloj de la espera están en la tarjeta flotante
     } else if (etapa === "ida" && esIdaYVuelta(p)) {
-      panelEtapa = '<p class="ayuda" style="margin:0 2px 10px;font-size:13.5px;">Ida y vuelta: al llegar al destino toca <strong>«Llegué al destino»</strong>. ' +
-        'Así se mide la espera que contrató el pasajero (' + minutosEsperaContratada(p) + ' min) y se cobra si se pasa.</p>';
+      panelEtapa = '<p class="ayuda" style="margin:0 2px 10px;font-size:13.5px;">Al llegar al destino toca <strong>«Llegué al destino»</strong>. ' +
+        'Mide la espera contratada (' + minutosEsperaContratada(p) + ' min) y cobra el exceso.</p>';
     } else if (etapa === "espera") {
       panelEtapa = '<div class="espera-panel" data-espera="' + escapar(p.pedido_id) + '" data-desde="' + escapar(isNaN(new Date(p.llegada_destino_en).getTime()) ? "" : new Date(p.llegada_destino_en).toISOString()) + '" data-incluida="' + minutosEsperaContratada(p) + '">' +
         '<div class="espera-titulo">Esperando al pasajero en el destino</div>' +
@@ -5976,7 +6064,7 @@
     if (p.estado_pago === "PENDIENTE") {
       var fp = p.forma_pago;
       return { etapa: "pago", id: p.pedido_id, etiqueta: "Viaje terminado", titulo: "Por cobrar " + fmt(montoCobrar(p)),
-        sub: fp === "EFECTIVO" ? "El pasajero pagará en efectivo" : fp === "TRANSFERENCIA" ? (p.comprobante_subido ? "Transferencia con comprobante PDF recibido ✓" : "Esperando el comprobante en PDF del pasajero")
+        sub: fp === "EFECTIVO" ? "El pasajero pagará en efectivo" : fp === "TRANSFERENCIA" ? (p.comprobante_subido ? "Transferencia con comprobante PDF recibido ✓" : "Esperando comprobante PDF del pasajero")
           : (fp === "POR_ELEGIR" || !fp) ? "El pasajero está eligiendo cómo pagar" : "Esperando el pago por Mercado Pago",
         boton: fp === "TRANSFERENCIA" && !p.comprobante_subido ? { texto: "Esperando el comprobante", accion: "esperar-comprobante", clase: "" }
           : { texto: fp === "TRANSFERENCIA" ? "Recibí la transferencia" : fp === "EFECTIVO" ? "Recibí el efectivo" : "Me pagó en efectivo", accion: "efectivo", clase: "verde" }, crono: null, secundario: null, punto: null, nav: null };
@@ -6125,14 +6213,14 @@
   }
   async function soltarViajeConductor(pedidoId, mo) {
     if (soltandoViaje) return;
-    var aviso = mo.id === "pasajero_ausente" ? "Se cancela el viaje y no se cobra nada al pasajero." : "El viaje pasa a otro conductor, con el mismo precio y el mismo PIN.";
+    var aviso = mo.id === "pasajero_ausente" ? "Se cancela y no se cobra al pasajero." : "Pasa a otro conductor con el mismo precio y PIN.";
     document.getElementById("modalSoltar").hidden = true;
     if (!(await rbConfirmar("¿Soltar este viaje? " + aviso, { si: "Sí, soltarlo", no: "Volver" }))) { document.getElementById("modalSoltar").hidden = false; return; }
     soltandoViaje = true;
     apiPost({ accion: "no_puedo_hacer_viaje", pedido_id: pedidoId, motivo: mo.id }).then(function (res) {
       soltandoViaje = false;
       if (!res || !res.ok) { rbAlerta("No se pudo soltar el viaje: " + ((res && res.error) || "intenta de nuevo")); return; }
-      rbAlerta(res.estado === "CANCELADO" ? "Listo, el viaje quedó cancelado y no se cobró nada." : "Listo, avisamos al pasajero y buscamos otro conductor. Gracias por avisar.");
+      rbAlerta(res.estado === "CANCELADO" ? "Viaje cancelado, sin cobro al pasajero." : "Avisamos al pasajero y buscamos otro conductor. Gracias.");
       refrescarViajes();
     }).catch(function () { soltandoViaje = false; rbAlerta(TEXTO_SIN_CONEXION); });
   }
@@ -6403,7 +6491,7 @@
       if (pinActivoServ) {
         pinIngresado = await pedirPin();
         if (pinIngresado === null) return;
-      } else if (!(await rbConfirmar("¿Iniciar el viaje ahora? Desde aquí se miden el tiempo y los km reales."))) return;
+      } else if (!(await rbConfirmar("¿Iniciar el viaje? Desde aquí se miden tiempo y km."))) return;
       conBotonOcupado(apiPost({ accion: "iniciar_viaje", pedido_id: id, pin: String(pinIngresado || "").trim() }).then(function (res) {
         if (!res.ok) { rbAlerta("Error: " + res.error); return; }
         refrescarViajes();
@@ -6438,14 +6526,14 @@
       return;
     }
     if (tipo === "esperar-comprobante") {
-      rbAlerta("El pasajero todavía no sube el comprobante en PDF de su transferencia. Cuando lo suba, podrás confirmar el pago.");
+      rbAlerta("Esperando el comprobante PDF del pasajero. Con él podrás confirmar el pago.");
       return;
     }
     if (tipo === "efectivo") {
       var pe = pedidoEnCurso(id);
       // Transferencia: primero se ve el comprobante PDF y se comprueba el monto; la confirmación está dentro de esa ventana.
       if (pe && pe.forma_pago === "TRANSFERENCIA" && pe.comprobante_subido) { abrirComprobante(id, montoCobrar(pe)); return; }
-      if (!(await rbConfirmar("¿Recibiste el pago de este viaje? Se cierra el cobro."))) return;
+      if (!(await rbConfirmar("¿Recibiste el pago? Se cierra el cobro."))) return;
       confirmarPagoRecibido(id);
     }
   }
@@ -6472,7 +6560,7 @@
   }
   function abrirComprobante(pedidoId, montoEsperado) {
     comprobanteAbierto = pedidoId;
-    document.getElementById("compEsperado").textContent = "Debes haber recibido " + fmt(montoEsperado) + ". Revisa que el monto del comprobante sea ese, y que sea el PDF del banco.";
+    document.getElementById("compEsperado").textContent = "Debiste recibir " + fmt(montoEsperado) + ". Revisa que el PDF del banco diga ese monto.";
     var lienzo = document.getElementById("compLienzo");
     lienzo.innerHTML = '<p class="nota" style="margin:12px;">Cargando…</p>';
     document.getElementById("btnCompConfirmar").disabled = true;
@@ -6494,7 +6582,7 @@
         }, Promise.resolve()).then(function () { document.getElementById("btnCompConfirmar").disabled = false; });
       });
     }).catch(function () {
-      lienzo.innerHTML = '<p class="msg error" style="margin:12px;">No se pudo mostrar el comprobante (¿sin conexión?). Cierra e inténtalo de nuevo.</p>';
+      lienzo.innerHTML = '<p class="msg error" style="margin:12px;">Sin conexión. Cierra y reintenta.</p>';
     });
   }
   document.getElementById("btnCompCerrar").addEventListener("click", function () { document.getElementById("modalComprobante").hidden = true; });
@@ -6520,7 +6608,7 @@
       var fondo = document.createElement("div");
       fondo.className = "modal-fondo"; fondo.setAttribute("role", "dialog"); fondo.setAttribute("aria-label", "PIN del pasajero");
       fondo.innerHTML = '<div class="modal-hoja"><h2 style="margin:0 0 4px;font-size:18px;">PIN del pasajero</h2>' +
-        '<p class="nota" style="margin:0;">Pídele su PIN de 4 dígitos (lo ve en su app) para iniciar el viaje.</p>' +
+        '<p class="nota" style="margin:0;">Pídele su PIN de 4 dígitos (está en su app).</p>' +
         '<div class="pin-casillas">' + [0, 1, 2, 3].map(function (i) { return '<input type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Dígito ' + (i + 1) + '">'; }).join("") + '</div>' +
         '<button class="btn btn-ok pin-ok" type="button" disabled style="width:100%;">Iniciar viaje</button>' +
         '<button class="btn btn-chico pin-cancelar" type="button" style="width:100%;margin-top:10px;">Cancelar</button></div>';
@@ -6623,12 +6711,12 @@
 
   function avisosCierre(r) {
     var av = [];
-    if (r.ida_vuelta && r.metodo !== "COTIZADO" && !r.llegada_marcada) av.push("No marcaste «Llegué al destino»: la espera no se pudo medir por separado; se cobra por el tiempo total.");
-    if (r.ida_vuelta && r.llegada_marcada && !r.regreso_marcado) av.push("No marcaste «Iniciar regreso»: la espera se cuenta hasta ahora.");
+    if (r.ida_vuelta && r.metodo !== "COTIZADO" && !r.llegada_marcada) av.push("Sin «Llegué al destino»: se cobra por el tiempo total.");
+    if (r.ida_vuelta && r.llegada_marcada && !r.regreso_marcado) av.push("Sin «Iniciar regreso»: la espera cuenta hasta ahora.");
     if (!r.cobro_real && r.metodo !== "COTIZADO") av.push("El cobro con valores reales está desactivado: se cobra lo cotizado.");
     else if (r.cobro_real && r.metodo === "RECALCULADO") av.push("El viaje terminó antes del destino indicado: se recalculó y se cobra lo recorrido (menos que lo cotizado).");
-    else if (r.cobro_real && r.metodo === "MINIMO") av.push("El viaje salió más corto que lo cotizado: se cobra lo cotizado (mínimo).");
-    else if (r.cobro_real && r.metodo === "TOPE") av.push("El valor real superó el tope de +30%: se cobra el tope.");
+    else if (r.cobro_real && r.metodo === "MINIMO") av.push("Se cobra el mínimo: lo cotizado.");
+    else if (r.cobro_real && r.metodo === "TOPE") av.push("Se cobra el tope de +30 %.");
     return av;
   }
 
@@ -6683,7 +6771,7 @@
       var queHacer = fp === "EFECTIVO" ? "Cóbrale " + fmt(aCobrar) + " en efectivo." : fp === "TRANSFERENCIA" ? "El pasajero te transferirá " + fmt(aCobrar) + ". Cuando llegue, toca «Recibí la transferencia»." : fp === "POR_ELEGIR" ? "El pasajero elegirá cómo pagar. Si es en efectivo, cóbrale " + fmt(aCobrar) + "." : "El pasajero paga con tarjeta: tu ganancia queda en tu billetera.";
       // Desglose del pago: lo que gana (peajes incluidos) menos la membresía (10 % de lo que no es peaje) = neto.
       var desglose = res.ganancia > 0 ? "Ganaste " + fmt(res.ganancia) + (res.peajes > 0 ? " (peajes " + fmt(res.peajes) + ")" : "") +
-        (res.membresia > 0 ? "\nMembresía Rumbo (10 %): −" + fmt(res.membresia) + "\nNeto: " + fmt(res.ganancia - res.membresia) : "") + "\n\n" : "";
+        (res.membresia > 0 ? "\nMembresía: −" + fmt(res.membresia) + "\nTotal: " + fmt(res.ganancia - res.membresia) : "") + "\n\n" : "";
       var ped = (pedidosEnCursoActuales || []).filter(function (x) { return x.pedido_id === pedidoId; })[0];
       var nota = (res.peaje_extra > 0 ? "Incluye peajes tomados que detectó el GPS: " + fmt(res.peaje_extra) + ".\n" : res.ajuste > 0 ? "Subió por tiempo y km reales.\n" : "") + (res.aviso_pago ? res.aviso_pago + "\n" : "");
       mostrarCobro(pedidoId, ped && ped.nombre ? String(ped.nombre).split(" ")[0] : "El pasajero", fp, aCobrar, queHacer, desglose.replace(/\n\n$/, ""), nota);
@@ -6728,7 +6816,7 @@
         }).join("") +
       '</div>' +
       (p.peaje_incompleto === "SI"
-        ? '<div class="pedido-aviso">Cruza un pórtico sin tarifa cargada: revisa el peaje a mano antes de confirmar.</div>'
+        ? '<div class="pedido-aviso">Pórtico sin tarifa: revisa el peaje antes de confirmar.</div>'
         : '') +
       (p.margen
         ? '<div class="pedido-aviso aviso-info">Viaje derivado: con tu auto te deja aprox. ' + fmt(p.margen.margen_estimado) + '</div>'
@@ -7113,9 +7201,9 @@
 
   function tarjetaEsperandoPago(div, p) {
     var forma = p.forma_pago, monto = fmt(forma === "EFECTIVO" || forma === "TRANSFERENCIA" ? montoCobrar(p) : montoP(p));
-    var aviso = forma === "EFECTIVO" ? "Viaje terminado. El pasajero te pagará " + monto + " en efectivo: confirma cuando lo recibas."
-      : forma === "TRANSFERENCIA" ? "Viaje terminado. El pasajero pagará " + monto + " por transferencia: " + (p.comprobante_subido ? "ya subió el comprobante en PDF; confirma cuando veas el depósito." : "espera su comprobante en PDF y confirma cuando veas el depósito.")
-      : forma === "MERCADOPAGO" ? "Viaje terminado. Esperando que el pasajero pague con tarjeta — te avisamos apenas entre."
+    var aviso = forma === "EFECTIVO" ? "Viaje terminado. Cobra " + monto + " en efectivo y confirma."
+      : forma === "TRANSFERENCIA" ? "Viaje terminado. El pasajero pagará " + monto + " por transferencia: " + (p.comprobante_subido ? "comprobante recibido; confirma cuando veas el depósito." : "espera el comprobante PDF y confirma el depósito.")
+      : forma === "MERCADOPAGO" ? "Viaje terminado. El pasajero paga con tarjeta; te avisamos al recibirlo."
       : "Viaje terminado. El pasajero está eligiendo cómo pagar " + monto + ".";
     // Mercado Pago: por si al pasajero no le aparece el botón, el conductor le reenvía el link.
     var botones = (forma === "MERCADOPAGO" && p.mp_link ? '<button class="btn btn-chico" data-link-pago="' + escapar(p.mp_link) + '">Enviar link de pago</button>' : "") +
@@ -7371,6 +7459,17 @@
     pedidoACalificar = null;
   }
 
+  // La lista guardada (mvCache) no se refresca sola: sin esto el botón «Calificar» seguía visible y la hoja quedaba atrapada.
+  function marcarCalificado(pedidoId) {
+    if (mvCache[pedidoId]) mvCache[pedidoId].calificado = true;
+    var det = document.getElementById("viajeDetalle");
+    var abierto = admAbierta === "viaje" && det && det.querySelector('button[data-calificar="' + pedidoId + '"]');
+    document.querySelectorAll('button[data-calificar="' + pedidoId + '"]').forEach(function (b) {
+      var c = b.closest(".mv-acciones"); (c || b).remove();
+    });
+    if (abierto) abrirFichaViaje(pedidoId, mvOrigen);
+  }
+
   function abrirCalificarPasajero(pedidoId) {
     pedidoACalificar = pedidoId;
     estrellaPasajeroElegida = 0;
@@ -7389,13 +7488,15 @@
 
   document.getElementById("btnEnviarCalifPasajero").addEventListener("click", function () {
     if (!estrellaPasajeroElegida || !pedidoACalificar) return;
-    var boton = this;
+    var boton = this, idEnvio = pedidoACalificar;
     boton.disabled = true;
-    apiPost({ accion: "calificar_pasajero", pedido_id: pedidoACalificar, estrellas: estrellaPasajeroElegida })
+    apiPost({ accion: "calificar_pasajero", pedido_id: idEnvio, estrellas: estrellaPasajeroElegida })
       .then(function (res) {
         boton.disabled = false;
+        if (!res.ok && /ya calific/.test(res.error || "")) { cerrarCalificarPasajero(); marcarCalificado(idEnvio); rbAlerta("Este viaje ya estaba calificado."); return; }
         if (!res.ok) { rbAlerta("No se pudo calificar: " + res.error); return; }
         cerrarCalificarPasajero();
+        marcarCalificado(idEnvio);
       }).catch(function (err) { boton.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
@@ -7724,7 +7825,7 @@
 
       if (!res.pedidos.length) {
         lista.innerHTML = conectadoManual
-          ? '<div class="vacio-bloque"><strong>Buscando viajes</strong><p>Estás conectado. Apenas llegue uno, te avisamos y aparece aquí.</p></div>'
+          ? '<div class="vacio-bloque"><strong>Buscando viajes</strong><p>Estás conectado. Te avisamos apenas llegue uno.</p></div>'
           : '<div class="vacio-bloque"><strong>Estás desconectado</strong><p>Conéctate para empezar a recibir viajes.</p></div>';
         mostrarTablero(true);
         actualizarEmergente([]);
@@ -7907,7 +8008,7 @@
   var docsResumen = null;     // documentos: si puede conectarse (lo decide el servidor, ver DOCUMENTOS en Codigo.gs)
   function recibirResumenDocs(r) { docsResumen = r; pintarPuntoDocs(r, null); }
   function avisarDocsPendientes(texto) {
-    rbConfirmar(texto || "Para conectarte necesitas tus documentos validados y al día.", { si: "Ver documentos", no: "Ahora no", tipo: "error" })
+    rbConfirmar(texto || "Valida tus documentos para conectarte.", { si: "Ver documentos", no: "Ahora no", tipo: "error" })
       .then(function (si) { if (si) abrirPantallaAdmin("documentos"); });
   }
   function textoHoras(min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + " h " : "") + m + " min"; }
@@ -7979,7 +8080,7 @@
           if (res && res.jornada) jornadaActual = res.jornada;
           if (!res || !res.ok) {
             conectadoManual = !deseado; pintarEstadoTablero();
-            if (res && res.documentos) avisarDocsPendientes(res.error); else rbAlerta((res && res.error) || "No se pudo cambiar tu estado de conexión.");
+            if (res && res.documentos) avisarDocsPendientes(res.error); else rbAlerta((res && res.error) || "Reintenta cambiar tu estado de conexión.");
           }
         }).catch(function () { conectadoManual = !deseado; pintarEstadoTablero(); rbAlerta(TEXTO_SIN_CONEXION); });
       });
@@ -8418,7 +8519,7 @@
       // Encendido por defecto (decisión de Alberto): se pregunta solo al
       // APAGARLO, porque sin ubicación el pasajero no ve el auto, no recibe
       // el aviso "tu vehículo está llegando" ni el tiempo real de llegada.
-      if (!(await rbConfirmar("¿Dejar de compartir tu ubicación?\n\nTus pasajeros no verán dónde vienes ni recibirán el aviso de que estás llegando."))) {
+      if (!(await rbConfirmar("¿Dejar de compartir tu ubicación?\n\nTus pasajeros no verán dónde vienes."))) {
         ev.target.checked = true;
         return;
       }

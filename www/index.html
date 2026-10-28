@@ -1139,7 +1139,7 @@
   <div class="actualizacion-card">
     <div class="actualizacion-ico">⬆️</div>
     <h2>Hay una versión nueva</h2>
-    <p>Para seguir usando Rumbo hace falta actualizar la app primero. Es rápido.</p>
+    <p>Actualiza para seguir usando Rumbo.</p>
     <button type="button" id="btnActualizar" class="btn btn-primario">Descargar actualización</button>
   </div>
 </div>
@@ -1204,9 +1204,9 @@
   </header>
 
   <div class="card" id="cardInstalarApp" style="display:none;">
-    <p class="nota" style="margin:0 0 10px;">Para pedir tu viaje con este conductor, instala la app Rumbo.</p>
+    <p class="nota" style="margin:0 0 10px;">Instala Rumbo para pedir tu viaje.</p>
     <button type="button" class="btn btn-primario" id="btnInstalarApp" style="width:100%;">Descargar app</button>
-    <button type="button" class="btn btn-secundario" id="btnYaInstale" style="width:100%;margin-top:8px;">Ya la instalé, continuar</button>
+    <button type="button" class="btn btn-secundario" id="btnYaInstale" style="width:100%;margin-top:8px;">Ya la instalé</button>
   </div>
 
   <div id="vistaCotizar" role="tabpanel" aria-labelledby="tabCotizar">
@@ -1308,7 +1308,7 @@
           <p class="precio-nota" id="etaCotizar" style="display:none;font-weight:600;"></p>
           <p class="precio-nota">
             <svg class="ico ico-sm" aria-hidden="true"><use href="#i-info"/></svg>
-            <span>Tarifa inicial estimada. El valor final puede variar según el tiempo y la distancia reales del viaje.</span>
+            <span>Precio estimado. El final depende del viaje real.</span>
           </p>
         </section>
         <ul class="wiz-resumen" id="wizResumen" aria-label="Resumen del viaje"></ul>
@@ -1394,8 +1394,8 @@
 
    <div class="modal-opc pagina" id="modalReclamos" hidden role="dialog" aria-labelledby="modalReclamosTit">
      <div class="modal-opc-hoja">
-       <div class="pagina-cab"><button type="button" data-cierra="modalReclamos" aria-label="Volver">&#8249;</button><h3 id="modalReclamosTit">Ayuda y reclamos</h3></div>
-       <p class="tyc-p">Escríbenos tu consulta o reclamo. La respuesta aparecerá en esta pantalla.</p>
+       <div class="pagina-cab"><button type="button" data-cierra="modalReclamos" aria-label="Volver">&#8249;</button><h3 id="modalReclamosTit">Ayuda</h3></div>
+       <p class="tyc-p">Escríbenos. Te respondemos aquí.</p>
        <div class="campo" style="margin-bottom:10px;">
          <label class="campo-label" for="reclamoTipoP">Tema</label>
          <select id="reclamoTipoP" style="width:100%;min-height:48px;border:1.5px solid var(--border);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--text);font:inherit;">
@@ -1404,7 +1404,7 @@
        </div>
        <div class="campo" style="margin-bottom:10px;">
          <label class="campo-label" for="reclamoTextoP">Tu mensaje</label>
-         <textarea id="reclamoTextoP" rows="4" maxlength="1000" placeholder="Cuéntanos qué pasó"></textarea>
+         <textarea id="reclamoTextoP" rows="4" maxlength="1000" placeholder="¿En qué te ayudamos?"></textarea>
        </div>
        <button type="button" class="btn btn-primario" id="btnEnviarReclamoP" style="width:100%;">Enviar</button>
        <div id="listaReclamosP" style="margin-top:16px;"></div>
@@ -1436,7 +1436,7 @@
    <div class="modal-opc" id="modalEditarViaje" hidden role="dialog" aria-labelledby="modalEditarTit">
      <div class="modal-opc-hoja">
        <h3 id="modalEditarTit">Editar viaje</h3>
-       <p class="nota" style="margin:0 0 10px;">Cambia el destino o agrega paradas. Para seguir después de tu destino actual, agrégalo como parada y escribe el destino nuevo abajo.</p>
+       <p class="nota" style="margin:0 0 10px;">Cambia el destino o agrega paradas. Para seguir más allá, agrega tu destino actual como parada.</p>
        <div class="campo"><label class="campo-label" for="edOrigen">Salida</label><input type="text" id="edOrigen" autocomplete="off"></div>
        <div id="edParadas"></div>
        <button type="button" class="btn btn-chico" id="edAgregarParada" style="margin:0 0 10px;">+ Agregar parada</button>
@@ -1454,7 +1454,7 @@
        <h3 id="modalCambioTit">Tu conductor propone un cambio</h3>
        <p class="nota" id="cambioConductorTxt" style="margin:0 0 12px;"></p>
        <button type="button" class="btn btn-primario" id="btnAceptarCambio" style="margin-bottom:8px;">Aceptar el cambio</button>
-       <button type="button" class="btn btn-secundario" id="btnRechazarCambio">No, dejar el viaje como estaba</button>
+       <button type="button" class="btn btn-secundario" id="btnRechazarCambio">Mantener el viaje</button>
      </div>
    </div>
 
@@ -1462,7 +1462,7 @@
      <div class="modal-opc-hoja">
        <h3 id="modalCuandoTit">¿Cuándo?</h3>
        <button type="button" class="btn btn-secundario" id="btnCuandoAhora" style="margin-bottom:14px;">Ahora</button>
-       <p class="nota" style="margin:0 0 8px;">O elige un día y una hora:</p>
+       <p class="nota" style="margin:0 0 8px;">O elige día y hora:</p>
        <div class="fila" style="margin-bottom:16px;">
          <div class="campo">
            <label class="campo-label" for="fechaSalida">Día</label>
@@ -1543,7 +1543,7 @@
       <div id="pagoTransfInfo" style="display:none;">
         <div id="transfFilas"></div>
         <button type="button" class="btn btn-primario" id="transfCopiarTodo" style="width:100%;margin-top:10px;">Copiar datos</button>
-        <p class="nota" style="margin:8px 0 0;">Haz la transferencia con estos datos. Después descarga el comprobante en <strong>PDF</strong> desde tu banco (no sirve una captura de pantalla) y súbelo aquí. Tu conductor confirma el pago al verlo.</p>
+        <p class="nota" style="margin:8px 0 0;">Transfiere con estos datos y sube el comprobante en <strong>PDF</strong> de tu banco (no captura). Tu conductor confirma el pago.</p>
         <div class="comprobante-bloque" id="comprobanteBloque">
           <input type="file" id="comprobanteArchivo" accept="application/pdf,.pdf" hidden>
           <button type="button" class="btn btn-primario" id="btnSubirComprobante" style="width:100%;margin-top:10px;">Subir comprobante (PDF)</button>
@@ -1569,11 +1569,11 @@
       </div>
     </section>
     <p class="nota" id="notaPago" style="display:none;margin:0 2px 16px;">
-      Puedes pagar con débito, crédito o en cuotas. Si eliges cuotas con tarjeta de crédito, el interés lo cobra tu banco o la plataforma de pago, no Rumbo.
+      Débito, crédito o cuotas. El interés de las cuotas lo cobra tu banco, no Rumbo.
     </p>
     <div class="estado-box pendiente" id="estadoBox">Esperando confirmación del conductor</div>
     <div class="cambio-banner espera" id="avisoWeb" role="status" style="display:none;">
-      Para recibir los avisos de tu viaje (conductor en camino, llegó, cambios) instala la app Rumbo en tu teléfono.
+      Instala la app Rumbo para recibir los avisos de tu viaje.
       <a id="avisoWebInstalar" href="#" style="display:block;margin-top:6px;font-weight:700;">Descargar la app</a>
       <button type="button" id="avisoWebCerrar" class="btn btn-chico" style="margin-top:6px;">Ahora no</button>
     </div>
@@ -1586,8 +1586,8 @@
     <div class="pin-inicio" id="pinInicio" hidden>
       <span class="pin-et">Tu PIN para iniciar el viaje</span>
       <strong id="pinInicioNum">----</strong>
-      <span class="pin-ayuda" id="pinInicioAyuda">Por seguridad, díselo al conductor al subir: sin este PIN el viaje no inicia. No lo compartas antes.</span>
-      <button type="button" class="btn-link" id="btnNuevoPin">¿Se bloqueó? Pedir un PIN nuevo</button>
+      <span class="pin-ayuda" id="pinInicioAyuda">Díselo al conductor al subir. No lo compartas antes.</span>
+      <button type="button" class="btn-link" id="btnNuevoPin">Pedir PIN nuevo</button>
     </div>
     <!-- Avance del viaje en 4 pasos. -->
     <ol class="pasos" id="pasosViaje" aria-label="Avance del viaje">
@@ -1601,7 +1601,7 @@
     <p class="nota" id="distanciaConductor" style="margin:6px 2px 12px;"></p>
     <!-- Conductor asignado y su vehículo: aparece al confirmarse el viaje. -->
     <p class="nota" id="avisoDerivado" style="display:none;margin:0 2px 12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);">
-      Tu conductor habitual no estaba disponible. Tu viaje lo tomó otro conductor de la red, al mismo precio.
+      Tu conductor habitual no estaba disponible. Otro tomó tu viaje, al mismo precio.
     </p>
     <div class="card conductor-banner" id="tarjetaConductorAsignado" style="display:none;"></div>
     <!-- Recorrido del viaje: salida, paradas en orden y destino. -->
@@ -1616,7 +1616,7 @@
     <div class="card" id="cardDesgloseFinal" style="display:none;">
       <div class="card-head"><span class="card-title">Resumen del cobro</span></div>
       <div class="desglose" id="desgloseFinal"></div>
-      <p class="desglose-motivo" id="motivoDesglose" style="margin-bottom:0;">El viaje duró más tiempo o recorrió más distancia de lo previsto, por eso el monto final es mayor que la tarifa estimada.</p>
+      <p class="desglose-motivo" id="motivoDesglose" style="margin-bottom:0;">El viaje fue más largo de lo previsto.</p>
     </div>
     <!-- Chat: aparece recién cuando el viaje queda confirmado, como en los referentes de mercado:
          antes de eso no hay conductor asignado con quien
@@ -1632,7 +1632,7 @@
           <div class="titulo"><strong id="ventanaChatTitulo">Tu conductor</strong><span id="ventanaChatSub">Chat del viaje</span></div>
           <button type="button" id="btnMinimizarChat" aria-label="Minimizar el chat">&#8211;</button>
         </div>
-        <div class="chat-mensajes" id="chatMensajes"><p class="chat-vacio">Escríbele a tu conductor si necesitas coordinar algo.</p></div>
+        <div class="chat-mensajes" id="chatMensajes"><p class="chat-vacio">Escríbele a tu conductor.</p></div>
         <div class="chat-entrada">
           <textarea id="chatTexto" rows="1" placeholder="Escribe un mensaje..." maxlength="500"></textarea>
           <button class="btn-enviar-chat" id="btnEnviarChat" type="button" aria-label="Enviar mensaje">
@@ -1654,8 +1654,8 @@
         <button type="button" class="estrella" data-estrella="4" aria-label="4 estrellas">★</button>
         <button type="button" class="estrella" data-estrella="5" aria-label="5 estrellas">★</button>
       </div>
-      <textarea id="comentarioCalificar" placeholder="Cuéntanos algo del viaje (opcional)" maxlength="300" rows="2"></textarea>
-      <button class="btn btn-primario" id="btnEnviarCalificacion" type="button" disabled>Enviar calificación</button>
+      <textarea id="comentarioCalificar" placeholder="Un comentario (opcional)" maxlength="300" rows="2"></textarea>
+      <button class="btn btn-primario" id="btnEnviarCalificacion" type="button" disabled>Enviar</button>
       <p class="nota" id="calificarMsg" style="margin:10px 2px 0;"></p>
     </section>
     <p class="nota" id="calificacionEnviada" style="display:none;text-align:center;">¡Gracias por tu calificación!</p>
@@ -1743,7 +1743,7 @@
         <div id="listaReservas"></div>
         <h4 class="lugares-sub">Historial</h4>
       </div>
-      <div id="listaViajes"><p class="nota" style="margin:0;">Todavía no tienes viajes terminados.</p></div>
+      <div id="listaViajes"><p class="nota" style="margin:0;">Aquí verás tus viajes terminados.</p></div>
     </section>
 
     <div class="ajustes-grupo solo-sesion" style="display:none;">Seguridad y privacidad</div>
@@ -1763,9 +1763,9 @@
 
     <section class="card plegable" id="cardPrivacidad" style="display:none;">
       <div class="card-head" role="button" tabindex="0"><span class="card-title">Tus datos y privacidad</span></div>
-      <p class="nota" style="margin:0 0 14px;">Puedes descargar una copia de tus datos o borrarlos. Al borrar se eliminan tu perfil, tus mensajes y tu ubicación; de tus viajes solo quedan el monto y la fecha, sin tu nombre ni direcciones, porque la ley tributaria obliga a conservar los cobros.</p>
+      <p class="nota" style="margin:0 0 14px;">Descarga o borra tus datos. Al borrar se elimina tu perfil, mensajes y ubicación; de los viajes solo quedan monto y fecha, sin nombre ni direcciones (obligación tributaria).</p>
       <button class="btn btn-medio" id="btnExportarDatos" type="button" style="margin-bottom:10px;">Descargar mis datos</button>
-      <button class="btn btn-medio" id="btnCerrarSesionPasajero" type="button" style="margin-bottom:10px;">Cerrar sesión en este dispositivo</button>
+      <button class="btn btn-medio" id="btnCerrarSesionPasajero" type="button" style="margin-bottom:10px;">Cerrar sesión</button>
       <p class="by-pie">by BTo Innova soluciones</p>
       <button class="btn btn-peligro" id="btnBorrarCuenta" type="button">Borrar mis datos</button>
       <p class="nota" id="privacidadMsg" style="margin:10px 2px 0;"></p>
@@ -1774,11 +1774,11 @@
     <div class="confianza">
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-etiqueta"/></svg>
-        Ves la tarifa estimada antes de pedir el viaje
+        Ves el precio antes de pedir
       </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-escudo"/></svg>
-        Conductor identificado y seguimiento en vivo del trayecto
+        Conductor identificado y viaje en vivo
       </div>
       <div class="confianza-item">
         <svg class="ico ico-sm" aria-hidden="true"><use href="#i-pin"/></svg>
@@ -1787,7 +1787,7 @@
     </div>
   </div>
 
-  <p class="pie">Los tiempos y distancias se calculan con datos de tráfico reales al momento de cotizar.</p>
+  <p class="pie">Tiempos y distancias con tráfico real.</p>
 </div>
 
 <!-- Mis lugares: Casa, Trabajo y las direcciones más usadas (sin etiqueta). Se guardan solo en este teléfono. -->
@@ -1829,7 +1829,7 @@
     <div class="fp-lista" id="formaPagoLista">
       <button type="button" class="pago-opcion" data-forma="MERCADOPAGO">
         <svg class="ico" aria-hidden="true"><use href="#i-tarjeta"/></svg>
-        <span class="pago-op-txt"><strong>Tarjeta</strong><small>Crédito o débito, al terminar el viaje</small></span>
+        <span class="pago-op-txt"><strong>Tarjeta</strong><small>Crédito o débito, al terminar</small></span>
         <span class="pago-check" aria-hidden="true"></span>
       </button>
       <button type="button" class="pago-opcion" data-forma="EFECTIVO">
@@ -1850,7 +1850,7 @@
 <div class="modal-opc pagina" id="modalMediosPago" hidden role="dialog" aria-labelledby="modalMediosPagoTit">
   <div class="modal-opc-hoja">
     <div class="pagina-cab"><button type="button" data-cierra="modalMediosPago" aria-label="Volver">&#8249;</button><h3 id="modalMediosPagoTit">Medios de pago</h3></div>
-    <p class="nota" style="margin:0 0 12px;">Elige cómo prefieres pagar. Puedes cambiarlo en cada viaje antes de solicitarlo.</p>
+    <p class="nota" style="margin:0 0 12px;">Elige tu pago preferido. Puedes cambiarlo en cada viaje.</p>
     <div class="fp-lista" id="mediosPagoLista">
       <button type="button" class="pago-opcion" data-forma="MERCADOPAGO"><svg class="ico" aria-hidden="true"><use href="#i-tarjeta"/></svg><span class="pago-op-txt"><strong>Tarjeta</strong><small>Crédito o débito</small></span><span class="pago-check" aria-hidden="true"></span></button>
       <button type="button" class="pago-opcion" data-forma="EFECTIVO"><svg class="ico" aria-hidden="true"><use href="#i-billete"/></svg><span class="pago-op-txt"><strong>Efectivo</strong><small>Le pagas al conductor al llegar</small></span><span class="pago-check" aria-hidden="true"></span></button>
@@ -1879,10 +1879,10 @@
           <button type="button" class="btn btn-medio" id="btnGuardarTarjeta">Guardar tarjeta</button>
         </div>
       </div>
-      <p class="nota" style="margin:12px 0 0;">Los datos de tu tarjeta los recibe directamente Mercado Pago: Rumbo nunca los ve ni los guarda. Se te pide el código de seguridad en cada pago.</p>
+      <p class="nota" style="margin:12px 0 0;">Mercado Pago recibe los datos de tu tarjeta: Rumbo nunca los ve ni los guarda. Pedimos el código de seguridad en cada pago.</p>
     </section>
     <div class="card" id="tarjetaInactiva" style="margin-top:16px;" hidden>
-      <p class="nota" style="margin:0;"><strong>Tarjeta:</strong> al terminar el viaje te abrimos una página segura de Mercado Pago para pagar. Guardar tu tarjeta estará disponible pronto.</p>
+      <p class="nota" style="margin:0;"><strong>Tarjeta:</strong> al terminar pagas en una página segura de Mercado Pago.</p>
     </div>
   </div>
 </div>
@@ -1900,7 +1900,7 @@
   <button type="button" class="menu-lateral-item" data-menu="pagos">Medios de pago</button>
   <button type="button" class="menu-lateral-item" data-menu="cuenta">Mi cuenta</button>
   <div class="menu-pie">
-    <button type="button" class="menu-lateral-item menu-pie-item" data-menu="reclamos">Ayuda y reclamos</button>
+    <button type="button" class="menu-lateral-item menu-pie-item" data-menu="reclamos">Ayuda</button>
     <button type="button" class="menu-lateral-item menu-pie-item" data-menu="tyc">Términos y condiciones</button>
   </div>
 </aside>
@@ -2010,7 +2010,7 @@
   function cargarGoogleMaps() {
     var script = document.createElement("script");
     script.src = "https://maps.googleapis.com/maps/api/js?key=" + GOOGLE_MAPS_JS_KEY + "&libraries=places,geometry&callback=alGoogleMapsListo";
-    script.onerror = function () { rbAlerta("No se pudo cargar el mapa de Google. Revisa tu conexión y vuelve a abrir la app; mientras tanto puedes escribir las direcciones."); };
+    script.onerror = function () { rbAlerta("Mapa sin cargar. Revisa tu conexión; mientras, escribe las direcciones."); };
     document.head.appendChild(script);
   }
 
@@ -2261,7 +2261,7 @@
       // Sesión vencida o cerrada en otro teléfono: cualquier pantalla lo avisa una vez y vuelve a «Ingresar» (antes cada pantalla lo manejaba a su manera o no).
       if (res && res.requiere_login && body.pasajero_token && obtenerSesionPasajero()) {
         salirDeCuentaPasajero();
-        rbAlerta("Tu sesión venció o se abrió en otro teléfono. Ingresa de nuevo para seguir.");
+        rbAlerta("Tu sesión se cerró. Ingresa de nuevo.");
       }
       return res;
     });
@@ -2384,7 +2384,7 @@
     if (!guardado) { guardarLocalSeguro(CONDUCTOR_KEY, id); return; }
     conductorPropuesto = id;
     setTimeout(function () {
-      rbConfirmar("Escaneaste el QR de otro conductor.\n\n¿Quieres cambiar de conductor? Tus próximos viajes se pedirán a él.", { si: "Aceptar", no: "Cancelar" }).then(function (acepta) {
+      rbConfirmar("Escaneaste el QR de otro conductor.\n\n¿Pedir tus próximos viajes con él?", { si: "Aceptar", no: "Cancelar" }).then(function (acepta) {
         if (acepta) { guardarLocalSeguro(CONDUCTOR_KEY, id); try { cargarTarifas(); } catch (e) {} }
       });
     }, 1500);
@@ -2477,7 +2477,7 @@
   })();
   function rbAlerta(texto, tipo) { rbPop.alerta(texto, tipo); }
   // Un solo texto para fallas de red (antes se mostraba el error técnico del navegador, p. ej. "Failed to fetch").
-  var TEXTO_SIN_CONEXION = "Sin conexión. Revisa tu internet e inténtalo de nuevo.";
+  var TEXTO_SIN_CONEXION = "Sin conexión. Revisa tu internet y reintenta.";
   function rbConfirmar(texto, opciones) { return rbPop.confirmar(texto, opciones); }
   function rbPedir(texto, opciones) { return rbPop.pedir(texto, opciones); }
   (function () {
@@ -2510,7 +2510,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 79;
+  var APP_VERSION = 80;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2540,7 +2540,7 @@
       })
       .catch(function () {
         boton.disabled = false;
-        boton.textContent = "No se pudo descargar. Toca para reintentar";
+        boton.textContent = "Toca para reintentar la descarga";
       })
       .finally(function () { escucha.then(function (h) { h.remove(); }); });
   });
@@ -2696,7 +2696,7 @@
     // al cerrar sesión y entrar con otra cuenta sin viajes, quedaba visible
     // la lista de la cuenta anterior (nombres de rutas, montos, fechas
     // ajenos) hasta que esa segunda cuenta tuviera algún viaje propio.
-    cont.innerHTML = '<p class="nota" style="margin:0;">Todavía no tienes viajes terminados.</p>';
+    cont.innerHTML = '<p class="nota" style="margin:0;">Aquí verás tus viajes terminados.</p>';
     document.getElementById("bloqueReservas").hidden = true;
     api({ accion: "mis_viajes_pasajero", pasajero_token: sesion.token }).then(function (res) {
       // Reservas: viajes agendados que todavía no empezaron (esperando conductor o ya aceptados). Se arma con DOM, sin datos directos en el HTML.
@@ -2829,7 +2829,7 @@
     bioPedida = false;
     bioDisponible().then(async function (ok) {
       if (!ok) return;
-      if (!(await rbConfirmar("¿Quieres ingresar con tu huella la próxima vez, sin escribir la clave?"))) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
+      if (!(await rbConfirmar("¿Ingresar con tu huella la próxima vez?"))) { bioGuardarLocal("rumbo_bio_no", "1"); return; }
       return P.verifyIdentity({ reason: "Confirma con tu huella", title: "Activar ingreso con huella", negativeButtonText: "Cancelar", useFallback: false })
         .then(function () { return P.setCredentials({ username: telefono, password: clave, server: BIO_SERVER }); })
         .then(function () { bioGuardarLocal("rumbo_bio", "1"); pintarBotonHuellaPasajero(); })
@@ -2840,7 +2840,7 @@
     var P = bioPlugin();
     var msg = document.getElementById("cuentaMsg");
     if (!P) return;
-    if (!bioActivada()) { bioPedida = true; msg.textContent = "Ingresa ahora con tu WhatsApp y clave: te preguntaremos si quieres activar la huella."; msg.className = "nota"; return; }
+    if (!bioActivada()) { bioPedida = true; msg.textContent = "Ingresa con WhatsApp y clave; luego podrás activar la huella."; msg.className = "nota"; return; }
     P.verifyIdentity({ reason: "Ingresar a Rumbo", title: "Ingresar a Rumbo", subtitle: "Usa tu huella", negativeButtonText: "Usar clave", useFallback: false })
       .then(function () { return P.getCredentials({ server: BIO_SERVER }); })
       .then(function (cred) {
@@ -2849,7 +2849,7 @@
         viaHuellaPas = true;
         document.getElementById("btnCrearCuenta").click();
       })
-      .catch(function () { msg.textContent = "No se pudo usar la huella. Ingresa con tu clave."; msg.className = "nota error"; });
+      .catch(function () { msg.textContent = "Ingresa con tu clave."; msg.className = "nota error"; });
   });
   document.getElementById("modoCrear").addEventListener("click", function () { modoCuenta = "crear"; pintarModoCuenta(); });
   document.getElementById("modoIngresar").addEventListener("click", function () { modoCuenta = "ingresar"; pintarModoCuenta(); });
@@ -2866,9 +2866,9 @@
       msg.textContent = crear ? "Completa nombre, WhatsApp y clave." : "Completa tu WhatsApp y tu clave.";
       msg.className = "nota error"; return;
     }
-    if (crear && clave.length < 6) { msg.textContent = "La clave debe tener al menos 6 caracteres."; msg.className = "nota error"; return; }
+    if (crear && clave.length < 6) { msg.textContent = "Tu clave necesita 6 caracteres o más."; msg.className = "nota error"; return; }
     if (crear && !document.getElementById("chkPolitica").checked) {   // incluye los términos y condiciones
-      msg.textContent = "Marca que entiendes el uso de tus datos para continuar.";
+      msg.textContent = "Acepta los términos para continuar.";
       msg.className = "nota error"; return;
     }
     msg.textContent = crear ? "Creando tu cuenta..." : "Ingresando..."; msg.className = "nota";
@@ -2944,7 +2944,7 @@
       // La huella guarda el teléfono con el que se activó: si cambió, ya no sirve.
       if (bioActivada() && String(res.pasajero.telefono || "") !== String(telefonoAntes || "")) {
         bioDesactivar();
-        m.textContent = "Datos guardados. Cambiaste tu WhatsApp: vuelve a activar la huella al ingresar con tu clave.";
+        m.textContent = "Datos guardados. Con WhatsApp nuevo, reactiva la huella al ingresar.";
       }
     });
   });
@@ -2975,7 +2975,7 @@
         document.body.appendChild(enlace); enlace.click(); enlace.remove();
         m.textContent = "Descargamos tus datos (mis-datos-rumbo.json).";
       } catch (e) {
-        m.textContent = "No se pudo descargar; se copiaron al portapapeles.";
+        m.textContent = "Tus datos quedaron en el portapapeles.";
       }
       if (navigator.clipboard) navigator.clipboard.writeText(texto).catch(function () {});
       m.className = "nota ok";
@@ -2983,12 +2983,12 @@
   });
 
   document.getElementById("btnCerrarSesionPasajero").addEventListener("click", async function () {
-    if (!(await rbConfirmar("¿Cerrar sesión en este dispositivo?"))) return;
+    if (!(await rbConfirmar("¿Cerrar sesión?"))) return;
     accionCuenta({ accion: "cerrar_sesion_pasajero" }, "privacidadMsg", function () { salirDeCuentaPasajero(); });
   });
 
   document.getElementById("btnBorrarCuenta").addEventListener("click", async function () {
-    if (!(await rbConfirmar("¿Borrar tus datos de Rumbo? Esto no se puede deshacer."))) return;
+    if (!(await rbConfirmar("¿Borrar tus datos? No se puede deshacer."))) return;
     var clave = await rbPedir("Para confirmar, escribe tu clave:", { clave: true });
     if (!clave) return;
     accionCuenta({ accion: "borrar_cuenta_pasajero", clave: clave }, "privacidadMsg", function () {
@@ -3015,7 +3015,7 @@
       if (res.ok) {
         tarifas = res.tarifas; cargoApp = Number(res.cargo_app) || 0; revisarActualizacion(res.version_app);
         if (res.pago_opciones) { pagoOpciones = res.pago_opciones; pintarFilaPago(); }
-      } else if (!tarifas) rbAlerta(res.error || "No se pudieron cargar las tarifas. Cierra y abre la app.");
+      } else if (!tarifas) rbAlerta(res.error || "Abre la app de nuevo para cargar las tarifas.");
     }).catch(function () { if (!tarifas) rbAlerta(TEXTO_SIN_CONEXION); });
   }
 
@@ -3040,7 +3040,7 @@
       b.setAttribute("aria-pressed", f === formaPagoElegida ? "true" : "false");
       var pequeno = b.querySelector("small");
       if (pequeno && !pequeno.getAttribute("data-base")) pequeno.setAttribute("data-base", pequeno.textContent);
-      if (pequeno) pequeno.textContent = libre ? pequeno.getAttribute("data-base") : "Tu conductor no ofrece esta opción";
+      if (pequeno) pequeno.textContent = libre ? pequeno.getAttribute("data-base") : "No disponible con este conductor";
     });
   }
   document.getElementById("filaPago").addEventListener("click", function () { pintarFilaPago(); abrirModalOpc("modalPago"); });
@@ -3472,13 +3472,13 @@
   });
   document.getElementById("lugarEditorCancelar").addEventListener("click", function () { document.getElementById("lugarEditor").hidden = true; });
   document.getElementById("lugarEditorGuardar").addEventListener("click", function () {
-    if (!lugarElegido) { document.getElementById("lugarEditorMsg").textContent = "Elige una dirección de la lista que aparece al escribir."; return; }
+    if (!lugarElegido) { document.getElementById("lugarEditorMsg").textContent = "Elige una dirección de la lista."; return; }
     var x = leerLugares();
     if (lugarEditando === "otro") {
       var nombre = document.getElementById("lugarEditorNombreInput").value.trim().slice(0, 24);
-      if (!nombre) { document.getElementById("lugarEditorMsg").textContent = "Escribe el nombre que quieres ponerle."; return; }
+      if (!nombre) { document.getElementById("lugarEditorMsg").textContent = "Ponle un nombre."; return; }
       var lista = Array.isArray(x.otros) ? x.otros : [];
-      if (lista.length >= 5) { document.getElementById("lugarEditorMsg").textContent = "Puedes guardar hasta 5 lugares con nombre: quita uno primero."; return; }
+      if (lista.length >= 5) { document.getElementById("lugarEditorMsg").textContent = "Máximo 5 lugares con nombre: quita uno para agregar otro."; return; }
       lista.push({ nombre: nombre, direccion: lugarElegido.direccion, lat: lugarElegido.lat, lng: lugarElegido.lng });
       x.otros = lista;
     } else x[lugarEditando] = lugarElegido;
@@ -3556,7 +3556,7 @@
         }
         if (!direccion) {
           if (!silencioso) {
-            document.getElementById("buscarAutoTexto").textContent = "No se pudo reconocer una dirección en tu ubicación. Escribe el origen a mano.";
+            document.getElementById("buscarAutoTexto").textContent = "Escribe tu dirección de origen.";
             document.getElementById("buscarAutoTexto").className = "nota error";
           }
           return;
@@ -3571,7 +3571,7 @@
     }, function () {
       if (boton) boton.classList.remove("cargando");
       if (!silencioso) {
-        document.getElementById("buscarAutoTexto").textContent = "No se pudo obtener tu ubicación. Revisa el permiso de ubicación del teléfono.";
+        document.getElementById("buscarAutoTexto").textContent = "Activa el permiso de ubicación del teléfono.";
         document.getElementById("buscarAutoTexto").className = "nota error";
       }
     }, { maximumAge: 30000, timeout: 8000 });
@@ -3595,7 +3595,7 @@
     document.getElementById("tarjetaPrecio").style.display = "none";
     document.getElementById("btnPedir").disabled = true;
     var t = document.getElementById("buscarAutoTexto");
-    t.textContent = "Cambiaste el día o la hora: vuelve a calcular el precio.";
+    t.textContent = "Recalcula el precio con el nuevo día u hora.";
     t.className = "nota";
   }
   document.getElementById("fechaSalida").addEventListener("input", invalidarCotizacionPorFecha);
@@ -3625,11 +3625,11 @@
   // espera"). El valor en horas de cada botón viaja en data-espera-horas.
   var horasEsperaSeleccionadas = 0;
   var EXPLICACION_ESPERA = {
-    "0": "El conductor no te espera: solo te lleva al destino.",
-    "0.25": "El conductor te espera 15 minutos en el destino antes de volver.",
-    "0.5": "El conductor te espera 30 minutos en el destino antes de volver.",
-    "1": "El conductor te espera 1 hora en el destino antes de volver.",
-    "2": "El conductor te espera 2 horas en el destino antes de volver."
+    "0": "Solo te lleva al destino.",
+    "0.25": "Te espera 15 min en el destino y vuelven.",
+    "0.5": "Te espera 30 min en el destino y vuelven.",
+    "1": "Te espera 1 hora en el destino y vuelven.",
+    "2": "Te espera 2 horas en el destino y vuelven."
   };
   function obtenerHorasEspera() { return horasEsperaSeleccionadas; }
   function elegirEspera(horas) {
@@ -3805,7 +3805,7 @@
     var destino = document.getElementById("destino").value.trim();
     var textoEl = document.getElementById("buscarAutoTexto");
     if (!origen || !destino) {
-      textoEl.textContent = "Completa el origen y el destino para calcular el precio.";
+      textoEl.textContent = "Indica origen y destino.";
       textoEl.className = "nota error";
       (origen ? document.getElementById("destino") : document.getElementById("origen")).focus();
       return;
@@ -3841,7 +3841,7 @@
       inputHora.value = inputFecha.value === hoyStr ? horaAhora : "09:00";
     }
     if (!horaValida(inputHora.value)) {
-      textoEl.textContent = "Escribe la hora como HH:MM, por ejemplo 08:30 o 18:45.";
+      textoEl.textContent = "Hora en formato HH:MM, ej. 08:30.";
       textoEl.className = "nota error";
       enfocarEn("modalCuando", inputHora);
       return;
@@ -3858,9 +3858,9 @@
     }
     if (Math.abs(new Date(inputFecha.value + "T" + inputHora.value + ":00").getTime() - ahora.getTime()) <= 2 * 60 * 1000) paraAhora = true;
     var cuando = (inputFecha.value === hoyStr ? "hoy" : "el " + inputFecha.value.split("-").reverse().join("/")) + " a las " + inputHora.value;
-    var pregunta = paraAhora ? "Tu viaje es para ahora. ¿Está bien así?" : "Tu viaje quedará para " + cuando + ". ¿Está bien así?";
+    var pregunta = paraAhora ? "¿Viaje para ahora?" : "¿Viaje para " + cuando + "?";
     if (!(await rbConfirmar(pregunta))) {
-      textoEl.textContent = "Corrige el día o la hora de tu viaje y vuelve a calcular.";
+      textoEl.textContent = "Ajusta día u hora y recalcula.";
       textoEl.className = "nota";
       enfocarEn("modalCuando", inputHora);
       return;
@@ -3917,7 +3917,7 @@
       irAPaso(2);
       actualizarBotonPedir();
     }).catch(function (err) {
-      textoEl.textContent = "No se pudo calcular la ruta (" + err.message + "). Revisa las direcciones.";
+      textoEl.textContent = "Revisa las direcciones y calcula de nuevo (" + err.message + ").";
       textoEl.className = "nota error";
       // No dejar a la vista un precio de un cálculo anterior que ya no aplica.
       document.getElementById("tarjetaPrecio").style.display = "none";
@@ -3955,7 +3955,7 @@
     var sesion = obtenerSesionPasajero();
     // Con un viaje en curso no se pide otro encima: se perdería el seguimiento del actual.
     if (pedidoActualId && !viajeCerrado) {
-      pedirTexto.textContent = "Ya tienes un viaje en curso. Termínalo antes de pedir otro.";
+      pedirTexto.textContent = "Termina tu viaje en curso para pedir otro.";
       pedirTexto.className = "nota error";
       return;
     }
@@ -3966,7 +3966,7 @@
       pedidoPendienteTrasCuenta = true;
       mostrarPestana("cuenta");
       var cuentaMsg = document.getElementById("cuentaMsg");
-      cuentaMsg.textContent = "Para solicitar tu viaje necesitas completar tus datos. Tu ruta y precio quedan guardados.";
+      cuentaMsg.textContent = "Crea tu cuenta para solicitar. Tu ruta y precio quedan guardados.";
       cuentaMsg.className = "nota error";
       var primeroVacio = ["nombreCliente", "telefonoCliente", "correoCliente", "claveCliente"]
         .map(function (id) { return document.getElementById(id); })
@@ -3975,7 +3975,7 @@
       return;
     }
     if (!rutaActual) {
-      pedirTexto.textContent = "Calcula el precio antes de solicitar el viaje.";
+      pedirTexto.textContent = "Calcula el precio para solicitar.";
       pedirTexto.className = "nota error";
       return;
     }
@@ -3986,7 +3986,7 @@
     // "Para otra persona" sin nombre: puede pasar si lo escribió, calculó
     // el precio, y después lo borró antes de tocar "Solicitar viaje".
     if (esParaOtro && !document.getElementById("nombreTercero").value.trim()) {
-      rbAlerta("Falta el nombre de quien viaja.");
+      rbAlerta("Escribe el nombre de quien viaja.");
       irAPaso(1);
       enfocarEn("modalPara", document.getElementById("nombreTercero"));
       return;
@@ -4029,9 +4029,9 @@
       acepta_nuevo_precio: aceptaNuevoPrecio ? "SI" : "NO"
     }).then(async function (res) {
       if (res.precio_cambio) {
-        var seguir = await rbConfirmar("El precio cambió: ahora es " + fmt(res.total) + " (antes " + fmt(res.total_cotizado) + "). ¿Quieres solicitar el viaje igual?");
+        var seguir = await rbConfirmar("Nuevo precio: " + fmt(res.total) + " (antes " + fmt(res.total_cotizado) + "). ¿Solicitar igual?");
         if (seguir) return enviarPedido(true);
-        pedirTexto.textContent = "No se solicitó el viaje. Vuelve a calcular el precio para ver el valor actualizado.";
+        pedirTexto.textContent = "Recalcula el precio para ver el valor actualizado.";
         pedirTexto.className = "nota";
         btn.disabled = false;
         return;
@@ -4049,7 +4049,7 @@
       guardarViajeLocal(res.total);
       iniciarPolling();
     }).catch(function (err) {
-      pedirTexto.textContent = "No se pudo enviar la solicitud (" + err.message + "). Intenta de nuevo.";
+      pedirTexto.textContent = "Intenta solicitar de nuevo (" + err.message + ").";
       pedirTexto.className = "nota error";
       btn.disabled = false;
     });
@@ -4133,7 +4133,7 @@
       .catch(function () {
         // Sin conexión: se sigue intentando solo; tras 3 fallos seguidos se avisa una vez (antes la pantalla quedaba congelada sin decir nada).
         fallosSyncViaje++;
-        if (fallosSyncViaje === 3) rbAlerta("Sin conexión: tu viaje sigue en curso y seguimos intentando actualizar. Revisa tu internet.");
+        if (fallosSyncViaje === 3) rbAlerta("Sin conexión. Tu viaje sigue en curso; reconectando.");
       })
       .then(function () { sincronizandoViaje = false; });
   }
@@ -4298,7 +4298,7 @@
       document.getElementById("cambioConductorTxt").textContent = textoDireccionesCambio(c) + " Valor: " + fmt(c.total_anterior) + " → " + fmt(c.total) + ".";
       if (document.getElementById("modalCambioConductor").hidden) { try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {} }
       abrirModalOpc("modalCambioConductor");
-      cambioAvisoTexto = "Tu conductor propone un cambio: revísalo y responde"; cambioAvisoClase = "espera";
+      cambioAvisoTexto = "Tu conductor propone un cambio: respóndele"; cambioAvisoClase = "espera";
     } else {
       document.getElementById("modalCambioConductor").hidden = true;
       // Un aviso de "esperando" no sobrevive a la respuesta (aceptado, rechazado, anulado o vencido).
@@ -4307,7 +4307,7 @@
         var msg = "";
         if (c.estado === "APLICADO" && c.por === "CONDUCTOR") msg = "Tu conductor cambió el viaje. Destino: " + c.destino + " · valor " + fmt(c.total_anterior) + " → " + fmt(c.total);
         else if (c.estado === "ACEPTADO" && c.por === "PASAJERO") msg = "Tu conductor aceptó el cambio. Nuevo valor " + fmt(c.total);
-        else if (c.estado === "RECHAZADO" && c.por === "PASAJERO") msg = "Tu conductor no pudo aceptar el cambio: el viaje sigue como estaba.";
+        else if (c.estado === "RECHAZADO" && c.por === "PASAJERO") msg = "Tu viaje sigue como estaba.";
         else if (c.estado === "ACEPTADO" && c.por === "CONDUCTOR") msg = "Aceptaste el cambio. Nuevo valor " + fmt(c.total);
         if (msg) { cambioAvisoTexto = msg; cambioAvisoClase = "ok"; try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) {} }
         marcarCambioVisto(c.en);
@@ -4351,7 +4351,7 @@
     d.value = viajeActualInfo.destino || "";
     document.getElementById("edParadas").innerHTML = "";
     (viajeActualInfo.paradas || []).forEach(filaEditar);
-    document.getElementById("edMsg").textContent = puedeSalida ? "" : "La salida no se puede cambiar: tu conductor ya llegó.";
+    document.getElementById("edMsg").textContent = puedeSalida ? "" : "Tu conductor ya llegó: la salida queda fija.";
     edInvalidarPrecio();
     if (googleMapsListo) [o, d].forEach(function (i) { if (!edAutocompletado[i.id]) { edAutocompletado[i.id] = true; configurarAutocompleteInput(i, null); } });
     [o, d].forEach(function (i) { i.oninput = edInvalidarPrecio; });
@@ -4383,7 +4383,7 @@
     var msg = document.getElementById("edMsg"), btn = this;
     btn.disabled = true; msg.textContent = "Enviando…"; msg.className = "nota";
     edEnviarAccion({}).then(function (r) {
-      if (!r.ok) { btn.disabled = false; msg.textContent = r.error || "No se pudo enviar el cambio."; msg.className = "nota error"; return; }
+      if (!r.ok) { btn.disabled = false; msg.textContent = r.error || "Intenta enviar el cambio de nuevo."; msg.className = "nota error"; return; }
       cerrarModalOpc("modalEditarViaje");
       cambioAvisoTexto = r.aplicado ? "Cambio guardado · nuevo valor " + fmt(r.total) : "Esperando que tu conductor acepte el cambio · nuevo valor " + fmt(r.total);
       cambioAvisoClase = r.aplicado ? "ok" : "espera";
@@ -4398,7 +4398,7 @@
     document.getElementById("btnAceptarCambio").disabled = true; document.getElementById("btnRechazarCambio").disabled = true;
     apiPost({ accion: "responder_cambio_pasajero", pasajero_token: sesion.token, pedido_id: pedidoActualId, acepta: acepta }).then(function (r) {
       document.getElementById("btnAceptarCambio").disabled = false; document.getElementById("btnRechazarCambio").disabled = false;
-      if (!r.ok) { rbAlerta(r.error || "No se pudo responder."); return; }
+      if (!r.ok) { rbAlerta(r.error || "Intenta responder de nuevo."); return; }
       document.getElementById("modalCambioConductor").hidden = true;
       sincronizarViaje();
     }).catch(function (err) { document.getElementById("btnAceptarCambio").disabled = false; document.getElementById("btnRechazarCambio").disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
@@ -4567,7 +4567,7 @@
     mostrarPestana("cotizar");
     // El aviso va en la hoja 1 (donde queda el pasajero), no en la 2.
     var aviso = document.getElementById("buscarAutoTexto");
-    aviso.textContent = "Ningún conductor pudo tomar tu viaje por ahora. Puedes intentar de nuevo.";
+    aviso.textContent = "Aún no hay conductor libre. Intenta de nuevo.";
     aviso.className = "nota error";
   }
 
@@ -4580,8 +4580,8 @@
     document.getElementById("pinInicioNum").textContent = pin;
     // Con el conductor ya en la puerta, el aviso pasa a primer plano.
     document.getElementById("pinInicioAyuda").textContent = res.conductor_llego
-      ? "Tu conductor llegó. Antes de subir, dile este PIN: sin él no puede iniciar el viaje."
-      : "Por seguridad, díselo al conductor al subir: sin este PIN el viaje no inicia. No lo compartas antes.";
+      ? "Tu conductor llegó. Dile este PIN antes de subir."
+      : "Díselo al conductor al subir. No lo compartas antes.";
   }
   document.getElementById("btnNuevoPin").addEventListener("click", function () {
     var b = this, sesion = obtenerSesionPasajero();
@@ -4785,11 +4785,11 @@
     mostrar("pagoAltTransf", !!opc.transferencia);
     mostrar("pagoMpInfo", sel === "MERCADOPAGO");
     document.getElementById("pagoMpTit").textContent = "Pagarás " + fmt(res.total) + " con tarjeta";
-    document.getElementById("pagoMpTxt").textContent = "Crédito o débito, también en cuotas. Toca «Pagar» para abrir el pago seguro.";
-    document.getElementById("pagoMpNota").textContent = "Si eliges pagar en cuotas con tarjeta de crédito, el interés lo cobra tu banco o la plataforma de pago, no Rumbo.";
+    document.getElementById("pagoMpTxt").textContent = "Crédito o débito, también en cuotas. Toca «Pagar».";
+    document.getElementById("pagoMpNota").textContent = "El interés de las cuotas lo cobra tu banco, no Rumbo.";
     mostrar("pagoEfectivoInfo", sel === "EFECTIVO");
     document.getElementById("pagoEfectivoTit").textContent = "Pagarás " + fmt(res.total) + " en efectivo";
-    document.getElementById("pagoEfectivoTxt").textContent = "Entrégaselo a tu conductor. Cuando lo reciba, él confirma el pago en su app y tu viaje queda cerrado.";
+    document.getElementById("pagoEfectivoTxt").textContent = "Entrégaselo a tu conductor; él confirma el pago.";
     var tr = fp === "TRANSFERENCIA" && opc.transferencia;
     mostrar("pagoTransfInfo", !!tr);
     if (tr) {
@@ -4808,8 +4808,8 @@
       var subido = !!res.comprobante_subido;
       document.getElementById("btnSubirComprobante").textContent = subido ? "Cambiar comprobante (PDF)" : "Subir comprobante (PDF)";
       var cm = document.getElementById("comprobanteMsg");
-      if (subido) { cm.textContent = "Comprobante enviado ✓ Tu conductor lo revisará y confirmará tu pago."; cm.className = "nota"; }
-      else if (!cm.dataset.error) { cm.textContent = "Falta el comprobante en PDF."; cm.className = "nota"; }
+      if (subido) { cm.textContent = "Comprobante enviado ✓ Tu conductor confirmará el pago."; cm.className = "nota"; }
+      else if (!cm.dataset.error) { cm.textContent = "Sube el comprobante en PDF."; cm.className = "nota"; }
     }
   }
   // Comprobante de la transferencia: solo PDF (el que descarga del banco), hasta 3 MB.
@@ -4818,16 +4818,16 @@
     var inp = this, f = inp.files && inp.files[0], cm = document.getElementById("comprobanteMsg"), sesion = obtenerSesionPasajero();
     if (!f) return;
     cm.dataset.error = "";
-    if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) { cm.textContent = "Tiene que ser el PDF que descargas desde tu banco, no una captura de pantalla."; cm.className = "nota error"; cm.dataset.error = "1"; inp.value = ""; return; }
-    if (f.size > 3 * 1024 * 1024) { cm.textContent = "El comprobante pesa más de 3 MB."; cm.className = "nota error"; cm.dataset.error = "1"; inp.value = ""; return; }
+    if (f.type !== "application/pdf" && !/\.pdf$/i.test(f.name)) { cm.textContent = "Sube el PDF de tu banco, no una captura."; cm.className = "nota error"; cm.dataset.error = "1"; inp.value = ""; return; }
+    if (f.size > 3 * 1024 * 1024) { cm.textContent = "Sube un PDF de hasta 3 MB."; cm.className = "nota error"; cm.dataset.error = "1"; inp.value = ""; return; }
     if (!sesion || !sesion.token || !pedidoActualId) return;
     cm.textContent = "Subiendo…"; cm.className = "nota";
     var lector = new FileReader();
     lector.onload = function () {
       apiPost({ accion: "subir_comprobante", pasajero_token: sesion.token, pedido_id: pedidoActualId, archivo_data_url: lector.result }).then(function (r) {
         inp.value = "";
-        if (!r.ok) { cm.textContent = r.error || "No se pudo subir. Intenta de nuevo."; cm.className = "nota error"; cm.dataset.error = "1"; return; }
-        cm.dataset.error = ""; cm.textContent = "Comprobante enviado ✓ Tu conductor lo revisará y confirmará tu pago."; cm.className = "nota";
+        if (!r.ok) { cm.textContent = r.error || "Intenta subirlo de nuevo."; cm.className = "nota error"; cm.dataset.error = "1"; return; }
+        cm.dataset.error = ""; cm.textContent = "Comprobante enviado ✓ Tu conductor confirmará el pago."; cm.className = "nota";
         if (ultimoCierre) { ultimoCierre.comprobante_subido = true; document.getElementById("btnSubirComprobante").textContent = "Cambiar comprobante (PDF)"; }
       }).catch(function () { cm.textContent = "Sin conexión. Intenta de nuevo."; cm.className = "nota error"; cm.dataset.error = "1"; });
     };
@@ -4838,7 +4838,7 @@
     if (!res0 || !sesion || !sesion.token || !pedidoActualId) return;
     msg.textContent = "Un momento…"; msg.className = "nota";
     apiPost({ accion: "elegir_forma_pago", pasajero_token: sesion.token, pedido_id: pedidoActualId, forma: forma }).then(function (r) {
-      if (!r.ok) { msg.textContent = r.error || "No se pudo elegir. Intenta de nuevo."; msg.className = "nota error"; return; }
+      if (!r.ok) { msg.textContent = r.error || "Intenta elegir de nuevo."; msg.className = "nota error"; return; }
       msg.textContent = "";
       pagoCambiando = false;
       var nuevo = {}; Object.keys(res0).forEach(function (k) { nuevo[k] = res0[k]; });
@@ -4876,7 +4876,7 @@
 
     if (res.estado_pago === "PENDIENTE" && res.mp_link && !pagoCambiando) {
       box.className = "estado-box pendiente";
-      box.textContent = "Llegaste. Falta pagar tu viaje";
+      box.textContent = "Llegaste. Paga tu viaje";
       btnPagar.textContent = "Pagar " + fmt(res.total) + " con tarjeta";
       btnPagar.href = res.mp_link;
       btnPagar.style.display = "flex";
@@ -4890,7 +4890,7 @@
       nota.style.display = "none";
       box.className = "estado-box pendiente";
       box.textContent = res.forma_pago === "EFECTIVO" ? "Llegaste. Paga en efectivo a tu conductor"
-        : res.forma_pago === "TRANSFERENCIA" ? "Llegaste. Falta tu transferencia"
+        : res.forma_pago === "TRANSFERENCIA" ? "Llegaste. Haz tu transferencia"
         : "Llegaste. Elige cómo pagar tu viaje";
       return;
     }
@@ -5118,7 +5118,7 @@
     mensajesPintados = {};
     noLeidosChat = 0;
     pintarNoLeidos();
-    document.getElementById("chatMensajes").innerHTML = '<p class="chat-vacio">Escríbele a tu conductor si necesitas coordinar algo.</p>';
+    document.getElementById("chatMensajes").innerHTML = '<p class="chat-vacio">Escríbele a tu conductor.</p>';
   }
 
   function cargarMensajes() {
@@ -5173,7 +5173,7 @@
       accion: "enviar_mensaje_pasajero", pasajero_token: sesion.token,
       pedido_id: pedidoActualId, texto: texto
     }).then(function (res) {
-      if (!res.ok) { input.value = texto; ajustarAltoChat(); rbAlerta("No se pudo enviar: " + res.error); return; }
+      if (!res.ok) { input.value = texto; ajustarAltoChat(); rbAlerta("Mensaje no enviado: " + res.error); return; }
       pintarMensaje(res.mensaje, true);
       ultimoMensajeEn = res.mensaje.creado_en;
     }).catch(function () { input.value = texto; ajustarAltoChat(); })
@@ -5713,13 +5713,13 @@ function svgAuto(rumbo, color, tipo) {
   }
   document.getElementById("btnEnviarReclamoP").addEventListener("click", function () {
     var ses = obtenerSesionPasajero(), txt = document.getElementById("reclamoTextoP"), btn = this;
-    if (!ses) { rbAlerta("Ingresa a tu cuenta para enviar un reclamo."); return; }
-    if (txt.value.trim().length < 5) { rbAlerta("Cuéntanos un poco más para poder ayudarte."); return; }
+    if (!ses) { rbAlerta("Ingresa a tu cuenta para escribirnos."); return; }
+    if (txt.value.trim().length < 5) { rbAlerta("Cuéntanos un poco más."); return; }
     btn.disabled = true;
     apiPost({ accion: "enviar_reclamo_pasajero", pasajero_token: ses.token, tipo: document.getElementById("reclamoTipoP").value, texto: txt.value.trim(), pedido_id: pedidoActualId || "" }).then(function (res) {
       btn.disabled = false;
-      if (!res || !res.ok) { rbAlerta((res && res.error) || "No se pudo enviar. Intenta de nuevo."); return; }
-      txt.value = ""; rbAlerta("Recibimos tu mensaje. La respuesta aparecerá en esta sección."); cargarMisReclamosP();
+      if (!res || !res.ok) { rbAlerta((res && res.error) || "Intenta enviarlo de nuevo."); return; }
+      txt.value = ""; rbAlerta("Recibido. Te respondemos aquí."); cargarMisReclamosP();
     }).catch(function (e) { btn.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
   });
 
@@ -5783,7 +5783,7 @@ function svgAuto(rumbo, color, tipo) {
     if (/224|225|security|cvv|cvc/i.test(c)) return "Revisa el código de seguridad.";
     if (/221|222|name|titular/i.test(c)) return "Escribe el nombre del titular.";
     if (/212|213|214|324|identification|rut/i.test(c)) return "Revisa el RUT del titular.";
-    return "No se pudo validar la tarjeta. Revisa los datos e intenta de nuevo.";
+    return "Revisa los datos de la tarjeta.";
   }
   document.getElementById("btnAgregarTarjeta").addEventListener("click", function () {
     document.getElementById("mpError").textContent = "";
@@ -5793,7 +5793,7 @@ function svgAuto(rumbo, color, tipo) {
       { clave: "num", tipo: "cardNumber", div: "#mpNumero", ph: "1234 1234 1234 1234" },
       { clave: "venc", tipo: "expirationDate", div: "#mpVence", ph: "MM/AA" },
       { clave: "cvv", tipo: "securityCode", div: "#mpCvv", ph: "CVV" }
-    ]).catch(function () { document.getElementById("mpError").textContent = "No se pudo cargar el formulario seguro. Revisa tu conexión."; });
+    ]).catch(function () { document.getElementById("mpError").textContent = "Revisa tu conexión y reintenta."; });
   });
   document.getElementById("btnCancelarTarjeta").addEventListener("click", function () { document.getElementById("tarjetaForm").hidden = true; document.getElementById("btnAgregarTarjeta").hidden = false; });
   document.getElementById("btnGuardarTarjeta").addEventListener("click", function () {
@@ -5808,7 +5808,7 @@ function svgAuto(rumbo, color, tipo) {
       return apiPost({ accion: "guardar_tarjeta", pasajero_token: sesion.token, token_tarjeta: t.id });
     }).then(function (r) {
       btn.disabled = false;
-      if (!r.ok) { err.className = "nota error"; err.textContent = r.error || "No se pudo guardar la tarjeta."; return; }
+      if (!r.ok) { err.className = "nota error"; err.textContent = r.error || "Intenta guardar la tarjeta de nuevo."; return; }
       tarjetaGuardada = r.tarjeta; pintarTarjetaPantalla();
       document.getElementById("tarjetaForm").hidden = true; document.getElementById("btnAgregarTarjeta").hidden = false;
       document.getElementById("mpTitular").value = ""; document.getElementById("mpRut").value = "";
@@ -5822,7 +5822,7 @@ function svgAuto(rumbo, color, tipo) {
     var boton = this; boton.disabled = true;
     apiPost({ accion: "quitar_tarjeta", pasajero_token: sesion.token }).then(function (r) {
       if (r && r.ok) { tarjetaGuardada = null; pintarTarjetaPantalla(); rbAlerta("Tarjeta quitada.", "ok"); }
-      else rbAlerta((r && r.error) || "No se pudo quitar la tarjeta.");
+      else rbAlerta((r && r.error) || "Intenta quitar la tarjeta de nuevo.");
     }).catch(function () { rbAlerta(TEXTO_SIN_CONEXION); }).then(function () { boton.disabled = false; });
   });
   // RUT chileno: formato y dígito verificador.
@@ -5841,7 +5841,7 @@ function svgAuto(rumbo, color, tipo) {
     document.getElementById("pagoTarjetaTxt").textContent = textoMarca(tarjetaGuardada.marca) + " ···· " + tarjetaGuardada.ultimos4;
     document.getElementById("pagoCvvForm").hidden = false; this.hidden = true;
     montarCamposTarjeta([{ clave: "cvvPago", tipo: "securityCode", div: "#mpCvvPago", ph: "CVV" }])
-      .catch(function () { document.getElementById("pagoTarjetaError").textContent = "No se pudo cargar el formulario seguro. Revisa tu conexión."; });
+      .catch(function () { document.getElementById("pagoTarjetaError").textContent = "Revisa tu conexión y reintenta."; });
   });
   document.getElementById("btnCancelarCvv").addEventListener("click", function () { document.getElementById("pagoCvvForm").hidden = true; document.getElementById("btnPagarGuardada").hidden = false; });
   document.getElementById("btnConfirmarPagoTarjeta").addEventListener("click", function () {
@@ -5986,7 +5986,7 @@ function svgAuto(rumbo, color, tipo) {
     // Sin cuenta también se ven las noticias generales de Rumbo (no los avisos personales, que necesitan sesión).
     var pedido = ses && ses.token ? apiPost({ accion: "mis_mensajes_pasajero", pasajero_token: ses.token }) : api({ accion: "noticias_pasajeros" });
     pedido.then(function (res) {
-      if (!res || !res.ok) { if (abierta && lista) lista.innerHTML = '<p class="tyc-p">No se pudieron cargar tus mensajes. Intenta de nuevo.</p>'; return; }
+      if (!res || !res.ok) { if (abierta && lista) lista.innerHTML = '<p class="tyc-p">Intenta cargar tus mensajes de nuevo.</p>'; return; }
       mensajesCache = (res.notificaciones || []).map(function (n) { if (n.id === undefined || n.id === null || n.id === "") n.id = n.creado_en; return n; });
       pintarContadorMensajesP();
       if (abierta || !document.getElementById("modalMensajes").hidden) pintarListaMensajesP();
