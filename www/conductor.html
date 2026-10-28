@@ -400,6 +400,13 @@
   .mem-barra { position: relative; }
   .mem-marca { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--naranja); }
   .mem-escala { position: relative; display: flex; justify-content: space-between; margin-top: 4px; font-size: 14px; color: var(--text-2); }
+  /* Hitos de la barra del bono: arriba el bono de cada hito (naranja), abajo la membresía pagada que lo alcanza. */
+  .mem-hitos { position: relative; height: 22px; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .mem-hitos span { position: absolute; transform: translateX(-50%); white-space: nowrap; line-height: 22px; }
+  .mem-hitos span.ini { transform: none; }
+  .mem-hitos span.fin { transform: translateX(-100%); }
+  .mem-hitos.arriba span { color: var(--naranja-texto); font-weight: 700; }
+  .mem-hitos.abajo span { color: var(--text-2); }
   .estrellas { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
   .estrella {
     border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1;
@@ -582,6 +589,10 @@
     font-size: 14px; background: var(--surface-2);
   }
   .tablero-mapa-aviso.oculto { display: none; }
+  .chip-bono { position: absolute; left: 10px; right: 10px; top: 10px; z-index: 3; display: flex; align-items: center; gap: 8px; background: var(--primary); color: var(--primary-ink); border-radius: 12px; padding: 10px 6px 10px 14px; font: 600 15px/1.3 var(--f-dinero); }
+  .chip-bono[hidden] { display: none; }
+  .chip-bono span { flex: 1; }
+  .chip-bono button { flex: none; width: 44px; height: 44px; margin: -10px 0; border: 0; background: none; color: inherit; font-size: 24px; line-height: 1; }
   .tablero-mapa .btn-centrar { position: absolute; left: 10px; top: 10px; z-index: 2; min-height: 44px; box-shadow: var(--shadow-md); }
   .tablero-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
   .tablero-acciones .btn { width: 100%; min-height: 48px; justify-content: center; padding-left: 8px; padding-right: 8px; font-size: 14px; white-space: nowrap; }
@@ -680,7 +691,24 @@
   .docs-visor { position: fixed; inset: 0; z-index: 90; background: rgba(9,20,32,.92); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; gap: 12px; }
   .docs-visor[hidden] { display: none; }
   .docs-visor img { max-width: 100%; max-height: 78vh; border-radius: 12px; background: #fff; }
+  .docs-visor img:not([src]) { display: none; }
+  /* Cámara con marco: el documento entra en el rectángulo (cédula y licencia ~1,59:1); la selfie, en el óvalo. */
+  .cam-doc { position: fixed; inset: 0; z-index: 95; background: #0b1620; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; color: #fff; }
+  .cam-visor { position: relative; width: 100%; max-width: 480px; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 14px; background: #000; }
+  .cam-visor video { width: 100%; height: 100%; object-fit: cover; }
+  .cam-marco { position: absolute; left: 8%; right: 8%; top: 50%; transform: translateY(-50%); aspect-ratio: 1.59 / 1; border: 3px solid #fff; border-radius: 10px; box-shadow: 0 0 0 999px rgba(0,0,0,.5); }
+  .cam-marco.rostro { left: 20%; right: 20%; aspect-ratio: 3 / 4; border-radius: 50%; }
+  .cam-marco.rostro::before { content: ""; position: absolute; left: 12%; right: 12%; top: 38%; border-top: 2px dashed rgba(255,255,255,.7); }   /* línea de los ojos, horizontal */
+  .cam-marco.rostro::after { content: ""; position: absolute; left: 50%; top: 12%; bottom: 12%; border-left: 2px dashed rgba(255,255,255,.7); }   /* eje del rostro */
+  .cam-doc p { margin: 0; font-size: 16px; text-align: center; max-width: 480px; }
+  .cam-botones { display: flex; gap: 10px; width: 100%; max-width: 480px; }
+  .cam-botones .btn { flex: 1; }
+  .cam-cuenta { font-size: 44px; font-weight: 700; line-height: 1; }
   .docs-visor .btn { min-width: 160px; }
+  /* Selfie junto a la cédula y la licencia: el admin decide si es la misma persona. */
+  .docs-comp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 720px; }
+  .docs-comp figure { margin: 0; text-align: center; color: #fff; font-size: 15px; }
+  .docs-comp img { width: 100%; max-height: 40vh; object-fit: contain; }
   body.alta-pendiente #btnMenuCond { visibility: hidden; }
   /* Conductores (administrador): tarjeta con avatar y lista de interruptores */
   .cond-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 0 0 12px; box-shadow: var(--shadow-sm); }
@@ -1493,6 +1521,8 @@
         <span id="tabMapaTexto">Cargando mapa...</span>
       </div>
       <button class="btn btn-chico btn-centrar" id="tabBtnCentrar" data-tablero="centrar" type="button" hidden>Usar mi ubicación</button>
+      <!-- Chip del bono: aparece un rato al abrir la app y al terminar un viaje; nunca durante un viaje. -->
+      <div class="chip-bono" id="chipBono" role="status" hidden><span id="chipBonoTexto"></span><button type="button" id="chipBonoCerrar" aria-label="Cerrar">×</button></div>
       <!-- Navegación dentro de Rumbo: próximo giro arriba, tiempo y distancia restantes abajo. -->
       <div class="nav-banner" id="navBanner" hidden aria-live="polite">
         <span class="nav-flecha" id="navFlecha" aria-hidden="true">↑</span>
@@ -1752,10 +1782,12 @@
     <section class="card" id="cardMembresia">
       <div class="card-head"><span class="card-title">Membresía Rumbo</span></div>
       <p class="ayuda" style="margin:0 0 8px;">Pagas el 10 % de lo que ganas en cada viaje.</p>
-      <p class="ayuda" style="margin:0 0 12px;">Al sumar <strong>$250.000</strong> de membresía en el mes, el resto del mes pagas 0 %.</p>
+      <p class="ayuda" style="margin:0 0 12px;">Al sumar <strong>$200.000</strong> de membresía en el mes, el resto del mes pagas 0 %.</p>
+      <div id="memResumen" style="margin:0 0 12px;"></div>
       <p class="ayuda" id="memBonoTexto" style="margin:0 0 12px;"></p>
-      <div class="mem-barra" aria-hidden="true"><div class="mem-relleno" id="memRelleno"></div></div>
-      <div class="mem-escala" aria-hidden="true"><span>$0</span><span id="memTopeReal">$250.000</span></div>
+      <div class="mem-hitos arriba" id="memHitosArriba" aria-hidden="true"></div>
+      <div class="mem-barra" id="memBarra" role="progressbar" aria-valuemin="0"><div class="mem-relleno" id="memRelleno"></div></div>
+      <div class="mem-hitos abajo" id="memHitosAbajo" aria-hidden="true"></div>
       <p class="msg" id="memAcumulado" style="margin:8px 0 12px;">Revisando...</p>
       <div class="mem-saldo" id="memSaldo"></div>
       <div id="memUltimas" style="margin-top:10px;"></div>
@@ -2516,7 +2548,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 79;
+  var APP_VERSION = 80;
   function revisarActualizacion(versionServidor) {
     // Solo tiene sentido dentro de la app instalada (Capacitor): la web
     // en el navegador siempre sirve el HTML más nuevo, no hay ningun .apk
@@ -2734,6 +2766,7 @@
     return res;
   }
 
+  var chipBonoAbierto = false;
   function mostrarPantalla(cual) {
     if (cual !== "app") { document.body.classList.remove("alta-pendiente"); if (typeof cerrarPantallasAdmin === "function") cerrarPantallasAdmin(); }
     if (cual !== "app") { document.body.classList.remove("cond-pantalla"); document.body.style.paddingBottom = ""; if (typeof cerrarEmergente === "function") cerrarEmergente(); }
@@ -2778,7 +2811,7 @@
     if (enCond) { ajustarCond(); pintarMapaEspera(); }
     if (enCond && MODO === "admin") cargarFlota();
     if (cual === "ajustes" && !disponibilidadCargada) cargarDisponibilidad();
-    if (cual === "pedidos" && MODO === "conductor") { pintarEstadoTablero(); pintarMapaEspera(); }
+    if (cual === "pedidos" && MODO === "conductor") { pintarEstadoTablero(); pintarMapaEspera(); if (!chipBonoAbierto) { chipBonoAbierto = true; setTimeout(mostrarChipBono, 1500); } }
     // Siempre al entrar: el conductor vuelve de vincular en el navegador y
     // tiene que ver el cambio sin cerrar la app.
     if (cual === "ajustes") {
@@ -3406,9 +3439,9 @@
     });
     var visor = document.createElement("div");
     visor.className = "docs-visor"; visor.id = "docsVisor"; visor.hidden = true;
-    visor.innerHTML = '<img alt="Documento" id="docsVisorImg"><button class="btn btn-secundario" type="button" id="docsVisorCerrar">Cerrar</button>';
+    visor.innerHTML = '<img alt="Documento" id="docsVisorImg"><div class="docs-comp" id="docsVisorComp" hidden></div><button class="btn btn-secundario" type="button" id="docsVisorCerrar">Cerrar</button>';
     document.body.appendChild(visor);
-    document.getElementById("docsVisorCerrar").addEventListener("click", function () { visor.hidden = true; document.getElementById("docsVisorImg").removeAttribute("src"); });
+    document.getElementById("docsVisorCerrar").addEventListener("click", function () { visor.hidden = true; document.getElementById("docsVisorImg").removeAttribute("src"); document.getElementById("docsVisorComp").hidden = true; document.getElementById("docsVisorComp").innerHTML = ""; });
     document.getElementById("docsCuerpo").addEventListener("click", clicDocs);
   }
 
@@ -3509,15 +3542,105 @@
     }
     var acepta = d.pdf ? "application/pdf" : "image/*";
     var captura = d.pdf ? "" : (d.tipo === "SELFIE" ? ' capture="user"' : "");
-    h += '<div class="docs-archivo"><label class="btn btn-secundario" for="docArchivo">' + (d.pdf ? "Elegir el PDF" : (d.tipo === "SELFIE" ? "Tomar selfie" : "Tomar o elegir foto")) + '</label>' +
+    h += '<div class="docs-archivo">' + (d.pdf ? '<label class="btn btn-secundario" for="docArchivo">Elegir el PDF</label>' : '<button class="btn btn-secundario" type="button" data-doc-camara="' + d.tipo + '">' + (d.tipo.indexOf("SELFIE") === 0 ? "Tomar mis fotos (" + rostrosPorTomar(d.tipo).length + ")" : "Abrir cámara") + '</button>') +
       '<input type="file" id="docArchivo" accept="' + acepta + '"' + captura + ' hidden><span id="docArchivoNombre">' + (d.pdf ? "Ningún PDF elegido" : "Sin foto todavía") + '</span></div>' +
       '<button class="btn btn-ok" type="button" data-doc-enviar="' + d.tipo + '">Enviar a revisión</button>' +
       '<button class="btn btn-chico" type="button" data-doc-cancelar>Cancelar</button>';
     caja.innerHTML = h;
     caja.hidden = false;
+    docFotoTomada = null; docRostros = null;
     document.getElementById("docArchivo").addEventListener("change", function () {
       var f = this.files && this.files[0];
+      docFotoTomada = f || null;
       document.getElementById("docArchivoNombre").textContent = f ? f.name : "";
+    });
+  }
+
+  // Cámara con marco. Devuelve la foto (Blob) o null si la cancela; si el teléfono no da la cámara, rechaza y se usa el selector de archivos.
+  function tomarFotoConMarco(d) {
+    return new Promise(function (listo, fallo) {
+      if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { fallo(new Error("sin cámara")); return; }
+      var rostro = false;
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 } }, audio: false }).then(function (flujo) {
+        var raiz = document.createElement("div");
+        raiz.className = "cam-doc"; raiz.setAttribute("role", "dialog"); raiz.setAttribute("aria-modal", "true");
+        raiz.innerHTML = '<p class="cam-texto"></p><div class="cam-visor"><video playsinline muted autoplay></video><div class="cam-marco' + (rostro ? " rostro" : "") + '"></div></div>' +
+          '<div class="cam-botones"><button type="button" class="btn btn-secundario" data-cam="no">Cancelar</button><button type="button" class="btn btn-ok" data-cam="si">Tomar foto</button></div>';
+        raiz.querySelector(".cam-texto").textContent = rostro ? "Centra tu rostro en el óvalo, con la cara un poco girada, en diagonal (de tres cuartos), no de frente y sin exagerar el giro. Fondo claro, luz de frente, sin gorro ni lentes oscuros." : "Pon el documento dentro del marco. Que se lea todo y no haya reflejos.";
+        var video = raiz.querySelector("video");
+        video.srcObject = flujo;
+        function cerrar(v) { flujo.getTracks().forEach(function (t) { t.stop(); }); raiz.remove(); listo(v); }
+        raiz.addEventListener("click", function (ev) {
+          var b = ev.target.closest("button[data-cam]");
+          if (!b) return;
+          if (b.dataset.cam === "no") { cerrar(null); return; }
+          if (!video.videoWidth) return;
+          var c = document.createElement("canvas");
+          c.width = video.videoWidth; c.height = video.videoHeight;
+          c.getContext("2d").drawImage(video, 0, 0, c.width, c.height);
+          c.toBlob(function (blob) { cerrar(blob); }, "image/jpeg", 0.9);
+        });
+        document.body.appendChild(raiz);
+      }).catch(function (e) { fallo(e); });
+    });
+  }
+  var docFotoTomada = null, docRostros = null;
+
+  // Las 3 fotos del rostro (frente, izquierda, derecha) en una sola captura guiada: la app avisa el gesto, cuenta 3 s y saca la foto sola.
+  var PASOS_ROSTRO = {
+    SELFIE: "Mira de frente a la cámara",
+    SELFIE_IZQ: "Gira la cara hacia tu izquierda, sin exagerar, y mira de reojo a la cámara",
+    SELFIE_DER: "Gira la cara hacia tu derecha, sin exagerar, y mira de reojo a la cámara"
+  };
+  function tomarRostrosGuiado(tipos) {
+    return new Promise(function (listo, fallo) {
+      if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { fallo(new Error("sin cámara")); return; }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1920 } }, audio: false }).then(function (flujo) {
+        var raiz = document.createElement("div");
+        raiz.className = "cam-doc"; raiz.setAttribute("role", "dialog"); raiz.setAttribute("aria-modal", "true");
+        raiz.innerHTML = '<p class="cam-texto">Fondo claro, luz de frente, sin sombras. Sin gorro, sin lentes sobre la cabeza ni lentes oscuros. Si manejas con lentes ópticos, úsalos. Te guiamos en cada foto.</p><div class="cam-visor"><video playsinline muted autoplay></video><div class="cam-marco rostro"></div></div>' +
+          '<div class="cam-cuenta" aria-live="polite"></div><div class="cam-botones"><button type="button" class="btn btn-secundario" data-cam="no">Cancelar</button><button type="button" class="btn btn-ok" data-cam="si">Empezar</button></div>';
+        var video = raiz.querySelector("video"), texto = raiz.querySelector(".cam-texto"), cuenta = raiz.querySelector(".cam-cuenta"), btnSi = raiz.querySelector('[data-cam="si"]');
+        video.srcObject = flujo;
+        var fotos = {}, vivo = true, reloj = null;
+        function cerrar(v) { vivo = false; clearTimeout(reloj); flujo.getTracks().forEach(function (t) { t.stop(); }); raiz.remove(); listo(v); }
+        function sacar(cb) {
+          var c = document.createElement("canvas");
+          c.width = video.videoWidth; c.height = video.videoHeight;
+          c.getContext("2d").drawImage(video, 0, 0, c.width, c.height);
+          c.toBlob(cb, "image/jpeg", 0.9);
+        }
+        function paso(i) {
+          if (!vivo) return;
+          if (i >= tipos.length) { cerrar(fotos); return; }
+          texto.textContent = PASOS_ROSTRO[tipos[i]] + " (" + (i + 1) + " de " + tipos.length + ")";
+          var n = 3;
+          (function tic() {
+            if (!vivo) return;
+            cuenta.textContent = n;
+            if (n > 0) { n--; reloj = setTimeout(tic, 1000); return; }
+            cuenta.textContent = "";
+            sacar(function (blob) { fotos[tipos[i]] = blob; paso(i + 1); });
+          })();
+        }
+        raiz.addEventListener("click", function (ev) {
+          var b = ev.target.closest("button[data-cam]");
+          if (!b) return;
+          if (b.dataset.cam === "no") { cerrar(null); return; }
+          if (!video.videoWidth) return;
+          btnSi.disabled = true;
+          paso(0);
+        });
+        document.body.appendChild(raiz);
+      }).catch(function (e) { fallo(e); });
+    });
+  }
+  // Fotos del rostro que faltan o hay que repetir; siempre incluye la que abrió el conductor.
+  function rostrosPorTomar(tipo) {
+    var docs = (docsDatos && docsDatos.documentos) || [];
+    return ["SELFIE", "SELFIE_IZQ", "SELFIE_DER"].filter(function (t) {
+      var d = docs.filter(function (x) { return x.tipo === t; })[0];
+      return t === tipo || (d && (d.estado === "FALTA" || d.estado === "RECHAZADO" || d.estado === "VENCIDO"));
     });
   }
 
@@ -3554,9 +3677,30 @@
   function enviarDoc(tipo, boton) {
     var d = docsDatos.documentos.filter(function (x) { return x.tipo === tipo; })[0];
     var input = document.getElementById("docArchivo");
-    var archivo = input.files && input.files[0];
-    if (!archivo) { rbAlerta(d.pdf ? "Elige el PDF del certificado." : "Toma o elige la foto del documento."); return; }
     function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+    if (docRostros) {
+      pedirAutorizacion(DOCS_CONSENTIMIENTO).then(function (autoriza) {
+        if (!autoriza) return;
+        boton.disabled = true; boton.textContent = "Enviando...";
+        var tipos = Object.keys(docRostros), falla = "";
+        tipos.reduce(function (p, t) {
+          return p.then(function () {
+            if (falla) return;
+            return achicarFoto(docRostros[t]).then(function (dataUrl) { return apiPost({ accion: "subir_documento", tipo: t, archivo_data_url: dataUrl, consentimiento: true }); })
+              .then(function (res) { if (!res.ok) falla = res.error; });
+          });
+        }, Promise.resolve()).then(function () {
+          boton.disabled = false; boton.textContent = "Enviar a revisión";
+          if (falla) { rbAlerta(falla); cargarDocumentos(); return; }
+          docsAbierto = ""; docRostros = null;
+          rbAlerta("Tus fotos fueron enviadas a revisión. Te avisamos cuando Rumbo las valide.", "ok");
+          cargarDocumentos();
+        }).catch(function () { boton.disabled = false; boton.textContent = "Enviar a revisión"; rbAlerta(TEXTO_SIN_CONEXION); });
+      });
+      return;
+    }
+    var archivo = docFotoTomada || (input.files && input.files[0]);
+    if (!archivo) { rbAlerta(d.pdf ? "Elige el PDF del certificado." : "Toma o elige la foto del documento."); return; }
     // La autorización (dato sensible / antecedentes) se pide en un pop-up aparte, nunca escrita en la pantalla.
     (d.consentimiento ? pedirAutorizacion(d.sensible ? DOCS_CONSENTIMIENTO : DOCS_CONSENTIMIENTO_ANTECEDENTES) : Promise.resolve(true)).then(function (autoriza) {
       if (!autoriza) return;
@@ -3623,9 +3767,14 @@
         var sub = DOCS_TEXTO_ESTADO[d.estado] + (d.vence_en ? " · vence " + fechaLarga(d.vence_en) : "") + (d.clase ? " · clase " + escapar(d.clase) : "") +
           (d.folio ? " · folio " + escapar(d.folio) + " · código " + escapar(d.codigo) : "");
         var acc = "";
+        if (d.tipo === "SELFIE" && d.tiene_archivo) {
+          var ced = c.documentos.filter(function (x) { return x.tipo === "CEDULA_FRENTE" && x.tiene_archivo; })[0], lic = c.documentos.filter(function (x) { return x.tipo === "LICENCIA_FRENTE" && x.tiene_archivo; })[0];
+          var izq = c.documentos.filter(function (x) { return x.tipo === "SELFIE_IZQ" && x.tiene_archivo; })[0], der = c.documentos.filter(function (x) { return x.tipo === "SELFIE_DER" && x.tiene_archivo; })[0];
+          if (ced && lic) acc += '<button class="btn btn-chico" type="button" data-comp-selfie="' + d.documento_id + '" data-comp-ced="' + ced.documento_id + '" data-comp-lic="' + lic.documento_id + '"' + (izq ? ' data-comp-izq="' + izq.documento_id + '"' : "") + (der ? ' data-comp-der="' + der.documento_id + '"' : "") + '>Comparar</button>';
+        }
         if (d.tiene_archivo) acc += '<button class="btn btn-chico" type="button" data-doc-ver="' + d.documento_id + '"' + (d.pdf ? ' data-doc-pdf' : '') + '>Ver</button>';
         if (d.pdf && d.folio) acc += '<button class="btn btn-chico" type="button" data-doc-verificar>Verificar</button>';
-        if (d.estado === "EN_REVISION") acc += '<button class="btn btn-chico" type="button" data-doc-validar="' + d.documento_id + '">Validar</button><button class="btn btn-chico" type="button" data-doc-rechazar="' + d.documento_id + '">Rechazar</button>';
+        if (d.estado === "EN_REVISION") acc += '<button class="btn btn-chico" type="button" data-doc-validar="' + d.documento_id + '">' + (d.tipo === "SELFIE" ? "Aceptar" : "Validar") + '</button><button class="btn btn-chico" type="button" data-doc-rechazar="' + d.documento_id + '">' + (d.tipo === "SELFIE" ? "Rechazar" : "Objetar") + '</button>';
         return '<div class="docs-adm-item"><div><div class="nombre">' + escapar(d.nombre) + '</div><div class="sub">' + sub + '</div></div><div class="docs-adm-acciones">' + acc + '</div></div>';
       }).join("");
       return '<div class="cond-card"><div class="cond-cab"><div class="cond-avatar">' + escapar(String(c.nombre || "?").trim().charAt(0).toUpperCase()) + '</div><div class="cond-datos"><div class="cond-nombre">' + escapar(c.nombre) + '</div>' +
@@ -3640,7 +3789,35 @@
     if (b.dataset.docAbrir) { abrirFormDoc(b.dataset.docAbrir); return; }
     if (b.hasAttribute("data-doc-cancelar")) { docsAbierto = ""; var f = b.closest("[data-doc-form]"); f.hidden = true; f.innerHTML = ""; return; }
     if (b.dataset.docEnviar) { enviarDoc(b.dataset.docEnviar, b); return; }
+    if (b.dataset.docCamara) {
+      var dc = docsDatos.documentos.filter(function (x) { return x.tipo === b.dataset.docCamara; })[0];
+      var esRostro = dc.tipo.indexOf("SELFIE") === 0;
+      (esRostro ? tomarRostrosGuiado(rostrosPorTomar(dc.tipo)) : tomarFotoConMarco(dc)).then(function (foto) {
+        if (!foto) return;
+        if (esRostro) { docRostros = foto; document.getElementById("docArchivoNombre").textContent = Object.keys(foto).length + " fotos listas para enviar"; return; }
+        docFotoTomada = foto;
+        document.getElementById("docArchivoNombre").textContent = "Foto lista para enviar";
+      }).catch(function () { document.getElementById("docArchivo").click(); });   // sin permiso o sin cámara: el selector del teléfono
+      return;
+    }
     if (b.hasAttribute("data-doc-verificar")) { window.open("https://www.registrocivil.cl/OficinaInternet/verificacion/verificacioncertificado.srcei", "_system"); return; }
+    if (b.dataset.compSelfie) {
+      var ids = [["De frente", b.dataset.compSelfie], ["Cédula", b.dataset.compCed], ["Licencia", b.dataset.compLic]];
+      if (b.dataset.compIzq) ids.push(["Izquierda", b.dataset.compIzq]);
+      if (b.dataset.compDer) ids.push(["Derecha", b.dataset.compDer]);
+      b.disabled = true;
+      Promise.all(ids.map(function (x) { return apiPost({ accion: "ver_documento", documento_id: x[1] }); })).then(function (rs) {
+        b.disabled = false;
+        var mal = rs.filter(function (r) { return !r.ok; })[0];
+        if (mal) { rbAlerta(mal.error); return; }
+        var comp = document.getElementById("docsVisorComp");
+        comp.innerHTML = rs.map(function (r, i) { return '<figure><img alt="' + ids[i][0] + '" src="' + r.data_url + '"><figcaption>' + ids[i][0] + '</figcaption></figure>'; }).join("");
+        comp.hidden = false;
+        document.getElementById("docsVisorImg").removeAttribute("src");
+        document.getElementById("docsVisor").hidden = false;
+      }).catch(function () { b.disabled = false; rbAlerta(TEXTO_SIN_CONEXION); });
+      return;
+    }
     if (b.dataset.docVer) {
       b.disabled = true;
       apiPost({ accion: "ver_documento", documento_id: b.dataset.docVer }).then(function (res) {
@@ -4491,17 +4668,43 @@
 
   // Membresía del conductor: se pide al abrir la sección (no va en los sondeos). Todo lo calcula el servidor.
   function fechaCorta(v) { var d = new Date(v); return isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" }); }
-  // Mensaje del bono por objetivo según el tramo alcanzado. El bono NO se suma entre tramos: vale el tramo más alto alcanzado.
-  function textoBonoObjetivo(escalones, acumulado) {
-    var e = (escalones || []).slice().sort(function (x, y) { return x[0] - y[0]; });
-    if (!e.length) return "";
-    var ORD = ["primer", "segundo", "tercer"], hechos = e.filter(function (x) { return x[0] <= acumulado; }), n = hechos.length, sig = e[n];
-    if (!n) return "Vas por tu primer bono. Sigue así: con " + fmt(e[0][0] - acumulado) + " más de membresía ganas " + fmt(e[0][1]) + ".";
-    var ganado = hechos[n - 1][1];
-    if (!sig) return "¡Llegaste al bono máximo! Ganaste " + fmt(ganado) + " este mes.";
-    if (n === 1) return "¡Ganaste " + fmt(ganado) + "! Sigue así: con " + fmt(sig[0] - acumulado) + " más de membresía ganas otros " + fmt(sig[1] - ganado) + " y tu bono sube a " + fmt(sig[1]) + ".";
-    return "¡Alcanzaste el " + (ORD[n - 1] || (n + "º")) + " bono! Tu bono sube a " + fmt(ganado) + " (reemplaza al anterior, no se suma). Sigue así: con " + fmt(sig[0] - acumulado) + " más ganas otros " + fmt(sig[1] - ganado) + " y llegas a " + fmt(sig[1]) + ".";
+  // Mensaje del bono por objetivo (decisión de Alberto, 28-oct-2026): en pesos, lo logrado primero, sin porcentajes ni «te falta».
+  // El bono es el 30 % de la membresía del mes, crece sin acumularse; la ganancia del mes es la membresía pagada / tasa.
+  function textoBonoObjetivo(res) {
+    var tasa = Number(res.tasa) || 0.1, ganado = Math.round((Number(res.acumulado) || 0) / tasa), desde = Number(res.bono_desde_membresia) || 0, max = Number(res.bono_maximo) || 0;
+    var bono = Number(res.bono) || 0;
+    if (res.liberado) return "Tu bono está en su nivel más alto este mes: " + fmt(bono || max) + ". Todo lo que ganes desde acá es para ti.";
+    if (!bono) {
+      var meta = Math.round(desde / tasa), primero = Math.round(desde * 0.3);
+      return "Llevas " + fmt(ganado) + " este mes. Con " + fmt(Math.max(0, meta - ganado)) + " más logras tu bono de " + fmt(primero) + ".";
+    }
+    var faltaGanar = Math.max(0, Math.round((Number(res.tope) - Number(res.acumulado)) / tasa));
+    return "Tu bono de este mes va en " + fmt(bono) + ". Si sigues avanzando, tu bono sube: se mejora, no se suma. Con " + fmt(faltaGanar) + " más de ganancia llegas a tu bono máximo de " + fmt(max) + ".";
   }
+  // Chip del bono sobre el mapa: versión corta del mensaje, en pesos y sin porcentajes.
+  function textoChipBono(res) {
+    if (!res || !res.con_devolucion) return "";
+    var tasa = Number(res.tasa) || 0.1, ganado = Math.round((Number(res.acumulado) || 0) / tasa), desde = Number(res.bono_desde_membresia) || 0, max = Number(res.bono_maximo) || 0, bono = Number(res.bono) || 0;
+    if (res.liberado) return "Tu bono está al máximo este mes: " + fmt(bono || max);
+    if (!bono) return "Con " + fmt(Math.max(0, Math.round(desde / tasa) - ganado)) + " más logras tu bono de " + fmt(Math.round(desde * 0.3));
+    return "Tu bono va en " + fmt(bono) + ". Con " + fmt(Math.max(0, Math.round((Number(res.tope) - Number(res.acumulado)) / tasa))) + " más llegas a " + fmt(max);
+  }
+  function chipBonoVisible(conBono, enViaje) { return !!conBono && !enViaje; }
+  var chipBonoReloj = null;
+  function ocultarChipBono() { clearTimeout(chipBonoReloj); var ch = document.getElementById("chipBono"); if (ch) ch.hidden = true; }
+  function mostrarChipBono() {
+    if (MODO !== "conductor") return;
+    if (!chipBonoVisible(true, pedidosEnCursoActuales.length > 0)) return;
+    api({ accion: "mi_membresia" }).then(function (res) {
+      if (!res || !res.ok || pedidosEnCursoActuales.length > 0) return;
+      var txt = textoChipBono(res);
+      if (!txt) return;
+      document.getElementById("chipBonoTexto").textContent = txt;
+      document.getElementById("chipBono").hidden = false;
+      clearTimeout(chipBonoReloj); chipBonoReloj = setTimeout(ocultarChipBono, 12000);
+    }).catch(function () {});
+  }
+  document.getElementById("chipBonoCerrar").addEventListener("click", ocultarChipBono);
   function textoSaldoMembresia(res) {
     var html;
     if (res.en_revision) html = "<strong>En revisión</strong>El administrador revisa tu saldo.";
@@ -4516,20 +4719,35 @@
     api({ accion: "mi_membresia" }).then(function (res) {
       if (!res.ok) { acum.textContent = "No se pudo revisar: " + res.error; return; }
       var rel = document.getElementById("memRelleno");
-      // La barra siempre dibuja el tope real ($250.000) y marca el tope del bono de los primeros 3 meses.
+      // La barra siempre dibuja el tope real ($200.000) y marca el umbral del bono de los primeros 3 meses.
       var escala = Number(res.tope_real) || res.tope;
       rel.style.width = Math.min(100, Math.round(res.acumulado / escala * 100)) + "%";
-      // Marcas de los escalones de devolución (primeros 3 meses) sobre la barra que llega al tope real.
-      var conBono = !!res.con_devolucion, barra = rel.parentNode;
+      // Hitos del bono (primeros 3 meses): marca naranja en la barra, el bono arriba y la membresía pagada que lo alcanza abajo.
+      var conBono = !!res.con_devolucion, barra = rel.parentNode, arriba = document.getElementById("memHitosArriba"), abajo = document.getElementById("memHitosAbajo");
       [].forEach.call(barra.querySelectorAll(".mem-marca"), function (x) { x.remove(); });
-      if (conBono) (res.escalones || []).forEach(function (e) {
-        if (e[0] >= escala) return;
-        var mk = document.createElement("div"); mk.className = "mem-marca"; mk.style.left = Math.round(e[0] / escala * 100) + "%"; barra.appendChild(mk);
+      arriba.textContent = ""; abajo.textContent = "";
+      var ratioBono = res.tope ? (Number(res.bono_maximo) || 0) / Number(res.tope) : 0;
+      var hitos = conBono && res.bono_desde_membresia ? [res.bono_desde_membresia, Math.round(escala / 2), escala] : [escala];
+      function etiqueta(cont, valor, texto, ultimo) {
+        var sp = document.createElement("span"); sp.textContent = texto; sp.style.left = Math.round(valor / escala * 100) + "%";
+        if (ultimo) sp.className = "fin";
+        cont.appendChild(sp);
+      }
+      var cero = document.createElement("span"); cero.className = "ini"; cero.style.left = "0"; cero.textContent = fmt(0); abajo.appendChild(cero);
+      hitos.forEach(function (h, i) {
+        var ultimo = i === hitos.length - 1;
+        if (conBono && !ultimo) { var mk = document.createElement("div"); mk.className = "mem-marca"; mk.style.left = Math.round(h / escala * 100) + "%"; barra.appendChild(mk); }
+        if (conBono) etiqueta(arriba, h, fmt(Math.round(h * ratioBono)), ultimo);
+        etiqueta(abajo, h, fmt(h), ultimo);
       });
-      document.getElementById("memTopeReal").textContent = fmt(escala);
+      barra.setAttribute("aria-valuemax", String(escala)); barra.setAttribute("aria-valuenow", String(Math.min(escala, res.acumulado || 0)));
+      barra.setAttribute("aria-valuetext", "Llevas pagados " + fmt(res.acumulado || 0) + " de " + fmt(escala) + " de membresía" + (conBono ? ", bono de " + fmt(res.bono || 0) : ""));
+      // Lo del mes, en hechos (pesos): ganado, membresía pagada y bono. Cada dato vive aquí; la barra y la meta van debajo.
+      document.getElementById("memResumen").innerHTML = '<div class="mem-fila"><span>Ganado este mes</span><span>' + fmt(res.ganado_mes || 0) + '</span></div>' +
+        '<div class="mem-fila"><span>Membresía pagada</span><span>' + fmt(res.acumulado || 0) + '</span></div>' +
+        (res.con_devolucion ? '<div class="mem-fila"><span>Bono por objetivo</span><span>' + fmt(res.bono || 0) + '</span></div>' : "");
       document.getElementById("memBonoTexto").innerHTML = conBono
-        ? "<strong>Bono por objetivo" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + "</strong><br>" + escapar(textoBonoObjetivo(res.escalones, res.acumulado)) + "<br>Recibes el bono del tramo más alto del mes." +
-          '<details style="margin-top:6px;"><summary>Ver los tramos</summary>' + (res.escalones || []).slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (e) { return "<div>" + fmt(e[0]) + " de membresía → bono de " + fmt(e[1]) + "</div>"; }).join("") + "</details>"
+        ? "<strong>Bono por objetivo" + (res.bono_hasta ? " (hasta el " + fechaCorta(res.bono_hasta) + ")" : "") + "</strong><br>" + escapar(textoBonoObjetivo(res))
         : (res.bono_desde ? "Tu bono por objetivo empieza el " + fechaCorta(res.bono_desde) + " y dura 3 meses." : "");
       rel.classList.toggle("lleno", !!res.liberado);
       acum.textContent = res.liberado ? "Llegaste al tope de " + fmt(res.tope) + ": el resto del mes pagas 0 %."
@@ -6262,6 +6480,7 @@
     if (!tv) return;
     var hay = MODO === "conductor" && pedidosEnCursoActuales.length > 0;
     document.body.classList.toggle("con-viaje", hay);
+    if (hay) ocultarChipBono();
     var enTab = hay && document.body.classList.contains("cond-pantalla") && document.getElementById("tabEnCurso").classList.contains("activo");
     var p = enTab ? elegirFoco(pedidosEnCursoActuales, focoManualId) : null;
     if (!p) {
@@ -6773,6 +6992,7 @@
   document.getElementById("btnCobroListo").addEventListener("click", function () {
     var id = cobroPedidoId; cobroPedidoId = "";
     document.getElementById("modalCobro").hidden = true;
+    setTimeout(mostrarChipBono, 800);   // terminó un viaje: se ve si el bono subió
     if (id) abrirCalificarPasajero(id);
   });
   function finalizarViaje(pedidoId, forma, boton) {

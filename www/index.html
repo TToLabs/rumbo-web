@@ -396,6 +396,17 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 12px 14px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
   }
+  .viaje-fila.viaje-tocar { cursor: pointer; }
+  .viaje-fila.viaje-tocar:active { background: var(--primary-soft); }
+  .viaje-fila .viaje-ir { flex: none; font-size: 22px; line-height: 1; color: var(--text-3); }
+  .dt-estrella { border: none; background: none; cursor: pointer; font-size: 34px; line-height: 1; color: var(--border-strong); padding: 4px; min-width: 44px; min-height: 44px; transition: transform 0.08s ease, color 0.12s ease; }
+  .dt-estrella:active { transform: scale(0.9); }
+  .dt-estrella.activa { color: #F5A623; }
+  #detalleCalificar textarea { width: 100%; margin: 0 0 12px; }
+  .vd-lista { margin: 0 0 16px; }
+  .vd-lista > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .vd-lista dt { color: var(--text-2); font-size: 15px; }
+  .vd-lista dd { margin: 0; font-size: 15px; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
   .viaje-ruta { font-size: 14px; font-weight: 600; color: var(--text); }
   .viaje-detalle { font-size: 14px; color: var(--text-2); margin-top: 2px; }
 
@@ -1881,6 +1892,28 @@
   </div>
 </div>
 
+<div class="modal-opc pagina" id="modalViajeDetalle" hidden role="dialog" aria-labelledby="modalViajeDetalleTit">
+  <div class="modal-opc-hoja">
+    <div class="pagina-cab"><button type="button" data-cierra="modalViajeDetalle" aria-label="Volver">&#8249;</button><h3 id="modalViajeDetalleTit">Detalle del viaje</h3></div>
+    <dl class="vd-lista" id="viajeDetalleLista"></dl>
+    <section class="card" id="detalleCalificar" hidden>
+      <div class="card-head"><span class="card-title" id="detalleCalTit">¿Cómo fue tu viaje?</span></div>
+      <div class="estrellas" id="detalleEstrellas" role="radiogroup" aria-label="Calificación de tu conductor">
+        <button type="button" class="dt-estrella" data-e="1" aria-label="1 estrella">★</button>
+        <button type="button" class="dt-estrella" data-e="2" aria-label="2 estrellas">★</button>
+        <button type="button" class="dt-estrella" data-e="3" aria-label="3 estrellas">★</button>
+        <button type="button" class="dt-estrella" data-e="4" aria-label="4 estrellas">★</button>
+        <button type="button" class="dt-estrella" data-e="5" aria-label="5 estrellas">★</button>
+      </div>
+      <textarea id="detalleComentario" placeholder="Un comentario (opcional)" maxlength="300" rows="2"></textarea>
+      <button class="btn btn-primario" id="btnDetalleCalificar" type="button" disabled>Enviar calificación</button>
+      <p class="nota" id="detalleCalMsg" role="status" style="margin:10px 2px 0;"></p>
+    </section>
+    <button type="button" class="btn btn-chico" id="btnDetalleEditarCal" hidden style="margin-bottom:12px;">Editar mi calificación</button>
+    <button type="button" class="btn btn-medio" id="btnRepetirDetalle">Repetir este viaje</button>
+  </div>
+</div>
+
 <div class="modal-opc pagina" id="modalMediosPago" hidden role="dialog" aria-labelledby="modalMediosPagoTit">
   <div class="modal-opc-hoja">
     <div class="pagina-cab"><button type="button" data-cierra="modalMediosPago" aria-label="Volver">&#8249;</button><h3 id="modalMediosPagoTit">Medios de pago</h3></div>
@@ -2548,7 +2581,7 @@
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class"] });
   })();
 
-  var APP_VERSION = 82;
+  var APP_VERSION = 83;
   var URL_APK_PASAJERO = "https://github.com/btoinnova/rumbo-web/releases/download/latest/rumbo.apk";
   var esAppNativa = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   function revisarActualizacion(versionServidor) {
@@ -2760,28 +2793,104 @@
       res.viajes.forEach(function (v) {
         var fila = document.createElement("div");
         fila.className = "viaje-fila";
-        var fecha = v.fecha ? new Date(v.fecha) : null;
-        var fechaTxt = fecha ? fecha.toLocaleDateString("es-CL", { day: "2-digit", month: "short", year: "numeric" }) : "";
+        var fechaTxt = diaYHoraViaje(v);
         var info = document.createElement("div");
         info.innerHTML = ""; // se arma con DOM, nunca con datos del viaje directo en el HTML
         var linea1 = document.createElement("div");
         linea1.className = "viaje-ruta";
-        linea1.textContent = v.origen + " → " + v.destino;
+        linea1.textContent = "Inicio: " + direccionCorta(v.origen);
+        var lineaDestino = document.createElement("div");
+        lineaDestino.className = "viaje-ruta";
+        lineaDestino.style.marginTop = "4px";
+        lineaDestino.textContent = "Destino: " + direccionCorta(v.destino);
         var linea2 = document.createElement("div");
         linea2.className = "viaje-detalle";
-        linea2.textContent = fechaTxt + " · " + fmt(v.monto);
+        linea2.style.marginTop = "6px";
+        linea2.textContent = fechaTxt;
         info.appendChild(linea1);
+        info.appendChild(lineaDestino);
         info.appendChild(linea2);
-        var boton = document.createElement("button");
-        boton.type = "button";
-        boton.className = "btn btn-chico";
-        boton.textContent = "Repetir";
-        boton.addEventListener("click", function () { repetirViaje(v); });
+        var ir = document.createElement("span");
+        ir.className = "viaje-ir"; ir.setAttribute("aria-hidden", "true"); ir.textContent = "›";
+        fila.classList.add("viaje-tocar");
+        fila.setAttribute("role", "button"); fila.tabIndex = 0;
+        fila.setAttribute("aria-label", "Ver el detalle del viaje. " + linea1.textContent + ". " + lineaDestino.textContent);
+        fila.addEventListener("click", function () { abrirDetalleViaje(v); });
+        fila.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrirDetalleViaje(v); } });
         fila.appendChild(info);
-        fila.appendChild(boton);
+        fila.appendChild(ir);
         cont.appendChild(fila);
       });
     }).catch(function () { /* si falla, se queda el mensaje por defecto */ });
+  }
+
+  // «mié 28 oct 2026 · 08:05»: cuándo se hizo el viaje (la hora de inicio; si falta, la del cierre).
+  function diaYHoraViaje(v) {
+    var d = new Date(v.inicio || v.fecha || "");
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) + " · " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+  }
+  // Detalle de un viaje terminado: quién lo llevó, cuándo, de dónde a dónde y si ya lo calificó. Sin comisiones ni cargos.
+  function abrirDetalleViaje(v) {
+    var d = new Date(v.inicio || v.fecha || "");
+    var ok = !isNaN(d.getTime());
+    var filas = [
+      ["Conductor", v.conductor || "—"],
+      ["Día", ok ? d.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "—"],
+      ["Hora", ok ? d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }) : "—"],
+      ["Dirección inicial", direccionCorta(v.origen) || "—"]
+    ];
+    if (v.paradas) filas.push(["Paradas", v.paradas]);
+    var estrellasTxt = v.calificado && v.calificacion ? new Array(v.calificacion + 1).join("★") + new Array(6 - v.calificacion).join("☆") + " (" + v.calificacion + " de 5)" : "Aún no calificas a tu conductor";
+    filas.push(["Dirección de término", direccionCorta(v.destino) || "—"], ["Tu calificación", estrellasTxt]);
+    if (v.calificado && v.comentario) filas.push(["Tu comentario", v.comentario]);
+    var lista = document.getElementById("viajeDetalleLista");
+    lista.textContent = "";
+    var ddCal = null;
+    filas.forEach(function (f) {
+      var fila = document.createElement("div"), dt = document.createElement("dt"), dd = document.createElement("dd");
+      dt.textContent = f[0]; dd.textContent = f[1];
+      if (f[0] === "Tu calificación") ddCal = dd;
+      fila.appendChild(dt); fila.appendChild(dd); lista.appendChild(fila);
+    });
+    // Falta calificar: se puede hacer ahí mismo (estrellas y comentario).
+    var bloque = document.getElementById("detalleCalificar"), enviar = document.getElementById("btnDetalleCalificar"), msgCal = document.getElementById("detalleCalMsg");
+    var elegida = 0;
+    function pintarDt(n) {
+      [].forEach.call(document.querySelectorAll("#detalleEstrellas .dt-estrella"), function (b) { b.classList.toggle("activa", parseInt(b.dataset.e, 10) <= n); });
+      enviar.disabled = n === 0;
+    }
+    var btnEditarCal = document.getElementById("btnDetalleEditarCal");
+    function abrirFormulario(editando) {
+      bloque.hidden = false; btnEditarCal.hidden = true;
+      document.getElementById("detalleCalTit").textContent = editando ? "Edita tu calificación" : "¿Cómo fue tu viaje?";
+      enviar.textContent = editando ? "Guardar cambios" : "Enviar calificación";
+      elegida = editando ? (v.calificacion || 0) : 0;
+      document.getElementById("detalleComentario").value = editando ? (v.comentario || "") : "";
+      msgCal.textContent = ""; msgCal.className = "nota"; pintarDt(elegida);
+    }
+    bloque.hidden = true; btnEditarCal.hidden = true;
+    if (v.pedido_id) { if (v.calificado) btnEditarCal.hidden = false; else abrirFormulario(false); }
+    btnEditarCal.onclick = function () { abrirFormulario(true); };
+    document.getElementById("detalleEstrellas").onclick = function (ev) {
+      var b = ev.target.closest(".dt-estrella");
+      if (!b) return;
+      elegida = parseInt(b.dataset.e, 10); pintarDt(elegida);
+    };
+    enviar.onclick = function () {
+      var sesion = obtenerSesionPasajero();
+      if (!elegida || !sesion) return;
+      enviar.disabled = true;
+      var texto = document.getElementById("detalleComentario").value.trim();
+      apiPost({ accion: "calificar_conductor", pasajero_token: sesion.token, pedido_id: v.pedido_id, estrellas: elegida, comentario: texto, editar: !!v.calificado })
+        .then(function (res) {
+          if (!res || !res.ok) { msgCal.textContent = (res && res.error) || "No se pudo enviar."; msgCal.className = "nota error"; enviar.disabled = false; return; }
+          v.calificado = true; v.calificacion = elegida; v.comentario = texto;
+          abrirDetalleViaje(v);   // se vuelve a dibujar con la calificación puesta
+        }).catch(function () { msgCal.textContent = TEXTO_SIN_CONEXION; msgCal.className = "nota error"; enviar.disabled = false; });
+    };
+    document.getElementById("btnRepetirDetalle").onclick = function () { cerrarModalOpc("modalViajeDetalle"); repetirViaje(v); };
+    abrirModalOpc("modalViajeDetalle");
   }
 
   function repetirViaje(v) {
